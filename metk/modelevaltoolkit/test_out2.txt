@@ -1,0 +1,8 @@
+N = 58
+RMSE = 1.12 kcal/mol
+MAE  = 0.86 kcal/mol
+Max possible correlation = 0.94
+Pearson = 0.56  95%CI = 0.39 0.70
+Spearman = 0.57 95%CI = 0.40 0.70
+Spearman rho = 0.57
+Kendall tau = 0.40

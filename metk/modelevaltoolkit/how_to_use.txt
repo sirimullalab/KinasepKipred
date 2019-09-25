@@ -1,0 +1,5 @@
+python metk.py --in input_file_name.csv --prefix results_filename
+
+(--in and --prefix should be provided as shown above)
+(two output files will be generated with .txt and .pdf extension)
+(so we don't have to provide the extension for the output file, just prefix (filename) should be provided instead)
