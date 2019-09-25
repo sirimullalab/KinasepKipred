@@ -1,0 +1,161 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module kappa</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>kappa</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/kappa.py">/home/orient/pydpi/drug/kappa.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+The&nbsp;calculation&nbsp;of&nbsp;Kier&nbsp;and&nbsp;Hall's&nbsp;kappa&nbsp;indices&nbsp;based&nbsp;on&nbsp;its&nbsp;topological<br>
+&nbsp;<br>
+structure.&nbsp;You&nbsp;can&nbsp;get&nbsp;7&nbsp;molecular&nbsp;kappa&nbsp;descriptors.&nbsp;You&nbsp;can&nbsp;<br>
+&nbsp;<br>
+freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;<br>
+&nbsp;<br>
+with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.PeriodicTable.html">rdkit.Chem.PeriodicTable</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.rdchem.html">rdkit.Chem.rdchem</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateFlexibility"><strong>CalculateFlexibility</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Kier&nbsp;molecular&nbsp;flexibility&nbsp;index<br>
+&nbsp;<br>
+----&gt;phi<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateFlexibility">CalculateFlexibility</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappa1"><strong>CalculateKappa1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;one&nbsp;bonded&nbsp;fragment<br>
+&nbsp;<br>
+----&gt;kappa1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappa1">CalculateKappa1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappa2"><strong>CalculateKappa2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;two&nbsp;bonded&nbsp;fragment<br>
+&nbsp;<br>
+----&gt;kappa2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappa2">CalculateKappa2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappa3"><strong>CalculateKappa3</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;three&nbsp;bonded&nbsp;fragment<br>
+&nbsp;<br>
+----&gt;kappa3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappa3">CalculateKappa3</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappaAlapha1"><strong>CalculateKappaAlapha1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;one&nbsp;bonded&nbsp;fragment&nbsp;<br>
+&nbsp;<br>
+with&nbsp;Alapha<br>
+&nbsp;<br>
+----&gt;kappam1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappaAlapha1">CalculateKappaAlapha1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappaAlapha2"><strong>CalculateKappaAlapha2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;two&nbsp;bonded&nbsp;fragment&nbsp;<br>
+&nbsp;<br>
+with&nbsp;Alapha<br>
+&nbsp;<br>
+----&gt;kappam2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappaAlapha2">CalculateKappaAlapha2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateKappaAlapha3"><strong>CalculateKappaAlapha3</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;shape&nbsp;index&nbsp;for&nbsp;three&nbsp;bonded&nbsp;fragment&nbsp;<br>
+&nbsp;<br>
+with&nbsp;Alapha<br>
+&nbsp;<br>
+----&gt;kappam3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateKappaAlapha3">CalculateKappaAlapha3</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetKappa"><strong>GetKappa</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;all&nbsp;kappa&nbsp;values.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetKappa">GetKappa</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dcit&nbsp;form&nbsp;containing&nbsp;6&nbsp;kappa&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0<br>
+<strong>periodicTable</strong> = &lt;rdkit.Chem.rdchem.PeriodicTable object&gt;</td></tr></table>
+</body></html>

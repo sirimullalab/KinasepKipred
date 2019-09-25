@@ -1,0 +1,112 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module estate</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>estate</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/estate.py">/home/orient/pydpi/drug/estate.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+This&nbsp;module&nbsp;is&nbsp;to&nbsp;compute&nbsp;the&nbsp;estate&nbsp;fingerprints&nbsp;and&nbsp;values&nbsp;based&nbsp;on&nbsp;Kier&nbsp;<br>
+&nbsp;<br>
+and&nbsp;Hall's&nbsp;paper.&nbsp;If&nbsp;you&nbsp;have&nbsp;any&nbsp;question&nbsp;please&nbsp;contact&nbsp;me&nbsp;via&nbsp;email.<br>
+&nbsp;<br>
+My&nbsp;email&nbsp;adress&nbsp;is&nbsp;:&nbsp;orientalcds@gmail.com<br>
+&nbsp;<br>
+Created&nbsp;on&nbsp;Tue&nbsp;May&nbsp;24&nbsp;14:32:52&nbsp;2011<br>
+&nbsp;<br>
+@author:&nbsp;Dongsheng&nbsp;Cao<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="AtomTypes.html">AtomTypes</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.EState.Fingerprinter.html">rdkit.Chem.EState.Fingerprinter</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateEstateFingerprint"><strong>CalculateEstateFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;Calculation&nbsp;of&nbsp;EState&nbsp;Fingerprints.<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;times&nbsp;each&nbsp;possible&nbsp;atom&nbsp;type&nbsp;is&nbsp;hit.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateEstateFingerprint">CalculateEstateFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;79&nbsp;estate&nbsp;fragments.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateEstateValue"><strong>CalculateEstateValue</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;Calculate&nbsp;of&nbsp;EState&nbsp;Values.<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;the&nbsp;sum&nbsp;of&nbsp;the&nbsp;Estate&nbsp;indices&nbsp;for&nbsp;atoms&nbsp;of&nbsp;each&nbsp;type.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateEstateValue">CalculateEstateValue</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;79&nbsp;estate&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMaxAtomTypeEState"><strong>CalculateMaxAtomTypeEState</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;maximum&nbsp;of&nbsp;E-State&nbsp;value&nbsp;of&nbsp;specified&nbsp;atom&nbsp;type<br>
+&nbsp;<br>
+res----&gt;dict&nbsp;type<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMaxAtomTypeEState">CalculateMaxAtomTypeEState</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;79&nbsp;max&nbsp;estate&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMinAtomTypeEState"><strong>CalculateMinAtomTypeEState</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;minimum&nbsp;of&nbsp;E-State&nbsp;value&nbsp;of&nbsp;specified&nbsp;atom&nbsp;type<br>
+&nbsp;<br>
+res----&gt;dict&nbsp;type<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMinAtomTypeEState">CalculateMinAtomTypeEState</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;79&nbsp;min&nbsp;estate&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetEstate"><strong>GetEstate</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Obtain&nbsp;all&nbsp;descriptors&nbsp;related&nbsp;to&nbsp;Estate.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetEstate">GetEstate</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;estate&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

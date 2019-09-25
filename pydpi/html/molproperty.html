@@ -1,0 +1,187 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module molproperty</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>molproperty</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/molproperty.py">/home/orient/pydpi/drug/molproperty.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+Calculation&nbsp;of&nbsp;Molecular&nbsp;physical/chemical&nbsp;properties&nbsp;based&nbsp;on&nbsp;some&nbsp;special&nbsp;<br>
+&nbsp;<br>
+type&nbsp;of&nbsp;approaches(6),&nbsp;including:&nbsp;LogP;&nbsp;LogP2;&nbsp;MR;&nbsp;TPSA,&nbsp;UI&nbsp;and&nbsp;Hy.You&nbsp;can&nbsp;<br>
+&nbsp;<br>
+freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;<br>
+&nbsp;<br>
+with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.Crippen.html">rdkit.Chem.Crippen</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.MolSurf.html">rdkit.Chem.MolSurf</a><br>
+</td><td width="25%" valign=top><a href="math.html">math</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateHydrophilicityFactor"><strong>CalculateHydrophilicityFactor</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;hydrophilicity&nbsp;factor.&nbsp;The&nbsp;hydrophilicity&nbsp;<br>
+&nbsp;<br>
+index&nbsp;is&nbsp;described&nbsp;in&nbsp;more&nbsp;detail&nbsp;on&nbsp;page&nbsp;225&nbsp;of&nbsp;the&nbsp;<br>
+&nbsp;<br>
+Handbook&nbsp;of&nbsp;Molecular&nbsp;Descriptors&nbsp;(Todeschini&nbsp;and&nbsp;Consonni&nbsp;2000).<br>
+&nbsp;<br>
+----&gt;Hy<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHydrophilicityFactor">CalculateHydrophilicityFactor</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMolLogP"><strong>CalculateMolLogP</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Cacluation&nbsp;of&nbsp;LogP&nbsp;value&nbsp;based&nbsp;on&nbsp;Crippen&nbsp;method<br>
+&nbsp;<br>
+----&gt;LogP<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMolLogP">CalculateMolLogP</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMolLogP2"><strong>CalculateMolLogP2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Cacluation&nbsp;of&nbsp;LogP^2&nbsp;value&nbsp;based&nbsp;on&nbsp;Crippen&nbsp;method<br>
+&nbsp;<br>
+----&gt;LogP2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMolLogP2">CalculateMolLogP2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMolMR"><strong>CalculateMolMR</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Cacluation&nbsp;of&nbsp;molecular&nbsp;refraction&nbsp;value&nbsp;based&nbsp;on&nbsp;Crippen&nbsp;method<br>
+&nbsp;<br>
+----&gt;MR<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMolMR">CalculateMolMR</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTPSA"><strong>CalculateTPSA</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+calculates&nbsp;the&nbsp;polar&nbsp;surface&nbsp;area&nbsp;of&nbsp;a&nbsp;molecule&nbsp;based&nbsp;upon&nbsp;fragments<br>
+&nbsp;<br>
+Algorithm&nbsp;in:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+P.&nbsp;Ertl,&nbsp;B.&nbsp;Rohde,&nbsp;P.&nbsp;Selzer<br>
+&nbsp;<br>
+Fast&nbsp;Calculation&nbsp;of&nbsp;Molecular&nbsp;Polar&nbsp;Surface&nbsp;Area&nbsp;as&nbsp;a&nbsp;Sum&nbsp;of&nbsp;<br>
+&nbsp;<br>
+Fragment-based&nbsp;Contributions&nbsp;and&nbsp;Its&nbsp;Application&nbsp;to&nbsp;the&nbsp;Prediction<br>
+&nbsp;<br>
+of&nbsp;Drug&nbsp;Transport&nbsp;Properties,&nbsp;J.Med.Chem.&nbsp;43,&nbsp;3714-3717,&nbsp;2000<br>
+&nbsp;<br>
+Implementation&nbsp;based&nbsp;on&nbsp;the&nbsp;Daylight&nbsp;contrib&nbsp;program&nbsp;tpsa.<br>
+&nbsp;<br>
+----&gt;TPSA<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTPSA">CalculateTPSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateUnsaturationIndex"><strong>CalculateUnsaturationIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;unsaturation&nbsp;index.<br>
+&nbsp;<br>
+----&gt;UI<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateUnsaturationIndex">CalculateUnsaturationIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateXlogP"><strong>CalculateXlogP</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Wang&nbsp;octanol&nbsp;water&nbsp;partition&nbsp;coefficient.<br>
+&nbsp;<br>
+----&gt;XLogP<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateXlogP">CalculateXlogP</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateXlogP2"><strong>CalculateXlogP2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Wang&nbsp;octanol&nbsp;water&nbsp;partition&nbsp;coefficient&nbsp;(XLogP^2).<br>
+&nbsp;<br>
+----&gt;XLogP2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMolLogP">CalculateMolLogP</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetMolecularProperty"><strong>GetMolecularProperty</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Get&nbsp;the&nbsp;dictionary&nbsp;of&nbsp;constitutional&nbsp;descriptors&nbsp;for&nbsp;<br>
+&nbsp;<br>
+given&nbsp;moelcule&nbsp;mol<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetMolecularProperty">GetMolecularProperty</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;6&nbsp;molecular&nbsp;properties.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>MolecularProperty</strong> = {'Hy': &lt;function CalculateHydrophilicityFactor&gt;, 'LogP': &lt;function CalculateMolLogP&gt;, 'LogP2': &lt;function CalculateMolLogP2&gt;, 'MR': &lt;function CalculateMolMR&gt;, 'TPSA': &lt;function CalculateTPSA&gt;, 'UI': &lt;function CalculateUnsaturationIndex&gt;}<br>
+<strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

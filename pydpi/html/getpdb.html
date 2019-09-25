@@ -1,0 +1,56 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module getpdb</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>getpdb</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/src/pydpi/protein/getpdb.py">/home/orient/pydpi/src/pydpi/protein/getpdb.py</a></font></td></tr></table>
+    <p><tt>Created&nbsp;on&nbsp;Sat&nbsp;Jul&nbsp;13&nbsp;11:18:26&nbsp;2013<br>
+&nbsp;<br>
+This&nbsp;module&nbsp;is&nbsp;used&nbsp;for&nbsp;downloading&nbsp;the&nbsp;PDB&nbsp;file&nbsp;from&nbsp;RCSB&nbsp;PDB&nbsp;web&nbsp;and&nbsp;<br>
+&nbsp;<br>
+extract&nbsp;its&nbsp;amino&nbsp;acid&nbsp;sequence.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;written&nbsp;by&nbsp;Dongsheng&nbsp;Cao<br>
+&nbsp;<br>
+@author:&nbsp;Dongsheng&nbsp;Cao</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="ftplib.html">ftplib</a><br>
+</td><td width="25%" valign=top><a href="gzip.html">gzip</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-GetPDB"><strong>GetPDB</strong></a>(pdbidlist<font color="#909090">=[]</font>)</dt><dd><tt>Download&nbsp;the&nbsp;PDB&nbsp;file&nbsp;from&nbsp;PDB&nbsp;FTP&nbsp;server&nbsp;by&nbsp;providing&nbsp;a&nbsp;list&nbsp;of&nbsp;pdb&nbsp;id.</tt></dd></dl>
+ <dl><dt><a name="-GetSeqFromPDB"><strong>GetSeqFromPDB</strong></a>(pdbfile<font color="#909090">=''</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acids&nbsp;sequences&nbsp;from&nbsp;pdb&nbsp;file.</tt></dd></dl>
+ <dl><dt><a name="-pdbDownload"><strong>pdbDownload</strong></a>(file_list, hostname<font color="#909090">='ftp.wwpdb.org'</font>, directory<font color="#909090">='/pub/pdb/data/structures/all/pdb/'</font>, prefix<font color="#909090">='pdb'</font>, suffix<font color="#909090">='.ent.gz'</font>)</dt><dd><tt>Download&nbsp;all&nbsp;pdb&nbsp;files&nbsp;in&nbsp;file_list&nbsp;and&nbsp;unzip&nbsp;them.</tt></dd></dl>
+ <dl><dt><a name="-pdbSeq"><strong>pdbSeq</strong></a>(pdb, use_atoms<font color="#909090">=False</font>)</dt><dd><tt>Parse&nbsp;the&nbsp;SEQRES&nbsp;entries&nbsp;in&nbsp;a&nbsp;pdb&nbsp;file.&nbsp;&nbsp;If&nbsp;this&nbsp;fails,&nbsp;use&nbsp;the&nbsp;ATOM<br>
+entries.&nbsp;&nbsp;Return&nbsp;dictionary&nbsp;of&nbsp;sequences&nbsp;keyed&nbsp;to&nbsp;chain&nbsp;and&nbsp;type&nbsp;of<br>
+sequence&nbsp;used.</tt></dd></dl>
+ <dl><dt><a name="-unZip"><strong>unZip</strong></a>(some_file, some_output)</dt><dd><tt>Unzip&nbsp;some_file&nbsp;using&nbsp;the&nbsp;gzip&nbsp;library&nbsp;and&nbsp;write&nbsp;to&nbsp;some_output.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>DIRECTORY</strong> = '/pub/pdb/data/structures/all/pdb/'<br>
+<strong>HOSTNAME</strong> = 'ftp.wwpdb.org'<br>
+<strong>PREFIX</strong> = 'pdb'<br>
+<strong>SUFFIX</strong> = '.ent.gz'</td></tr></table>
+</body></html>

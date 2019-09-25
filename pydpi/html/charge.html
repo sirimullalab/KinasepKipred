@@ -1,0 +1,393 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module charge</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>charge</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/charge.py">/home/orient/pydpi/drug/charge.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+&nbsp;<br>
+The&nbsp;calculation&nbsp;of&nbsp;Charge&nbsp;descriptors&nbsp;based&nbsp;on&nbsp;Gasteiger/Marseli&nbsp;partial&nbsp;<br>
+&nbsp;<br>
+charges(25).&nbsp;You&nbsp;can&nbsp;freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;<br>
+&nbsp;<br>
+you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+&nbsp;<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.rdPartialCharges.html">rdkit.Chem.rdPartialCharges</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateAllMaxNCharge"><strong>CalculateAllMaxNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;negative&nbsp;charge&nbsp;on&nbsp;all&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;Qmin<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAllMaxNCharge">CalculateAllMaxNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateAllMaxPCharge"><strong>CalculateAllMaxPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;positive&nbsp;charge&nbsp;on&nbsp;ALL&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;Qmax<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAllMaxPCharge">CalculateAllMaxPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateAllSumSquareCharge"><strong>CalculateAllSumSquareCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;sum&nbsp;of&nbsp;square&nbsp;charges&nbsp;on&nbsp;all&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;Qass<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAllSumSquareCharge">CalculateAllSumSquareCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateCMaxNCharge"><strong>CalculateCMaxNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;negative&nbsp;charge&nbsp;on&nbsp;C&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QCmin<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateCMaxNCharge">CalculateCMaxNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateCMaxPCharge"><strong>CalculateCMaxPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;positive&nbsp;charge&nbsp;on&nbsp;C&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QCmax<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateCMaxPCharge">CalculateCMaxPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateCSumSquareCharge"><strong>CalculateCSumSquareCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;sum&nbsp;of&nbsp;square&nbsp;charges&nbsp;on&nbsp;all&nbsp;C&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QCss<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateCSumSquareCharge">CalculateCSumSquareCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHMaxNCharge"><strong>CalculateHMaxNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;negative&nbsp;charge&nbsp;on&nbsp;H&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QHmin<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHMaxNCharge">CalculateHMaxNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHMaxPCharge"><strong>CalculateHMaxPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;positive&nbsp;charge&nbsp;on&nbsp;H&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QHmax<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHMaxPCharge">CalculateHMaxPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHSumSquareCharge"><strong>CalculateHSumSquareCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;sum&nbsp;of&nbsp;square&nbsp;charges&nbsp;on&nbsp;all&nbsp;H&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QHss<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHSumSquareCharge">CalculateHSumSquareCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateLocalDipoleIndex"><strong>CalculateLocalDipoleIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;local&nbsp;dipole&nbsp;index&nbsp;(D)<br>
+&nbsp;<br>
+--&gt;LDI<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateLocalDipoleIndex">CalculateLocalDipoleIndex</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMeanAbsoulteCharge"><strong>CalculateMeanAbsoulteCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;average&nbsp;absolute&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Mac<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMeanAbsoulteCharge">CalculateMeanAbsoulteCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMeanNCharge"><strong>CalculateMeanNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;average&nbsp;negative&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Mnc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMeanNCharge">CalculateMeanNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMeanPCharge"><strong>CalculateMeanPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;average&nbsp;postive&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Mpc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMeanPCharge">CalculateMeanPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateNMaxNCharge"><strong>CalculateNMaxNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;negative&nbsp;charge&nbsp;on&nbsp;N&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QNmin<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateNMaxNCharge">CalculateNMaxNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateNMaxPCharge"><strong>CalculateNMaxPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;positive&nbsp;charge&nbsp;on&nbsp;N&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QNmax<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateNMaxPCharge">CalculateNMaxPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateNSumSquareCharge"><strong>CalculateNSumSquareCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;sum&nbsp;of&nbsp;square&nbsp;charges&nbsp;on&nbsp;all&nbsp;N&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QNss<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateNSumSquareCharge">CalculateNSumSquareCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateOMaxNCharge"><strong>CalculateOMaxNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;negative&nbsp;charge&nbsp;on&nbsp;O&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QOmin<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateOMaxNCharge">CalculateOMaxNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateOMaxPCharge"><strong>CalculateOMaxPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Most&nbsp;positive&nbsp;charge&nbsp;on&nbsp;O&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QOmax<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateOMaxPCharge">CalculateOMaxPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateOSumSquareCharge"><strong>CalculateOSumSquareCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;sum&nbsp;of&nbsp;square&nbsp;charges&nbsp;on&nbsp;all&nbsp;O&nbsp;atoms<br>
+&nbsp;<br>
+--&gt;QOss<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateOSumSquareCharge">CalculateOSumSquareCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateRelativeNCharge"><strong>CalculateRelativeNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;partial&nbsp;charge&nbsp;of&nbsp;the&nbsp;most&nbsp;negative&nbsp;atom&nbsp;divided<br>
+&nbsp;<br>
+by&nbsp;the&nbsp;total&nbsp;negative&nbsp;charge.<br>
+&nbsp;<br>
+--&gt;Rnc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateRelativeNCharge">CalculateRelativeNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateRelativePCharge"><strong>CalculateRelativePCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;partial&nbsp;charge&nbsp;of&nbsp;the&nbsp;most&nbsp;positive&nbsp;atom&nbsp;divided&nbsp;by<br>
+&nbsp;<br>
+the&nbsp;total&nbsp;positive&nbsp;charge.<br>
+&nbsp;<br>
+--&gt;Rpc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateRelativePCharge">CalculateRelativePCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSubmolPolarityPara"><strong>CalculateSubmolPolarityPara</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;submolecular&nbsp;polarity&nbsp;parameter(SPP)<br>
+&nbsp;<br>
+--&gt;SPP<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSubmolPolarityPara">CalculateSubmolPolarityPara</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTotalAbsoulteCharge"><strong>CalculateTotalAbsoulteCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;total&nbsp;absolute&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Tac<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTotalAbsoulteCharge">CalculateTotalAbsoulteCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTotalNCharge"><strong>CalculateTotalNCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;total&nbsp;negative&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Tnc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTotalNCharge">CalculateTotalNCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTotalPCharge"><strong>CalculateTotalPCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;total&nbsp;postive&nbsp;charge<br>
+&nbsp;<br>
+--&gt;Tpc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTotalPCharge">CalculateTotalPCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetCharge"><strong>GetCharge</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Get&nbsp;the&nbsp;dictionary&nbsp;of&nbsp;constitutional&nbsp;descriptors&nbsp;for&nbsp;given&nbsp;moelcule&nbsp;mol<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetCharge">GetCharge</a>(mol)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;charge&nbsp;descriptors.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0<br>
+<strong>iter_step</strong> = 12</td></tr></table>
+</body></html>

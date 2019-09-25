@@ -1,0 +1,399 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module constitution</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>constitution</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/constitution.py">/home/orient/pydpi/drug/constitution.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+The&nbsp;calculation&nbsp;of&nbsp;molecular&nbsp;constitutional&nbsp;indices&nbsp;based&nbsp;on&nbsp;its&nbsp;topological<br>
+&nbsp;<br>
+structure.&nbsp;You&nbsp;can&nbsp;get&nbsp;30&nbsp;molecular&nbsp;connectivity&nbsp;descriptors.&nbsp;You&nbsp;can&nbsp;freely<br>
+&nbsp;<br>
+use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.Lipinski.html">rdkit.Chem.Lipinski</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateAllAtomNumber"><strong>CalculateAllAtomNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;all&nbsp;atom&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nta<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAllAtomNumber">CalculateAllAtomNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateAromaticBondNumber"><strong>CalculateAromaticBondNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;aromatic&nbsp;bond&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;naro<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAromaticBondNumber">CalculateAromaticBondNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateAverageMolWeight"><strong>CalculateAverageMolWeight</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calcualtion&nbsp;of&nbsp;average&nbsp;molecular&nbsp;weight<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;not&nbsp;including&nbsp;H<br>
+&nbsp;<br>
+----&gt;AWeight<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAverageMolWeight">CalculateAverageMolWeight</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateBromineNumber"><strong>CalculateBromineNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Bromine&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ncobr<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateBromineNumber">CalculateBromineNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateCarbonNumber"><strong>CalculateCarbonNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Carbon&nbsp;number&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ncarb<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateCarbonNumber">CalculateCarbonNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChlorinNumber"><strong>CalculateChlorinNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Chlorin&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ncocl<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChlorinNumber">CalculateChlorinNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDoubleBondNumber"><strong>CalculateDoubleBondNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;double&nbsp;bond&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ndb<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDoubleBondNumber">CalculateDoubleBondNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateFluorinNumber"><strong>CalculateFluorinNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Fluorin&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ncof<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateFluorinNumber">CalculateFluorinNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHacceptorNumber"><strong>CalculateHacceptorNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Hydrogen&nbsp;bond&nbsp;acceptor&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;naccr<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHacceptorNumber">CalculateHacceptorNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHalogenNumber"><strong>CalculateHalogenNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Halogen&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nhal<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHalogenNumber">CalculateHalogenNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHdonorNumber"><strong>CalculateHdonorNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Hydrongen&nbsp;bond&nbsp;donor&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ndonr<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHdonorNumber">CalculateHdonorNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHeavyAtomNumber"><strong>CalculateHeavyAtomNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Heavy&nbsp;atom&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nhev<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHeavyAtomNumber">CalculateHeavyAtomNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHeteroNumber"><strong>CalculateHeteroNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Hetero&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nhet<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHeteroNumber">CalculateHeteroNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHydrogenNumber"><strong>CalculateHydrogenNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Number&nbsp;of&nbsp;Hydrogen&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nhyd<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHydrogenNumber">CalculateHydrogenNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateIodineNumber"><strong>CalculateIodineNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Iodine&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ncoi<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateIodineNumber">CalculateIodineNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMolWeight"><strong>CalculateMolWeight</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;weight<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;not&nbsp;including&nbsp;H<br>
+&nbsp;<br>
+----&gt;Weight&nbsp;&nbsp;<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMolWeight">CalculateMolWeight</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateNitrogenNumber"><strong>CalculateNitrogenNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Nitrogen&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nnitro<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateNitrogenNumber">CalculateNitrogenNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateOxygenNumber"><strong>CalculateOxygenNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Oxygen&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;noxy<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateOxygenNumber">CalculateOxygenNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath1"><strong>CalculatePath1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;1&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath2"><strong>CalculatePath2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;2&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath3"><strong>CalculatePath3</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;3&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath4"><strong>CalculatePath4</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;4&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath5"><strong>CalculatePath5</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;5&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePath6"><strong>CalculatePath6</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;counts&nbsp;of&nbsp;path&nbsp;length&nbsp;6&nbsp;for&nbsp;a&nbsp;molecule<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePhosphorNumber"><strong>CalculatePhosphorNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calcualtion&nbsp;of&nbsp;Phosphor&nbsp;number&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nphos<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePhosphorNumber">CalculatePhosphorNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateRingNumber"><strong>CalculateRingNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;ring&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nring<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateRingNumber">CalculateRingNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateRotationBondNumber"><strong>CalculateRotationBondNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;rotation&nbsp;bonds&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nrot<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;this&nbsp;is&nbsp;the&nbsp;same&nbsp;as&nbsp;calculation&nbsp;of&nbsp;single&nbsp;bond<br>
+&nbsp;<br>
+counts&nbsp;in&nbsp;a&nbsp;molecule.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateRotationBondNumber">CalculateRotationBondNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSingleBondNumber"><strong>CalculateSingleBondNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;single&nbsp;bond&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nsb<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSingleBondNumber">CalculateSingleBondNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSulfurNumber"><strong>CalculateSulfurNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Sulfur&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;nsulph<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSulfurNumber">CalculateSulfurNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTripleBondNumber"><strong>CalculateTripleBondNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;triple&nbsp;bond&nbsp;counts&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ntb<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTripleBondNumber">CalculateTripleBondNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetConstitutional"><strong>GetConstitutional</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Get&nbsp;the&nbsp;dictionary&nbsp;of&nbsp;constitutional&nbsp;descriptors&nbsp;for&nbsp;given&nbsp;moelcule&nbsp;mol<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetConstitutional">GetConstitutional</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;constitutional&nbsp;values.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

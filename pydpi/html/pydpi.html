@@ -1,0 +1,890 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module pydpi</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pydpi</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/src/pydpi/pydpi.py">/home/orient/pydpi/src/pydpi/pydpi.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;used&nbsp;for&nbsp;computing&nbsp;drug-target&nbsp;interaction,&nbsp;protein-protein&nbsp;interaction<br>
+&nbsp;<br>
+features.&nbsp;The&nbsp;<a href="#PyDPI">PyDPI</a>&nbsp;class&nbsp;inherits&nbsp;the&nbsp;<a href="pydrug.html#PyDrug">PyDrug</a>&nbsp;and&nbsp;<a href="pypro.html#PyPro">PyPro</a>&nbsp;classes,&nbsp;So&nbsp;you&nbsp;can&nbsp;easily<br>
+&nbsp;<br>
+use&nbsp;them.&nbsp;You&nbsp;can&nbsp;freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;<br>
+&nbsp;<br>
+you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.24<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+&nbsp;<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="protein.AAComposition.html">protein.AAComposition</a><br>
+<a href="protein.Autocorrelation.html">protein.Autocorrelation</a><br>
+<a href="protein.CTD.html">protein.CTD</a><br>
+<a href="rdkit.Chem.html">rdkit.Chem</a><br>
+<a href="protein.ConjointTriad.html">protein.ConjointTriad</a><br>
+<a href="protein.PseudoAAC.html">protein.PseudoAAC</a><br>
+</td><td width="25%" valign=top><a href="protein.QuasiSequenceOrder.html">protein.QuasiSequenceOrder</a><br>
+<a href="drug.charge.html">drug.charge</a><br>
+<a href="drug.connectivity.html">drug.connectivity</a><br>
+<a href="drug.constitution.html">drug.constitution</a><br>
+<a href="drug.estate.html">drug.estate</a><br>
+<a href="drug.fingerprint.html">drug.fingerprint</a><br>
+</td><td width="25%" valign=top><a href="drug.geary.html">drug.geary</a><br>
+<a href="drug.getmol.html">drug.getmol</a><br>
+<a href="drug.kappa.html">drug.kappa</a><br>
+<a href="drug.moe.html">drug.moe</a><br>
+<a href="drug.molproperty.html">drug.molproperty</a><br>
+<a href="drug.moran.html">drug.moran</a><br>
+</td><td width="25%" valign=top><a href="drug.moreaubroto.html">drug.moreaubroto</a><br>
+<a href="string.html">string</a><br>
+<a href="drug.topology.html">drug.topology</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="pydrug.html#PyDrug">pydrug.PyDrug</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="pydpi.html#PyDPI">PyDPI</a>(<a href="pydrug.html#PyDrug">pydrug.PyDrug</a>, <a href="pypro.html#PyPro">pypro.PyPro</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="pypro.html#PyPro">pypro.PyPro</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="pydpi.html#PyDPI">PyDPI</a>(<a href="pydrug.html#PyDrug">pydrug.PyDrug</a>, <a href="pypro.html#PyPro">pypro.PyPro</a>)
+</font></dt><dt><font face="helvetica, arial"><a href="pydpi.html#PyPPI">PyPPI</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PyDPI">class <strong>PyDPI</strong></a>(<a href="pydrug.html#PyDrug">pydrug.PyDrug</a>, <a href="pypro.html#PyPro">pypro.PyPro</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>#################################################################<br>
+&nbsp;<br>
+A&nbsp;<a href="#PyDPI">PyDPI</a>&nbsp;class&nbsp;used&nbsp;for&nbsp;generating&nbsp;drug-target&nbsp;interaction&nbsp;features.<br>
+&nbsp;<br>
+#################################################################<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="pydpi.html#PyDPI">PyDPI</a></dd>
+<dd><a href="pydrug.html#PyDrug">pydrug.PyDrug</a></dd>
+<dd><a href="pypro.html#PyPro">pypro.PyPro</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="PyDPI-GetDPIFeature1"><strong>GetDPIFeature1</strong></a>(self, ddict<font color="#909090">={}</font>, pdict<font color="#909090">={}</font>)</dt><dd><tt>#################################################################<br>
+&nbsp;<br>
+Calculate&nbsp;the&nbsp;drug-target&nbsp;interaction&nbsp;features&nbsp;by&nbsp;combining&nbsp;drug&nbsp;<br>
+&nbsp;<br>
+features&nbsp;and&nbsp;protein&nbsp;features.(nd+np)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetDPIFeature1">GetDPIFeature1</a>(ddict,pdict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ddict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;drug&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pdict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;drug-target&nbsp;interaction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetDPIFeature2"><strong>GetDPIFeature2</strong></a>(self, ddict<font color="#909090">={}</font>, pdict<font color="#909090">={}</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;the&nbsp;drug-target&nbsp;interaction&nbsp;features&nbsp;by&nbsp;&nbsp;the&nbsp;tensor&nbsp;product.<br>
+&nbsp;<br>
+(nd*np)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetDPIFeature2">GetDPIFeature2</a>(ddict,pdict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ddict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;drug&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pdict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;drug-target&nbsp;interaction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;features.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>#################################################################<br>
+&nbsp;<br>
+constructor&nbsp;of&nbsp;<a href="#PyDPI">PyDPI</a>.<br>
+&nbsp;<br>
+#################################################################</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="pydrug.html#PyDrug">pydrug.PyDrug</a>:<br>
+<dl><dt><a name="PyDPI-GetAllDescriptor"><strong>GetAllDescriptor</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;descriptors&nbsp;(608).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetAllDescriptor">GetAllDescriptor</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetCharge"><strong>GetCharge</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;charge&nbsp;descriptors&nbsp;(25).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetCharge">GetCharge</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetConnectivity"><strong>GetConnectivity</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;conenctivity&nbsp;descriptors&nbsp;(44).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetConnectivity">GetConnectivity</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetConstitution"><strong>GetConstitution</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;constitutional&nbsp;descriptors&nbsp;(30).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetConstitution">GetConstitution</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetEstate"><strong>GetEstate</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;estate&nbsp;descriptors&nbsp;(316).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetEstate">GetEstate</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetFingerprint"><strong>GetFingerprint</strong></a>(self, FPName<font color="#909090">='topological'</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;fingerprint&nbsp;descriptors.<br>
+&nbsp;<br>
+see&nbsp;the&nbsp;fingerprint&nbsp;type&nbsp;in&nbsp;FingerprintName<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetFingerprint">GetFingerprint</a>(FPName='topological')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetGeary"><strong>GetGeary</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;(32).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetGeary">GetGeary</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetKappa"><strong>GetKappa</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;kappa&nbsp;descriptors&nbsp;(7).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetKappa">GetKappa</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMOE"><strong>GetMOE</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;MOE-type&nbsp;descriptors&nbsp;(60).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMOE">GetMOE</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolFromCAS"><strong>GetMolFromCAS</strong></a>(self, ID<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Get&nbsp;a&nbsp;molecule&nbsp;by&nbsp;kegg&nbsp;id&nbsp;(e.g.,&nbsp;50-29-3).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolFromCAS">GetMolFromCAS</a>(ID)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ID&nbsp;is&nbsp;a&nbsp;CAS&nbsp;identifier.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolFromDrugbank"><strong>GetMolFromDrugbank</strong></a>(self, ID<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Get&nbsp;a&nbsp;molecule&nbsp;by&nbsp;drugbank&nbsp;id&nbsp;(e.g.,DB00133).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolFromDrugbank">GetMolFromDrugbank</a>(ID)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ID&nbsp;is&nbsp;a&nbsp;compound&nbsp;identifier&nbsp;in&nbsp;Drugbank.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolFromEBI"><strong>GetMolFromEBI</strong></a>(self, ID<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Get&nbsp;a&nbsp;molecule&nbsp;by&nbsp;EBI&nbsp;id.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolFromEBI">GetMolFromEBI</a>(ID)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ID&nbsp;is&nbsp;a&nbsp;compound&nbsp;identifier&nbsp;in&nbsp;EBI.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolFromKegg"><strong>GetMolFromKegg</strong></a>(self, ID<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Get&nbsp;a&nbsp;molecule&nbsp;by&nbsp;kegg&nbsp;id&nbsp;(e.g.,&nbsp;D02176).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolFromKegg">GetMolFromKegg</a>(ID)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ID&nbsp;is&nbsp;a&nbsp;compound&nbsp;identifier&nbsp;in&nbsp;KEGG.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolFromNCBI"><strong>GetMolFromNCBI</strong></a>(self, ID<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Get&nbsp;a&nbsp;molecule&nbsp;by&nbsp;NCBI&nbsp;id&nbsp;(e.g.,&nbsp;2244).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolFromNCBI">GetMolFromNCBI</a>(ID)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;ID&nbsp;is&nbsp;a&nbsp;compound&nbsp;ID&nbsp;(CID)&nbsp;in&nbsp;NCBI.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMolProperty"><strong>GetMolProperty</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;molecular&nbsp;properties&nbsp;(6).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMolProperty">GetMolProperty</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoran"><strong>GetMoran</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;Moran&nbsp;autocorrealtion&nbsp;descriptors&nbsp;(32).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMoran">GetMoran</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoreauBroto"><strong>GetMoreauBroto</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors(32).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetMoreauBroto">GetMoreauBroto</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetTopology"><strong>GetTopology</strong></a>(self)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;all&nbsp;topological&nbsp;descriptors&nbsp;(25).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-GetTopology">GetTopology</a>()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-ReadMolFromFile"><strong>ReadMolFromFile</strong></a>(self, filename<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Read&nbsp;a&nbsp;molecule&nbsp;by&nbsp;SDF&nbsp;or&nbsp;MOL&nbsp;file&nbsp;format.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-ReadMolFromFile">ReadMolFromFile</a>(filename)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;filename&nbsp;is&nbsp;a&nbsp;file&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-ReadMolFromInchi"><strong>ReadMolFromInchi</strong></a>(self, inchi<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Read&nbsp;a&nbsp;molecule&nbsp;by&nbsp;Inchi&nbsp;string.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-ReadMolFromInchi">ReadMolFromInchi</a>(inchi)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;inchi&nbsp;is&nbsp;a&nbsp;InChi&nbsp;string.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-ReadMolFromMol"><strong>ReadMolFromMol</strong></a>(self, filename<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Read&nbsp;a&nbsp;molecule&nbsp;with&nbsp;mol&nbsp;file&nbsp;format.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-ReadMolFromMol">ReadMolFromMol</a>(filename)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;filename&nbsp;is&nbsp;a&nbsp;file&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-ReadMolFromSmile"><strong>ReadMolFromSmile</strong></a>(self, smi<font color="#909090">=''</font>)</dt><dd><tt>#################################################################<br>
+Read&nbsp;a&nbsp;molecule&nbsp;by&nbsp;SMILES&nbsp;string.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyDPI-ReadMolFromSmile">ReadMolFromSmile</a>(smi)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;smi&nbsp;is&nbsp;a&nbsp;SMILES&nbsp;string.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+#################################################################</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="pypro.html#PyPro">pypro.PyPro</a>:<br>
+<dl><dt><a name="PyDPI-GetAAComp"><strong>GetAAComp</strong></a>(self)</dt><dd><tt>amino&nbsp;acid&nbsp;compositon&nbsp;descriptors&nbsp;(20)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetAAComp">GetAAComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetAAindex1"><strong>GetAAindex1</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex1(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,&nbsp;KRIW790103)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetAAindex23"><strong>GetAAindex23</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex2&nbsp;and&nbsp;aaindex3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex23(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,TANS760101,GRAR740104)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;400&nbsp;amino&nbsp;acid&nbsp;pairs</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetALL"><strong>GetALL</strong></a>(self)</dt><dd><tt>Calcualte&nbsp;all&nbsp;descriptors&nbsp;except&nbsp;tri-peptide&nbsp;descriptors</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetAPAAC"><strong>GetAPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.5</font>)</dt><dd><tt>Amphiphilic&nbsp;(Type&nbsp;II)&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;<br>
+&nbsp;<br>
+default&nbsp;is&nbsp;30<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetAPAAC">GetAPAAC</a>(lamda=10,weight=0.5)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetCTD"><strong>GetCTD</strong></a>(self)</dt><dd><tt>Composition&nbsp;Transition&nbsp;Distribution&nbsp;descriptors&nbsp;(147)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetCTD">GetCTD</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetDPComp"><strong>GetDPComp</strong></a>(self)</dt><dd><tt>dipeptide&nbsp;composition&nbsp;descriptors&nbsp;(400)&nbsp;<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetDPComp">GetDPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetGearyAuto"><strong>GetGearyAuto</strong></a>(self)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetGearyAuto">GetGearyAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetGearyAutop"><strong>GetGearyAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetGearyAutop">GetGearyAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoranAuto"><strong>GetMoranAuto</strong></a>(self)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetMoranAuto">GetMoranAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoranAutop"><strong>GetMoranAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetMoranAutop">GetMoranAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoreauBrotoAuto"><strong>GetMoreauBrotoAuto</strong></a>(self)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetMoreauBrotoAuto">GetMoreauBrotoAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetMoreauBrotoAutop"><strong>GetMoreauBrotoAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetMoreauBrotoAutop">GetMoreauBrotoAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetPAAC"><strong>GetPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetPAAC">GetPAAC</a>(lamda=10,weight=0.05)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetPAACp"><strong>GetPAACp</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>, AAP<font color="#909090">=[]</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;properties&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetPAACp">GetPAACp</a>(lamda=10,weight=0.05,AAP=[])<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;list&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties,&nbsp;each&nbsp;of&nbsp;which&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetProteinSequenceFromID"><strong>GetProteinSequenceFromID</strong></a>(self, uniprotid<font color="#909090">=''</font>)</dt><dd><tt>Downloading&nbsp;a&nbsp;protein&nbsp;sequence&nbsp;by&nbsp;uniprot&nbsp;id.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetQSO"><strong>GetQSO</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetQSOp"><strong>GetQSOp</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetSOCN"><strong>GetSOCN</strong></a>(self, maxlag<font color="#909090">=45</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetSOCNp"><strong>GetSOCNp</strong></a>(self, maxlag<font color="#909090">=45</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetSubSeq"><strong>GetSubSeq</strong></a>(self, ToAA<font color="#909090">='S'</font>, window<font color="#909090">=3</font>)</dt><dd><tt>obtain&nbsp;the&nbsp;sub&nbsp;sequences&nbsp;wit&nbsp;length&nbsp;2*window+1,&nbsp;whose&nbsp;central&nbsp;point&nbsp;is&nbsp;ToAA<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetSubSeq">GetSubSeq</a>(ToAA='S',window=3)<br>
+&nbsp;<br>
+ToAA&nbsp;is&nbsp;the&nbsp;central&nbsp;(query&nbsp;point)&nbsp;amino&nbsp;acid&nbsp;in&nbsp;the&nbsp;sub-sequence.<br>
+&nbsp;<br>
+window&nbsp;is&nbsp;the&nbsp;span.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetTPComp"><strong>GetTPComp</strong></a>(self)</dt><dd><tt>tri-peptide&nbsp;composition&nbsp;descriptors&nbsp;(8000)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyDPI-GetTPComp">GetTPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-GetTriad"><strong>GetTriad</strong></a>(self)</dt><dd><tt>Calculate&nbsp;the&nbsp;conjoint&nbsp;triad&nbsp;features&nbsp;from&nbsp;protein&nbsp;sequence.<br>
+&nbsp;<br>
+Useage:<br>
+&nbsp;<br>
+res&nbsp;=&nbsp;<a href="#PyDPI-GetTriad">GetTriad</a>()<br>
+&nbsp;<br>
+Output&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;343&nbsp;conjoint&nbsp;triad&nbsp;features.</tt></dd></dl>
+
+<dl><dt><a name="PyDPI-ReadProteinSequence"><strong>ReadProteinSequence</strong></a>(self, ProteinSequence<font color="#909090">=''</font>)</dt><dd><tt>Read&nbsp;a&nbsp;protein&nbsp;sequence.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="pypro.html#PyPro">pypro.PyPro</a>:<br>
+<dl><dt><strong>AALetter</strong> = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']</dl>
+
+<dl><dt><strong>Version</strong> = 1.0</dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PyPPI">class <strong>PyPPI</strong></a>(<a href="pypro.html#PyPro">pypro.PyPro</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>#################################################################<br>
+&nbsp;<br>
+A&nbsp;<a href="#PyPPI">PyPPI</a>&nbsp;class&nbsp;used&nbsp;for&nbsp;generating&nbsp;protein-protein&nbsp;interaction&nbsp;features.<br>
+&nbsp;<br>
+#################################################################<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="PyPPI-GetPPIFeature1"><strong>GetPPIFeature1</strong></a>(self, pdict<font color="#909090">={}</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;the&nbsp;protein-protein&nbsp;interaction&nbsp;features&nbsp;by&nbsp;<br>
+&nbsp;<br>
+F=[Fa(i)+Fb(i)),Fa(i)*Fb(i)]&nbsp;(2n)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyPPI-GetPPIFeature1">GetPPIFeature1</a>(pdict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;pdict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein-protein&nbsp;interaction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;features.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetPPIFeature2"><strong>GetPPIFeature2</strong></a>(self, pdict<font color="#909090">={}</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;the&nbsp;protein-protein&nbsp;interaction&nbsp;features&nbsp;by&nbsp;the&nbsp;tensor&nbsp;product.<br>
+&nbsp;<br>
+(n^2)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;res=<a href="#PyPPI-GetPPIFeature2">GetPPIFeature2</a>(pdict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;pdict&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein&nbsp;features.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;protein-protein&nbsp;interaction<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;features.<br>
+#################################################################</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>#################################################################<br>
+&nbsp;<br>
+constructor&nbsp;of&nbsp;<a href="#PyPPI">PyPPI</a>.<br>
+&nbsp;<br>
+#################################################################</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="pypro.html#PyPro">pypro.PyPro</a>:<br>
+<dl><dt><a name="PyPPI-GetAAComp"><strong>GetAAComp</strong></a>(self)</dt><dd><tt>amino&nbsp;acid&nbsp;compositon&nbsp;descriptors&nbsp;(20)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetAAComp">GetAAComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetAAindex1"><strong>GetAAindex1</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex1(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,&nbsp;KRIW790103)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetAAindex23"><strong>GetAAindex23</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex2&nbsp;and&nbsp;aaindex3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex23(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,TANS760101,GRAR740104)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;400&nbsp;amino&nbsp;acid&nbsp;pairs</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetALL"><strong>GetALL</strong></a>(self)</dt><dd><tt>Calcualte&nbsp;all&nbsp;descriptors&nbsp;except&nbsp;tri-peptide&nbsp;descriptors</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetAPAAC"><strong>GetAPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.5</font>)</dt><dd><tt>Amphiphilic&nbsp;(Type&nbsp;II)&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;<br>
+&nbsp;<br>
+default&nbsp;is&nbsp;30<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetAPAAC">GetAPAAC</a>(lamda=10,weight=0.5)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetCTD"><strong>GetCTD</strong></a>(self)</dt><dd><tt>Composition&nbsp;Transition&nbsp;Distribution&nbsp;descriptors&nbsp;(147)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetCTD">GetCTD</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetDPComp"><strong>GetDPComp</strong></a>(self)</dt><dd><tt>dipeptide&nbsp;composition&nbsp;descriptors&nbsp;(400)&nbsp;<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetDPComp">GetDPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetGearyAuto"><strong>GetGearyAuto</strong></a>(self)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetGearyAuto">GetGearyAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetGearyAutop"><strong>GetGearyAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetGearyAutop">GetGearyAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetMoranAuto"><strong>GetMoranAuto</strong></a>(self)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetMoranAuto">GetMoranAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetMoranAutop"><strong>GetMoranAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetMoranAutop">GetMoranAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetMoreauBrotoAuto"><strong>GetMoreauBrotoAuto</strong></a>(self)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetMoreauBrotoAuto">GetMoreauBrotoAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetMoreauBrotoAutop"><strong>GetMoreauBrotoAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetMoreauBrotoAutop">GetMoreauBrotoAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetPAAC"><strong>GetPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetPAAC">GetPAAC</a>(lamda=10,weight=0.05)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetPAACp"><strong>GetPAACp</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>, AAP<font color="#909090">=[]</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;properties&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetPAACp">GetPAACp</a>(lamda=10,weight=0.05,AAP=[])<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;list&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties,&nbsp;each&nbsp;of&nbsp;which&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetProteinSequenceFromID"><strong>GetProteinSequenceFromID</strong></a>(self, uniprotid<font color="#909090">=''</font>)</dt><dd><tt>Downloading&nbsp;a&nbsp;protein&nbsp;sequence&nbsp;by&nbsp;uniprot&nbsp;id.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetQSO"><strong>GetQSO</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetQSOp"><strong>GetQSOp</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetSOCN"><strong>GetSOCN</strong></a>(self, maxlag<font color="#909090">=45</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetSOCNp"><strong>GetSOCNp</strong></a>(self, maxlag<font color="#909090">=45</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetSubSeq"><strong>GetSubSeq</strong></a>(self, ToAA<font color="#909090">='S'</font>, window<font color="#909090">=3</font>)</dt><dd><tt>obtain&nbsp;the&nbsp;sub&nbsp;sequences&nbsp;wit&nbsp;length&nbsp;2*window+1,&nbsp;whose&nbsp;central&nbsp;point&nbsp;is&nbsp;ToAA<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetSubSeq">GetSubSeq</a>(ToAA='S',window=3)<br>
+&nbsp;<br>
+ToAA&nbsp;is&nbsp;the&nbsp;central&nbsp;(query&nbsp;point)&nbsp;amino&nbsp;acid&nbsp;in&nbsp;the&nbsp;sub-sequence.<br>
+&nbsp;<br>
+window&nbsp;is&nbsp;the&nbsp;span.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetTPComp"><strong>GetTPComp</strong></a>(self)</dt><dd><tt>tri-peptide&nbsp;composition&nbsp;descriptors&nbsp;(8000)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPPI-GetTPComp">GetTPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-GetTriad"><strong>GetTriad</strong></a>(self)</dt><dd><tt>Calculate&nbsp;the&nbsp;conjoint&nbsp;triad&nbsp;features&nbsp;from&nbsp;protein&nbsp;sequence.<br>
+&nbsp;<br>
+Useage:<br>
+&nbsp;<br>
+res&nbsp;=&nbsp;<a href="#PyPPI-GetTriad">GetTriad</a>()<br>
+&nbsp;<br>
+Output&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;343&nbsp;conjoint&nbsp;triad&nbsp;features.</tt></dd></dl>
+
+<dl><dt><a name="PyPPI-ReadProteinSequence"><strong>ReadProteinSequence</strong></a>(self, ProteinSequence<font color="#909090">=''</font>)</dt><dd><tt>Read&nbsp;a&nbsp;protein&nbsp;sequence.</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="pypro.html#PyPro">pypro.PyPro</a>:<br>
+<dl><dt><strong>AALetter</strong> = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']</dl>
+
+<dl><dt><strong>Version</strong> = 1.0</dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>FingerprintName</strong> = ['topological', 'Estate', 'FP4', 'atompairs', 'torsions', 'morgan', 'MACCS']<br>
+<strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

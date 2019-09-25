@@ -1,0 +1,172 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module moe</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>moe</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/moe.py">/home/orient/pydpi/drug/moe.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+This&nbsp;module&nbsp;mainly&nbsp;implements&nbsp;the&nbsp;calculation&nbsp;of&nbsp;MOE-type&nbsp;descriptors,&nbsp;which&nbsp;<br>
+&nbsp;<br>
+include&nbsp;LabuteASA,&nbsp;TPSA,&nbsp;slogPVSA,&nbsp;MRVSA,&nbsp;PEOEVSA,&nbsp;EstateVSA&nbsp;and&nbsp;VSAEstate,&nbsp;<br>
+&nbsp;<br>
+respectively&nbsp;(59).<br>
+&nbsp;<br>
+If&nbsp;you&nbsp;have&nbsp;any&nbsp;question&nbsp;about&nbsp;these&nbsp;indices&nbsp;please&nbsp;contact&nbsp;me&nbsp;via&nbsp;email.<br>
+&nbsp;<br>
+My&nbsp;email&nbsp;adress&nbsp;is&nbsp;orientalcds@gmail.com&nbsp;<br>
+&nbsp;<br>
+Created&nbsp;on&nbsp;Tue&nbsp;May&nbsp;24&nbsp;10:29:47&nbsp;2011<br>
+&nbsp;<br>
+@author:&nbsp;Dongsheng&nbsp;Cao<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.EState.EState_VSA.html">rdkit.Chem.EState.EState_VSA</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.MolSurf.html">rdkit.Chem.MolSurf</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateEstateVSA"><strong>CalculateEstateVSA</strong></a>(mol, bins<font color="#909090">=None</font>)</dt><dd><tt>#################################################################<br>
+MOE-type&nbsp;descriptors&nbsp;using&nbsp;Estate&nbsp;indices&nbsp;and&nbsp;surface&nbsp;area&nbsp;<br>
+&nbsp;<br>
+contributions.<br>
+&nbsp;<br>
+estateBins=[-0.390,0.290,0.717,1.165,1.540,1.807,2.05,4.69,9.17,15.0]&nbsp;<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;specify&nbsp;your&nbsp;own&nbsp;bins&nbsp;to&nbsp;compute&nbsp;some&nbsp;descriptors<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateEstateVSA">CalculateEstateVSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateLabuteASA"><strong>CalculateLabuteASA</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Labute's&nbsp;Approximate&nbsp;Surface&nbsp;Area&nbsp;(ASA&nbsp;from&nbsp;MOE)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateLabuteASA">CalculateLabuteASA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePEOEVSA"><strong>CalculatePEOEVSA</strong></a>(mol, bins<font color="#909090">=None</font>)</dt><dd><tt>#################################################################<br>
+MOE-type&nbsp;descriptors&nbsp;using&nbsp;partial&nbsp;charges&nbsp;and&nbsp;surface&nbsp;<br>
+&nbsp;<br>
+area&nbsp;contributions.<br>
+&nbsp;<br>
+chgBins=[-.3,-.25,-.20,-.15,-.10,-.05,0,.05,.10,.15,.20,.25,.30]<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;specify&nbsp;your&nbsp;own&nbsp;bins&nbsp;to&nbsp;compute&nbsp;some&nbsp;descriptors<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePEOEVSA">CalculatePEOEVSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSLOGPVSA"><strong>CalculateSLOGPVSA</strong></a>(mol, bins<font color="#909090">=None</font>)</dt><dd><tt>#################################################################<br>
+MOE-type&nbsp;descriptors&nbsp;using&nbsp;LogP&nbsp;contributions&nbsp;and&nbsp;surface&nbsp;<br>
+&nbsp;<br>
+area&nbsp;contributions.<br>
+&nbsp;<br>
+logpBins=[-0.4,-0.2,0,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6]<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;specify&nbsp;your&nbsp;own&nbsp;bins&nbsp;to&nbsp;compute&nbsp;some&nbsp;descriptors.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSLOGPVSA">CalculateSLOGPVSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSMRVSA"><strong>CalculateSMRVSA</strong></a>(mol, bins<font color="#909090">=None</font>)</dt><dd><tt>#################################################################<br>
+MOE-type&nbsp;descriptors&nbsp;using&nbsp;MR&nbsp;contributions&nbsp;and&nbsp;surface&nbsp;<br>
+&nbsp;<br>
+area&nbsp;contributions.<br>
+&nbsp;<br>
+mrBins=[1.29,&nbsp;1.82,&nbsp;2.24,&nbsp;2.45,&nbsp;2.75,&nbsp;3.05,&nbsp;3.63,3.8,4.0]<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;specify&nbsp;your&nbsp;own&nbsp;bins&nbsp;to&nbsp;compute&nbsp;some&nbsp;descriptors.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSMRVSA">CalculateSMRVSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTPSA"><strong>CalculateTPSA</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;topological&nbsp;polar&nbsp;surface&nbsp;area&nbsp;based&nbsp;on&nbsp;fragments.<br>
+&nbsp;<br>
+Implementation&nbsp;based&nbsp;on&nbsp;the&nbsp;Daylight&nbsp;contrib&nbsp;program&nbsp;tpsa.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTPSA">CalculateTPSA</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateVSAEstate"><strong>CalculateVSAEstate</strong></a>(mol, bins<font color="#909090">=None</font>)</dt><dd><tt>#################################################################<br>
+MOE-type&nbsp;descriptors&nbsp;using&nbsp;Estate&nbsp;indices&nbsp;and&nbsp;surface&nbsp;<br>
+&nbsp;<br>
+area&nbsp;contributions.<br>
+&nbsp;<br>
+vsaBins=[4.78,5.00,5.410,5.740,6.00,6.07,6.45,7.00,11.0]&nbsp;<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;specify&nbsp;your&nbsp;own&nbsp;bins&nbsp;to&nbsp;compute&nbsp;some&nbsp;descriptors<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateVSAEstate">CalculateVSAEstate</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetMOE"><strong>GetMOE</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+The&nbsp;calculation&nbsp;of&nbsp;MOE-type&nbsp;descriptors&nbsp;(ALL).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetMOE">GetMOE</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

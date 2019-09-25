@@ -1,0 +1,668 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module connectivity</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>connectivity</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/connectivity.py">/home/orient/pydpi/drug/connectivity.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+The&nbsp;calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;indices&nbsp;based&nbsp;on&nbsp;its&nbsp;topological<br>
+&nbsp;<br>
+structure.&nbsp;You&nbsp;can&nbsp;get&nbsp;44&nbsp;molecular&nbsp;connectivity&nbsp;descriptors.&nbsp;You&nbsp;can&nbsp;freely<br>
+&nbsp;<br>
+use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.rdchem.html">rdkit.Chem.rdchem</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateChi0"><strong>CalculateChi0</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;0<br>
+&nbsp;<br>
+----&gt;Chi0<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi0">CalculateChi0</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi1"><strong>CalculateChi1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;1&nbsp;<br>
+&nbsp;<br>
+(i.e.,Radich)<br>
+&nbsp;<br>
+----&gt;Chi1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi1">CalculateChi1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi10p"><strong>CalculateChi10p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;10<br>
+&nbsp;<br>
+----&gt;Chi10<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi10p">CalculateChi10p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi2"><strong>CalculateChi2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;2<br>
+&nbsp;<br>
+----&gt;Chi2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi2">CalculateChi2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi3c"><strong>CalculateChi3c</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cluster<br>
+&nbsp;<br>
+----&gt;Chi3c<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi3c">CalculateChi3c</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi3ch"><strong>CalculateChi3ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cycles&nbsp;of&nbsp;3<br>
+&nbsp;<br>
+----&gt;Chi3ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi3ch">CalculateChi3ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi3p"><strong>CalculateChi3p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;3<br>
+&nbsp;<br>
+----&gt;Chi3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi3p">CalculateChi3p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi4c"><strong>CalculateChi4c</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cluster<br>
+&nbsp;<br>
+----&gt;Chi4c<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi4c">CalculateChi4c</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi4ch"><strong>CalculateChi4ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cycles&nbsp;of&nbsp;4<br>
+&nbsp;<br>
+----&gt;Chi4ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi4ch">CalculateChi4ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi4p"><strong>CalculateChi4p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;4<br>
+&nbsp;<br>
+----&gt;Chi4<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi4p">CalculateChi4p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi4pc"><strong>CalculateChi4pc</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path/cluster<br>
+&nbsp;<br>
+----&gt;Chi4pc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi4pc">CalculateChi4pc</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi5ch"><strong>CalculateChi5ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cycles&nbsp;of&nbsp;5<br>
+&nbsp;<br>
+----&gt;Chi5ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi5ch">CalculateChi5ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi5p"><strong>CalculateChi5p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;5<br>
+&nbsp;<br>
+----&gt;Chi5<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi5p">CalculateChi5p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi6ch"><strong>CalculateChi6ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cycles&nbsp;of&nbsp;6<br>
+&nbsp;<br>
+----&gt;Chi6ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi6ch">CalculateChi6ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi6p"><strong>CalculateChi6p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;6<br>
+&nbsp;<br>
+----&gt;Chi6<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi6p">CalculateChi6p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi7p"><strong>CalculateChi7p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;7<br>
+&nbsp;<br>
+----&gt;Chi7<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi7p">CalculateChi7p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi8p"><strong>CalculateChi8p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;8<br>
+&nbsp;<br>
+----&gt;Chi8<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi8p">CalculateChi8p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChi9p"><strong>CalculateChi9p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;path&nbsp;order&nbsp;9<br>
+&nbsp;<br>
+----&gt;Chi9<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChi9p">CalculateChi9p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv0"><strong>CalculateChiv0</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;0<br>
+&nbsp;<br>
+----&gt;Chiv0<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv0">CalculateChiv0</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv1"><strong>CalculateChiv1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;1<br>
+&nbsp;<br>
+----&gt;Chiv1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv1">CalculateChiv1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv10p"><strong>CalculateChiv10p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;10<br>
+&nbsp;<br>
+----&gt;Chiv10<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv10p">CalculateChiv10p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv2"><strong>CalculateChiv2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;2<br>
+&nbsp;<br>
+----&gt;Chiv2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv2">CalculateChiv2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv3c"><strong>CalculateChiv3c</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cluster<br>
+&nbsp;<br>
+----&gt;Chiv3c<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv3c">CalculateChiv3c</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv3ch"><strong>CalculateChiv3ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;<br>
+&nbsp;<br>
+for&nbsp;cycles&nbsp;of&nbsp;3<br>
+&nbsp;<br>
+----&gt;Chiv3ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv3ch">CalculateChiv3ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv3p"><strong>CalculateChiv3p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;3<br>
+&nbsp;<br>
+----&gt;Chiv3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv3p">CalculateChiv3p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv4c"><strong>CalculateChiv4c</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;cluster<br>
+&nbsp;<br>
+----&gt;Chiv4c<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv4c">CalculateChiv4c</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv4ch"><strong>CalculateChiv4ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+cycles&nbsp;of&nbsp;4<br>
+&nbsp;<br>
+----&gt;Chiv4ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv4ch">CalculateChiv4ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv4p"><strong>CalculateChiv4p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;4<br>
+&nbsp;<br>
+----&gt;Chiv4<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv4p">CalculateChiv4p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv4pc"><strong>CalculateChiv4pc</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path/cluster<br>
+&nbsp;<br>
+----&gt;Chiv4pc<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv4pc">CalculateChiv4pc</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv5ch"><strong>CalculateChiv5ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+cycles&nbsp;of&nbsp;5<br>
+&nbsp;<br>
+----&gt;Chiv5ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv5ch">CalculateChiv5ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv5p"><strong>CalculateChiv5p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;5<br>
+&nbsp;<br>
+----&gt;Chiv5<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv5p">CalculateChiv5p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv6ch"><strong>CalculateChiv6ch</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+cycles&nbsp;of&nbsp;6<br>
+&nbsp;<br>
+----&gt;Chiv6ch<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv6ch">CalculateChiv6ch</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv6p"><strong>CalculateChiv6p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;6<br>
+&nbsp;<br>
+----&gt;Chiv6<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv6p">CalculateChiv6p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv7p"><strong>CalculateChiv7p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;7<br>
+&nbsp;<br>
+----&gt;Chiv7<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv7p">CalculateChiv7p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv8p"><strong>CalculateChiv8p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;8<br>
+&nbsp;<br>
+----&gt;Chiv8<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv8p">CalculateChiv8p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateChiv9p"><strong>CalculateChiv9p</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;valence&nbsp;molecular&nbsp;connectivity&nbsp;chi&nbsp;index&nbsp;for&nbsp;<br>
+&nbsp;<br>
+path&nbsp;order&nbsp;9<br>
+&nbsp;<br>
+----&gt;Chiv9<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateChiv9p">CalculateChiv9p</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi0"><strong>CalculateDeltaChi0</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi0v&nbsp;and&nbsp;chi0<br>
+&nbsp;<br>
+----&gt;dchi0<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi0">CalculateDeltaChi0</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi1"><strong>CalculateDeltaChi1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi1v&nbsp;and&nbsp;chi1<br>
+&nbsp;<br>
+----&gt;dchi1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi1">CalculateDeltaChi1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi2"><strong>CalculateDeltaChi2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi2v&nbsp;and&nbsp;chi2<br>
+&nbsp;<br>
+----&gt;dchi2<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi2">CalculateDeltaChi2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi3"><strong>CalculateDeltaChi3</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi3v&nbsp;and&nbsp;chi3<br>
+&nbsp;<br>
+----&gt;dchi3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi3">CalculateDeltaChi3</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi3c4pc"><strong>CalculateDeltaChi3c4pc</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi3c&nbsp;and&nbsp;chi4pc<br>
+&nbsp;<br>
+----&gt;knotp<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi3c4pc">CalculateDeltaChi3c4pc</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChi4"><strong>CalculateDeltaChi4</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chi4v&nbsp;and&nbsp;chi4<br>
+&nbsp;<br>
+----&gt;dchi4<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChi4">CalculateDeltaChi4</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDeltaChiv3c4pc"><strong>CalculateDeltaChiv3c4pc</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;chiv3c&nbsp;and&nbsp;chiv4pc<br>
+&nbsp;<br>
+----&gt;knotpv<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDeltaChiv3c4pc">CalculateDeltaChiv3c4pc</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMeanRandic"><strong>CalculateMeanRandic</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;mean&nbsp;chi1&nbsp;(Randic)&nbsp;connectivity&nbsp;index.<br>
+&nbsp;<br>
+----&gt;mchi1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMeanRandic">CalculateMeanRandic</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetConnectivity"><strong>GetConnectivity</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Get&nbsp;the&nbsp;dictionary&nbsp;of&nbsp;connectivity&nbsp;descriptors&nbsp;for&nbsp;given&nbsp;moelcule&nbsp;mol<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-GetConnectivity">GetConnectivity</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;connectivity&nbsp;indices<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0<br>
+<strong>periodicTable</strong> = &lt;rdkit.Chem.rdchem.PeriodicTable object&gt;</td></tr></table>
+</body></html>

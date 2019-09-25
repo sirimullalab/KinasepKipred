@@ -1,0 +1,284 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module pypro</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pypro</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/src/pydpi/pypro.py">/home/orient/pydpi/src/pydpi/pypro.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+&nbsp;<br>
+A&nbsp;class&nbsp;used&nbsp;for&nbsp;computing&nbsp;different&nbsp;types&nbsp;of&nbsp;protein&nbsp;descriptors!&nbsp;<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;have&nbsp;any&nbsp;problem,&nbsp;<br>
+&nbsp;<br>
+you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely.<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.9.4<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+&nbsp;<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="protein.AAComposition.html">protein.AAComposition</a><br>
+<a href="protein.Autocorrelation.html">protein.Autocorrelation</a><br>
+</td><td width="25%" valign=top><a href="protein.CTD.html">protein.CTD</a><br>
+<a href="protein.ConjointTriad.html">protein.ConjointTriad</a><br>
+</td><td width="25%" valign=top><a href="protein.PseudoAAC.html">protein.PseudoAAC</a><br>
+<a href="protein.QuasiSequenceOrder.html">protein.QuasiSequenceOrder</a><br>
+</td><td width="25%" valign=top><a href="string.html">string</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="pypro.html#PyPro">PyPro</a>
+</font></dt></dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PyPro">class <strong>PyPro</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;GetProDes&nbsp;class&nbsp;aims&nbsp;at&nbsp;collecting&nbsp;all&nbsp;descriptor&nbsp;calcualtion&nbsp;modules&nbsp;into&nbsp;a&nbsp;simple&nbsp;class.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="PyPro-GetAAComp"><strong>GetAAComp</strong></a>(self)</dt><dd><tt>amino&nbsp;acid&nbsp;compositon&nbsp;descriptors&nbsp;(20)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetAAComp">GetAAComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetAAindex1"><strong>GetAAindex1</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex1<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex1(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,&nbsp;KRIW790103)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetAAindex23"><strong>GetAAindex23</strong></a>(self, name, path<font color="#909090">='.'</font>)</dt><dd><tt>Get&nbsp;the&nbsp;amino&nbsp;acid&nbsp;property&nbsp;values&nbsp;from&nbsp;aaindex2&nbsp;and&nbsp;aaindex3<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result=GetAAIndex23(name)<br>
+&nbsp;<br>
+Input:&nbsp;name&nbsp;is&nbsp;the&nbsp;name&nbsp;of&nbsp;amino&nbsp;acid&nbsp;property&nbsp;(e.g.,TANS760101,GRAR740104)<br>
+&nbsp;<br>
+Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties&nbsp;of&nbsp;400&nbsp;amino&nbsp;acid&nbsp;pairs</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetALL"><strong>GetALL</strong></a>(self)</dt><dd><tt>Calcualte&nbsp;all&nbsp;descriptors&nbsp;except&nbsp;tri-peptide&nbsp;descriptors</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetAPAAC"><strong>GetAPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.5</font>)</dt><dd><tt>Amphiphilic&nbsp;(Type&nbsp;II)&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;<br>
+&nbsp;<br>
+default&nbsp;is&nbsp;30<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetAPAAC">GetAPAAC</a>(lamda=10,weight=0.5)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetCTD"><strong>GetCTD</strong></a>(self)</dt><dd><tt>Composition&nbsp;Transition&nbsp;Distribution&nbsp;descriptors&nbsp;(147)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetCTD">GetCTD</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetDPComp"><strong>GetDPComp</strong></a>(self)</dt><dd><tt>dipeptide&nbsp;composition&nbsp;descriptors&nbsp;(400)&nbsp;<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetDPComp">GetDPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetGearyAuto"><strong>GetGearyAuto</strong></a>(self)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetGearyAuto">GetGearyAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetGearyAutop"><strong>GetGearyAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Geary&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetGearyAutop">GetGearyAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetMoranAuto"><strong>GetMoranAuto</strong></a>(self)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetMoranAuto">GetMoranAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetMoranAutop"><strong>GetMoranAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Moran&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetMoranAutop">GetMoranAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetMoreauBrotoAuto"><strong>GetMoreauBrotoAuto</strong></a>(self)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;(240)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetMoreauBrotoAuto">GetMoreauBrotoAuto</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetMoreauBrotoAutop"><strong>GetMoreauBrotoAutop</strong></a>(self, AAP<font color="#909090">={}</font>, AAPName<font color="#909090">='p'</font>)</dt><dd><tt>Normalized&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;property&nbsp;(30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetMoreauBrotoAutop">GetMoreauBrotoAutop</a>(AAP={},AAPName='p')<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;dict&nbsp;containing&nbsp;physicochemical&nbsp;properities&nbsp;of&nbsp;20&nbsp;amino&nbsp;acids</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetPAAC"><strong>GetPAAC</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetPAAC">GetPAAC</a>(lamda=10,weight=0.05)<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetPAACp"><strong>GetPAACp</strong></a>(self, lamda<font color="#909090">=10</font>, weight<font color="#909090">=0.05</font>, AAP<font color="#909090">=[]</font>)</dt><dd><tt>Type&nbsp;I&nbsp;Pseudo&nbsp;amino&nbsp;acid&nbsp;composition&nbsp;descriptors&nbsp;for&nbsp;the&nbsp;given&nbsp;properties&nbsp;(default&nbsp;is&nbsp;30)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetPAACp">GetPAACp</a>(lamda=10,weight=0.05,AAP=[])<br>
+&nbsp;<br>
+lamda&nbsp;factor&nbsp;reflects&nbsp;the&nbsp;rank&nbsp;of&nbsp;correlation&nbsp;and&nbsp;is&nbsp;a&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;15.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;(1)lamda&nbsp;should&nbsp;NOT&nbsp;be&nbsp;larger&nbsp;than&nbsp;the&nbsp;length&nbsp;of&nbsp;input&nbsp;protein&nbsp;sequence;<br>
+&nbsp;<br>
+(2)&nbsp;lamda&nbsp;must&nbsp;be&nbsp;non-Negative&nbsp;integer,&nbsp;such&nbsp;as&nbsp;0,&nbsp;1,&nbsp;2,&nbsp;...;&nbsp;(3)&nbsp;when&nbsp;lamda&nbsp;=0,&nbsp;the&nbsp;<br>
+&nbsp;<br>
+output&nbsp;of&nbsp;PseAA&nbsp;server&nbsp;is&nbsp;the&nbsp;20-D&nbsp;amino&nbsp;acid&nbsp;composition.<br>
+&nbsp;<br>
+weight&nbsp;factor&nbsp;is&nbsp;designed&nbsp;for&nbsp;the&nbsp;users&nbsp;to&nbsp;put&nbsp;weight&nbsp;on&nbsp;the&nbsp;additional&nbsp;PseAA&nbsp;components&nbsp;<br>
+&nbsp;<br>
+with&nbsp;respect&nbsp;to&nbsp;the&nbsp;conventional&nbsp;AA&nbsp;components.&nbsp;The&nbsp;user&nbsp;can&nbsp;select&nbsp;any&nbsp;value&nbsp;within&nbsp;the&nbsp;<br>
+&nbsp;<br>
+region&nbsp;from&nbsp;0.05&nbsp;to&nbsp;0.7&nbsp;for&nbsp;the&nbsp;weight&nbsp;factor.<br>
+&nbsp;<br>
+AAP&nbsp;is&nbsp;a&nbsp;list&nbsp;form&nbsp;containing&nbsp;the&nbsp;properties,&nbsp;each&nbsp;of&nbsp;which&nbsp;is&nbsp;a&nbsp;dict&nbsp;form.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetProteinSequenceFromID"><strong>GetProteinSequenceFromID</strong></a>(self, uniprotid<font color="#909090">=''</font>)</dt><dd><tt>Downloading&nbsp;a&nbsp;protein&nbsp;sequence&nbsp;by&nbsp;uniprot&nbsp;id.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetQSO"><strong>GetQSO</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetQSOp"><strong>GetQSOp</strong></a>(self, maxlag<font color="#909090">=30</font>, weight<font color="#909090">=0.1</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Quasi&nbsp;sequence&nbsp;order&nbsp;descriptors&nbsp;&nbsp;default&nbsp;is&nbsp;50<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetQSO">GetQSO</a>(maxlag=30,&nbsp;weight=0.1)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetSOCN"><strong>GetSOCN</strong></a>(self, maxlag<font color="#909090">=45</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetSOCNp"><strong>GetSOCNp</strong></a>(self, maxlag<font color="#909090">=45</font>, distancematrix<font color="#909090">={}</font>)</dt><dd><tt>Sequence&nbsp;order&nbsp;coupling&nbsp;numbers&nbsp;&nbsp;default&nbsp;is&nbsp;45<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetSOCN">GetSOCN</a>(maxlag=45)<br>
+&nbsp;<br>
+maxlag&nbsp;is&nbsp;the&nbsp;maximum&nbsp;lag&nbsp;and&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;protein&nbsp;should&nbsp;be&nbsp;larger<br>
+&nbsp;<br>
+than&nbsp;maxlag.&nbsp;default&nbsp;is&nbsp;45.<br>
+&nbsp;<br>
+distancematrix&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;400&nbsp;distance&nbsp;values</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetSubSeq"><strong>GetSubSeq</strong></a>(self, ToAA<font color="#909090">='S'</font>, window<font color="#909090">=3</font>)</dt><dd><tt>obtain&nbsp;the&nbsp;sub&nbsp;sequences&nbsp;wit&nbsp;length&nbsp;2*window+1,&nbsp;whose&nbsp;central&nbsp;point&nbsp;is&nbsp;ToAA<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetSubSeq">GetSubSeq</a>(ToAA='S',window=3)<br>
+&nbsp;<br>
+ToAA&nbsp;is&nbsp;the&nbsp;central&nbsp;(query&nbsp;point)&nbsp;amino&nbsp;acid&nbsp;in&nbsp;the&nbsp;sub-sequence.<br>
+&nbsp;<br>
+window&nbsp;is&nbsp;the&nbsp;span.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetTPComp"><strong>GetTPComp</strong></a>(self)</dt><dd><tt>tri-peptide&nbsp;composition&nbsp;descriptors&nbsp;(8000)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+result&nbsp;=&nbsp;<a href="#PyPro-GetTPComp">GetTPComp</a>()</tt></dd></dl>
+
+<dl><dt><a name="PyPro-GetTriad"><strong>GetTriad</strong></a>(self)</dt><dd><tt>Calculate&nbsp;the&nbsp;conjoint&nbsp;triad&nbsp;features&nbsp;from&nbsp;protein&nbsp;sequence.<br>
+&nbsp;<br>
+Useage:<br>
+&nbsp;<br>
+res&nbsp;=&nbsp;<a href="#PyPro-GetTriad">GetTriad</a>()<br>
+&nbsp;<br>
+Output&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;343&nbsp;conjoint&nbsp;triad&nbsp;features.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-ReadProteinSequence"><strong>ReadProteinSequence</strong></a>(self, ProteinSequence<font color="#909090">=''</font>)</dt><dd><tt>Read&nbsp;a&nbsp;protein&nbsp;sequence.</tt></dd></dl>
+
+<dl><dt><a name="PyPro-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>constructor&nbsp;of&nbsp;<a href="#PyPro">PyPro</a></tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>AALetter</strong> = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']</dl>
+
+<dl><dt><strong>Version</strong> = 1.0</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>
