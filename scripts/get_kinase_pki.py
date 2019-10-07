@@ -40,7 +40,7 @@ def get_features(seq, smi):
 
 if __name__=='__main__':
     protein_feature = get_features(sys.argv[1], sys.argv[2])
-    load_model = joblib.load('../models/Random_forest_gridsearch_py27.mdl')
+    load_model = joblib.load('Random_forest_gridsearch_py27.mdl')
     y_pred = load_model.predict(protein_feature)
     
     print y_pred
