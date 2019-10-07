@@ -1,0 +1,35 @@
+#
+# File: PackageInfo.csv
+# Author: Manish Sud <msud@san.rr.com>
+#
+# Copyright (C) 2018 Manish Sud. All rights reserved.
+#
+# This file is part of MayaChemTools.
+#
+# MayaChemTools is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.
+#
+# MayaChemTools is distributed in the hope that it will be useful, but without
+# any warranty; without even the implied warranty of merchantability of fitness
+# for a particular purpose.  See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with MayaChemTools; if not, see <http://www.gnu.org/licenses/> or
+# write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,
+# Boston, MA, 02111-1307, USA.
+#
+# Notes:
+#     o Package key/value information is available through PackageInfo.pm module.
+#
+#
+"KeyName","KeyValue"
+"PackageName","MayaChemTools"
+"Release","May 15, 2018"
+"DevSoftwareEnvironment","Cygwin; Anaconda2 and Anaconda3; Windows 10"
+"DevHardwareEnvironment","HP Spectre x360 Convertible laptop; Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz, 2904 Mhz, 2 Cores, 4 Logical Processors; 16 GB RAM"
+"Editor","GNU Emacs"
+"DocumentationGeneration","Custom Perl and Python scripts using these external tools: pod2man, pod2text, pod2html, perldoc, pod2pdf, perltidy, pygmentize"
+"Dependencies","Perl v5.8 or higher; DBI, DBD-mysql, DBD-Oracle, DBD-Pg to use database scripts; Python 2.7, Python 3.7, or higher; RDKit to use RDKit scripts"

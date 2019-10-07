@@ -1,0 +1,90 @@
+#
+# File: SYBYLAtomTypes.csv
+# Author: Manish Sud <msud@san.rr.com>
+#
+# Copyright (C) 2018 Manish Sud. All rights reserved.
+#
+# This file is part of MayaChemTools.
+#
+# MayaChemTools is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.
+#
+# MayaChemTools is distributed in the hope that it will be useful, but without
+# any warranty; without even the implied warranty of merchantability of fitness
+# for a particular purpose.  See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with MayaChemTools; if not, see <http://www.gnu.org/licenses/> or
+# write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,
+# Boston, MA, 02111-1307, USA.
+#
+#
+# Original data sources:
+#     o Clark et al. [ Ref 79-80 ]
+#
+# Notes:
+#     o 53 - 8 = 45 SYBYL atom types are listed 
+#     o AtomTypes::SYBYLAtomTypes.pm module is used to assign SYBYL atom types
+#     o 8 SYBYL atom types are not listed and not assigned to any atom:
+#
+#         O.spc - oxygen in SPC water model
+#         O.t3p - oxygen in TIP3P water model
+#         H.spc - hydrogen in SPC water model
+#         H.t3p - hydrogen in TIP3P water model
+#         Du - dummy
+#         Du.C - dummy with the weight of carbon
+#         HEV - heavy (non H) atom
+#         LP - lone pair
+#
+#     o N.pl3 atom type is assigned to Nitrogens in a guadinium group attached
+#       to Carbon C.cat
+#
+"AtomType","Description"
+"C.3","sp3 carbon"
+"C.2","sp2 carbon"
+"C.1","sp carbon"
+"C.ar","aromatic carbon"
+"C.cat","carbocation, used only in a guadinium group"
+"N.3","sp3 nitrogen"
+"N.2","sp2 nitrogen"
+"N.1","sp nitrogen"
+"N.ar","aromatic nitrogen"
+"N.am","amide nitrogen"
+"N.pl3","trigonal planar nitrogen"
+"N.4","sp3 positively charged nitrogen"
+"O.3","sp3 oxygen"
+"O.2","sp2 oxygen"
+"O.co2","oxygen in carboxylate or phosphate group"
+"S.3","sp3 sulfur"
+"S.2","sp2 sulfur"
+"S.o","sulfoxide sulfur"
+"S.o2","sulfone sulfur"
+"P.3","sp3 phosphorous"
+"F","fluorine"
+"Cl","chlorine"
+"Br","bromine"
+"I","iodine"
+"H","hydrogen"
+"ANY","any atom"
+"HAL","halogen"
+"HET","heteroatom (N, O, S, P)"
+"Li","lithium"
+"Na","sodium"
+"Mg","magnesium"
+"Al","aluminum"
+"Si","silicon"
+"K","potassium"
+"Ca","calcium"
+"Cr.th","chromium (tetrahedral)"
+"Cr.oh","chromium (octahedral)"
+"Mn","manganese"
+"Fe","iron"
+"Co.oh","cobalt (octahedral)"
+"Cu","copper"
+"Zn","zinc"
+"Se","selenium"
+"Mo","molybdenum"
+"Sn","tin"

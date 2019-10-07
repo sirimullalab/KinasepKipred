@@ -1,0 +1,57 @@
+#
+# File: AromaticityModelsData.csv
+# Author: Manish Sud <msud@san.rr.com>
+#
+# Copyright (C) 2018 Manish Sud. All rights reserved.
+#
+# This file is part of MayaChemTools.
+#
+# MayaChemTools is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.
+#
+# MayaChemTools is distributed in the hope that it will be useful, but without
+# any warranty; without even the implied warranty of merchantability of fitness
+# for a particular purpose.  See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with MayaChemTools; if not, see <http://www.gnu.org/licenses/> or
+# write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,
+# Boston, MA, 02111-1307, USA.
+#
+#
+# Notes:
+#  . What is aromaticity? [ Ref 124 ] It's in the code of the implementer, did you
+#    say? Agree. The implementation of aromaticity varies widely across different
+#    packages [ Ref 125 ]; additionally, the implementation details are not always
+#    completely available, and it's not possible to figure out the exact implementation
+#    of aromaticity across various packages. Using the publicly available information,
+#    however, one can try to reproduce the available results to the extent possible,
+#    along with parameterizing all the control parameters used to implement different
+#    aromaticity models, and that's exactly what the current release of MayaChemTools
+#    does.
+#  . Molecule.pm module retrieves data from this file during class instantiation
+#    and makes it available to class method DetectAromaticity for detecting
+#    aromaticity corresponding to a specific model.
+#  . Any new added aromaticity model using existing parameters would work
+#    as expected, without modifying the code; addition of new parameters,
+#    however, requires its implementation in the code.
+#  . Parameter values of Yes, No and None are internally mapped to 1, 0 and
+#    an empty string, respectively.
+#  . For parameter names containing List in their name and comma delimited set
+#    of values, a new parameter is generated for each model by appending MapRef
+#    to specified parameter name, which is then assigned a hash reference containing
+#    key and value pairs corresponding to comma delimited values.
+#
+#
+"ParameterName","MDLAromaticityModel","TriposAromaticityModel","MMFFAromaticityModel","ChemAxonBasicAromaticityModel","ChemAxonGeneralAromaticityModel","DaylightAromaticityModel","MayaChemToolsAromaticityModel"
+"AllowHeteroRingAtoms","No","No","Yes","Yes","Yes","Yes","Yes"
+"HeteroRingAtomsList","None","None","N,O,P,S","N,O,P,S,As,Se","N,O,P,S,As,Se","N,O,P,S,As,Se","N,O,P,S,As,Se,Te"
+"AllowExocyclicDoubleBonds","No","No","No","No","Yes","Yes","Yes"
+"AllowHomoNuclearExocyclicDoubleBonds","NA","NA","NA","NA","No","No","No"
+"AllowElectronegativeRingAtomExocyclicDoubleBonds","NA","NA","NA","NA","No","No","No"
+"AllowRingAtomFormalCharge","No","No","No","No","Yes","No","Yes"
+"AllowHeteroRingAtomFormalCharge","NA","NA","NA","NA","Yes","NA","Yes"
+"MinimumRingSize","None","None","None","5","None","None","None"
