@@ -1,0 +1,349 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitEnumerateStereoisomers.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitEnumerateStereoisomers.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit.Chem.EnumerateStereoisomers</span> <span class="kn">import</span> <span class="n">EnumerateStereoisomers</span><span class="p">,</span> <span class="n">StereoEnumerationOptions</span>
+  43 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  44     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  45     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  46     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  47 
+  48 <span class="c1"># MayaChemTools imports...</span>
+  49 <span class="k">try</span><span class="p">:</span>
+  50     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  51     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  52     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  53 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  54     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  55     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  56     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  57 
+  58 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  59 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  60 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  61 
+  62 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  63     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  64     
+  65     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  66     
+  67     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  68     
+  69     <span class="c1"># Retrieve command line arguments and options...</span>
+  70     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  71     
+  72     <span class="c1"># Process and validate command line arguments and options...</span>
+  73     <span class="n">ProcessOptions</span><span class="p">()</span>
+  74     
+  75     <span class="c1"># Perform actions required by the script...</span>
+  76     <span class="n">PerformEnumeration</span><span class="p">()</span>
+  77     
+  78     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  79     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  80 
+  81 <span class="k">def</span> <span class="nf">PerformEnumeration</span><span class="p">():</span>
+  82     <span class="sd">&quot;&quot;&quot;Enumerate stereoisomers.&quot;&quot;&quot;</span>
+  83     
+  84     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+  85     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+  86     
+  87     <span class="c1"># Setup a molecule reader...</span>
+  88     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+  89     <span class="n">Mols</span>  <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+  90     
+  91     <span class="c1"># Set up a molecule writer...</span>
+  92     <span class="n">Writer</span> <span class="o">=</span> <span class="bp">None</span>
+  93     <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+  94     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+  95         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+  96     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+  97 
+  98     <span class="c1"># Setup stereo enumeration options...</span>
+  99     <span class="n">StereoOptions</span> <span class="o">=</span> <span class="n">StereoEnumerationOptions</span><span class="p">(</span><span class="n">tryEmbedding</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DiscardNonPhysical&quot;</span><span class="p">],</span> <span class="n">onlyUnassigned</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UnassignedOnly&quot;</span><span class="p">],</span> <span class="n">maxIsomers</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;MaxIsomers&quot;</span><span class="p">])</span>
+ 100     
+ 101     <span class="c1"># Process molecules...</span>
+ 102     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 103     <span class="n">ValidMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 104 
+ 105     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 106     
+ 107     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 108         <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 109         
+ 110         <span class="k">if</span> <span class="n">Mol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 111             <span class="k">continue</span>
+ 112         
+ 113         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">Mol</span><span class="p">):</span>
+ 114             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 115             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring empty molecule: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolName</span><span class="p">)</span>
+ 116             <span class="k">continue</span>
+ 117         
+ 118         <span class="n">ValidMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 119         
+ 120         <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 121         
+ 122         <span class="c1"># Generate and process stereoisomers...</span>
+ 123         <span class="n">StereoisomersMols</span> <span class="o">=</span> <span class="n">EnumerateStereoisomers</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="n">StereoOptions</span><span class="p">)</span>
+ 124         <span class="n">IsomerCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 125         <span class="k">for</span> <span class="n">IsomerMol</span> <span class="ow">in</span> <span class="n">StereoisomersMols</span><span class="p">:</span>
+ 126             <span class="n">IsomerCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 127             
+ 128             <span class="c1"># Set isomer mol name...</span>
+ 129             <span class="n">IsomerMolName</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_Isomer</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolName</span><span class="p">,</span> <span class="n">IsomerCount</span><span class="p">)</span>
+ 130             <span class="n">IsomerMol</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="s2">&quot;_Name&quot;</span><span class="p">,</span> <span class="n">IsomerMolName</span><span class="p">)</span>
+ 131             
+ 132             <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 133                 <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">IsomerMol</span><span class="p">)</span>
+ 134                 
+ 135             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">IsomerMol</span><span class="p">)</span>
+ 136         
+ 137         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of stereoisomers written for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolName</span><span class="p">,</span> <span class="n">IsomerCount</span><span class="p">))</span>
+ 138             
+ 139     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 140         <span class="n">Writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 141     
+ 142     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 143     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 144     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 145 
+ 146 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 147     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 148     
+ 149     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 150     
+ 151     <span class="c1"># Validate options...</span>
+ 152     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 153     
+ 154     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DiscardNonPhysical&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 155     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^no$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--discardNonPhysical&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 156         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DiscardNonPhysical&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 157     
+ 158     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">]</span>
+ 159     <span class="n">UnassignedOnly</span> <span class="o">=</span> <span class="bp">True</span>
+ 160     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^All$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 161         <span class="n">UnassignedOnly</span> <span class="o">=</span> <span class="bp">False</span>
+ 162     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UnassignedOnly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">UnassignedOnly</span>
+ 163     
+ 164     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 165     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 166     
+ 167     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 168     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 169     
+ 170     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 171 
+ 172     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;MaxIsomers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--maxIsomers&quot;</span><span class="p">])</span>
+ 173 
+ 174 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 175     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 176     
+ 177     <span class="c1"># Get options...</span>
+ 178     <span class="k">global</span> <span class="n">Options</span>
+ 179     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 180     
+ 181     <span class="c1"># Set current working directory to the specified directory...</span>
+ 182     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 183     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 184         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 185     
+ 186     <span class="c1"># Handle examples option...</span>
+ 187     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 188         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 189         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 190 
+ 191 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 192     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 193     
+ 194     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-d, --discardNonPhysical&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--discardNonPhysical&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 195     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-m, --mode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="s2">&quot;UnassignedOnly All&quot;</span><span class="p">)</span>
+ 196     
+ 197     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 198     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd mol smi txt csv tsv&quot;</span><span class="p">)</span>
+ 199     
+ 200     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi&quot;</span><span class="p">)</span>
+ 201     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 202     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 203         
+ 204     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionIntegerValue</span><span class="p">(</span><span class="s2">&quot;--maxIsomers&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--maxIsomers&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+ 205 
+ 206 <span class="c1"># Setup a usage string for docopt...</span>
+ 207 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 208 <span class="s2">RDKitEnumerateStereoisomers.py - Enumerate stereoisomers of molecules</span>
+ 209 
+ 210 <span class="s2">Usage:</span>
+ 211 <span class="s2">    RDKitEnumerateStereoisomers.py [--discardNonPhysical &lt;yes or no&gt;]</span>
+ 212 <span class="s2">                                [--infileParams &lt;Name,Value,...&gt;] [--mode &lt;UnassignedOnly or All&gt;]</span>
+ 213 <span class="s2">                                [--maxIsomers &lt;number&gt;] [--outfileParams &lt;Name,Value,...&gt;] </span>
+ 214 <span class="s2">                                [--overwrite] [-w &lt;dir&gt;] -i &lt;infile&gt; -o &lt;outfile&gt; </span>
+ 215 <span class="s2">    RDKitEnumerateStereoisomers.py -h | --help | -e | --examples</span>
+ 216 
+ 217 <span class="s2">Description:</span>
+ 218 <span class="s2">    Perform a combinatorial enumeration of stereoisomers for molecules around all</span>
+ 219 <span class="s2">    or unassigned chiral atoms and bonds.</span>
+ 220 
+ 221 <span class="s2">    The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi,</span>
+ 222 <span class="s2">    .csv, .tsv, .txt)</span>
+ 223 
+ 224 <span class="s2">    The supported output file format are: SD (.sdf, .sd), SMILES (.smi)</span>
+ 225 
+ 226 <span class="s2">Options:</span>
+ 227 <span class="s2">    -d, --discardNonPhysical &lt;yes or no&gt;  [default: yes]</span>
+ 228 <span class="s2">        Discard stereoisomers with non-physical structures. Possible values: yes or no.</span>
+ 229 <span class="s2">        The non-physical nature of a stereoisomer is determined by embedding the</span>
+ 230 <span class="s2">        structure to generate a conformation for the stereoisomer using standard</span>
+ 231 <span class="s2">        distance geometry methodology.</span>
+ 232 <span class="s2">        </span>
+ 233 <span class="s2">        A word to the wise from RDKit documentation: this is computationally expensive</span>
+ 234 <span class="s2">        and uses a heuristic that could result in loss of stereoisomers.</span>
+ 235 <span class="s2">    -e, --examples</span>
+ 236 <span class="s2">        Print examples.</span>
+ 237 <span class="s2">    -m, --mode &lt;UnassignedOnly or All&gt;  [default: UnassignedOnly]</span>
+ 238 <span class="s2">        Enumerate unassigned or all chiral centers. The chiral atoms and bonds with</span>
+ 239 <span class="s2">        defined stereochemistry are preserved.</span>
+ 240 <span class="s2">    --maxIsomers &lt;number&gt;  [default: 50]</span>
+ 241 <span class="s2">        Maximum number of stereoisomers to generate for each molecule. A  value of zero</span>
+ 242 <span class="s2">        indicates generation of all possible steroisomers.</span>
+ 243 <span class="s2">    -h, --help</span>
+ 244 <span class="s2">        Print this help message.</span>
+ 245 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 246 <span class="s2">        Input file name.</span>
+ 247 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 248 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 249 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 250 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 251 <span class="s2">            </span>
+ 252 <span class="s2">            SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 253 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 254 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 255 <span class="s2">            </span>
+ 256 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 257 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 258 <span class="s2">        Output file name.</span>
+ 259 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 260 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 261 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 262 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 263 <span class="s2">            </span>
+ 264 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 265 <span class="s2">            SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,</span>
+ 266 <span class="s2">                smilesTitleLine,yes</span>
+ 267 <span class="s2">            </span>
+ 268 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 269 <span class="s2">        file types.</span>
+ 270 <span class="s2">    --overwrite</span>
+ 271 <span class="s2">        Overwrite existing files.</span>
+ 272 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 273 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 274 
+ 275 <span class="s2">Examples:</span>
+ 276 <span class="s2">    To enumerate only unassigned atom and bond chiral centers along with discarding</span>
+ 277 <span class="s2">    of non-physical structures, keeping a maximum of 50 stereoisomers for each molecule,</span>
+ 278 <span class="s2">    and write out a SMILES file, type:</span>
+ 279 
+ 280 <span class="s2">        % RDKitEnumerateStereoisomers.py  -i Sample.smi -o SampleOut.smi</span>
+ 281 
+ 282 <span class="s2">    To enumerate only unassigned atom and bond chiral centers along with discarding</span>
+ 283 <span class="s2">    any non-physical structures, keeping a maximum of 250 stereoisomers for a molecule,</span>
+ 284 <span class="s2">    and write out a SD file, type:</span>
+ 285 
+ 286 <span class="s2">        % RDKitEnumerateStereoisomers.py  --maxIsomers 0 -i Sample.smi</span>
+ 287 <span class="s2">           --maxIsomers 250 -o SampleOut.sdf</span>
+ 288 
+ 289 <span class="s2">    To enumerate all possible assigned and unassigned atom and bond chiral centers,</span>
+ 290 <span class="s2">    without discarding any non-physical structures, keeping a maximum of 500 </span>
+ 291 <span class="s2">    stereoisomers for a molecule, and write out a SD file, type:</span>
+ 292 
+ 293 <span class="s2">        % RDKitEnumerateStereoisomers.py  -d no -m all --maxIsomers 500</span>
+ 294 <span class="s2">          -i Sample.smi -o SampleOut.sdf</span>
+ 295 
+ 296 <span class="s2">    To enumerate only unassigned atom and bond chiral centers along with discarding</span>
+ 297 <span class="s2">    of non-physical structures, keeping a maximum of 50 stereoisomers for each molecule</span>
+ 298 <span class="s2">    in a CSV SMILES file, SMILES strings in column 1, name in column 2, and write out a</span>
+ 299 <span class="s2">    SD file with kekulization, type:</span>
+ 300 
+ 301 <span class="s2">        % RDKitEnumerateStereoisomers.py  --infileParams </span>
+ 302 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 303 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes,</span>
+ 304 <span class="s2">          kekulize,yes&quot; -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 305 
+ 306 <span class="s2">Author:</span>
+ 307 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 308 
+ 309 <span class="s2">See also:</span>
+ 310 <span class="s2">    RDKitConvertFileFormat.py, RDKitEnumerateCompoundLibrary.py, RDKitGenerateConformers.py,</span>
+ 311 <span class="s2">    RDKitGenerateMolecularFrameworks.py</span>
+ 312 
+ 313 <span class="s2">Copyright:</span>
+ 314 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 315 
+ 316 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 317 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 318 
+ 319 <span class="s2">    This file is part of MayaChemTools.</span>
+ 320 
+ 321 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 322 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 323 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 324 <span class="s2">    later version.</span>
+ 325 
+ 326 <span class="s2">&quot;&quot;&quot;</span>
+ 327 
+ 328 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 329     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

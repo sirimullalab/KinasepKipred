@@ -1,0 +1,79 @@
+NAME
+    AtomicDescriptors - AtomicDescriptors class
+
+SYNOPSIS
+    use AtomicDescriptors::AtomicDescriptors;
+
+    use AtomicDescriptors::AtomicDescriptors qw(:all);
+
+DESCRIPTION
+    AtomicDescriptors base class used to derive all other atomic descriptors
+    classes provides the following methods:
+
+    new, GetDescriptorValue, GetDescriptorValues,
+    IsDescriptorsGenerationSuccessful, SetDescriptorValue
+
+    AtomicDescriptors class is derived from ObjectProperty base class which
+    provides methods not explicitly defined in Fingerprints or
+    ObjectProperty classes using Perl's AUTOLOAD functionality. These
+    methods are generated on-the-fly for a specified object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+  METHODS
+    new
+            $NewAtomicDescriptors = new AtomicDescriptors::
+                                    AtomicDescriptors(%NamesAndValues);
+
+        Using specified *AtomicDescriptors* property names and values hash,
+        new method creates a new object and returns a reference to newly
+        created AtomicDescriptors object. By default, following properties
+        are initialized:
+
+            Molecule = '';
+            Type = '';
+            IgnoreHydrogens = 0;
+
+    GetDescriptorValue
+            $Value = $AtomicDescriptors->GetDescriptorValue($Atom);
+
+        Returns calculated atomic descriptor *Value* for specified *Atom*.
+
+    GetDescriptorValues
+            %Values = $AtomicDescriptors->GetDescriptorValues();
+
+        Returns calculated atomic descriptor values for all atoms as a hash
+        with atom ID and atomic descriptor values as key/value pairs.
+
+    IsDescriptorsGenerationSuccessful
+            $Status = $AtomicDescriptors->
+                      IsDescriptorsGenerationSuccessful();
+
+        Returns 1 or 0 based on whether atomic desctiptors calculations was
+        successful. For a successful atomic descriptors calculation, all
+        atoms must have a value of other than a string *None*.
+
+    SetDescriptorValue
+            $AtomicDescriptors->SetDescriptorValue($Atom, $Value);
+
+        Sets specified atomic descriptor *Value* for *Atom* and returns
+        *$AtomicDescriptors*.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    demo
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

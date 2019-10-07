@@ -1,0 +1,486 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Parsers/Lexer.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-Parsers::Lexer-"></a>   1 <span class="k">package </span><span class="i">Parsers::Lexer</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: Lexer.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Scalar::Util</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 
+  31 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  32 
+  33 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  34 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  35 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  36 
+  37 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  38 
+  39 <span class="c"># Setup class variables...</span>
+  40 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="sc">;</span>
+  41 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  42 
+  43 <span class="c"># Overload Perl functions...</span>
+  44 <span class="k">use</span> <span class="w">overload</span> <span class="q">&#39;&quot;&quot;&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;StringifyLexer&#39;</span><span class="sc">;</span>
+  45 
+  46 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  47 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  48   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  49 
+  50   <span class="c"># Initialize object...</span>
+  51   <span class="k">my</span> <span class="i">$This</span> = <span class="s">{</span><span class="s">}</span><span class="sc">;</span>
+  52   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  53   <span class="i">$This</span><span class="i">-&gt;_InitializeLexer</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  54 
+  55   <span class="i">$This</span><span class="i">-&gt;_ValidateParametersAndGenerateLexer</span><span class="s">(</span><span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+  56 
+  57   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  58 <span class="s">}</span>
+  59 
+  60 
+  61 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a>  62 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+  63   <span class="c">#Class name...</span>
+  64   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+  65 <span class="s">}</span>
+  66 
+  67 <span class="c"># Initialize object data...</span>
+  68 <span class="c">#</span>
+<a name="_InitializeLexer-"></a>  69 <span class="k">sub </span><span class="m">_InitializeLexer</span> <span class="s">{</span>
+  70   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  71 
+  72   <span class="c"># Input parameter used by lexer to retrieve text to be lexed. Supported parameter types:</span>
+  73   <span class="c">#   . Reference to input iterator function</span>
+  74   <span class="c">#   . Reference to an open file handle</span>
+  75   <span class="c">#   . Text string</span>
+  76   <span class="c">#</span>
+  77   <span class="i">$This</span>-&gt;{<span class="w">Input</span>} = <span class="k">undef</span><span class="sc">;</span>
+  78 
+  79   <span class="c"># Type of input paramater determined using Perl ref function:</span>
+  80   <span class="c">#   . InputIterator - ref returns CODE</span>
+  81   <span class="c">#   . FileStream - ref return GLOB and fileno is valid</span>
+  82   <span class="c">#   . String - ref return an empty string</span>
+  83   <span class="c">#</span>
+  84   <span class="i">$This</span>-&gt;{<span class="w">InputType</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  85 
+  86   <span class="c"># Tokens specifications supplied by the caller. It&#39;s an array containing references</span>
+  87   <span class="c"># to arrays with each containing TokenLabel and TokenMatchRegex pair along with</span>
+  88   <span class="c"># an option reference to code to be executed after a matched.</span>
+  89   <span class="c">#</span>
+  90   <span class="c"># For example:</span>
+  91   <span class="c">#</span>
+  92   <span class="c"># @LexerTokensSpec = (</span>
+  93   <span class="c">#                        [ &#39;LETTER&#39;, qr/[a-zA-Z]/ ],</span>
+  94   <span class="c">#                        [ &#39;NUMBER&#39;, qr/\d+/ ],</span>
+  95   <span class="c">#                        [ &#39;SPACE&#39;, qr/[ ]*/, sub { my($This, $TokenLabel, $MatchedText) = @_; return &#39;&#39;; } ],</span>
+  96   <span class="c">#                        [ &#39;NEWLINE&#39;, qr/(?:\r\n|\r|\n)/, sub { my($This, $TokenLabel, $MatchedText) = @_;  return &quot;\n&quot;; } ],</span>
+  97   <span class="c">#                        [ &#39;CHAR&#39;, qr/[\.]/ ],</span>
+  98   <span class="c">#                       );</span>
+  99   <span class="c">#</span>
+ 100   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">TokensSpec</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 101 
+ 102   <span class="c"># Refernce to chained lexer...</span>
+ 103   <span class="i">$This</span>-&gt;{<span class="w">ChainedLexer</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 104 
+ 105   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 106 <span class="s">}</span>
+ 107 
+ 108 <span class="c"># Validate input parameters and generate a chained lexer...</span>
+ 109 <span class="c">#</span>
+<a name="_ValidateParametersAndGenerateLexer-"></a> 110 <span class="k">sub </span><span class="m">_ValidateParametersAndGenerateLexer</span> <span class="s">{</span>
+ 111   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 112 
+ 113   <span class="c">#</span>
+ 114   <span class="c"># Validate input to be lexed...</span>
+ 115   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Input</span><span class="s">)</span> <span class="s">{</span>
+ 116     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;new: Object can&#39;t be instantiated: Input is not defined. Supported values: a reference to input iterator function, a reference to an open file handle or a text string...&quot;</span><span class="sc">;</span>
+ 117   <span class="s">}</span>
+ 118   <span class="i">$This</span>-&gt;{<span class="w">Input</span>} = <span class="i">$Input</span><span class="sc">;</span>
+ 119 
+ 120   <span class="c"># Check input parameter type...</span>
+ 121   <span class="k">my</span><span class="s">(</span><span class="i">$InputType</span><span class="s">)</span><span class="sc">;</span>
+ 122 
+ 123   <span class="i">$InputType</span> = <span class="k">ref</span> <span class="i">$Input</span><span class="sc">;</span>
+ 124   <span class="k">if</span> <span class="s">(</span><span class="i">$InputType</span> =~ <span class="q">/CODE/i</span><span class="s">)</span> <span class="s">{</span>
+ 125     <span class="c"># Input iterator...</span>
+ 126     <span class="i">$This</span>-&gt;{<span class="w">InputType</span>} = <span class="q">&quot;InputIterator&quot;</span><span class="sc">;</span>
+ 127   <span class="s">}</span>
+ 128   <span class="k">elsif</span> <span class="s">(</span><span class="i">$InputType</span> =~ <span class="q">/GLOB/i</span> &amp;&amp; <span class="k">defined</span> <span class="k">fileno</span> <span class="i">$Input</span><span class="s">)</span> <span class="s">{</span>
+ 129     <span class="c"># Input stream...</span>
+ 130     <span class="i">$This</span>-&gt;{<span class="w">InputType</span>} = <span class="q">&quot;FileStream&quot;</span><span class="sc">;</span>
+ 131   <span class="s">}</span>
+ 132   <span class="k">elsif</span> <span class="s">(</span><span class="i">$InputType</span><span class="s">)</span> <span class="s">{</span>
+ 133     <span class="c"># Perl ref function returns nonempty string for all other references...</span>
+ 134     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;new: Object can&#39;t be instantiated: Invalid input parameter type specified. Supported parameter types: a reference to input iterator function, a reference to an open file handle or a text string...&quot;</span><span class="sc">;</span>
+ 135   <span class="s">}</span>
+ 136   <span class="k">else</span> <span class="s">{</span>
+ 137     <span class="c"># Input string...</span>
+ 138     <span class="i">$This</span>-&gt;{<span class="w">InputType</span>} = <span class="q">&quot;String&quot;</span><span class="sc">;</span>
+ 139   <span class="s">}</span>
+ 140 
+ 141   <span class="c"># Check tokens specifications...</span>
+ 142   <span class="k">if</span> <span class="s">(</span>!<span class="i">@TokensSpec</span><span class="s">)</span> <span class="s">{</span>
+ 143     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;new: TokensSpec is not defined or the array doesn&#39;t contain any values. Supported values: a reference to an array containg token label, regular expression to match and an option reference to function to modify matched values...&quot;</span><span class="sc">;</span>
+ 144   <span class="s">}</span>
+ 145   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">TokensSpec</span>}} = <span class="i">@TokensSpec</span><span class="sc">;</span>
+ 146 
+ 147   <span class="i">$This</span><span class="i">-&gt;_GenerateLexer</span><span class="s">(</span><span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 148 
+ 149   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 150 <span class="s">}</span>
+ 151 
+ 152 <span class="c"># Generate a lexer using reference to an input iterator function, an open file</span>
+ 153 <span class="c"># handle or an input string passed as first parameter by the caller along</span>
+ 154 <span class="c"># with token specifications as second paramater...</span>
+ 155 <span class="c">#</span>
+<a name="_GenerateLexer-"></a> 156 <span class="k">sub </span><span class="m">_GenerateLexer</span> <span class="s">{</span>
+ 157   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 158 
+ 159   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">InputType</span>} =~ <span class="q">/^InputIterator$/i</span><span class="s">)</span> <span class="s">{</span>
+ 160     <span class="i">$This</span><span class="i">-&gt;_GenerateInputIteratorLexer</span><span class="s">(</span><span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 161   <span class="s">}</span>
+ 162   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">InputType</span>} =~ <span class="q">/^FileStream$/i</span><span class="s">)</span> <span class="s">{</span>
+ 163     <span class="i">$This</span><span class="i">-&gt;_GenerateInputFileStreamLexer</span><span class="s">(</span><span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 164   <span class="s">}</span>
+ 165   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">InputType</span>} =~ <span class="q">/^String$/i</span><span class="s">)</span> <span class="s">{</span>
+ 166     <span class="i">$This</span><span class="i">-&gt;_GenerateInputStringLexer</span><span class="s">(</span><span class="i">$Input</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 167   <span class="s">}</span>
+ 168   <span class="k">else</span> <span class="s">{</span>
+ 169     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;new: Object can&#39;t be instantiated: Invalid input parameter type specified. Supported parameter types: a reference to input iterator function, a reference to an open file handle or a text string...&quot;</span><span class="sc">;</span>
+ 170   <span class="s">}</span>
+ 171 
+ 172   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 173 <span class="s">}</span>
+ 174 
+ 175 <span class="c"># Generate a lexer using specifed input iterator...</span>
+ 176 <span class="c">#</span>
+<a name="_GenerateInputIteratorLexer-"></a> 177 <span class="k">sub </span><span class="m">_GenerateInputIteratorLexer</span> <span class="s">{</span>
+ 178   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$InputIteratorRef</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 179 
+ 180   <span class="i">$This</span><span class="i">-&gt;_GenerateChainedLexer</span><span class="s">(</span><span class="i">$InputIteratorRef</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 181 
+ 182   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 183 <span class="s">}</span>
+ 184 
+ 185 <span class="c"># Generate a lexer using specifed input file stream reference...</span>
+ 186 <span class="c">#</span>
+<a name="_GenerateInputFileStreamLexer-"></a> 187 <span class="k">sub </span><span class="m">_GenerateInputFileStreamLexer</span> <span class="s">{</span>
+ 188   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FileHandleRef</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 189 
+ 190   <span class="c"># Iterator is a annoymous function reference and Perl keeps $FileHandleRef</span>
+ 191   <span class="c"># in scope during its execution.</span>
+ 192 
+ 193   <span class="i">$This</span><span class="i">-&gt;_GenerateChainedLexer</span><span class="s">(</span> <span class="k">sub</span> <span class="s">{</span> <span class="k">return</span> <span class="q">&lt;$FileHandleRef&gt;</span><span class="sc">;</span> <span class="s">}</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 194 
+ 195   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 196 <span class="s">}</span>
+ 197 
+ 198 <span class="c"># Generate a lexer using specifed input string...</span>
+ 199 <span class="c">#</span>
+<a name="_GenerateInputStringLexer-"></a> 200 <span class="k">sub </span><span class="m">_GenerateInputStringLexer</span> <span class="s">{</span>
+ 201   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Text</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 202   <span class="k">my</span><span class="s">(</span><span class="i">@InputText</span><span class="s">)</span> = <span class="s">(</span><span class="i">$Text</span><span class="s">)</span><span class="sc">;</span>
+ 203 
+ 204   <span class="c"># Iterator is a annoymous function reference and Perl keeps @InputText</span>
+ 205   <span class="c"># in scope during its execution.</span>
+ 206 
+ 207   <span class="i">$This</span><span class="i">-&gt;_GenerateChainedLexer</span><span class="s">(</span> <span class="k">sub</span> <span class="s">{</span> <span class="k">return</span> <span class="k">shift</span> <span class="i">@InputText</span><span class="sc">;</span> <span class="s">}</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span><span class="sc">;</span>
+ 208 
+ 209   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 210 <span class="s">}</span>
+ 211 
+ 212 <span class="c"># Get next available token label and value pair as an array reference or unrecognized</span>
+ 213 <span class="c"># text from input stream by either removing it from the input or simply peeking ahead...</span>
+ 214 <span class="c">#</span>
+ 215 <span class="c"># Supported mode values: Peek, Next. Default: Next</span>
+ 216 <span class="c">#</span>
+<a name="Lex-"></a> 217 <span class="k">sub </span><span class="m">Lex</span> <span class="s">{</span>
+ 218   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Mode</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 219 
+ 220   <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">ChainedLexer</span>}-&gt;<span class="s">(</span><span class="i">$Mode</span><span class="s">)</span>
+ 221 <span class="s">}</span>
+ 222 
+ 223 <span class="c"># Get next available token label and value pair as an array reference or unrecognized</span>
+ 224 <span class="c"># text from input stream by either removing it from the input stream...</span>
+ 225 <span class="c">#</span>
+<a name="Next-"></a> 226 <span class="k">sub </span><span class="m">Next</span> <span class="s">{</span>
+ 227   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 228 
+ 229   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;Lex</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 230 <span class="s">}</span>
+ 231 
+ 232 <span class="c"># Get next available token label and value pair as an array reference or unrecognized</span>
+ 233 <span class="c"># text from input stream by simply peeking ahead and without removing it from the input</span>
+ 234 <span class="c"># stream..</span>
+ 235 <span class="c">#</span>
+<a name="Peek-"></a> 236 <span class="k">sub </span><span class="m">Peek</span> <span class="s">{</span>
+ 237   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 238 
+ 239   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;Lex</span><span class="s">(</span><span class="q">&#39;Peek&#39;</span><span class="s">)</span>
+ 240 <span class="s">}</span>
+ 241 
+ 242 <span class="c"># Get a reference to lexer method to be used by the caller...</span>
+ 243 <span class="c">#</span>
+<a name="GetLex-"></a> 244 <span class="k">sub </span><span class="m">GetLex</span> <span class="s">{</span>
+ 245   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 246 
+ 247   <span class="k">return</span> <span class="k">sub</span> <span class="s">{</span> <span class="i">$This</span><span class="i">-&gt;Lex</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span> <span class="s">}</span><span class="sc">;</span>
+ 248 <span class="s">}</span>
+ 249 
+ 250 <span class="c"># The chained lexer generation is implemented based on examples in Higher-order Perl</span>
+ 251 <span class="c"># [ Ref 126 ] book.</span>
+ 252 <span class="c">#</span>
+ 253 <span class="c"># Generate a lexer using specified input iterator and chaining it with other lexers generated</span>
+ 254 <span class="c"># for all token specifications. The lexer generated for first token specification uses input</span>
+ 255 <span class="c"># iterator to retrieve any available input text; the subsequent chained lexeres for rest</span>
+ 256 <span class="c"># of the tokens use lexers generated for previous token specifications to get next input</span>
+ 257 <span class="c"># which might be unmatched input text or a reference to an array containing token and</span>
+ 258 <span class="c"># matched text pair.</span>
+ 259 <span class="c">#</span>
+<a name="_GenerateChainedLexer-"></a> 260 <span class="k">sub </span><span class="m">_GenerateChainedLexer</span> <span class="s">{</span>
+ 261   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$InputIteratorRef</span><span class="cm">,</span> <span class="i">@TokensSpec</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 262   <span class="k">my</span><span class="s">(</span><span class="i">$TokenSpecRef</span><span class="cm">,</span> <span class="i">$ChainedLexer</span><span class="s">)</span><span class="sc">;</span>
+ 263 
+ 264   <span class="i">$ChainedLexer</span> = <span class="k">undef</span><span class="sc">;</span>
+ 265   <span class="k">for</span> <span class="i">$TokenSpecRef</span> <span class="s">(</span><span class="i">@TokensSpec</span><span class="s">)</span> <span class="s">{</span>
+ 266     <span class="i">$ChainedLexer</span> = <span class="k">defined</span> <span class="i">$ChainedLexer</span> ? <span class="i">$This</span><span class="i">-&gt;_GenerateLexerForToken</span><span class="s">(</span><span class="i">$ChainedLexer</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$TokenSpecRef</span>}<span class="s">)</span> <span class="co">:</span> <span class="i">$This</span><span class="i">-&gt;_GenerateLexerForToken</span><span class="s">(</span><span class="i">$InputIteratorRef</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$TokenSpecRef</span>}<span class="s">)</span><span class="sc">;</span>
+ 267   <span class="s">}</span>
+ 268 
+ 269   <span class="i">$This</span>-&gt;{<span class="w">ChainedLexer</span>} = <span class="i">$ChainedLexer</span><span class="sc">;</span>
+ 270 
+ 271   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 272 <span class="s">}</span>
+ 273 
+ 274 
+ 275 <span class="c"># Generate a lexer using specifed token specification using specified input or</span>
+ 276 <span class="c"># input retrieved using another token lexer. The lexer retrieving input from the</span>
+ 277 <span class="c"># specified input stream is at the bottom of the chain.</span>
+ 278 <span class="c">#</span>
+<a name="_GenerateLexerForToken-"></a> 279 <span class="k">sub </span><span class="m">_GenerateLexerForToken</span> <span class="s">{</span>
+ 280   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$InputIteratorOrLexer</span><span class="cm">,</span> <span class="i">$TokenLabel</span><span class="cm">,</span> <span class="i">$RegexPattern</span><span class="cm">,</span> <span class="i">$TokenMatchActionRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 281   <span class="k">my</span><span class="s">(</span><span class="i">$TokenMatchAndSplitRef</span><span class="cm">,</span> <span class="i">$InputBuffer</span><span class="cm">,</span> <span class="i">@ProcessedTokens</span><span class="s">)</span><span class="sc">;</span>
+ 282 
+ 283   <span class="c"># Input buffer for a specific lexer in chained lexers containing unprocessed</span>
+ 284   <span class="c"># text for token specifications retrieved from a downstrean lexer or intial</span>
+ 285   <span class="c"># input...</span>
+ 286   <span class="c">#</span>
+ 287   <span class="i">$InputBuffer</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 288 
+ 289   <span class="c"># @ProcessedTokens contains either references to an array containing token label</span>
+ 290   <span class="c"># and matched text or any unmatched input text string...</span>
+ 291   <span class="c">#</span>
+ 292   <span class="i">@ProcessedTokens</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 293 
+ 294   <span class="c"># Setup a default annoymous function reference to generate an array reference</span>
+ 295   <span class="c"># containing $Token and text matched to $RegexPattern.</span>
+ 296   <span class="c">#</span>
+ 297   <span class="i">$TokenMatchActionRef</span> = <span class="k">defined</span> <span class="i">$TokenMatchActionRef</span> ? <span class="i">$TokenMatchActionRef</span> <span class="co">:</span> <span class="k">sub</span> <span class="s">{</span> <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Label</span><span class="cm">,</span> <span class="i">$MatchedText</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span> <span class="k">return</span> <span class="s">[</span><span class="i">$Label</span><span class="cm">,</span> <span class="i">$MatchedText</span><span class="s">]</span>  <span class="s">}</span><span class="sc">;</span>
+ 298 
+ 299   <span class="c"># Setup an annoymous function to match and split input text using $RegexPattern for</span>
+ 300   <span class="c"># a specific token during its lexer invocation in chained lexers.</span>
+ 301   <span class="c">#</span>
+ 302   <span class="c"># The usage of parenthesis around $RegexPattern during split allows capturing of matched</span>
+ 303   <span class="c"># text, which is subsequently processed to retrieve matched $Token values. The split function</span>
+ 304   <span class="c"># inserts a &quot;&quot; separator in the returned array as first entry whenever $InputText starts with</span>
+ 305   <span class="c"># $RegexPattern. $InputText is returned as the only element for no match.</span>
+ 306   <span class="c">#</span>
+ 307   <span class="i">$TokenMatchAndSplitRef</span> = <span class="k">sub</span> <span class="s">{</span> <span class="k">my</span><span class="s">(</span><span class="i">$InputText</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span> <span class="k">return</span> <span class="k">split</span> <span class="q">/($RegexPattern)/</span><span class="cm">,</span> <span class="i">$InputText</span><span class="sc">;</span> <span class="s">}</span><span class="sc">;</span>
+ 308 
+ 309   <span class="c"># Setup a lexer for $TokenLabel as an annoymous function and return its reference to caller</span>
+ 310   <span class="c"># which in turns chains the lexers for all $Tokens before returning a reference to a lexer</span>
+ 311   <span class="c"># at top of the lexer chain.</span>
+ 312   <span class="c">#</span>
+ 313   <span class="c"># Perl maintains scope of all variables defined with in the scope of the current function</span>
+ 314   <span class="c"># during invocation of annoymous function even after the return call.</span>
+ 315   <span class="c">#</span>
+ 316   <span class="k">return</span> <span class="k">sub</span> <span class="s">{</span>
+ 317     <span class="k">my</span><span class="s">(</span><span class="i">$Mode</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 318 
+ 319     <span class="c"># Currenly supported value for mode: Peek, Next</span>
+ 320     <span class="c">#</span>
+ 321     <span class="i">$Mode</span> = <span class="k">defined</span> <span class="i">$Mode</span> ? <span class="i">$Mode</span> <span class="co">:</span> <span class="q">&#39;Next&#39;</span><span class="sc">;</span>
+ 322 
+ 323     <span class="k">while</span> <span class="s">(</span><span class="i">@ProcessedTokens</span> == <span class="n">0</span> &amp;&amp; <span class="k">defined</span> <span class="i">$InputBuffer</span> <span class="s">)</span> <span class="s">{</span>
+ 324       <span class="c"># Get any new input....</span>
+ 325       <span class="k">my</span> <span class="i">$NewInput</span> = <span class="i">$InputIteratorOrLexer</span>-&gt;<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 326 
+ 327       <span class="k">if</span> <span class="s">(</span><span class="k">ref</span> <span class="i">$NewInput</span><span class="s">)</span> <span class="s">{</span>
+ 328         <span class="c"># Input is an array reference containing matched token and text returned by</span>
+ 329         <span class="c"># a chained lexer downstream lexer...</span>
+ 330         <span class="c">#</span>
+ 331         <span class="c"># Match $RegexPattern in available buffer text to retieve any matched text</span>
+ 332         <span class="c"># for current $Token. $Separator might be &quot;&quot;: $RegexPattern is at start of</span>
+ 333         <span class="c"># of $InputBuffer</span>
+ 334         <span class="c">#</span>
+ 335         <span class="c"># Process input buffer containing text to be matched for the current lexer</span>
+ 336         <span class="c"># which didn&#39;t get processed earlier during @NewTokens &gt; 2  while loop:</span>
+ 337         <span class="c"># no match for current lexer or more input available. It maintains order</span>
+ 338         <span class="c"># of token matching in input stream.</span>
+ 339         <span class="c">#</span>
+ 340         <span class="k">my</span><span class="s">(</span><span class="i">$Separator</span><span class="cm">,</span> <span class="i">$MatchedTokenRefOrText</span><span class="s">)</span><span class="sc">;</span>
+ 341 
+ 342         <span class="s">(</span><span class="i">$Separator</span><span class="cm">,</span> <span class="i">$MatchedTokenRefOrText</span><span class="s">)</span> = <span class="i">$TokenMatchAndSplitRef</span>-&gt;<span class="s">(</span><span class="i">$InputBuffer</span><span class="s">)</span><span class="sc">;</span>
+ 343         <span class="k">if</span> <span class="s">(</span><span class="k">defined</span> <span class="i">$MatchedTokenRefOrText</span><span class="s">)</span> <span class="s">{</span>
+ 344           <span class="i">$MatchedTokenRefOrText</span> = <span class="i">$TokenMatchActionRef</span>-&gt;<span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$TokenLabel</span><span class="cm">,</span> <span class="i">$MatchedTokenRefOrText</span><span class="s">)</span><span class="sc">;</span>
+ 345         <span class="s">}</span>
+ 346 
+ 347         <span class="c"># Collect valid token references or text...</span>
+ 348         <span class="k">push</span> <span class="i">@ProcessedTokens</span><span class="cm">,</span> <span class="k">grep</span> <span class="s">{</span> <span class="k">defined</span> <span class="i">$_</span> &amp;&amp; <span class="i">$_</span> <span class="k">ne</span> <span class="q">&quot;&quot;</span> <span class="s">}</span> <span class="s">(</span><span class="i">$Separator</span><span class="cm">,</span> <span class="i">$MatchedTokenRefOrText</span><span class="cm">,</span> <span class="i">$NewInput</span><span class="s">)</span><span class="sc">;</span>
+ 349 
+ 350         <span class="c"># Empty put buffer...</span>
+ 351         <span class="i">$InputBuffer</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 352 
+ 353         <span class="c"># Get out of the loop as processed token refererences and/or text  are available...</span>
+ 354         <span class="k">last</span><span class="sc">;</span>
+ 355       <span class="s">}</span>
+ 356 
+ 357       <span class="c"># Process input retrieved from downstream lexer or input iterator which hasn&#39;t</span>
+ 358       <span class="c"># been processed into tokens..</span>
+ 359       <span class="k">if</span> <span class="s">(</span><span class="k">defined</span> <span class="i">$NewInput</span><span class="s">)</span> <span class="s">{</span>
+ 360         <span class="i">$InputBuffer</span> .= <span class="i">$NewInput</span><span class="sc">;</span>
+ 361       <span class="s">}</span>
+ 362 
+ 363       <span class="c"># Retrieve any matched tokens from available input for the current lexer...</span>
+ 364       <span class="c">#</span>
+ 365       <span class="k">my</span><span class="s">(</span><span class="i">@NewTokens</span><span class="s">)</span> = <span class="i">$TokenMatchAndSplitRef</span>-&gt;<span class="s">(</span><span class="i">$InputBuffer</span><span class="s">)</span><span class="sc">;</span>
+ 366 
+ 367       <span class="k">while</span> <span class="s">(</span> <span class="i">@NewTokens</span> &gt; <span class="n">2</span> || <span class="i">@NewTokens</span> &amp;&amp; !<span class="k">defined</span> <span class="i">$NewInput</span><span class="s">)</span> <span class="s">{</span>
+ 368         <span class="c"># Scenario 1: Complete match</span>
+ 369         <span class="c">#   @NewTokens &gt; 2 : Availability of separator, matched token text, separator.</span>
+ 370         <span class="c">#   The separator might correspond to token for a token for upstream lexer followed</span>
+ 371         <span class="c">#   by matched token from current lexer. It ends up getting passed to upsrteam</span>
+ 372         <span class="c">#   lexer for processing.</span>
+ 373         <span class="c">#</span>
+ 374         <span class="c"># Scenario 2: No more input available from iterator or downstream lexer</span>
+ 375         <span class="c">#   @NewTokens &lt;= 2 and no more input implies any left over text in buffer. And</span>
+ 376         <span class="c">#   it ends up getting passed to upsrteam for processing.</span>
+ 377         <span class="c">#</span>
+ 378 
+ 379         <span class="c"># Take off any unprocessed input text that doesn&#39;t match off the buffer: It&#39;ll be</span>
+ 380         <span class="c"># passed to upstream chained lexer for processing...</span>
+ 381         <span class="c">#</span>
+ 382         <span class="k">push</span> <span class="i">@ProcessedTokens</span><span class="cm">,</span> <span class="k">shift</span> <span class="i">@NewTokens</span><span class="sc">;</span>
+ 383 
+ 384         <span class="k">if</span> <span class="s">(</span><span class="i">@NewTokens</span><span class="s">)</span> <span class="s">{</span>
+ 385           <span class="k">my</span> <span class="i">$MatchedTokenText</span> = <span class="k">shift</span> <span class="i">@NewTokens</span><span class="sc">;</span>
+ 386           <span class="k">push</span> <span class="i">@ProcessedTokens</span><span class="cm">,</span> <span class="i">$TokenMatchActionRef</span>-&gt;<span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$TokenLabel</span><span class="cm">,</span> <span class="i">$MatchedTokenText</span><span class="s">)</span><span class="sc">;</span>
+ 387         <span class="s">}</span>
+ 388       <span class="s">}</span>
+ 389 
+ 390       <span class="c"># Retrieve any leftover text from NewTokens and put it back into InputBuffer for</span>
+ 391       <span class="c"># processing by current lexer. All token references have been taken out....</span>
+ 392       <span class="c">#</span>
+ 393       <span class="i">$InputBuffer</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 394       <span class="k">if</span> <span class="s">(</span><span class="i">@NewTokens</span><span class="s">)</span> <span class="s">{</span>
+ 395         <span class="i">$InputBuffer</span> = <span class="k">join</span> <span class="q">&quot;&quot;</span><span class="cm">,</span> <span class="i">@NewTokens</span><span class="sc">;</span>
+ 396       <span class="s">}</span>
+ 397 
+ 398       <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$NewInput</span><span class="s">)</span> <span class="s">{</span>
+ 399         <span class="c"># No more input from the downstream lexer...</span>
+ 400         <span class="i">$InputBuffer</span> = <span class="k">undef</span><span class="sc">;</span>
+ 401       <span class="s">}</span>
+ 402 
+ 403       <span class="c"># Clean up any empty strings from ProcessedTokens containing token</span>
+ 404       <span class="c"># references or text...</span>
+ 405       <span class="i">@ProcessedTokens</span> = <span class="k">grep</span> <span class="s">{</span> <span class="i">$_</span> <span class="k">ne</span> <span class="q">&quot;&quot;</span> <span class="s">}</span> <span class="i">@ProcessedTokens</span><span class="sc">;</span>
+ 406 
+ 407     <span class="s">}</span>
+ 408 
+ 409     <span class="c"># Return reference to an array containing token and matched text or just unmatched input text...</span>
+ 410     <span class="k">my</span> <span class="i">$TokenRefOrText</span> = <span class="k">undef</span><span class="sc">;</span>
+ 411 
+ 412     <span class="k">if</span> <span class="s">(</span><span class="i">@ProcessedTokens</span><span class="s">)</span> <span class="s">{</span>
+ 413       <span class="c"># Get first available reference either by just peeking or removing it from the list</span>
+ 414       <span class="c"># of available tokens...</span>
+ 415       <span class="i">$TokenRefOrText</span> = <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Peek$/i</span><span class="s">)</span> ?  <span class="i">$ProcessedTokens</span>[<span class="n">0</span>] <span class="co">:</span> <span class="k">shift</span> <span class="i">@ProcessedTokens</span><span class="sc">;</span>
+ 416     <span class="s">}</span>
+ 417 
+ 418     <span class="k">return</span> <span class="i">$TokenRefOrText</span><span class="sc">;</span>
+ 419   <span class="s">}</span><span class="sc">;</span>
+ 420 <span class="s">}</span>
+ 421 
+ 422 <span class="c"># Is it a lexer object?</span>
+<a name="_IsLexer-"></a> 423 <span class="k">sub </span><span class="m">_IsLexer</span> <span class="s">{</span>
+ 424   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 425 
+ 426   <span class="k">return</span> <span class="s">(</span><span class="i">Scalar::Util::blessed</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> &amp;&amp; <span class="i">$Object</span><span class="i">-&gt;isa</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 427 <span class="s">}</span>
+ 428 
+ 429 <span class="c"># Return a string containing information about lexer...</span>
+<a name="StringifyLexer-"></a> 430 <span class="k">sub </span><span class="m">StringifyLexer</span> <span class="s">{</span>
+ 431   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 432   <span class="k">my</span><span class="s">(</span><span class="i">$LexerString</span><span class="s">)</span><span class="sc">;</span>
+ 433 
+ 434   <span class="i">$LexerString</span> = <span class="q">&quot;Lexer: PackageName: $ClassName; &quot;</span> . <span class="i">$This</span><span class="i">-&gt;_GetLexerInfoString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 435 
+ 436   <span class="k">return</span> <span class="i">$LexerString</span><span class="sc">;</span>
+ 437 <span class="s">}</span>
+ 438 
+ 439 <span class="c"># Return a string containing information about lexer...</span>
+<a name="_GetLexerInfoString-"></a> 440 <span class="k">sub </span><span class="m">_GetLexerInfoString</span> <span class="s">{</span>
+ 441   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 442   <span class="k">my</span><span class="s">(</span><span class="i">$LexerInfoString</span><span class="cm">,</span> <span class="i">$TokensSpec</span><span class="cm">,</span> <span class="i">$TokenSpec</span><span class="cm">,</span> <span class="i">$TokenLabel</span><span class="cm">,</span> <span class="i">$TokenMatchRegex</span><span class="cm">,</span> <span class="i">$TokenMatchAction</span><span class="s">)</span><span class="sc">;</span>
+ 443 
+ 444   <span class="i">$LexerInfoString</span> = <span class="q">&quot;InputType: $This-&gt;{InputType}&quot;</span><span class="sc">;</span>
+ 445 
+ 446   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">InputType</span>} =~ <span class="q">/^String$/i</span><span class="s">)</span> <span class="s">{</span>
+ 447     <span class="i">$LexerInfoString</span> .= <span class="q">&quot;; InputString: $This-&gt;{Input}&quot;</span><span class="sc">;</span>
+ 448   <span class="s">}</span>
+ 449 
+ 450   <span class="i">$TokensSpec</span> = <span class="q">&quot;TokensSpecifications: &lt;None&gt;&quot;</span><span class="sc">;</span>
+ 451   <span class="k">if</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">TokensSpec</span>}}<span class="s">)</span> <span class="s">{</span>
+ 452     <span class="i">$TokensSpec</span> = <span class="q">&quot;TokensSpecifications: &lt; [Label, MatchRegex, MatchAction]:&quot;</span><span class="sc">;</span>
+ 453     <span class="k">for</span> <span class="i">$TokenSpec</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">TokensSpec</span>}}<span class="s">)</span> <span class="s">{</span>
+ 454       <span class="s">(</span><span class="i">$TokenLabel</span><span class="cm">,</span> <span class="i">$TokenMatchRegex</span><span class="s">)</span> = <span class="i">@</span>{<span class="i">$TokenSpec</span>}<span class="sc">;</span>
+ 455       <span class="i">$TokenMatchAction</span> = <span class="s">(</span><span class="i">@</span>{<span class="i">$TokenSpec</span>} == <span class="n">3</span><span class="s">)</span> ? <span class="q">&quot;$TokenSpec-&gt;[2]&quot;</span> <span class="co">:</span> <span class="q">&quot;undefined&quot;</span><span class="sc">;</span>
+ 456       <span class="i">$TokensSpec</span> .= <span class="q">&quot; [$TokenLabel, $TokenMatchRegex, $TokenMatchAction]&quot;</span><span class="sc">;</span>
+ 457     <span class="s">}</span>
+ 458     <span class="i">$TokensSpec</span> .= <span class="q">&quot; &gt;&quot;</span><span class="sc">;</span>
+ 459   <span class="s">}</span>
+ 460 
+ 461   <span class="i">$LexerInfoString</span> .= <span class="q">&quot;; $TokensSpec&quot;</span><span class="sc">;</span>
+ 462 
+ 463   <span class="k">return</span> <span class="i">$LexerInfoString</span><span class="sc">;</span>
+ 464 <span class="s">}</span>
+ 465 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

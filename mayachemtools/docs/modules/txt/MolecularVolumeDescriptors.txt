@@ -1,0 +1,125 @@
+NAME
+    MolecularVolumeDescriptors
+
+SYNOPSIS
+    use MolecularDescriptors::MolecularVolumeDescriptors;
+
+    use MolecularDescriptors::MolecularVolumeDescriptors qw(:all);
+
+DESCRIPTION
+    MolecularVolumeDescriptors class provides the following methods:
+
+    new, GenerateDescriptors, GetDescriptorNames,
+    GetVDWAtomRadiiAndVolumesData, StringifyMolecularVolumeDescriptors
+
+    MolecularVolumeDescriptors is derived from MolecularDescriptors class
+    which in turn is derived from ObjectProperty base class that provides
+    methods not explicitly defined in MolecularVolumeDescriptors,
+    MolecularDescriptors or ObjectProperty classes using Perl's AUTOLOAD
+    functionality. These methods are generated on-the-fly for a specified
+    object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+    van der Waals molecular volume [ Ref 93 ] (A**3/molecule) of a molecule
+    is calculated using atomic and bonds contributions along with
+    adjustments for aromatic and non-aromatic rings using the following
+    equation:
+
+        vdwMolecularVolume = SumOfAtomicVDWVolumeContributions
+                             - 5.92 * NumOfBonds
+                             - 14.7 * NumOfAromaticRings
+                             - 3.8 * NumOfNonAromaticRings
+
+    van der Waals atomic volume for atoms is taken from data file
+    VDWAtomRadiiAndVolumes.csv distributed with MayaChemTools. It contains
+    van der Waals atom radii and atom and volumes data for 38 elements;
+    Table 2 [ Ref 93 ] contains data for only 15 elements. After converting
+    valid van der Waals atom radius data from pm (picometer) to A (Angstrom)
+    available under column name VanderWaalsRadius in
+    PeriodicTableElementsData.csv data file, van der Waals atom volume is
+    calculated using: 4/3 * PI * (Radius ** 3). For elements specified in
+    Table 2 [ Ref 93 ] - H, B, C, N, O, F, Si, P, S, Cl, As, Se, Br, Te, I -
+    the van der Waals atom radii and calculated atom volumes match the
+    values in the table.
+
+  METHODS
+    new
+            $NewMolecularVolumeDescriptors = new MolecularDescriptors::
+                                             MolecularVolumeDescriptors(
+                                             %NamesAndValues);
+
+        Using specified *MolecularVolumeDescriptors* property names and
+        values hash, new method creates a new object and returns a reference
+        to newly created MolecularVolumeDescriptors object. By default, the
+        following properties are initialized:
+
+            Molecule = ''
+            Type = 'MolecularVolume'
+            @DescriptorNames = ('MolecularVolume')
+            @DescriptorValues = ('None')
+
+        Examples:
+
+            $MolecularVolumeDescriptors = new MolecularDescriptors::
+                                          MolecularVolumeDescriptors();
+
+            $MolecularVolumeDescriptors->SetMolecule($Molecule);
+            $MolecularVolumeDescriptors->GenerateDescriptors();
+            print "MolecularVolumeDescriptors: $MolecularVolumeDescriptors\n";
+
+    GenerateDescriptors
+            $MolecularVolumeDescriptors->GenerateDescriptors();
+
+        Calculate van der Waals molecular volume descriptor for a molecule
+        and returns *MolecularVolumeDescriptors*.
+
+    GetDescriptorNames
+            @DescriptorNames = $MolecularVolumeDescriptors->GetDescriptorNames();
+            @DescriptorNames = MolecularDescriptors::MolecularVolumeDescriptors::
+                                  GetDescriptorNames();
+
+        Returns all available descriptor names as an array.
+
+    GetVDWAtomRadiiAndVolumesData
+            $VDWVolumeDataMapRef = $MolecularVolumeDescriptors->
+                                      GetVDWAtomRadiiAndVolumesData();
+            $VDWVolumeDataMapRef = MolecularDescriptors::MolecularVolumeDescriptors::
+                                      GetVDWAtomRadiiAndVolumesData();
+
+        Returns a hash reference to van der Waals atom symbols corresponding
+        to atom types and associated data loaded from
+        VDWAtomRadiiAndVolumes.csv data file as a reference to hash with the
+        following hash data format:
+
+            @{$VDWVolumeDataMap{AtomTypes}} - Array of all possible atom
+                        types for all atom symbols
+            @{$VDWVolumeDataMap->{ColLabels}} - Array of column labels
+            %{$VDWVolumeDataMap->{DataCol<Num>}} - Hash keys pair:
+                                                           DataCol<Num>, AtomType
+
+    StringifyMolecularVolumeDescriptors
+            $String = $MolecularVolumeDescriptors->
+                                      StringifyMolecularVolumeDescriptors();
+
+        Returns a string containing information about
+        *MolecularVolumeDescriptors* object.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    MolecularDescriptors.pm, MolecularDescriptorsGenerator.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

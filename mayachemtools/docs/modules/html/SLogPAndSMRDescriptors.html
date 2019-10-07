@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:MolecularDescriptors/SLogPAndSMRDescriptors.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RotatableBondsDescriptors.html" title="RotatableBondsDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TPSADescriptors.html" title="TPSADescriptors.html">Next</a></td><td width="34%" align="middle"><strong>MolecularDescriptors/SLogPAndSMRDescriptors.pm</strong></td><td width="33%" align="right"><a href="././code/SLogPAndSMRDescriptors.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/SLogPAndSMRDescriptors.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/SLogPAndSMRDescriptors.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/SLogPAndSMRDescriptors.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/SLogPAndSMRDescriptors.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>SLogPAndSMRDescriptors</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use MolecularDescriptors::SLogPAndSMRDescriptors;</p>
+<p>use MolecularDescriptors::SLogPAndSMRDescriptors qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>SLogPAndSMRDescriptors</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#GenerateDescriptors">GenerateDescriptors</a>, <a href="#GetDescriptorNames">GetDescriptorNames</a>, <a href="#StringifySLogPAndSMRDescriptors">StringifySLogPAndSMRDescriptors</a>
+</p><p><b>SLogPAndSMRDescriptors</b> is derived from <b>MolecularDescriptors</b> class which in turn is derived from <b>ObjectProperty</b> base class that provides methods not explicitly defined in <b>SLogPAndSMRDescriptors</b>, <b>MolecularDescriptors</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<p>After SLogP atom types [ Ref 89 ] has been assigned to all atoms in a molecule using AtomTypes::SLogPAndSMR.pm module, SLogP (calculated logP) and SMR (calculated molar refractivity) values are calculated by adding up LogP and MR contributions of each atom type.</p>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewSLogPAndSMRDescriptors = new MolecularDescriptors::
+                                 SLogPAndSMRDescriptors(
+                                 %NamesAndValues);</div>
+<p>Using specified <i>SLogPAndSMRDescriptors</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>SLogPAndSMRDescriptors</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;
+<br/>    Type = &#39;SLogPAndSMR&#39;
+<br/>    @DescriptorNames = (&#39;SLogP&#39;, &#39;SMR&#39;)
+<br/>    @DescriptorValues = (&#39;None&#39;, &#39;None&#39;)</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $SLogPAndSMRDescriptors = new MolecularDescriptors::
+                              SLogPAndSMRDescriptors();
+<br/>
+<br/>    $SLogPAndSMRDescriptors-&gt;SetMolecule($Molecule);
+<br/>    $SLogPAndSMRDescriptors-&gt;GenerateDescriptors();
+<br/>    print &quot;SLogPAndSMRDescriptors: $SLogPAndSMRDescriptors\n&quot;;</div>
+</dd>
+<dt id="GenerateDescriptors"><b>GenerateDescriptors</b></dt>
+<dd>
+<div class="OptionsBox">    $SLogPAndSMRDescriptors-&gt;GenerateDescriptors();</div>
+<p>Calculate SLogP and SMR values for a molecule and returns <i>SLogPAndSMRDescriptors</i>.</p>
+</dd>
+<dt id="GetDescriptorNames"><b>GetDescriptorNames</b></dt>
+<dd>
+<div class="OptionsBox">    @DescriptorNames = $SLogPAndSMRDescriptors-&gt;GetDescriptorNames();
+<br/>    @DescriptorNames = MolecularDescriptors::SLogPAndSMRDescriptors::
+                       GetDescriptorNames();</div>
+<p>Returns all available descriptor names as an array.</p>
+</dd>
+<dt id="StringifySLogPAndSMRDescriptors"><b>StringifySLogPAndSMRDescriptors</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $SLogPAndSMRDescriptors-&gt;StringifySLogPAndSMRDescriptors();</div>
+<p>Returns a string containing information about <i>SLogPAndSMRDescriptors</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./MolecularDescriptors.html">MolecularDescriptors.pm</a>, <a href="./MolecularDescriptorsGenerator.html">MolecularDescriptorsGenerator.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RotatableBondsDescriptors.html" title="RotatableBondsDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TPSADescriptors.html" title="TPSADescriptors.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>MolecularDescriptors/SLogPAndSMRDescriptors.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

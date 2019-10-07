@@ -1,0 +1,62 @@
+NAME
+    ModifyNewLineChar.pl - Modify new line char(s)
+
+SYNOPSIS
+    ModifyNewLineChar.pl File(s)...
+
+    ModifyNewLineChar.pl [-h, --help] [-m, --mode Unix | Mac | Windows] [-o,
+    --overwrite] [-r, --root rootname] [-w, --workingdir dirname] File(s)...
+
+DESCRIPTION
+    Modify new line char(s) in ASCII files to interchange among Unix,
+    Windows, and Mac formats.
+
+OPTIONS
+    -h, --help
+        Print this help message.
+
+    -m, --mode *Unix | Mac | Windows*
+        New line char(s) mode. Possible values: *Unix, Mac, or Windows*.
+        Default: *Unix*. Here are default values for new line char(s): *Unix
+        - \n; Windows: \r\n; Mac - \r*
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    -r, --root *rootname*
+        New text file name is generated using the root: <Root>.<Ext>.
+        Default new file name: <InitialFileName><Mode>.<InitialFileExt>.
+        This option is ignored for multiple input files.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To use Unix new line char and generate NewSample1.csv file, type:
+
+        % ModifyNewLineChar.pl -m Unix -r NewSample1 -o Sample1.csv
+
+    To use Mac new line char and generate NewSample1.sdf file, type:
+
+        % ModifyNewLineChar.pl -m Mac -r NewSample1 -o Sample1.sdf
+
+    To use Windows new line chars and generate NewSample1.csv file, type:
+
+        % ModifyNewLineChar.pl -m Windows -r NewSample1 -o Sample1.csv
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    ModifyTextFilesFormat.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

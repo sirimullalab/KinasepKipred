@@ -1,0 +1,260 @@
+NAME
+    InfoAminoAcids.pl - List properties of amino acids
+
+SYNOPSIS
+    InfoAminoAcids.pl AminoAcidIDs...
+
+    InfoAminoAcids.pl [-h, --help] [--outdelim comma | tab | semicolon]
+    [--output STDOUT | File] [--outputstyle AminoAcidBlock | AminoAcidRows]
+    [-o, --overwrite] [--precision number] [--propertiesmode Categories |
+    Names | All] [-p, --properties CategoryName,[CategoryName,...] |
+    PropertyName,[PropertyName,...]] [--propertieslinting ByGroup |
+    Alphabetical] [-q, --quote yes | no] [-r, --root rootname] [-w,
+    --workingdir dirname] AminoAcidIDs...
+
+DESCRIPTION
+    List amino acid properties. Amino acids identification supports these
+    three types of IDs: one letter code, three letter code or name. Amino
+    acid properties data, in addition to basic information about amino acids
+    - one and three letter codes, name, DNA and RNA codons, molecular weight
+    - include variety of other properties: polarity, acidity,
+    hydrophobicity, and so on.
+
+PARAMETERS
+    AminoAcidIDs *ThreeLetterCode [OneLetterCode AminoAcidName...]*
+        *AminoAcidIDs* is a space delimited list of values to identify amino
+        acids.
+
+        Input value format is: *ThreeLetterCode [OneLetterCode
+        AminoAcidName...]*. Default: *Ala*. Examples:
+
+            Ala
+            Glu A
+            Alanine Glu Y "Aspartic acid"
+
+OPTIONS
+    -h, --help
+        Print this help message.
+
+    --outdelim *comma | tab | semicolon*
+        Output text file delimiter. Possible values: *comma, tab, or
+        semicolon* Default value: *comma*.
+
+    --output *STDOUT | File*
+        List information at STDOUT or write it to a file. Possible values:
+        *STDOUT or File*. Default: *STDOUT*. -r, --root option is used to
+        generate output file name.
+
+    --outputstyle *AminoAcidBlock | AminoAcidRows*
+        Specify how to list amino acid information: add a new line for each
+        property and present it as a block for each amino acid; or include
+        all properties in one line and show it as a single line.
+
+        Possible values: *AminoAcidBlock | AminoAcidRows*. Default:
+        *AminoAcidBlock*
+
+        An example for *AminoAcidBlock* output style:
+
+            ThreeLetterCode: Ala
+            OneLetterCode: A
+            AminoAcid: Alanine
+            MolecularWeight: 89.0941
+            ... ...
+            ... ...
+            ... ...
+
+            ThreeLetterCode: Glu
+            OneLetterCode: E
+            AminoAcid: Glutamic acid
+            MolecularWeight: 147.1308
+            ... ...
+            ... ...
+            ... ...
+
+        An example for *AminoAcidRows* output style:
+
+            ThreeLetterCode,OneLetterCode,AminoAcid,MolecularWeight
+            Ala,A,Alanine,89.0941..
+            Glu,E,Glutamic acid,147.1308..
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    --precision *number*
+        Precision for listing numerical values. Default: up to *4* decimal
+        places. Valid values: positive integers.
+
+    --propertiesmode *Categories | Names | All*
+        Specify how property names are specified: use category names;
+        explicit list of property names; or use all available properties.
+        Possible values: *Categories, Names, or All*. Default: *Categories*.
+
+        This option is used in conjunction with -p, --properties option to
+        specify properties of interest.
+
+    -p, --properties *CategoryName,[CategoryName,...] |
+    PropertyName,[PropertyName,...]*
+        This option is --propertiesmode specific. In general, it's a list of
+        comma separated category or property names.
+
+        Specify which amino acid properties information to list for the
+        amino acid IDs specified using command: line parameters: list basic
+        and/or hydrophobicity information; list all available information;
+        or specify a comma separated list of amino acid property names.
+
+        Possible values: *Basic | BasicPlus | BasicAndHydrophobicity |
+        BasicAndHydrophobicityPlus | PropertyName,[PropertyName,...]*.
+        Default: *Basic*.
+
+        *Basic* includes: *ThreeLetterCode, OneLetterCode, AminoAcid,
+        DNACodons, RNACodons, ChemicalFormula, MolecularWeight,
+        LinearStructure, LinearStructureAtpH7.4*
+
+        *BasicPlus* includes: *ThreeLetterCode, OneLetterCode, AminoAcid,
+        DNACodons, RNACodons, AcidicBasic, PolarNonpolar, Charged, Aromatic,
+        HydrophobicHydophilic, IsoelectricPoint, pKCOOH, pKNH3+,
+        ChemicalFormula, MolecularWeight, ExactMass,
+        ChemicalFormulaMinusH2O, MolecularWeightMinusH2O(18.01524),
+        ExactMassMinusH2O(18.01056), LinearStructure,
+        LinearStructureAtpH7.4*
+
+        *BasicAndHydrophobicity* includes: *ThreeLetterCode, OneLetterCode,
+        AminoAcid, DNACodons, RNACodons, ChemicalFormula, MolecularWeight,
+        LinearStructure, LinearStructureAtpH7.4,
+        HydrophobicityEisenbergAndOthers, HydrophobicityHoppAndWoods,
+        HydrophobicityJanin, HydrophobicityKyteAndDoolittle,
+        HydrophobicityRoseAndOthers, HydrophobicityWolfendenAndOthers*
+
+        *BasicAndHydrophobicityPlus* includes: *(ThreeLetterCode,
+        OneLetterCode, AminoAcid, DNACodons, RNACodons, ChemicalFormula,
+        MolecularWeight, LinearStructure, LinearStructureAtpH7.4,
+        HydrophobicityAbrahamAndLeo, HydrophobicityBlack,
+        HydrophobicityBullAndBreese, HydrophobicityChothia,
+        HydrophobicityEisenbergAndOthers, HydrophobicityFauchereAndOthers,
+        HydrophobicityGuy, HydrophobicityHPLCAtpH3.4Cowan,
+        HydrophobicityHPLCAtpH7.5Cowan, HydrophobicityHPLCParkerAndOthers,
+        HydrophobicityHPLCWilsonAndOthers, HydrophobicityHoppAndWoods,
+        HydrophobicityJanin, HydrophobicityKyteAndDoolittle,
+        HydrophobicityManavalanAndOthers, HydrophobicityMiyazawaAndOthers,
+        HydrophobicityOMHSweetAndOthers, HydrophobicityRaoAndArgos,
+        HydrophobicityRfMobility, HydrophobicityRoseAndOthers,
+        HydrophobicityRoseman, HydrophobicityWellingAndOthers,
+        HydrophobicityWolfendenAndOthers*
+
+        Here is a complete list of available properties: ThreeLetterCode,
+        OneLetterCode, AminoAcid, DNACodons, RNACodons, AcidicBasic,
+        PolarNonpolar, Charged, Aromatic, HydrophobicHydophilic,
+        IsoelectricPoint, pKCOOH, pKNH3+, ChemicalFormula, MolecularWeight,
+        ExactMass, ChemicalFormulaMinusH2O,
+        MolecularWeightMinusH2O(18.01524), ExactMassMinusH2O(18.01056),
+        vanderWaalsVolume, %AccessibleResidues, %BuriedResidues,
+        AlphaHelixChouAndFasman, AlphaHelixDeleageAndRoux, AlphaHelixLevitt,
+        AminoAcidsComposition, AminoAcidsCompositionInSwissProt,
+        AntiparallelBetaStrand, AverageAreaBuried, AverageFlexibility,
+        BetaSheetChouAndFasman, BetaSheetDeleageAndRoux, BetaSheetLevitt,
+        BetaTurnChouAndFasman, BetaTurnDeleageAndRoux, BetaTurnLevitt,
+        Bulkiness, CoilDeleageAndRoux, HPLCHFBARetention,
+        HPLCRetentionAtpH2.1, HPLCRetentionAtpH7.4, HPLCTFARetention,
+        HydrophobicityAbrahamAndLeo, HydrophobicityBlack,
+        HydrophobicityBullAndBreese, HydrophobicityChothia,
+        HydrophobicityEisenbergAndOthers, HydrophobicityFauchereAndOthers,
+        HydrophobicityGuy, HydrophobicityHPLCAtpH3.4Cowan,
+        HydrophobicityHPLCAtpH7.5Cowan, HydrophobicityHPLCParkerAndOthers,
+        HydrophobicityHPLCWilsonAndOthers, HydrophobicityHoppAndWoods,
+        HydrophobicityJanin, HydrophobicityKyteAndDoolittle,
+        HydrophobicityManavalanAndOthers, HydrophobicityMiyazawaAndOthers,
+        HydrophobicityOMHSweetAndOthers, HydrophobicityRaoAndArgos,
+        HydrophobicityRfMobility, HydrophobicityRoseAndOthers,
+        HydrophobicityRoseman, HydrophobicityWellingAndOthers,
+        HydrophobicityWolfendenAndOthers, ParallelBetaStrand,
+        PolarityGrantham, PolarityZimmerman, RatioHeteroEndToSide,
+        RecognitionFactors, Refractivity, RelativeMutability,
+        TotalBetaStrand, LinearStructure, LinearStructureAtpH7.4
+
+    --propertieslisting *ByGroup | Alphabetical*
+        Specify how to list properties for amino acids: group by category or
+        an alphabetical by property names. Possible values: *ByGroup or
+        Alphabetical*. Default: *ByGroup*.
+
+    -q, --quote *yes | no*
+        Put quotes around column values in output text file. Possible
+        values: *yes or no*. Default value: *yes*.
+
+    -r, --root *rootname*
+        New text file name is generated using the root: <Root>.<Ext>. File
+        name is only used during *File* value of -o, --output option.
+
+        Default file name: AminoAcidInfo<mode>.<Ext>. The csv, and tsv <Ext>
+        values are used for comma/semicolon, and tab delimited text files
+        respectively.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To list basic properties information for amino acid Ala, type:
+
+        % InfoAminoAcids.pl
+
+    To list all available properties information for amino acid Ala, type:
+
+        % InfoAminoAcids.pl --propertiesmode all
+
+    To list basic properties information for amino acids Ala, Arg, and Asp
+    type:
+
+        % InfoAminoAcids.pl Ala Arg Asp
+        % InfoAminoAcids.pl A Arg "Aspartic acid"
+
+    To list all available properties information for amino acids Ala, Arg,
+    and Asp type:
+
+        % InfoAminoAcids.pl --propertiesmode all Ala Arg Asp
+
+    To list basic and hydrophobicty properties information for amino acids
+    Ala, Arg, and Asp type:
+
+        % InfoAminoAcids.pl --propertiesmode Categories
+          --properties BasicAndHydrophobicity Ala Arg Asp
+
+    To list OneLetterCode, ThreeLetterCode, DNACodons, and MolecularWeight
+    for amino acids Ala, Arg, and Asp type:
+
+        % InfoAminoAcids.pl --propertiesmode Names
+          --properties OneLetterCode,ThreeLetterCode,DNACodons,MolecularWeight
+          Ala Arg Asp
+
+    To alphabetically list basic and hydrophobicty properties information
+    for amino acids Ala, Arg, and Asp in rows insetad of amino acid blocks
+    with quotes around the values, type:
+
+        % InfoAminoAcids.pl --propertiesmode Categories
+          --properties BasicAndHydrophobicity --propertieslisting alphabetical
+          --outdelim comma --outputstyle AminoAcidRows --quote yes Ala Arg Asp
+
+    To alphabetically list basic and hydrophobicty properties information
+    for amino acids Ala, Arg, and Asp in rows insetad of amino acid blocks
+    with quotes around the values and write them into a file
+    AminoAcidProperties.csv, type:
+
+        % InfoAminoAcids.pl --propertiesmode Categories
+          --properties BasicAndHydrophobicity --propertieslisting alphabetical
+          --outdelim comma --outputstyle AminoAcidRows --quote yes
+          --output File -r AminoAcidProperties -o Ala Arg Asp
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    InfoNucleicAcids.pl InfoPeriodicTableElements.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

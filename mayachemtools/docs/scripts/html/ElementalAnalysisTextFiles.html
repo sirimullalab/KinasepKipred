@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:ElementalAnalysisTextFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ElementalAnalysisSDFiles.html" title="ElementalAnalysisSDFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtendedConnectivityFingerprints.html" title="ExtendedConnectivityFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>ElementalAnalysisTextFiles.pl</strong></td><td width="33%" align="right"><a href="././code/ElementalAnalysisTextFiles.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/ElementalAnalysisTextFiles.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/ElementalAnalysisTextFiles.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/ElementalAnalysisTextFiles.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/ElementalAnalysisTextFiles.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>ElementalAnalysisTextFiles.pl - Perform elemental analysis using formula column in TextFile(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>ElementalAnalysisTextFiles.pl TextFile(s)...</p>
+<p>ElementalAnalysisTextFiles.pl [<b>-c, --colmode</b> colnum | collabel] [<b>-d, --detail</b> infolevel] [<b>-f, --fast</b>] [<b>-f, --formulacol</b> colnum | collabel] [<b>-h, --help</b>] [<b>--indelim</b> comma | semicolon] [<b>-m, --mode</b> All | &quot;ElementalAnysis, [MolecularWeight, ExactMass]&quot;] [<b>-o, --overwrite</b>] [<b>--outdelim</b> comma | tab | semicolon] [<b>-p, --precision</b> number] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>-s, --startcol</b> colnum | collabel] [<b>--startcolmode</b> before | after] <b>-v --valuecollabels</b> [Name, Label, [Name, Label,...]] [<b>-w, --workingdir</b> dirname] TextFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Perform elemental analysis using molecular formula column specified by a column number or label in <i>TextFile(s)</i>.</p>
+<p>In addition to straightforward molecular formulas - H2O, HCl, C3H7O2N - other supported variations are: Ca3(PO4)2, [PCl4]+, [Fe(CN)6]4-, C37H42N2O6+2, Na2CO3.10H2O, 8H2S.46H2O, and so on. Charges are simply ignored. Isotope symbols in formulas specification, including D and T, are not supported.</p>
+<p>The valid file extensions are <i>.csv</i> and <i>.tsv</i> for comma/semicolon and tab delimited text files respectively. All other file names are ignored. All the text files in a current directory can be specified by <i>*.csv</i>, <i>*.tsv</i>, or the current directory name. The <b>--indelim</b> option determines the format of <i>TextFile(s)</i>. Any file which doesn&#39;t correspond to the format indicated by <b>--indelim</b> option is ignored.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="c---colmode-colnum-collabel"><b>-c, --colmode</b> <i>colnum | collabel</i></dt>
+<dd>
+<p>Specify how columns are identified in <i>TextFile(s)</i>: using column number or column label. Possible values: <i>colnum or collabel</i>. Default value: <i>colnum</i>.</p>
+</dd>
+<dt id="d---detail-infolevel"><b>-d, --detail</b> <i>infolevel</i></dt>
+<dd>
+<p>Level of information to print about lines being ignored. Default: <i>1</i>. Possible values: <i>1, 2 or 3</i>.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="fast"><b>--fast</b></dt>
+<dd>
+<p>In this mode, the formula column specified using <b>-f, --formulacol</b> option is assumed to contain valid molecular formula data and initial formula validation check is skipped.</p>
+</dd>
+<dt id="f---formulacol-col-number-col-name"><b>-f, --formulacol</b> <i>col number | col name</i></dt>
+<dd>
+<p>This value is mode specific. It specifies molecular formula column to use for performing elemental analysis on <i>TextFile(s)</i>. Possible values: <i>col number or col label</i>. Default value: <i>first column containing the word formula in its column label</i>.</p>
+</dd>
+<dt id="m---mode-All-ElementalAnalysis-MolecularWeight-ExactMass"><b>-m, --mode</b> <i>All | &quot;ElementalAnalysis,[MolecularWeight,ExactMass]&quot;</i></dt>
+<dd>
+<p>Specify what values to calculate using molecular formula in <i>TextFile(s)</i>: calculate all supported values or specify a comma delimited list of values. Possible values: <i>All | &quot;ElementalAnalysis, [MolecularWeight, ExactMass]&quot;</i>. Default: <i>All</i></p>
+</dd>
+<dt id="indelim-comma-semicolon"><b>--indelim</b> <i>comma | semicolon</i></dt>
+<dd>
+<p>Input delimiter for CSV <i>TextFile(s)</i>. Possible values: <i>comma or semicolon</i>. Default value: <i>comma</i>. For TSV files, this option is ignored and <i>tab</i> is used as a delimiter.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="p---precision-number"><b>-p, --precision</b> <i>number</i></dt>
+<dd>
+<p>Precision of calculated values in the output file. Default: up to <i>2</i> decimal places. Valid values: positive integers.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New text file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default new file name: &lt;InitialTextFileName&gt;ElementalAnalysis.&lt;Ext&gt;. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively. This option is ignored for multiple input files.</p>
+</dd>
+<dt id="s---startcol-colnum-collabel"><b>-s, --startcol</b> <i>colnum | collabel</i></dt>
+<dd>
+<p>This value is mode specific. It specifies the column in text files which is used for start adding calculated column values. For <i>colnum</i> mode, specify column number and for <i>collabel</i> mode, specify column label.</p>
+<p>Default value: <i>last</i>. Start merge after the last column.</p>
+</dd>
+<dt id="startcolmode-before-after"><b>--startcolmode</b> <i>before | after</i></dt>
+<dd>
+<p>Start adding calculated column values after the <b>-s, --startcol</b> value. Possible values: <i>before or after</i>. Default value: <i>after</i>.</p>
+</dd>
+<dt id="v---valuecollabels-Name-Label-Name-Label"><b>-v --valuecollabels</b> <i>Name,Label,[Name,Label,...]</i></dt>
+<dd>
+<p>Specify column labels to use for calculated values. In general, it&#39;s a comma delimited list of value name and column label pairs. Supported value names: <i>ElementalAnalysis, MolecularWeight, and ExactMass</i>. Default labels: <i>ElementalAnalysis, MolecularWeight, and ExactMass</i>.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w, --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To perform elemental analysis, calculate molecular weight and exact mass using formulas in a column with the word Formula in its column label and generate a new CSV text file NewSample1.csv, type:</p>
+<div class="ExampleBox">    % ElementalAnalysisTextFiles.pl -o -r NewSample1 Sample1.csv</div>
+<p>To perform elemental analysis using formulas in column number two, use column label Analysis for calculated data, and generate a new CSV text file NewSample1.csv, type:</p>
+<div class="ExampleBox">    % ElementalAnalysisTextFiles.pl --m ElementalAnalysis --formulacol 2
+      --valuecollabels &quot;ElementalAnalysis,Analysis&quot; -o -r NewSample1
+      Sample1.csv</div>
+<p>To calculate molecular weight using formula in column label Formula with four decimal precision and generate a new CSV text file NewSample1.csv, type</p>
+<div class="ExampleBox">    % ElementalAnalysisTextFiles.pl --m MolecularWeight --colmode collabel
+      --formulacol Formula --precision 4 -o -r NewSample1 Sample1.csv</div>
+<p>To calculate exact mass using formula in column label Formula with four decimal precision, adding column for exact mass right after Formula column, and generate a new CSV text file NewSample1.csv, type</p>
+<div class="ExampleBox">    % ElementalAnalysisTextFiles.pl --m ExactMass --colmode collabel
+      --formulacol Formula --precision 4 --startcolmode after
+      --startcol Formula -o -r NewSample1 Sample1.csv</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./AnalyzeTextFilesData.html">AnalyzeTextFilesData.pl</a>, <a href="./InfoTextFiles.html">InfoTextFiles.pl</a>, <a href="./ExtractFromTextFiles.html">ExtractFromTextFiles.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ElementalAnalysisSDFiles.html" title="ElementalAnalysisSDFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtendedConnectivityFingerprints.html" title="ExtendedConnectivityFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>ElementalAnalysisTextFiles.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

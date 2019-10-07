@@ -1,0 +1,119 @@
+NAME
+    SYBYLAtomTypes
+
+SYNOPSIS
+    use AtomTypes::SYBYLAtomTypes;
+
+    use AtomTypes::SYBYLAtomTypes qw(:all);
+
+DESCRIPTION
+    SYBYLAtomTypes class provides the following methods:
+
+    new, AssignAtomTypes, GetAllPossibleSYBYLAtomTypes,
+    GetAllPossibleSYBYLNonHydrogenAtomTypes, GetSYBYLAtomTypesData,
+    StringifySYBYLAtomTypes
+
+    The following functions are available:
+
+    GetAllPossibleSYBYLAtomTypes, GetAllPossibleSYBYLNonHydrogenAtomTypes,
+    GetSYBYLAtomTypesData
+
+    SYBYLAtomTypes is derived from AtomTypes class which in turn is derived
+    from ObjectProperty base class that provides methods not explicitly
+    defined in SYBYLAtomTypes, AtomTypes or ObjectProperty classes using
+    Perl's AUTOLOAD functionality. These methods are generated on-the-fly
+    for a specified object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+    The data file SYBYLAomTypes.csv distributed with MayaChemTools release
+    contains all possible Triops SYBYL [ Ref 79-80 ] atom types.
+
+    Examples of SYBYL atom types:
+
+        C.3,C.2, C.ar, N.3, N.2, N.ar and so on
+
+  METHODS
+    new
+            $NewSYBYLAtomTypes = new AtomTypes::SYBYLAtomTypes(%NamesAndValues);
+
+        Using specified *SYBYLAtomTypes* property names and values hash, new
+        method creates a new object and returns a reference to newly created
+        SYBYLAtomTypes object. By default, the following properties are
+        initialized:
+
+            Molecule = ''
+            Type = 'SYBYL'
+            IgnoreHydrogens = 0
+
+        Examples:
+
+            $SYBYLAtomTypes = new AtomTypes::SYBYLAtomTypes(
+                                      'Molecule' => $Molecule,
+                                      'IgnoreHydrogens' => 0);
+
+    AssignAtomTypes
+            $SYBYLAtomTypes->AssignAtomTypes();
+
+        Assigns SYBYL atom types to all the atoms in a molecule and returns
+        *SYBYLAtomTypes*.
+
+    GetAllPossibleSYBYLAtomTypes
+            $AllAtomTypesDataRef = $SYBYLAtomTypes->
+                                   GetAllPossibleSYBYLAtomTypes();
+            $AllAtomTypesDataRef = AtomTypes::SYBYLAtomTypes::
+                                   GetAllPossibleSYBYLAtomTypes();
+
+        Returns all possible SYBYL atom types corresponding to hydrogen and
+        non-hydrogen atoms as an array reference.
+
+    GetAllPossibleSYBYLNonHydrogenAtomTypes
+            $AtomTypesDataRef = $SYBYLAtomTypes->
+                                GetAllPossibleSYBYLNonHydrogenAtomTypes();
+            $AtomTypesDataRef = AtomTypes::SYBYLAtomTypes::
+                                GetAllPossibleSYBYLNonHydrogenAtomTypes();
+
+        Returns all possible SYBYL atom types corresponding to non-hydrogen
+        atoms as an array reference.
+
+    GetSYBYLAtomTypesData
+            $AtomTypesDataMapRef = $SYBYLAtomTypes->GetSYBYLAtomTypesData();
+            $AtomTypesDataMapRef = AtomTypes::SYBYLAtomTypes::GetSYBYLAtomTypesData();
+
+        Returns SYBYL atom types and associated data loaded from SYBYL data
+        file as a reference to hash with the following hash data format:
+
+            @{$SYBYLAtomTypesDataMap{AtomTypes}} - Array of all possible atom
+                                      types for all atoms
+            @{$SYBYLAtomTypesDataMap{NonHydrogenAtomTypes}} - Array of all
+                                      possible atom types for non-hydrogen atoms
+            @{$SYBYLAtomTypesDataMap->{ColLabels}} - Array of column labels
+            %{$SYBYLAtomTypesDataMap->{DataCol<Num>}} - Hash keys pair:
+                                                        DataCol<Num>, AtomType
+
+    StringifySYBYLAtomTypes
+            $String = $SYBYLAtomTypes->StringifySYBYLAtomTypes();
+
+        Returns a string containing information about *SYBYLAtomTypes*
+        object.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    AtomTypes.pm, AtomicInvariantsAtomTypes.pm, DREIDINGAtomTypes.pm,
+    EStateAtomTypes.pm, FunctionalClassAtomTypes.pm, MMFF94AtomTypes.pm,
+    SLogPAtomTypes.pm, TPSAAtomTypes.pm, UFFAtomTypes.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

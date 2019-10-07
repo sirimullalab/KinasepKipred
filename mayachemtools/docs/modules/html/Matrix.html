@@ -1,0 +1,500 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Matrix.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MathUtil.html" title="MathUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomsCountDescriptors.html" title="AtomsCountDescriptors.html">Next</a></td><td width="34%" align="middle"><strong>Matrix.pm</strong></td><td width="33%" align="right"><a href="././code/Matrix.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/Matrix.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/Matrix.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/Matrix.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/Matrix.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>Matrix</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Matrix;</p>
+<p>use Matrix qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>Matrix</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#AddColumnValues">AddColumnValues</a>, <a href="#AddRowValues">AddRowValues</a>, <a href="#Copy">Copy</a>, <a href="#GetColumnValues">GetColumnValues</a>, <a href="#GetColumnValuesAsColumnMatrix">GetColumnValuesAsColumnMatrix</a>, <a href="#GetColumnValuesAsRowMatrix">GetColumnValuesAsRowMatrix</a>, <a href="#GetColumnValuesAsString">GetColumnValuesAsString</a>, <a href="#GetColumnValuesAsVector">GetColumnValuesAsVector</a>, <a href="#GetDiagonalValues">GetDiagonalValues</a>, <a href="#GetDiagonalValuesAsColumnMatrix">GetDiagonalValuesAsColumnMatrix</a>, <a href="#GetDiagonalValuesAsRowMatrix">GetDiagonalValuesAsRowMatrix</a>, <a href="#GetDiagonalValuesAsString">GetDiagonalValuesAsString</a>, <a href="#GetDiagonalValuesAsVector">GetDiagonalValuesAsVector</a>, <a href="#GetDimension">GetDimension</a>, <a href="#GetMatrixValuesReference">GetMatrixValuesReference</a>, <a href="#GetNumOfColumns">GetNumOfColumns</a>, <a href="#GetNumOfRows">GetNumOfRows</a>, <a href="#GetRowValues">GetRowValues</a>, <a href="#GetRowValuesAsColumnMatrix">GetRowValuesAsColumnMatrix</a>, <a href="#GetRowValuesAsRowMatrix">GetRowValuesAsRowMatrix</a>, <a href="#GetRowValuesAsString">GetRowValuesAsString</a>, <a href="#GetRowValuesAsVector">GetRowValuesAsVector</a>, <a href="#GetSize">GetSize</a>, <a href="#GetValue">GetValue</a>, <a href="#IdentityMatrix">IdentityMatrix</a>, <a href="#IsAntiSymmetric">IsAntiSymmetric</a>, <a href="#IsBiDiagonal">IsBiDiagonal</a>, <a href="#IsDiagonal">IsDiagonal</a>, <a href="#IsIdentity">IsIdentity</a>, <a href="#IsLeftTriangular">IsLeftTriangular</a>, <a href="#IsLowerBiDiagonal">IsLowerBiDiagonal</a>, <a href="#IsLowerTriangular">IsLowerTriangular</a>, <a href="#IsLowerUniTriangular">IsLowerUniTriangular</a>, <a href="#IsMatrix">IsMatrix</a>, <a href="#IsNegative">IsNegative</a>, <a href="#IsPositive">IsPositive</a>, <a href="#IsRightTriangular">IsRightTriangular</a>, <a href="#IsSkewSymmetric">IsSkewSymmetric</a>, <a href="#IsSquare">IsSquare</a>, <a href="#IsStrictlyLowerTriangular">IsStrictlyLowerTriangular</a>, <a href="#IsStrictlyUpperTriangular">IsStrictlyUpperTriangular</a>, <a href="#IsSymmetric">IsSymmetric</a>, <a href="#IsTriDiagonal">IsTriDiagonal</a>, <a href="#IsUnit">IsUnit</a>, <a href="#IsUnitLowerTriangular">IsUnitLowerTriangular</a>, <a href="#IsUnitUpperTriangular">IsUnitUpperTriangular</a>, <a href="#IsUpperBiDiagonal">IsUpperBiDiagonal</a>, <a href="#IsUpperTriangular">IsUpperTriangular</a>, <a href="#IsUpperUniTriangular">IsUpperUniTriangular</a>, <a href="#NewFromColumns">NewFromColumns</a>, <a href="#NewFromDiagonal">NewFromDiagonal</a>, <a href="#NewFromRows">NewFromRows</a>, <a href="#One">One</a>, <a href="#SetAllValues">SetAllValues</a>, <a href="#SetColumnValues">SetColumnValues</a>, <a href="#SetDiagonalValues">SetDiagonalValues</a>, <a href="#SetMatrixPrintStyle">SetMatrixPrintStyle</a>, <a href="#SetRowValues">SetRowValues</a>, <a href="#SetValue">SetValue</a>, <a href="#SetValuePrintFormat">SetValuePrintFormat</a>, <a href="#StringifyMatrix">StringifyMatrix</a>, <a href="#Transpose">Transpose</a>, <a href="#UnitMatrix">UnitMatrix</a>, <a href="#Zero">Zero</a>, <a href="#ZeroMatrix">ZeroMatrix</a>
+</p><p>The following functions are available:</p>
+<p>IsMatrix, IdentityMatrix, NewFromRows, NewFromColumns, NewFromDiagonal, UnitMatrix, ZeroMatrix</p>
+<p>The following operators are overloaded:</p>
+<div class="OptionsBox">    &quot;&quot; bool !
+<br/>    @{}
+<br/>    + - * / ** %
+<br/>    == != &lt; &lt;= &gt; &gt;=
+<br/>    neg
+<br/>    abs exp log sqrt cos sin</div>
+<p>The matrix row and column indicies start from zero.</p>
+<h2 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMatrix = $Matrix-&gt;new($NumOfRows, $NumOfCols);</div>
+<p>Creates a new <b>Matrix</b> of size <i>NumOfRows x NumOfCol</i> and returns <b>NewMatrix</b> object.</p>
+</dd>
+<dt id="AddColumnValues"><b>AddColumnValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;AddColumnValues(@Values);
+<br/>    $Matrix-&gt;AddColumnValues(\@Values);
+<br/>    $Matrix-&gt;AddColumnValues($VectorObject);
+<br/>    $Matrix-&gt;AddColumnValues(&quot;Value1 Value2 Value3 ...&quot;);</div>
+<p>Adds column values to <i>Matrix</i> using an array, reference to an array, another vector, or space delimited value string and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="AddRowValues"><b>AddRowValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;AddRowValues(@Values);
+<br/>    $Matrix-&gt;AddRowValues(\@Values);
+<br/>    $Matrix-&gt;AddRowValues($VectorObject);
+<br/>    $Matrix-&gt;AddRowValues(&quot;Value1 Value2 Value3 ...&quot;);</div>
+<p>Adds row values to <i>Matrix</i> using an array, reference to an array, another vector, or space delimited value string and returns <b>Matrix</b>.</p>
+</dd>
+<dt id="Copy"><b>Copy</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMatrix = $Matrix-&gt;Copy();</div>
+<p>Creates a copy of <i>Matrix</i> and returns <b>NewMatrix</b>.</p>
+</dd>
+<dt id="GetColumnValues"><b>GetColumnValues</b></dt>
+<dd>
+<div class="OptionsBox">    @Values = $Matrix-&gt;GetColumnValues($ColIndex);
+<br/>    $ValueCount = $Matrix-&gt;GetColumnValues($ColIndex);</div>
+<p>Returns an array containing column value specified using <i>ColIndex</i> with column index starting at 0. In scalar context, number of column values is returned.</p>
+</dd>
+<dt id="GetColumnValuesAsColumnMatrix"><b>GetColumnValuesAsColumnMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnMatrix = $Matrix-&gt;GetColumnValuesAsColumnMatrix($ColIndex);</div>
+<p>Returns a new <b>ColumnMatrix</b> containing column values specified using <i>ColIndex</i> with column index starting at 0.</p>
+</dd>
+<dt id="GetColumnValuesAsRowMatrix"><b>GetColumnValuesAsRowMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $RowMatrix = $Matrix-&gt;GetColumnValuesAsRowMatrix($ColIndex);</div>
+<p>Returns a new <b>RowMatrix</b> containing column values specified using <i>ColIndex</i> with column index starting at 0.</p>
+</dd>
+<dt id="GetColumnValuesAsString"><b>GetColumnValuesAsString</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnValuesString = $Matrix-&gt;GetColumnValuesAsString($ColIndex);</div>
+<p>Returns a space delimited <b>ColumnValuesString</b> column values specified using <i>ColIndex</i> with column index starting at 0.</p>
+</dd>
+<dt id="GetColumnValuesAsVector"><b>GetColumnValuesAsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnVector = $Matrix-&gt;GetColumnValuesAsVector($ColIndex);</div>
+<p>Returns a new <b>ColumnVector</b> column values specified using <i>RowIndex</i> with column index starting at 0.</p>
+</dd>
+<dt id="GetDiagonalValues"><b>GetDiagonalValues</b></dt>
+<dd>
+<div class="OptionsBox">    @Values = $Matrix-&gt;GetDiagonalValues();
+<br/>    $ValueCount = $Matrix-&gt;GetDiagonalValues();</div>
+<p>Returns an array containing diagonal values. In scalar context, number of diagonal values is returned.</p>
+</dd>
+<dt id="GetDiagonalValuesAsColumnMatrix"><b>GetDiagonalValuesAsColumnMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnMatrix = $Matrix-&gt;GetDiagonalValuesAsColumnMatrix();</div>
+<p>Returns a new <b>ColumnMatrix</b> containing diagonal values corresponding to <i>Matrix</i>.</p>
+</dd>
+<dt id="GetDiagonalValuesAsRowMatrix"><b>GetDiagonalValuesAsRowMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $RowMatrix = $Matrix-&gt;GetDiagonalValuesAsRowMatrix();</div>
+<p>Returns a new <b>RowMatrix</b> containing diagonal values corresponding to <i>Matrix</i>.</p>
+</dd>
+<dt id="GetDiagonalValuesAsString"><b>GetDiagonalValuesAsString</b></dt>
+<dd>
+<div class="OptionsBox">    $DiagonalValuesString = $Matrix-&gt;GetDiagonalValuesAsString();</div>
+<p>Returns a space delimited <b>DiagonalValuesString</b> containing diagonal values corresponding to <i>Matrix</i>.</p>
+</dd>
+<dt id="GetDiagonalValuesAsVector"><b>GetDiagonalValuesAsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $DiagonalVector = $Matrix-&gt;GetDiagonalValuesAsVector();</div>
+<p>Returns a new <b>DiagonalVector</b> containing diagonal values corresponding to <i>Matrix</i>.</p>
+</dd>
+<dt id="GetDimension"><b>GetDimension</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfRows, $NumOfCols) = $Matrix-&gt;GetDimension();</div>
+<p>Returns size of <i>Matrix</i>.</p>
+</dd>
+<dt id="GetMatrixValuesReference"><b>GetMatrixValuesReference</b></dt>
+<dd>
+<div class="OptionsBox">    $ValuesRef = $Matrix-&gt;GetMatrixValuesReference();</div>
+<p>Returns a reference to array containing rows and column values corresponding to <i>Matrix</i>.</p>
+</dd>
+<dt id="GetNumOfColumns"><b>GetNumOfColumns</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfCols = $Matrix-&gt;GetNumOfColumns();</div>
+<p>Returns <b>NumOfCols</b> in <i>Matrix</i>.</p>
+</dd>
+<dt id="GetNumOfRows"><b>GetNumOfRows</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRows = $Matrix-&gt;GetNumOfRows();</div>
+<p>Returns <b>NumOfRows</b> in <i>Matrix</i>.</p>
+</dd>
+<dt id="GetRowValues"><b>GetRowValues</b></dt>
+<dd>
+<div class="OptionsBox">    @Values = $Matrix-&gt;GetRowValues($RowIndex);
+<br/>    $ValueCount = $Matrix-&gt;GetRowValues($RowIndex);</div>
+<p>Returns an array containing row value specified using <i>RowIndex</i> with row index starting at 0. In scalar context, number of row values is returned.</p>
+</dd>
+<dt id="GetRowValuesAsColumnMatrix"><b>GetRowValuesAsColumnMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnMatrix = $Matrix-&gt;GetRowValuesAsColumnMatrix($RowIndex);</div>
+<p>Returns a new <b>ColumnMatrix</b> containing row values specified using <i>RowIndex</i> with column index starting at 0.</p>
+</dd>
+<dt id="GetRowValuesAsRowMatrix"><b>GetRowValuesAsRowMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $RowMatrix = $Matrix-&gt;GetRowValuesAsRowMatrix($RowIndex);</div>
+<p>Returns a new <b>RowMatrix</b> containing row values specified using <i>RowIndex</i> with row index starting at 0.</p>
+</dd>
+<dt id="GetRowValuesAsString"><b>GetRowValuesAsString</b></dt>
+<dd>
+<div class="OptionsBox">    $RowValuesString = $Matrix-&gt;GetRowValuesAsString($RowIndex);</div>
+<p>Returns a space delimited <b>RowValuesString</b> row values specified using <i>RowIndex</i> with row index starting at 0.</p>
+</dd>
+<dt id="GetRowValuesAsVector"><b>GetRowValuesAsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $RowVector = $Matrix-&gt;GetColumnValuesAsVector($RowIndex);</div>
+<p>Returns a new <b>RowVector</b> row values specified using <i>RowIndex</i> with row index starting at 0.</p>
+</dd>
+<dt id="GetSize"><b>GetSize</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfRows, $NumOfCols) = $Matrix-&gt;GetSize();</div>
+<p>Returns size of <i>Matrix</i>.</p>
+</dd>
+<dt id="GetValue"><b>GetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Matrix-&gt;GetValue($RowIndex, $ColIndex, [$SkipIndexCheck]);</div>
+<p>Returns <b>Value</b> of <i>Matrix</i> element specified using <i>RowIndex</i> and <i>ColIndex</i> with indicies starting at 0 with optional validation of specified index values.</p>
+</dd>
+<dt id="IdentityMatrix"><b>IdentityMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $NewIdentityMatrix = $Matrix-&gt;IdentityMatrix($NumOfRows, $NumOfCols);
+<br/>    $NewIdentityMatrix = Matrix::IdentityMatrix($NumOfRows, $NumOfCols);
+<br/>    $NewIdentityMatrix = Matrix::IdentityMatrix();</div>
+<p>Creates a new <b>IdentityMatrix</b> of specified size <i>NumOfRows x NumOfCol</i> or of size 3 x 3 and returns <b>NewIdentityMatrix</b> object.</p>
+</dd>
+<dt id="IsAntiSymmetric"><b>IsAntiSymmetric</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsAntiSymmetric();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is an anti symmetric matrix.</p>
+<p>A matrix is an anti symmetric matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . Its elements are asymmetric with respect to main diagonal. In other words,
+      elements below the main diagonal are equal to the negative of elements above
+      the main diagonal.</div>
+<p>Transpose of an anti symmetric matrix equals the negative of the matrix.</p>
+</dd>
+<dt id="IsBiDiagonal"><b>IsBiDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsBiDiagonal();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is upper or lower bidiagonal matrix.</p>
+</dd>
+<dt id="IsDiagonal"><b>IsDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsDiagonal();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a diagonal matrix.</p>
+<p>A matrix is a diagonal matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its off-diagonal elements are zeros and its diagonal elements may or may not
+      be zeros</div>
+</dd>
+<dt id="IsIdentity"><b>IsIdentity</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsIdentity();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is an identity matrix.</p>
+</dd>
+<dt id="IsLeftTriangular"><b>IsLeftTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsLeftTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a left or lower matrix.</p>
+<p>A matrix is a left triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries above the main diagonal are zero</div>
+</dd>
+<dt id="IsLowerBiDiagonal"><b>IsLowerBiDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsLowerBiDiagonal();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a lower bidiagonal matrix.</p>
+<p>A matrix is a lower bidiagonal matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its main diagonal and lower diagonal elements are non-zeros and all its
+      other elements are zeros</div>
+</dd>
+<dt id="IsLowerTriangular"><b>IsLowerTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsLowerTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a left or lower triangular matrix.</p>
+<p>A matrix is a lower triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries above the main diagonal are zero</div>
+</dd>
+<dt id="IsLowerUniTriangular"><b>IsLowerUniTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsLowerUniTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a lower triangular matrix.</p>
+</dd>
+<dt id="IsMatrix"><b>IsMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = Matrix::IsMatrix($Object);</div>
+<p>Returns 1 or 0 based on whether <i>Object</i> is a <b>Matrix</b> object.</p>
+</dd>
+<dt id="IsNegative"><b>IsNegative</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsNegative();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a negative matrix containing only values less than or equal to zero.</p>
+</dd>
+<dt id="IsPositive"><b>IsPositive</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsPositive();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a negative matrix containing only values greater than or equal to zero.</p>
+</dd>
+<dt id="IsRightTriangular"><b>IsRightTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsRightTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a right or upper triangular matrix.</p>
+</dd>
+<dt id="IsSkewSymmetric"><b>IsSkewSymmetric</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsSkewSymmetric();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a skew or anti symmetric matrix.</p>
+</dd>
+<dt id="IsSquare"><b>IsSquare</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsSquare();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a square matrix containing equal number of rows and columns.</p>
+</dd>
+<dt id="IsStrictlyLowerTriangular"><b>IsStrictlyLowerTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsStrictlyLowerTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a strictly lower triangular matrix.</p>
+<p>A matrix is a strictly lower triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries on and above the main diagonal are zero</div>
+</dd>
+<dt id="IsStrictlyUpperTriangular"><b>IsStrictlyUpperTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsStrictlyUpperTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a strictly upper triangular matrix.</p>
+<p>A matrix is a strictly upper triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries on and below the main diagonal are zero</div>
+</dd>
+<dt id="IsSymmetric"><b>IsSymmetric</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsSymmetric();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a symmetric matrix.</p>
+<p>A matrix is a symmetric matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . Its elements are symmetric with respect to main diagonal. In other words,
+      elements below the main diagonal are equal to the elements above the main
+      diagonal.</div>
+<p>Transpose of a symmetric matrix equals the matrix itself.</p>
+</dd>
+<dt id="IsTriDiagonal"><b>IsTriDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsTriDiagonal();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a tridiagonal matrix.</p>
+<p>A matrix is a tribidiagonal matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its main diagonal, upper diagonal, and lower diagonal elements are non-zeros and all its
+      other elements are zeros</div>
+</dd>
+<dt id="IsUnit"><b>IsUnit</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUnit();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a unit matrix.</p>
+<p>A matrix is a unit matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its diagonal elements are ones and its off-diagonal elements are zeros</div>
+</dd>
+<dt id="IsUnitLowerTriangular"><b>IsUnitLowerTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUnitLowerTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is an unit lower triangular matrix.</p>
+<p>A matrix is an unit lower triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries main diagonal are one
+<br/>    . All its entries above the main diagonal are zero</div>
+</dd>
+<dt id="IsUnitUpperTriangular"><b>IsUnitUpperTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUnitUpperTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is an unit upper triangular matrix.</p>
+<p>A matrix is an unit upper triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries main diagonal are one
+<br/>    . All its entries below the main diagonal are zero</div>
+</dd>
+<dt id="IsUpperBiDiagonal"><b>IsUpperBiDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUpperBiDiagonal();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is an upper bidiagonal matrix.</p>
+<p>A matrix is an upper bidiagonal matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its main diagonal and upper diagonal elements are non-zeros and all its
+      other elements are zeros</div>
+</dd>
+<dt id="IsUpperTriangular"><b>IsUpperTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUpperTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a right or upper triangular matrix.</p>
+<p>A matrix is an upper triangular matrix:</p>
+<div class="OptionsBox">    . It&#39;s a square matrix
+<br/>    . All its entries below the main diagonal are zero</div>
+</dd>
+<dt id="IsUpperUniTriangular"><b>IsUpperUniTriangular</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Matrix-&gt;IsUpperUniTriangular();</div>
+<p>Returns 1 or 0 based on whether <i>Matrix</i> is a right or upper triangular matrix.</p>
+</dd>
+<dt id="NewFromColumns"><b>NewFromColumns</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMatrix = Matrix::NewFromColumns($Col1Vector, $Col2Vector, ...);
+<br/>    $NewMatrix = Matrix::NewFromColumns($Col1ValuesRef, $Col2ValuesRef, ...);
+<br/>    $NewMatrix = Matrix::NewFromColumns(&quot;Val1 Val2 ...&quot;, &quot;Val1 Val2&quot;, ...);
+<br/>
+<br/>    $NewMatrix = $Matrix-&gt;NewFromColumns($Col1Vector, $Col2Vector, ...);
+<br/>    $NewMatrix = $Matrix-&gt;NewFromColumns($Col1ValuesRef, $Col2ValuesRef, ...);
+<br/>    $NewMatrix = $Matrix-&gt;NewFromColumns(&quot;Val1 Val2 ...&quot;, &quot;Val1 Val2&quot;, ...);</div>
+<p>Creates a new <b>Matrix</b> using specified column values and returns <b>NewMatrix</b> object.</p>
+<p>The column values can be specified in one of the following formats:</p>
+<div class="OptionsBox">    . List of vector objects
+<br/>    . References to list of values
+<br/>    . List of strings containing columns values delimited by space</div>
+<p>Each column must contain the same number of values.</p>
+</dd>
+<dt id="NewFromDiagonal"><b>NewFromDiagonal</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMatrix = Matrix::NewFromDiagonal($DiagonalVector);
+<br/>    $NewMatrix = Matrix::NewFromDiagonal($DiagonalValuesRef);
+<br/>    $NewMatrix = Matrix::NewFromDiagonal(&quot;Val1 Val2 ...&quot;);
+<br/>
+<br/>    $NewMatrix = Matrix-&gt;NewFromDiagonal($DiagonalVector);
+<br/>    $NewMatrix = Matrix-&gt;NewFromDiagonal($DiagonalValuesRef);
+<br/>    $NewMatrix = Matrix-&gt;NewFromDiagonal(&quot;Val1 Val2 ...&quot;);</div>
+<p>Creates a new <b>Matrix</b> using specified diagonal values and returns <b>NewMatrix</b> object.</p>
+<p>The column values can be specified in one of the following formats:</p>
+<div class="OptionsBox">    . A vector object
+<br/>    . Reference to list of values
+<br/>    . Strings containing diagonal values delimited by space</div>
+</dd>
+<dt id="NewFromRows"><b>NewFromRows</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMatrix = Matrix::NewFromRows($Row1Vector, $RowVector, ...);
+<br/>    $NewMatrix = Matrix::NewFromRows($Row1ValuesRef, $Row2ValuesRef, ...);
+<br/>    $NewMatrix = Matrix::NewFromRows(&quot;Val1 Val2 ...&quot;, &quot;Val1 Val2&quot;, ...);
+<br/>
+<br/>    $NewMatrix = $Matrix-&gt;NewFromRows($Row1Vector, $Row2Vector, ...);
+<br/>    $NewMatrix = $Matrix-&gt;NewFromRows($Row1ValuesRef, $Row2ValuesRef, ...);
+<br/>    $NewMatrix = $Matrix-&gt;NewFromRows(&quot;Val1 Val2 ...&quot;, &quot;Val1 Val2&quot;, ...);</div>
+<p>Creates a new <b>Matrix</b> using specified row values and returns <b>NewMatrix</b> object.</p>
+<p>The row values can be specified in one of the following formats:</p>
+<div class="OptionsBox">    . List of vector objects
+<br/>    . References to list of values
+<br/>    . List of strings containing columns values delimited by space</div>
+<p>Each row must contain the same number of values.</p>
+</dd>
+<dt id="One"><b>One</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;One();</div>
+<p>Sets values of all <i>Matrix</i> elements to 1 and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="SetAllValues"><b>SetAllValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetAllValues($Value);</div>
+<p>Sets values of all <i>Matrix</i> elements to specified <i>Value</i> and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="SetColumnValues"><b>SetColumnValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetColumnValues($ColIndex, @Values);
+<br/>    $Matrix-&gt;SetColumnValues($ColIndex, \@Values);
+<br/>    $Matrix-&gt;SetColumnValues($ColIndex, $VectorObject);
+<br/>    $Matrix-&gt;SetColumnValues($ColIndex, &quot;Value1 Value2 Value3 ...&quot;);</div>
+<p>Sets column values of a specified <i>ColIndex</i> of <i>Matrix</i> using an array, reference to an array, another vector, or space delimited value string and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="SetDiagonalValues"><b>SetDiagonalValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetDiagonalValues(@Values);
+<br/>    $Matrix-&gt;SetDiagonalValues(\@Values);
+<br/>    $Matrix-&gt;SetDiagonalValues($VectorObject);
+<br/>    $Matrix-&gt;SetDiagonalValues(&quot;Value1 Value2 Value3 ...&quot;);</div>
+<p>Sets values of the diagonal in square <i>Matrix</i> and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="SetMatrixPrintStyle"><b>SetMatrixPrintStyle</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetMatrixPrintStyle($MatrixStyle);
+<br/>    $Matrix::SetMatrixPrintStyle($MatrixStyle);</div>
+<p>Sets print style for matrix rows for an individual object or the whole class during StringifyMatrix operation. Possible <i>MatrixStyle</i> values: <i>AllRowsInOneLine, OneRowPerLine</i>. Default: <i>AllRowsInOneLine</i>.</p>
+</dd>
+<dt id="SetRowValues"><b>SetRowValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetRowValues($ColIndex, @Values);
+<br/>    $Matrix-&gt;SetRowValues($ColIndex, \@Values);
+<br/>    $Matrix-&gt;SetRowValues($ColIndex, $VectorObjext);
+<br/>    $Matrix-&gt;SetRowValues($ColIndex, &quot;Value1 Value2 Value3 ...&quot;);</div>
+<p>Sets row values of a specified <i>RowIndex</i> of <i>Matrix</i> using an array, reference to an array, another vector, or space delimited value string and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="SetValue"><b>SetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetValue($RowIndex, $ColIndex, $Value, [$SkipIndexCheck]);</div>
+<p>Sets <b>Value</b> of <i>Matrix</i> element specified using <i>RowIndex</i> and <i>ColIndex</i> with indicies starting at 0 with optional validation of specified index values and return <i>Matrix</i>.</p>
+</dd>
+<dt id="SetValuePrintFormat"><b>SetValuePrintFormat</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;SetValuePrintFormat($ValueFormat);
+<br/>    $Matrix::SetValuePrintFormat($ValueFormat);</div>
+<p>Sets value print format for an individual object or the whole class during StringifyMatrix operation and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="StringifyMatrix"><b>StringifyMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $Matrix-&gt;StringifyMatrix();</div>
+<p>Returns a string containing information about <i>Matrix</i> object.</p>
+</dd>
+<dt id="Transpose"><b>Transpose</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;Transpose();</div>
+<p>Transposes <i>Matrix</i> by swaping rows with columns and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="UnitMatrix"><b>UnitMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $NewUnitMatrix = $Matrix::UnitMatrix($NumOfRows, $NumOfCols);
+<br/>    $NewUnitMatrix = $Matrix::UnitMatrix();
+<br/>    $NewUnitMatrix = $Matrix-&gt;UnitMatrix($NumOfRows, $NumOfCols);</div>
+<p>Creates a new <b>UnitMatrix</b> of specified size <i>NumOfRows x NumOfCol</i> or of size 3 x 3 and returns <b>NewUnitMatrix</b> object.</p>
+</dd>
+<dt id="Zero"><b>Zero</b></dt>
+<dd>
+<div class="OptionsBox">    $Matrix-&gt;Zero();</div>
+<p>Sets values of all <i>Matrix</i> elements to 0 and returns <i>Matrix</i>.</p>
+</dd>
+<dt id="ZeroMatrix"><b>ZeroMatrix</b></dt>
+<dd>
+<div class="OptionsBox">    $NewZeroMatrix = $Matrix::ZeroMatrix($NumOfRows, $NumOfCols);
+<br/>    $NewZeroMatrix = $Matrix::ZeroMatrix();
+<br/>    $NewZeroMatrix = $Matrix-&gt;ZeroMatrix($NumOfRows, $NumOfCols);</div>
+<p>Creates a new <b>ZeroMatrix</b> of specified size <i>NumOfRows x NumOfCol</i> or of size 3 x 3 and returns <b>NewZeroMatrix</b> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Vector.html">Vector.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MathUtil.html" title="MathUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomsCountDescriptors.html" title="AtomsCountDescriptors.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Matrix.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

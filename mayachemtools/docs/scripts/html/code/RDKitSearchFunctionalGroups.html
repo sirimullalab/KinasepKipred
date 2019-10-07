@@ -1,0 +1,709 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitSearchFunctionalGroups.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitSearchFunctionalGroups.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">FunctionalGroups</span>
+  43 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  44     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  45     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  46     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  47 
+  48 <span class="c1"># MayaChemTools imports...</span>
+  49 <span class="k">try</span><span class="p">:</span>
+  50     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  51     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  52     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  53 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  54     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  55     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  56     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  57 
+  58 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  59 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  60 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  61 
+  62 <span class="n">FunctionalGroupsMap</span> <span class="o">=</span> <span class="p">{}</span>
+  63 
+  64 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  65     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  66     
+  67     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  68     
+  69     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  70     
+  71     <span class="c1"># Retrieve command line arguments and options...</span>
+  72     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  73     
+  74     <span class="c1"># Process and validate command line arguments and options...</span>
+  75     <span class="n">ProcessOptions</span><span class="p">()</span>
+  76     
+  77     <span class="c1"># Perform actions required by the script...</span>
+  78     <span class="n">PerformFunctionalGroupsSearch</span><span class="p">()</span>
+  79     
+  80     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  81     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  82 
+  83 <span class="k">def</span> <span class="nf">PerformFunctionalGroupsSearch</span><span class="p">():</span>
+  84     <span class="sd">&quot;&quot;&quot;Retrieve functional groups information and perform search.&quot;&quot;&quot;</span>
+  85 
+  86     <span class="n">ProcessFunctionalGroupsInfo</span><span class="p">()</span>
+  87     <span class="n">PerformSearch</span><span class="p">()</span>
+  88 
+  89 <span class="k">def</span> <span class="nf">PerformSearch</span><span class="p">():</span>
+  90     <span class="sd">&quot;&quot;&quot;Perform search using SMARTS pattern for specified functional groups.&quot;&quot;&quot;</span>
+  91 
+  92     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+  93     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+  94 
+  95     <span class="n">Groups</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">]</span>
+  96     <span class="n">GroupsNegateMatch</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsNegateMatch&quot;</span><span class="p">]</span>
+  97     <span class="n">GroupsPatternMols</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsPatternMols&quot;</span><span class="p">]</span>
+  98     
+  99     <span class="n">GroupsOutfiles</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsOutfiles&quot;</span><span class="p">]</span>
+ 100     <span class="n">GroupsCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Groups</span><span class="p">)</span>
+ 101 
+ 102     <span class="n">CombineMatchResults</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineMatchResults&quot;</span><span class="p">]</span>
+ 103     <span class="n">AndCombineOperatorMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;AndCombineOperatorMode&quot;</span><span class="p">]</span>
+ 104     
+ 105     <span class="n">CountMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span>
+ 106     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+ 107 
+ 108     <span class="c1"># Setup a molecule reader...</span>
+ 109     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+ 110     <span class="n">Mols</span>  <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+ 111     
+ 112     <span class="c1"># Set up  molecule writers...</span>
+ 113     <span class="n">Writer</span> <span class="o">=</span> <span class="bp">None</span>
+ 114     <span class="n">GroupOutfilesWriters</span> <span class="o">=</span> <span class="p">[]</span>
+ 115     <span class="k">if</span> <span class="ow">not</span> <span class="n">CountMode</span><span class="p">:</span>
+ 116         <span class="n">Writer</span><span class="p">,</span>  <span class="n">GroupOutfilesWriters</span> <span class="o">=</span> <span class="n">SetupMoleculeWriters</span><span class="p">(</span><span class="n">CombineMatchResults</span><span class="p">,</span> <span class="n">Outfile</span><span class="p">,</span> <span class="n">GroupsOutfiles</span><span class="p">)</span>
+ 117     
+ 118     <span class="c1"># Initialize pattern mols match count and status...</span>
+ 119     <span class="n">GroupsPatternMolsMatchCount</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">GroupsCount</span>
+ 120     <span class="n">GroupsPatternMolsMatchStatus</span> <span class="o">=</span> <span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">*</span> <span class="n">GroupsCount</span>
+ 121 
+ 122     <span class="c1"># Process molecules...</span>
+ 123     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 124     <span class="n">ValidMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 125     <span class="n">MatchCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 126 
+ 127     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 128     
+ 129     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 130         <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 131         
+ 132         <span class="k">if</span> <span class="n">Mol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 133             <span class="k">continue</span>
+ 134         
+ 135         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">Mol</span><span class="p">):</span>
+ 136             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 137             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring empty molecule: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolName</span><span class="p">)</span>
+ 138             <span class="k">continue</span>
+ 139         
+ 140         <span class="n">ValidMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 141 
+ 142         <span class="c1"># Match pattern mols...</span>
+ 143         <span class="k">for</span> <span class="n">GroupIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">GroupsCount</span><span class="p">):</span>
+ 144             <span class="n">GroupsPatternMolsMatchStatus</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]</span> <span class="o">=</span> <span class="n">DoesPatternMolMatch</span><span class="p">(</span><span class="n">GroupsPatternMols</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">],</span> <span class="n">Mol</span><span class="p">,</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">GroupsNegateMatch</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">])</span>
+ 145             <span class="k">if</span> <span class="n">GroupsPatternMolsMatchStatus</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]:</span>
+ 146                 <span class="n">GroupsPatternMolsMatchCount</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+ 147         
+ 148         <span class="c1"># Match mol against all specified criteria...</span>
+ 149         <span class="n">MolMatched</span> <span class="o">=</span> <span class="n">DoesMolMeetSpecifiedMatchCriteria</span><span class="p">(</span><span class="n">GroupsPatternMolsMatchStatus</span><span class="p">,</span> <span class="n">CombineMatchResults</span><span class="p">,</span> <span class="n">AndCombineOperatorMode</span><span class="p">)</span>
+ 150         <span class="k">if</span> <span class="n">MolMatched</span><span class="p">:</span>
+ 151             <span class="n">MatchCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 152             
+ 153         <span class="c1"># Nothing to write...</span>
+ 154         <span class="k">if</span> <span class="n">CountMode</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">MolMatched</span><span class="p">):</span>
+ 155             <span class="k">continue</span>
+ 156         
+ 157         <span class="c1"># Write out matched molecules...</span>
+ 158         <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 159             <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 160         
+ 161         <span class="k">if</span> <span class="n">CombineMatchResults</span><span class="p">:</span>
+ 162             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 163         <span class="k">else</span><span class="p">:</span>
+ 164             <span class="k">for</span> <span class="n">GroupIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">GroupsCount</span><span class="p">):</span>
+ 165                 <span class="k">if</span> <span class="n">GroupsPatternMolsMatchStatus</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]:</span>
+ 166                     <span class="n">GroupOutfilesWriters</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 167     
+ 168     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 169         <span class="n">Writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 170     <span class="k">for</span> <span class="n">GroupOutfileWriter</span> <span class="ow">in</span> <span class="n">GroupOutfilesWriters</span><span class="p">:</span>
+ 171         <span class="n">GroupOutfileWriter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 172         
+ 173     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 174     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 175     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 176 
+ 177     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules matched against specified match criteria: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MatchCount</span><span class="p">)</span>
+ 178     
+ 179     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of molecuels matched against individual functional groups:&quot;</span><span class="p">)</span>
+ 180     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;FunctionalGroupName,MatchCount&quot;</span><span class="p">)</span>
+ 181     
+ 182     <span class="k">for</span> <span class="n">GroupIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">GroupsCount</span><span class="p">):</span>
+ 183         <span class="n">GroupName</span> <span class="o">=</span> <span class="n">Groups</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]</span>
+ 184         <span class="k">if</span> <span class="n">GroupsNegateMatch</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]:</span>
+ 185             <span class="n">GroupName</span> <span class="o">=</span> <span class="s1">&#39;!&#39;</span> <span class="o">+</span> <span class="n">GroupName</span>
+ 186         <span class="n">GroupMatchCount</span> <span class="o">=</span> <span class="n">GroupsPatternMolsMatchCount</span><span class="p">[</span><span class="n">GroupIndex</span><span class="p">]</span>
+ 187         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">,</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">GroupName</span><span class="p">,</span> <span class="n">GroupMatchCount</span><span class="p">))</span>
+ 188 
+ 189 <span class="k">def</span> <span class="nf">DoesMolMeetSpecifiedMatchCriteria</span><span class="p">(</span><span class="n">GroupsPatternMolsMatchStatus</span><span class="p">,</span>  <span class="n">CombineMatchResults</span><span class="p">,</span> <span class="n">AndCombineOperatorMode</span><span class="p">):</span>
+ 190     <span class="sd">&quot;&quot;&quot;Match molecule using specified match criteia.&quot;&quot;&quot;</span>
+ 191 
+ 192     <span class="k">if</span> <span class="n">CombineMatchResults</span> <span class="ow">and</span> <span class="n">AndCombineOperatorMode</span><span class="p">:</span>
+ 193         <span class="c1"># Must match all specified SMARTS</span>
+ 194         <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 195         <span class="k">for</span> <span class="n">MatchStatus</span> <span class="ow">in</span> <span class="n">GroupsPatternMolsMatchStatus</span><span class="p">:</span>
+ 196             <span class="k">if</span> <span class="ow">not</span> <span class="n">MatchStatus</span><span class="p">:</span>
+ 197                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 198                 <span class="k">break</span>
+ 199     <span class="k">else</span><span class="p">:</span>
+ 200         <span class="c1"># One match is enough...</span>
+ 201         <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 202         <span class="k">for</span> <span class="n">MatchStatus</span> <span class="ow">in</span> <span class="n">GroupsPatternMolsMatchStatus</span><span class="p">:</span>
+ 203             <span class="k">if</span> <span class="n">MatchStatus</span><span class="p">:</span>
+ 204                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 205                 <span class="k">break</span>
+ 206     
+ 207     <span class="k">return</span> <span class="n">Status</span>
+ 208     
+ 209 <span class="k">def</span> <span class="nf">SetupMoleculeWriters</span><span class="p">(</span><span class="n">CombineMatchResults</span><span class="p">,</span> <span class="n">Outfile</span><span class="p">,</span> <span class="n">GroupsOutfiles</span><span class="p">):</span>
+ 210     <span class="sd">&quot;&quot;&quot;Set up molecule writers for output files.&quot;&quot;&quot;</span>
+ 211 
+ 212     <span class="n">Writer</span> <span class="o">=</span> <span class="bp">None</span>
+ 213     <span class="n">GroupOutfilesWriters</span> <span class="o">=</span> <span class="p">[]</span>
+ 214     
+ 215     <span class="k">if</span> <span class="n">CombineMatchResults</span><span class="p">:</span>
+ 216         <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 217         <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 218             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 219         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 220     <span class="k">else</span><span class="p">:</span>
+ 221         <span class="k">for</span> <span class="n">GroupOutfile</span> <span class="ow">in</span> <span class="n">GroupsOutfiles</span><span class="p">:</span>
+ 222             <span class="n">GroupOutfileWriter</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">GroupOutfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 223             <span class="k">if</span> <span class="n">GroupOutfileWriter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 224                 <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Writer</span><span class="p">)</span>
+ 225             <span class="n">GroupOutfilesWriters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GroupOutfileWriter</span><span class="p">)</span>
+ 226         
+ 227         <span class="n">GroupsCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">GroupsOutfiles</span><span class="p">)</span>
+ 228         <span class="k">if</span> <span class="n">GroupsCount</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+ 229             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating </span><span class="si">%d</span><span class="s2"> output files with the following file name format: </span><span class="si">%s</span><span class="s2">&lt;GroupName&gt;.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">GroupsCount</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">],</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]))</span>
+ 230         <span class="k">else</span><span class="p">:</span>
+ 231             <span class="n">Delmiter</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span>
+ 232             <span class="n">OutfileNames</span> <span class="o">=</span> <span class="n">Delmiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GroupsOutfiles</span><span class="p">)</span>
+ 233             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating </span><span class="si">%d</span><span class="s2"> output files: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">GroupsCount</span><span class="p">,</span> <span class="n">OutfileNames</span><span class="p">))</span>
+ 234 
+ 235     <span class="k">return</span> <span class="p">(</span><span class="n">Writer</span><span class="p">,</span> <span class="n">GroupOutfilesWriters</span><span class="p">)</span>
+ 236     
+ 237 <span class="k">def</span> <span class="nf">DoesPatternMolMatch</span><span class="p">(</span><span class="n">PatternMol</span><span class="p">,</span> <span class="n">Mol</span><span class="p">,</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">NegateMatch</span><span class="p">):</span>
+ 238     <span class="sd">&quot;&quot;&quot;Perform a substructure match for the presence of pattern molecule in a molecule.&quot;&quot;&quot;</span>
+ 239 
+ 240     <span class="n">MolMatched</span> <span class="o">=</span> <span class="n">Mol</span><span class="o">.</span><span class="n">HasSubstructMatch</span><span class="p">(</span><span class="n">PatternMol</span><span class="p">,</span> <span class="n">useChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">)</span>
+ 241     <span class="k">if</span> <span class="n">NegateMatch</span><span class="p">:</span>
+ 242         <span class="k">if</span> <span class="n">MolMatched</span><span class="p">:</span>
+ 243             <span class="n">MolMatched</span> <span class="o">=</span> <span class="bp">False</span>
+ 244         <span class="k">else</span><span class="p">:</span>
+ 245             <span class="n">MolMatched</span> <span class="o">=</span> <span class="bp">True</span>
+ 246     
+ 247     <span class="k">return</span> <span class="n">MolMatched</span>
+ 248     
+ 249 <span class="k">def</span> <span class="nf">ProcessFunctionalGroupsInfo</span><span class="p">():</span>
+ 250     <span class="sd">&quot;&quot;&quot;Process functional groups information.&quot;&quot;&quot;</span>
+ 251     
+ 252     <span class="n">RetrieveFunctionalGroupsInfo</span><span class="p">()</span>
+ 253     <span class="n">ProcessSpecifiedFunctionalGroups</span><span class="p">()</span>
+ 254 
+ 255     <span class="n">SetupFunctionalGroupsSMARTSPatterns</span><span class="p">()</span>
+ 256     <span class="n">SetupFunctionalGroupsOutputFileNames</span><span class="p">()</span>
+ 257     
+ 258 <span class="k">def</span> <span class="nf">ProcessSpecifiedFunctionalGroups</span><span class="p">():</span>
+ 259     <span class="sd">&quot;&quot;&quot;Process and validate specified functional groups&quot;&quot;&quot;</span>
+ 260     
+ 261     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 262     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsNegateMatch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 263     
+ 264     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^All$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FunctionalGroups&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 265         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]</span>
+ 266         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsNegateMatch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">])</span>
+ 267         <span class="k">return</span>
+ 268     
+ 269     <span class="c1"># Set up a map of valid group names for checking specified group names...</span>
+ 270     <span class="n">CanonicalGroupNameMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 271     <span class="k">for</span> <span class="n">GroupName</span> <span class="ow">in</span> <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]:</span>
+ 272         <span class="n">CanonicalGroupNameMap</span><span class="p">[</span><span class="n">GroupName</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">GroupName</span>
+ 273         
+ 274     <span class="c1"># Parse and validate specified names...</span>
+ 275     <span class="n">GroupNames</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FunctionalGroups&quot;</span><span class="p">])</span>
+ 276     <span class="k">if</span> <span class="ow">not</span> <span class="n">GroupNames</span><span class="p">:</span>
+ 277         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No functional group name specified for </span><span class="se">\&quot;</span><span class="s2">-f, --functionalGroups</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 278     
+ 279     <span class="n">SpecifiedFunctionalGroups</span> <span class="o">=</span> <span class="p">[]</span>
+ 280     <span class="n">SpecifiedNegateMatchStatus</span> <span class="o">=</span> <span class="p">[]</span>
+ 281     
+ 282     <span class="k">for</span> <span class="n">GroupName</span> <span class="ow">in</span> <span class="n">GroupNames</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+ 283         <span class="n">CanonicalGroupName</span> <span class="o">=</span> <span class="n">GroupName</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 284         <span class="n">NegateMatchStatus</span> <span class="o">=</span> <span class="bp">False</span>
+ 285         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^!&quot;</span><span class="p">,</span> <span class="n">CanonicalGroupName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 286             <span class="n">NegateMatchStatus</span> <span class="o">=</span> <span class="bp">True</span>
+ 287             <span class="n">CanonicalGroupName</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;^!&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">CanonicalGroupName</span><span class="p">)</span>
+ 288         <span class="k">if</span> <span class="n">CanonicalGroupName</span> <span class="ow">in</span> <span class="n">CanonicalGroupNameMap</span><span class="p">:</span>
+ 289             <span class="n">SpecifiedFunctionalGroups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CanonicalGroupNameMap</span><span class="p">[</span><span class="n">CanonicalGroupName</span><span class="p">])</span>
+ 290             <span class="n">SpecifiedNegateMatchStatus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NegateMatchStatus</span><span class="p">)</span>
+ 291         <span class="k">else</span><span class="p">:</span>
+ 292             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;The functional group name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-f, --functionalGroups</span><span class="se">\&quot;</span><span class="s2"> option is not a valid name.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">GroupName</span><span class="p">))</span>
+ 293 
+ 294     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">SpecifiedFunctionalGroups</span><span class="p">):</span>
+ 295         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No valid functional group names specified for </span><span class="se">\&quot;</span><span class="s2">-f, --functionalGroups</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 296         
+ 297     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecifiedFunctionalGroups</span>
+ 298     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsNegateMatch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecifiedNegateMatchStatus</span>
+ 299 
+ 300 <span class="k">def</span> <span class="nf">SetupFunctionalGroupsSMARTSPatterns</span><span class="p">():</span>
+ 301     <span class="sd">&quot;&quot;&quot;Setup SMARTS patterns for specified functional groups.&quot;&quot;&quot;</span>
+ 302 
+ 303     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsSMARTSPatterns&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 304     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsPatternMols&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 305     
+ 306     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">]:</span>
+ 307         <span class="n">SMARTSPattern</span> <span class="o">=</span> <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;SMARTSPattern&#39;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span>
+ 308         <span class="n">PatternMol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmarts</span><span class="p">(</span><span class="n">SMARTSPattern</span><span class="p">)</span>
+ 309         <span class="k">if</span> <span class="n">PatternMol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 310             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to parse SMARTS pattern, </span><span class="si">%s</span><span class="s2">, for function group, </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">SMARTSPattern</span><span class="p">,</span> <span class="n">Name</span><span class="p">))</span>
+ 311         
+ 312         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsSMARTSPatterns&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SMARTSPattern</span><span class="p">)</span>
+ 313         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsPatternMols&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PatternMol</span><span class="p">)</span>
+ 314 
+ 315 <span class="k">def</span> <span class="nf">SetupFunctionalGroupsOutputFileNames</span><span class="p">():</span>
+ 316     <span class="sd">&quot;&quot;&quot;Setup output file names for specified functional group names.&quot;&quot;&quot;</span>
+ 317 
+ 318     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsOutfiles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 319     
+ 320     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]:</span>
+ 321         <span class="c1"># No need of any output file...</span>
+ 322         <span class="k">return</span>
+ 323     
+ 324     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineMatchResults&quot;</span><span class="p">]:</span>
+ 325         <span class="c1"># No need of output files for specified functional groups...</span>
+ 326         <span class="k">return</span>
+ 327     
+ 328     <span class="n">OutfileBasename</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">]</span>
+ 329     <span class="n">OutfileExt</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]</span>
+ 330     <span class="n">SpecifiedFunctionalGroupsOutfiles</span> <span class="o">=</span> <span class="p">[]</span>
+ 331 
+ 332     <span class="n">GroupsCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">])</span>
+ 333     <span class="k">for</span> <span class="n">GroupIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">GroupsCount</span><span class="p">):</span>
+ 334         <span class="n">GroupName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroups&quot;</span><span class="p">][</span><span class="n">GroupIndex</span><span class="p">]</span>
+ 335         <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsNegateMatch&quot;</span><span class="p">][</span><span class="n">GroupIndex</span><span class="p">]:</span>
+ 336             <span class="n">GroupName</span> <span class="o">=</span> <span class="s2">&quot;Not&quot;</span> <span class="o">+</span> <span class="n">GroupName</span>
+ 337         <span class="n">GroupName</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;\.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">GroupName</span><span class="p">)</span>
+ 338         
+ 339         <span class="n">GroupOutfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OutfileBasename</span><span class="p">,</span> <span class="n">GroupName</span><span class="p">,</span> <span class="n">OutfileExt</span><span class="p">)</span>
+ 340         <span class="n">SpecifiedFunctionalGroupsOutfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GroupOutfile</span><span class="p">)</span>
+ 341 
+ 342     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFunctionalGroupsOutfiles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecifiedFunctionalGroupsOutfiles</span>
+ 343     
+ 344 <span class="k">def</span> <span class="nf">RetrieveFunctionalGroupsInfo</span><span class="p">():</span>
+ 345     <span class="sd">&quot;&quot;&quot;Retrieve functional groups information&quot;&quot;&quot;</span>
+ 346 
+ 347     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Retrieving data from default RDKit functional groups hierarchy file Functional_Group_Hierarchy.txt...&quot;</span><span class="p">)</span>
+ 348     
+ 349     <span class="n">FunctionalGroupNamesFile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GroupNamesFile&quot;</span><span class="p">]</span>
+ 350     <span class="n">FunctionalGroupsNodes</span> <span class="o">=</span> <span class="n">FunctionalGroups</span><span class="o">.</span><span class="n">BuildFuncGroupHierarchy</span><span class="p">(</span><span class="n">FunctionalGroupNamesFile</span><span class="p">)</span>
+ 351 
+ 352     <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 353     <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;SMARTSPattern&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+ 354     
+ 355     <span class="n">RetrieveDataFromFunctionalGroupsHierarchy</span><span class="p">(</span><span class="n">FunctionalGroupsNodes</span><span class="p">)</span>
+ 356 
+ 357     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]):</span>
+ 358         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to retrieve any functional group names and SMARTS patterns...&quot;</span><span class="p">)</span>
+ 359         
+ 360     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total number of functional groups present functional group hierarchy: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">])))</span>
+ 361     
+ 362 <span class="k">def</span> <span class="nf">RetrieveDataFromFunctionalGroupsHierarchy</span><span class="p">(</span><span class="n">FGNodes</span><span class="p">):</span>
+ 363     <span class="sd">&quot;&quot;&quot;Retrieve functional groups data by recursively visiting functional group nodes.&quot;&quot;&quot;</span>
+ 364     
+ 365     <span class="k">for</span> <span class="n">FGNode</span> <span class="ow">in</span> <span class="n">FGNodes</span><span class="p">:</span>
+ 366         <span class="n">Name</span> <span class="o">=</span> <span class="n">FGNode</span><span class="o">.</span><span class="n">label</span>
+ 367         <span class="n">SMARTSPattern</span> <span class="o">=</span> <span class="n">FGNode</span><span class="o">.</span><span class="n">smarts</span>
+ 368 
+ 369         <span class="k">if</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;SMARTSPattern&#39;</span><span class="p">]:</span>
+ 370             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring duplicate functional group name: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Name</span><span class="p">)</span>
+ 371         <span class="k">else</span><span class="p">:</span>
+ 372             <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Name</span><span class="p">)</span>
+ 373             <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;SMARTSPattern&#39;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">SMARTSPattern</span>
+ 374 
+ 375         <span class="n">RetrieveDataFromFunctionalGroupsHierarchy</span><span class="p">(</span><span class="n">FGNode</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+ 376 
+ 377 <span class="k">def</span> <span class="nf">ListFunctionalGroupsInfo</span><span class="p">():</span>
+ 378     <span class="sd">&quot;&quot;&quot;List functional groups information&quot;&quot;&quot;</span>
+ 379 
+ 380     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Listing available functional groups names and SMARTS patterns...&quot;</span><span class="p">)</span>
+ 381     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">FunctionalGroupName</span><span class="se">\t</span><span class="s2">SMARTSPattern&quot;</span><span class="p">)</span>
+ 382     
+ 383     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;Names&#39;</span><span class="p">]):</span>
+ 384         <span class="n">SMARTSPattern</span> <span class="o">=</span> <span class="n">FunctionalGroupsMap</span><span class="p">[</span><span class="s1">&#39;SMARTSPattern&#39;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span>
+ 385         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Name</span><span class="p">,</span> <span class="n">SMARTSPattern</span><span class="p">))</span>
+ 386     
+ 387     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+ 388 
+ 389 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 390     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 391     
+ 392     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 393     
+ 394     <span class="c1"># Validate options...</span>
+ 395     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 396     
+ 397     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineMatches&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineMatches&quot;</span><span class="p">]</span>
+ 398     
+ 399     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineMatchResults&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 400     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^No$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineMatches&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 401         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineMatchResults&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 402         <span class="k">if</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]:</span>
+ 403             <span class="n">FileDir</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ParseFileName</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 404             <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FileName</span>
+ 405             <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FileExt</span>
+ 406     
+ 407     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CombineOperator&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineOperator&quot;</span><span class="p">]</span>
+ 408     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;AndCombineOperatorMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 409     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^or$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineOperator&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 410         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;AndCombineOperatorMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 411     
+ 412     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GroupNamesFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+ 413     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 414         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GroupNamesFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">]</span>
+ 415         
+ 416     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FunctionalGroups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--functionalGroups&quot;</span><span class="p">]</span>
+ 417     
+ 418     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 419     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 420     
+ 421     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 422     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 423     
+ 424     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 425     
+ 426     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 427     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^count$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 428         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 429     
+ 430     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 431     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 432         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 433 
+ 434 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 435     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 436     
+ 437     <span class="c1"># Get options...</span>
+ 438     <span class="k">global</span> <span class="n">Options</span>
+ 439     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 440 
+ 441     <span class="c1"># Set current working directory to the specified directory...</span>
+ 442     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 443     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 444         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 445     
+ 446     <span class="c1"># Handle examples option...</span>
+ 447     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 448         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 449         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 450     
+ 451     <span class="c1"># Handle listing of functional group information...</span>
+ 452     <span class="k">if</span>  <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--list&quot;</span><span class="p">]:</span>
+ 453         <span class="n">ProcessListFunctionalGroupsOption</span><span class="p">()</span>
+ 454         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 455 
+ 456 <span class="k">def</span> <span class="nf">ProcessListFunctionalGroupsOption</span><span class="p">():</span>
+ 457     <span class="sd">&quot;&quot;&quot;Process list functional groups information.&quot;&quot;&quot;</span>
+ 458 
+ 459     <span class="c1"># Validate and process dataFile option for listing functional groups information...</span>
+ 460     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GroupNamesFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+ 461     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 462         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-g, --groupNamesFile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">])</span>
+ 463         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GroupNamesFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">]</span>
+ 464     
+ 465     <span class="n">RetrieveFunctionalGroupsInfo</span><span class="p">()</span>
+ 466     <span class="n">ListFunctionalGroupsInfo</span><span class="p">()</span>
+ 467     
+ 468 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 469     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 470     
+ 471     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-c, --combineMatches&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineMatches&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 472     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--combineOperator&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--combineOperator&quot;</span><span class="p">],</span> <span class="s2">&quot;and or&quot;</span><span class="p">)</span>
+ 473     
+ 474     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 475         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-g, groupNamesFile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--groupNamesFile&quot;</span><span class="p">])</span>
+ 476         
+ 477     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^none$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--functionalGroups&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 478         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The name(s) of functional groups must be specified using </span><span class="se">\&quot;</span><span class="s2">-f, --functionalGroups</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 479         
+ 480     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 481     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi txt csv tsv&quot;</span><span class="p">)</span>
+ 482     <span class="k">if</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]:</span>
+ 483         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi&quot;</span><span class="p">)</span>
+ 484         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 485         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 486     
+ 487     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-m, --mode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="s2">&quot;retrieve count&quot;</span><span class="p">)</span>
+ 488     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^retrieve$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 489         <span class="k">if</span> <span class="ow">not</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]:</span>
+ 490             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The outfile must be specified using </span><span class="se">\&quot;</span><span class="s2">-o, --outfile</span><span class="se">\&quot;</span><span class="s2"> during </span><span class="se">\&quot;</span><span class="s2">retrieve</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-m, --mode</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 491         
+ 492     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 493 
+ 494 <span class="c1"># Setup a usage string for docopt...</span>
+ 495 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 496 <span class="s2">RDKitSearchFunctionalGroups.py - Search for functional groups using SMARTS patterns</span>
+ 497 
+ 498 <span class="s2">Usage:</span>
+ 499 <span class="s2">    RDKitSearchFunctionalGroups.py  [--combineMatches &lt;yes or no&gt;] [--combineOperator &lt;and or or&gt;]</span>
+ 500 <span class="s2">                                           [--groupNamesFile &lt;FileName or auto&gt;] [--infileParams &lt;Name,Value,...&gt;]</span>
+ 501 <span class="s2">                                           [--mode &lt;retrieve or count&gt;] [--negate &lt;yes or no&gt;]</span>
+ 502 <span class="s2">                                           [--outfileParams &lt;Name,Value,...&gt;] [--overwrite] [--useChirality &lt;yes or no&gt;]</span>
+ 503 <span class="s2">                                           [-w &lt;dir&gt;] [-o &lt;outfile&gt;] -i &lt;infile&gt; -f &lt;Name1,Name2,Name3... or All&gt;</span>
+ 504 <span class="s2">    RDKitSearchFunctionalGroups.py [--groupNamesFile &lt;FileName or auto&gt;] -l | --list</span>
+ 505 <span class="s2">    RDKitSearchFunctionalGroups.py -h | --help | -e | --examples</span>
+ 506 
+ 507 <span class="s2">Description:</span>
+ 508 <span class="s2">    Perform a substructure search in an input file using SMARTS patterns for functional</span>
+ 509 <span class="s2">    groups and write out the matched molecules to an output file or simply count the</span>
+ 510 <span class="s2">    number of matches.</span>
+ 511 
+ 512 <span class="s2">    The SMARTS patterns for specified functional group(s) are retrieved from file,</span>
+ 513 <span class="s2">    Functional_Group_Hierarchy.txt, available in RDKit data directory.</span>
+ 514 
+ 515 <span class="s2">    The names of valid functional groups and hierarchies  are dynamically retrieved from the</span>
+ 516 <span class="s2">    functional groups hierarchy file and are shown below:</span>
+ 517 
+ 518 <span class="s2">        AcidChloride, AcidChloride.Aromatic, AcidChloride.Aliphatic</span>
+ 519 <span class="s2">        Alcohol, Alcohol.Aromatic, Alcohol.Aliphatic</span>
+ 520 <span class="s2">        Aldehyde, Aldehyde.Aromatic, Aldehyde.Aliphatic</span>
+ 521 <span class="s2">        Amine, Amine.Primary, Amine.Primary.Aromatic, Amine.Primary.Aliphatic,</span>
+ 522 <span class="s2">        Amine.Secondary, Amine.Secondary.Aromatic, Amine.Secondary.Aliphatic</span>
+ 523 <span class="s2">        Amine.Tertiary, Amine.Tertiary.Aromatic, Amine.Tertiary.Aliphatic</span>
+ 524 <span class="s2">        Amine.Aromatic, Amine.Aliphatic, Amine.Cyclic</span>
+ 525 <span class="s2">        Azide, Azide.Aromatic, Azide.Aliphatic</span>
+ 526 <span class="s2">        BoronicAcid, BoronicAcid.Aromatic, BoronicAcid.Aliphatic</span>
+ 527 <span class="s2">        CarboxylicAcid, CarboxylicAcid.Aromatic, CarboxylicAcid.Aliphatic,</span>
+ 528 <span class="s2">        CarboxylicAcid.AlphaAmino</span>
+ 529 <span class="s2">        Halogen, Halogen.Aromatic, Halogen.Aliphatic</span>
+ 530 <span class="s2">        Halogen.NotFluorine, Halogen.NotFluorine.Aliphatic,</span>
+ 531 <span class="s2">        Halogen.NotFluorine.Aromatic</span>
+ 532 <span class="s2">        Halogen.Bromine, Halogen.Bromine.Aliphatic, Halogen.Bromine.Aromatic,</span>
+ 533 <span class="s2">        Halogen.Bromine.BromoKetone</span>
+ 534 <span class="s2">        Isocyanate, Isocyanate.Aromatic, Isocyanate.Aliphatic</span>
+ 535 <span class="s2">        Nitro, Nitro.Aromatic, Nitro.Aliphatic,</span>
+ 536 <span class="s2">        SulfonylChloride, SulfonylChloride.Aromatic, SulfonylChloride.Aliphatic</span>
+ 537 <span class="s2">        TerminalAlkyne</span>
+ 538 
+ 539 <span class="s2">    The supported input file formats are: SD (.sdf, .sd), SMILES (.smi, .csv, .tsv, .txt)</span>
+ 540 
+ 541 <span class="s2">    The supported output file formats are: SD (.sdf, .sd), SMILES (.smi)</span>
+ 542 
+ 543 <span class="s2">Options:</span>
+ 544 <span class="s2">    -c, --combineMatches &lt;yes or no&gt;  [default: yes]</span>
+ 545 <span class="s2">        Combine search results for matching SMARTS patterns of specified functional groups</span>
+ 546 <span class="s2">        against a molecule. Possible values: yes or no.</span>
+ 547 <span class="s2">        </span>
+ 548 <span class="s2">        The matched molecules are written to a single output file for &quot;yes&quot; value. Otherwise,</span>
+ 549 <span class="s2">        multiple output files are generated, one for each functional group. The names of  </span>
+ 550 <span class="s2">        these files correspond to a combination of the basename of the specified output file</span>
+ 551 <span class="s2">        and the name of the functional group.</span>
+ 552 <span class="s2">        </span>
+ 553 <span class="s2">        No output files are generated during &quot;count&quot; value of &quot;-m, --mode&quot; option.</span>
+ 554 <span class="s2">    --combineOperator &lt;and or or&gt;  [default: and]</span>
+ 555 <span class="s2">        Logical operator to use for combining match results corresponding to specified</span>
+ 556 <span class="s2">        functional group names before writing out a single file. This option is ignored</span>
+ 557 <span class="s2">        during &quot;No&quot; value of  &quot;-c, --combineMatches&quot; option.</span>
+ 558 <span class="s2">    -e, --examples</span>
+ 559 <span class="s2">        Print examples.</span>
+ 560 <span class="s2">    -g, --groupNamesFile &lt;FileName or auto&gt;  [default: auto]</span>
+ 561 <span class="s2">        Specify a file name containing data for functional groups hierarchy or use functional</span>
+ 562 <span class="s2">        group hierarchy file, Functional_Group_Hierarchy.txt, available in RDKit data directory.</span>
+ 563 <span class="s2">        </span>
+ 564 <span class="s2">        RDKit data format: Name&lt;tab&gt;Smarts&lt;tab&gt;Label&lt;tab&gt;RemovalReaction (optional)</span>
+ 565 <span class="s2">        </span>
+ 566 <span class="s2">        The format of data in local functional group hierarchy must match format of the</span>
+ 567 <span class="s2">        data in functional group file available in RDKit data directory.</span>
+ 568 <span class="s2">    -f, --functionalGroups &lt;Name1,Name2,Name3... or All&gt;  [default: none]</span>
+ 569 <span class="s2">        Functional group names for performing substructure SMARTS search. Possible values:</span>
+ 570 <span class="s2">        Comma delimited list of valid functional group names or All. The current set of valid</span>
+ 571 <span class="s2">        functional group names are listed in the description section.</span>
+ 572 <span class="s2">        </span>
+ 573 <span class="s2">        The match results for multiple functional group names are combined using &#39;and&#39;</span>
+ 574 <span class="s2">        operator before writing them out to single file. No merging of match results takes</span>
+ 575 <span class="s2">        place during generation of individual result files corresponding to fictional group</span>
+ 576 <span class="s2">        names.</span>
+ 577 <span class="s2">        </span>
+ 578 <span class="s2">        The functional group name may be started with an exclamation mark to negate</span>
+ 579 <span class="s2">        the match result for that fictional group.</span>
+ 580 <span class="s2">    -h, --help</span>
+ 581 <span class="s2">        Print this help message.</span>
+ 582 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 583 <span class="s2">        Input file name.</span>
+ 584 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 585 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 586 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 587 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 588 <span class="s2">            </span>
+ 589 <span class="s2">            SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 590 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 591 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 592 <span class="s2">            </span>
+ 593 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 594 <span class="s2">    -l, --list</span>
+ 595 <span class="s2">        List functional groups information without performing any search.</span>
+ 596 <span class="s2">    -m, --mode &lt;retrieve or count&gt;  [default: retrieve]</span>
+ 597 <span class="s2">        Specify whether to retrieve and write out matched molecules to an output</span>
+ 598 <span class="s2">        file or simply count the number of matches.</span>
+ 599 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 600 <span class="s2">        Output file name.</span>
+ 601 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 602 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 603 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 604 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 605 <span class="s2">            </span>
+ 606 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 607 <span class="s2">            SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,</span>
+ 608 <span class="s2">                smilesTitleLine,yes</span>
+ 609 <span class="s2">            </span>
+ 610 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 611 <span class="s2">        file types.</span>
+ 612 <span class="s2">    --overwrite</span>
+ 613 <span class="s2">        Overwrite existing files.</span>
+ 614 <span class="s2">    -u, --useChirality &lt;yes or no&gt;  [default: no]</span>
+ 615 <span class="s2">        Use stereochemistry information for SMARTS search.</span>
+ 616 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 617 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 618 
+ 619 <span class="s2">Examples:</span>
+ 620 <span class="s2">    To list names of all available functional groups along with their SMARTS patterns, type:</span>
+ 621 
+ 622 <span class="s2">        % RDKitSearchFunctionalGroups.py -l</span>
+ 623 
+ 624 <span class="s2">    To retrieve molecule containing amine functional group and write out a SMILES file, type: </span>
+ 625 
+ 626 <span class="s2">        % RDKitSearchFunctionalGroups.py -f Amine -i Sample.smi -o SampleOut.smi</span>
+ 627 
+ 628 <span class="s2">    To retrieve molecules containing amine functional group but not halogens and carboxylic</span>
+ 629 <span class="s2">    acid functional groups and write out a SMILES file, type: </span>
+ 630 
+ 631 <span class="s2">        % RDKitSearchFunctionalGroups.py -f &#39;Amine,!Halogen,!CarboxylicAcid&#39;</span>
+ 632 <span class="s2">          -i Sample.smi -o SampleOut.smi</span>
+ 633 
+ 634 <span class="s2">    To retrieve molecules containing amine, halogens or carboxylic  acid functional groups</span>
+ 635 <span class="s2">    and write out a SMILES file, type: </span>
+ 636 
+ 637 <span class="s2">        % RDKitSearchFunctionalGroups.py -f &#39;Amine,Halogen,CarboxylicAcid&#39;</span>
+ 638 <span class="s2">          --combineOperator or -i Sample.smi -o SampleOut.smi</span>
+ 639 
+ 640 <span class="s2">    To retrieve molecules containing amine and carboxylic acid functional groups defined in</span>
+ 641 <span class="s2">    a local functional groups hierarchy file and write out individual SD files for each</span>
+ 642 <span class="s2">    funcitonal group, type: </span>
+ 643 
+ 644 <span class="s2">        % RDKitSearchFunctionalGroups.py -f &#39;Amine,CarboxylicAcid&#39; -i Sample.sdf </span>
+ 645 <span class="s2">          -g Custom_Functional_Group_Hierarchy.txt --combineMatches No -o SampleOut.sdf</span>
+ 646 
+ 647 <span class="s2">    To count number of all functional groups in molecules without writing out an output</span>
+ 648 <span class="s2">    files, type:</span>
+ 649 
+ 650 <span class="s2">        % RDKitSearchFunctionalGroups.py -m count -f All --combineMatches no -i Sample.smi</span>
+ 651 
+ 652 <span class="s2">    To retrieve molecule not containing aromatic alcohol and aromatic halogen functional</span>
+ 653 <span class="s2">    group along with the use of chirality during substructure search and write out individual</span>
+ 654 <span class="s2">    SMILES files for eeah functional group, type: </span>
+ 655 
+ 656 <span class="s2">        % RDKitSearchFunctionalGroups.py --combineMatches no -u yes</span>
+ 657 <span class="s2">           -f &#39;!Alcohol.Aromatic,!Halogen.Aromatic&#39; -i Sample.smi -o SampleOut.smi</span>
+ 658 
+ 659 <span class="s2">    To retrieve molecule containing amine functional group from a CSV SMILES file,</span>
+ 660 <span class="s2">    SMILES strings in column 1, name in column 2, and write out a SD file, type: </span>
+ 661 
+ 662 <span class="s2">        % RDKitSearchFunctionalGroups.py -f Amine --infileParams</span>
+ 663 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 664 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;</span>
+ 665 <span class="s2">          -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 666 
+ 667 <span class="s2">Author:</span>
+ 668 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 669 
+ 670 <span class="s2">See also:</span>
+ 671 <span class="s2">    RDKitConvertFileFormat.py, RDKitFilterPAINS.py, RDKitSearchSMARTS.py</span>
+ 672 
+ 673 <span class="s2">Copyright:</span>
+ 674 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 675 
+ 676 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 677 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 678 
+ 679 <span class="s2">    This file is part of MayaChemTools.</span>
+ 680 
+ 681 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 682 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 683 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 684 <span class="s2">    later version.</span>
+ 685 
+ 686 <span class="s2">&quot;&quot;&quot;</span>
+ 687 
+ 688 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 689     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

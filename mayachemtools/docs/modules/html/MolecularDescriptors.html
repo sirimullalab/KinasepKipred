@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:MolecularDescriptors/MolecularDescriptors.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MolecularComplexityDescriptors.html" title="MolecularComplexityDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MolecularDescriptorsGenerator.html" title="MolecularDescriptorsGenerator.html">Next</a></td><td width="34%" align="middle"><strong>MolecularDescriptors/MolecularDescriptors.pm</strong></td><td width="33%" align="right"><a href="././code/MolecularDescriptors.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/MolecularDescriptors.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/MolecularDescriptors.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/MolecularDescriptors.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/MolecularDescriptors.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>MolecularDescriptors - MolecularDescriptors class</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use MolecularDescriptors::MolecularDescriptors;</p>
+<p>use MolecularDescriptors::MolecularDescriptors qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>MolecularDescriptors</b> base class used to derive all other molecular descriptors classes provides the following methods:</p>
+<p>new, AddDescriptorNames, AddDescriptorValues, GetDescriptorNames, GetDescriptorNamesAndValues, GetDescriptorValueByName, GetDescriptorValues, IsDescriptorsGenerationSuccessful, SetDescriptorNames, SetDescriptorValues, SetMolecule, SetType</p>
+<p><b>MolecularDescriptors</b> class is derived from <b>ObjectProperty</b> base class which provides methods not explicitly defined in <b>Fingerprints</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMolecularDescriptors = new MolecularDescriptors::
+                               MolecularDescriptors(%NamesAndValues);</div>
+<p>Using specified <i>MolecularDescriptors</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>MolecularDescriptors</b> object. By default, following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;;
+<br/>    Type = &#39;&#39;;</div>
+</dd>
+<dt id="AddDescriptorNames"><b>AddDescriptorNames</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;AddDescriptorNames(@Name);</div>
+<p>Adds specified descriptor <i>Names</i> to the list of available descriptor names and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+<dt id="AddDescriptorValues"><b>AddDescriptorValues</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;AddDescriptorValues(@Values);</div>
+<p>Adds specified descriptor <i>Values</i> to the list of calculated descriptor values and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+<dt id="GetDescriptorNames"><b>GetDescriptorNames</b></dt>
+<dd>
+<div class="OptionsBox">    @Names = $MolecularDescriptors-&gt;GetDescriptorNames();</div>
+<p>Returns an array containing all available descriptor names.</p>
+</dd>
+<dt id="GetDescriptorNamesAndValues"><b>GetDescriptorNamesAndValues</b></dt>
+<dd>
+<div class="OptionsBox">    %NamesAndValuesReturn = $MolecularDescriptors-&gt;
+                              GetDescriptorNamesAndValues();</div>
+<p>Returns a hash containing all available descriptor names and calculated values.</p>
+</dd>
+<dt id="GetDescriptorValueByName"><b>GetDescriptorValueByName</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $MolecularDescriptors-&gt;
+                              GetDescriptorValueByName($Name);</div>
+<p>Returns calculated value for a specified descriptor name. A string <b>None</b> is returned for unknown descriptor names or for those descriptors whose values haven&#39;t been calculated.</p>
+</dd>
+<dt id="GetDescriptorValues"><b>GetDescriptorValues</b></dt>
+<dd>
+<div class="OptionsBox">    @Values = $MolecularDescriptors-&gt;GetDescriptorValues();</div>
+<p>Returns an array containing calculated descriptor values for all available descriptors. Unless <b>CalculateDescriptorsValues</b> method has been successfully invoked on a <i>MolecularDescriptors</i> object, value of each descriptor corresponds to string <b>None</b>.</p>
+</dd>
+<dt id="IsDescriptorsGenerationSuccessful"><b>IsDescriptorsGenerationSuccessful</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $MolecularDescriptors-&gt;
+                              IsDescriptorsGenerationSuccessful();</div>
+<p>Returns 1 or 0 based on whether molecular descriptors generation was successful. For a successful molecular descriptors calculation, all available descriptors must have a values other than a string <i>None</i> which are set by <b>CalculateDescriptorsValues</b> method after successful completion of descriptors calculation.</p>
+</dd>
+<dt id="SetDescriptorNames"><b>SetDescriptorNames</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;SetDescriptorNames(@Names);</div>
+<p>Sets names of available descriptors to specified names and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+<dt id="SetDescriptorValues"><b>SetDescriptorValues</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;SetDescriptorValues(@Values);</div>
+<p>Sets values of available descriptors to specified values and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+<dt id="SetMolecule"><b>SetMolecule</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;SetMolecule($Molecule);</div>
+<p>Sets molecule to use during calculation of molecular descriptors and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+<dt id="SetType"><b>SetType</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularDescriptors-&gt;SetType($Type);</div>
+<p>Sets <i>Type</i> for <i>MolecularDescriptors</i> object and returns <i>MolecularDescriptors</i>.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./MolecularDescriptorsGenerator.html">MolecularDescriptorsGenerator.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MolecularComplexityDescriptors.html" title="MolecularComplexityDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MolecularDescriptorsGenerator.html" title="MolecularDescriptorsGenerator.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>MolecularDescriptors/MolecularDescriptors.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

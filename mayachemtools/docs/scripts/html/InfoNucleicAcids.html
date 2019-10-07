@@ -1,0 +1,156 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:InfoNucleicAcids.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoFingerprintsFiles.html" title="InfoFingerprintsFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoPDBFiles.html" title="InfoPDBFiles.html">Next</a></td><td width="34%" align="middle"><strong>InfoNucleicAcids.pl</strong></td><td width="33%" align="right"><a href="././code/InfoNucleicAcids.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/InfoNucleicAcids.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/InfoNucleicAcids.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/InfoNucleicAcids.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/InfoNucleicAcids.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>InfoNucleicAcids.pl - List properties of nucleic acids</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>InfoNucleicAcids.pl NucleicAcidIDs...</p>
+<p>InfoNucleicAcids.pl [<b>-h, --help</b>] [<b>-m, --mode</b> NucleicAcidID | NucleicAcidType] [<b>--OutDelim</b> comma | tab | semicolon] [<b>--output</b> STDOUT | File] [<b>--OutputStyle</b> NucleicAcidBlock | NucleicAcidRows] [<b>-o, --overwrite</b>] [<b>--precision</b> number] [<b>--PropertiesMode</b> Categories | Names | All] [<b>-p, --properties</b> CategoryName, [CategoryName,...] | PropertyName, [PropertyName,...]] [<b>--PropertiesListing</b> ByGroup | Alphabetical] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>-w, --WorkingDir</b> dirname] NucleicAcidIDs...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>List nucleic acid properties. Nucleic acids identification supports two types of IDs: code or name. Nucleic acid properties data, in addition to basic information about nucleic acids - code, name, type, chemical formula and molecular weight - include information about exact mass and elemental composition.</p>
+<h1 id="PARAMETERS">PARAMETERS</h2>
+<dl>
+<dt id="NucleicAcidIDs-Code-NucleicAcidName...-NucleicAcidType-NucleicAcidType"><b>NucleicAcidIDs</b> <i>Code [NucleicAcidName...] | NucleicAcidType [NucleicAcidType...]</i></dt>
+<dd>
+<p><i>NucleicAcidIDs</i> is a space delimited list of values to identify nucleic acids.</p>
+<p>For <i>NucleicAcidID</i> mode, input value format is: <i>Code [NucleicAcidName...]</i>. Default: <i>A</i>. Examples:</p>
+<div class="OptionsBox">    A
+<br/>    dG AMP
+<br/>    Cytidine T UDP dpppA &quot;5&#39;-dATP&quot;</div>
+<p>For <i>NucleicAcidType</i> mode, input value format is: <i>NucleicAcidType [NucleicAcidType...]</i>. Default: <i>A</i>. Possible values are: <i>Nucleobase, Nucleoside, Deoxynucleoside, Nucleotide, Deoxynucleotide</i>. Default: <i>Nucleoside</i>. Examples:</p>
+<div class="OptionsBox">    Deoxynucleoside
+<br/>    Nucleobase Nucleotide</div>
+</dd>
+</dl>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="m---mode-NucleicAcidID-NucleicAcidType"><b>-m, --mode</b> <i>NucleicAcidID | NucleicAcidType</i></dt>
+<dd>
+<p>Specify nucleic acids for listing properties using one of these methods: nucleic acid code and/or names or nucleic acid type.</p>
+<p>Possible values: <i>NucleicAcidID or NucleicAcidType</i>. Default: <i>NucleicAcidID</i></p>
+<p>For <i>NucleicAcidType</i>, command line parameters support these type: <i>Nucleobase, Nucleoside, Deoxynucleoside, Nucleotide, Deoxynucleotide</i>.</p>
+</dd>
+<dt id="OutDelim-comma-tab-semicolon"><b>--OutDelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="output-STDOUT-File"><b>--output</b> <i>STDOUT | File</i></dt>
+<dd>
+<p>List information at STDOUT or write it to a file. Possible values: <i>STDOUT or File</i>. Default: <i>STDOUT</i>. <b>-r, --root</b> option is used to generate output file name.</p>
+</dd>
+<dt id="OutputStyle-NucleicAcidBlock-NucleicAcidRows"><b>--OutputStyle</b> <i>NucleicAcidBlock | NucleicAcidRows</i></dt>
+<dd>
+<p>Specify how to list nucleic acid information: add a new line for each property and present it as a block for each nucleic acid; or include all properties in one line and show it as a single line.</p>
+<p>Possible values: <i>NucleicAcidBlock | NucleicAcidRows</i>. Default: <i>NucleicAcidBlock</i></p>
+<p>An example for <i>NucleicAcidBlock</i> output style:</p>
+<div class="OptionsBox">    Code: Ado
+<br/>    OtherCodes: A
+<br/>    Name: Adenosine
+<br/>    Type: Nucleoside
+<br/>    MolecularFormula: C10H13O4N5
+<br/>    MolecularWeight: 267.2413
+<br/>    ... ...</div>
+<p>An example for <i>NucleicAcidRows</i> output style:</p>
+<div class="OptionsBox">    Code,OtherCodes,Name,Type,MolecularFormula,MolecularWeight</div>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="precision-number"><b>--precision</b> <i>number</i></dt>
+<dd>
+<p>Precision for listing numerical values. Default: up to <i>4</i> decimal places. Valid values: positive integers.</p>
+</dd>
+<dt id="PropertiesMode-Categories-Names-All"><b>--PropertiesMode</b> <i>Categories | Names | All</i></dt>
+<dd>
+<p>Specify how property names are specified: use category names; explicit list of property names; or use all available properties. Possible values: <i>Categories, Names, or All</i>. Default: <i>Categories</i>.</p>
+<p>This option is used in conjunction with <b>-p, --properties</b> option to specify properties of interest.</p>
+</dd>
+<dt id="p---properties-CategoryName-CategoryName-...-PropertyName-PropertyName"><b>-p, --properties</b> <i>CategoryName,[CategoryName,...] | PropertyName,[PropertyName,...]</i></dt>
+<dd>
+<p>This option is <b>--propertiesmode</b> specific. In general, it&#39;s a list of comma separated category or property names.</p>
+<p>Specify which nucleic acid properties information to list for the nucleic acid IDs specified using command line parameters: list basic information; list all available information; or specify a comma separated list of nucleic acid property names.</p>
+<p>Possible values: <i>Basic | BasicPlus | PropertyName,[PropertyName,...]</i>. Default: <i>Basic</i>.</p>
+<p><i>Basic</i> includes: <i>Code, OtherCodes, Name, Type, MolecularFormula, MolecularWeight</i></p>
+<p><i>BasicPlus</i> includes: <i>Code, OtherCodes, Name, Type, MolecularFormula, MolecularWeight, ExactMass, ElementalComposition</i></p>
+<p>Here is a complete list of available properties: <i>Code, OtherCodes, BasePair, Name, Type, MolecularFormula, MolecularFormulaAtpH7.5, MolecularWeight, ExactMass, ElementalComposition</i>.</p>
+</dd>
+<dt id="PropertiesListing-ByGroup-Alphabetical"><b>--PropertiesListing</b> <i>ByGroup | Alphabetical</i></dt>
+<dd>
+<p>Specify how to list properties for nucleic acids: group by category or an alphabetical by property names. Possible values: <i>ByGroup or Alphabetical</i>. Default: <i>ByGroup</i></p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New text file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. File name is only used during <i>File</i> value of <b>-o, --output</b> option.</p>
+<p>Default file name: NucleicAcidInfo&lt;mode&gt;.&lt;Ext&gt;. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively.</p>
+</dd>
+<dt id="w---WorkingDir-dirname"><b>-w, --WorkingDir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To list basic properties information for nucleoside A, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl</div>
+<p>To list all available properties information for nucleoside A, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl --propertiesmode all A</div>
+<p>To list all available information for all available nucleic acids, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl --propertiesmode All All</div>
+<p>To list basic properties information for all nucleobases, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl -m NucleicAcidType Nucleoside</div>
+<p>To list basic properties information for all nucleotides and deoxynulceotides, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl -m NucleicAcidType Nucleotide Deoxynucleotide</div>
+<p>To list basic properties information for variety of nucleic acids, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl A dG AMP Cytidine T UDP &quot;5&#39;-dATP&quot;</div>
+<p>To list code and molecular weights for nucleosides A, G, C and T, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl --PropertiesMode  Names --properties
+      Code,MolecularWeight A G C T</div>
+<p>To alphabetically list all the available properties for nucleotides dAMP, dGMP, dCMP, and dTMP in rows instead of nucleic acid blocks with quotes around the values, type:</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl --PropertiesMode All --PropertiesListing
+      Alphabetical --OutputStyle NucleicAcidRows -q yes dAMP dGMP
+      dCMP dTMP</div>
+<p>To alphabetically list all the available properties for all available nucleic acids to a file names NucleicAcidsProperties.csv with quotes around the values, type</p>
+<div class="ExampleBox">    % InfoNucleicAcids.pl --PropertiesMode All --PropertiesListing
+      Alphabetical --output File --OutputStyle NucleicAcidRows -r
+      NucleicAcidsProperties -o -q Yes All</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./InfoAminoAcids.html">InfoAminoAcids.pl</a>, <a href="./InfoPeriodicTableElements.html">InfoPeriodicTableElements.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoFingerprintsFiles.html" title="InfoFingerprintsFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoPDBFiles.html" title="InfoPDBFiles.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>InfoNucleicAcids.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

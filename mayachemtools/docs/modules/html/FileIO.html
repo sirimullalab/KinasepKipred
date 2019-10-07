@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:FileIO/FileIO.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./DBUtil.html" title="DBUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./FingerprintsFPFileIO.html" title="FingerprintsFPFileIO.html">Next</a></td><td width="34%" align="middle"><strong>FileIO/FileIO.pm</strong></td><td width="33%" align="right"><a href="././code/FileIO.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/FileIO.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/FileIO.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/FileIO.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/FileIO.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>FileIO</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use FileIO::FileIO;</p>
+<p>use FileIO::FileIO qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>FIleIO</b> class provides following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#Close">Close</a>, <a href="#Open">Open</a>, <a href="#SetMode">SetMode</a>
+</p><p><b>FleIO</b> class serves as a base class for all classes involved in file IO. It is derived from <b>ObjectProperty</b> base class which provides methods not explicitly defined in <b>Atom</b> or <b>ObjectProperty</b> class using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewFileIO = new FileIO(%NamesAndValues);</div>
+<p>Using specified <i>FileIO</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to a newly created <b>FileIO</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Name = &#39;&#39;;
+<br/>    Mode = &#39;Read&#39;;
+<br/>    Status = 0;
+<br/>    FileHandle = &#39;&#39;;</div>
+</dd>
+<dt id="Close"><b>Close</b></dt>
+<dd>
+<div class="OptionsBox">    $FileIO-&gt;Close();</div>
+<p>Close open file and returns <i>FileIO</i>.</p>
+</dd>
+<dt id="Open"><b>Open</b></dt>
+<dd>
+<div class="OptionsBox">    $FileIO-&gt;Open();</div>
+<p>Opens the file using file <i>Name</i> and <i>Mode</i> and returns <i>FileIO</i>.</p>
+</dd>
+<dt id="SetMode"><b>SetMode</b></dt>
+<dd>
+<div class="OptionsBox">    $FileIO-&gt;SetMode($Mode);</div>
+<p>Sets up file <i>Mode</i> and returns <i>FileIO</i> Default <i>Mode</i> value: <i>Read</i>. Supported <i>Mode</i> values:</p>
+<div class="OptionsBox">    Read, Write, Append, &lt;, &gt;, &gt;&gt;, r, w, a</div>
+</dd>
+<dt id="SetName"><b>SetName</b></dt>
+<dd>
+<div class="OptionsBox">    $FileIO-&gt;SetName($Name);</div>
+<p>Sets up file <i>Name</i> and returns <i>FileIO</i>.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./MoleculeFileIO.html">MoleculeFileIO.pm</a>, <a href="./MDLMolFileIO.html">MDLMolFileIO.pm</a>, <a href="./SDFileIO.html">SDFileIO.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./DBUtil.html" title="DBUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./FingerprintsFPFileIO.html" title="FingerprintsFPFileIO.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>FileIO/FileIO.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

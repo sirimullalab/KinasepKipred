@@ -1,0 +1,1161 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Atom.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AminoAcids.html" title="AminoAcids.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomicDescriptors.html" title="AtomicDescriptors.html">Next</a></td><td width="34%" align="middle"><strong>Atom.pm</strong></td><td width="33%" align="right"><a href="././code/Atom.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/Atom.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/Atom.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/Atom.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/Atom.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>Atom</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Atom;</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>Atom</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#AddHydrogens">AddHydrogens</a>, <a href="#Copy">Copy</a>, <a href="#DeleteAtom">DeleteAtom</a>, <a href="#DeleteHydrogens">DeleteHydrogens</a>, <a href="#DoesAtomNeighborhoodMatch">DoesAtomNeighborhoodMatch</a>, <a href="#GetAtomicInvariantValue">GetAtomicInvariantValue</a>, <a href="#GetAtomicWeight">GetAtomicWeight</a>, <a href="#GetBondToAtom">GetBondToAtom</a>, <a href="#GetBonds">GetBonds</a>, <a href="#GetBondsToHeavyAtoms">GetBondsToHeavyAtoms</a>, <a href="#GetBondsToHydrogenAtoms">GetBondsToHydrogenAtoms</a>, <a href="#GetBondsToNonHydrogenAtoms">GetBondsToNonHydrogenAtoms</a>, <a href="#GetExactMass">GetExactMass</a>, <a href="#GetExplicitHydrogens">GetExplicitHydrogens</a>, <a href="#GetFormalCharge">GetFormalCharge</a>, <a href="#GetFreeRadicalElectrons">GetFreeRadicalElectrons</a>, <a href="#GetGroupNumber">GetGroupNumber</a>, <a href="#GetHeavyAtomNeighbors">GetHeavyAtomNeighbors</a>, <a href="#GetHeavyAtomNeighborsAtomInformation">GetHeavyAtomNeighborsAtomInformation</a>, <a href="#GetHeavyAtomNeighborsBondformation">GetHeavyAtomNeighborsBondformation</a>, <a href="#GetHighestCommonValence">GetHighestCommonValence</a>, <a href="#GetHydrogenAtomNeighbors">GetHydrogenAtomNeighbors</a>, <a href="#GetHydrogens">GetHydrogens</a>, <a href="#GetImplicitHydrogens">GetImplicitHydrogens</a>, <a href="#GetLargestBondOrder">GetLargestBondOrder</a>, <a href="#GetLargestBondOrderToHeavyAtoms">GetLargestBondOrderToHeavyAtoms</a>, <a href="#GetLargestBondOrderToNonHydrogenAtoms">GetLargestBondOrderToNonHydrogenAtoms</a>, <a href="#GetLargestRing">GetLargestRing</a>, <a href="#GetLowestCommonValence">GetLowestCommonValence</a>, <a href="#GetMassNumber">GetMassNumber</a>, <a href="#GetMissingHydrogens">GetMissingHydrogens</a>, <a href="#GetNeighbors">GetNeighbors</a>, <a href="#GetNeighborsUsingAtomSpecification">GetNeighborsUsingAtomSpecification</a>, <a href="#GetNonHydrogenAtomNeighbors">GetNonHydrogenAtomNeighbors</a>, <a href="#GetNonHydrogenAtomNeighborsAtomInformation">GetNonHydrogenAtomNeighborsAtomInformation</a>, <a href="#GetNonHydrogenAtomNeighborsBondInformation">GetNonHydrogenAtomNeighborsBondInformation</a>, <a href="#GetNonHydrogenNeighborOfHydrogenAtom">GetNonHydrogenNeighborOfHydrogenAtom</a>, <a href="#GetNumOfAromaticBondsToHeavyAtoms">GetNumOfAromaticBondsToHeavyAtoms</a>, <a href="#GetNumOfAromaticBondsToNonHydrogenAtoms">GetNumOfAromaticBondsToNonHydrogenAtoms</a>, <a href="#GetNumOfBondTypesToHeavyAtoms">GetNumOfBondTypesToHeavyAtoms</a>, <a href="#GetNumOfBondTypesToNonHydrogenAtoms">GetNumOfBondTypesToNonHydrogenAtoms</a>, <a href="#GetNumOfBonds">GetNumOfBonds</a>, <a href="#GetNumOfBondsToHeavyAtoms">GetNumOfBondsToHeavyAtoms</a>, <a href="#GetNumOfBondsToHydrogenAtoms">GetNumOfBondsToHydrogenAtoms</a>, <a href="#GetNumOfBondsToNonHydrogenAtoms">GetNumOfBondsToNonHydrogenAtoms</a>, <a href="#GetNumOfDoubleBondsToHeavyAtoms">GetNumOfDoubleBondsToHeavyAtoms</a>, <a href="#GetNumOfBondsAvailableForHeavyAtoms">GetNumOfBondsAvailableForHeavyAtoms</a>, <a href="#GetNumOfBondsAvailableForNonHydrogenAtoms">GetNumOfBondsAvailableForNonHydrogenAtoms</a>, <a href="#GetNumOfDoubleBondsToNonHydrogenAtoms">GetNumOfDoubleBondsToNonHydrogenAtoms</a>, <a href="#GetNumOfExplicitHydrogens">GetNumOfExplicitHydrogens</a>, <a href="#GetNumOfHeavyAtomNeighbors">GetNumOfHeavyAtomNeighbors</a>, <a href="#GetNumOfHydrogenAtomNeighbors">GetNumOfHydrogenAtomNeighbors</a>, <a href="#GetNumOfHydrogens">GetNumOfHydrogens</a>, <a href="#GetNumOfImplicitHydrogens">GetNumOfImplicitHydrogens</a>, <a href="#GetNumOfMissingHydrogens">GetNumOfMissingHydrogens</a>, <a href="#GetNumOfNeighbors">GetNumOfNeighbors</a>, <a href="#GetNumOfNonHydrogenAtomNeighbors">GetNumOfNonHydrogenAtomNeighbors</a>, <a href="#GetNumOfRings">GetNumOfRings</a>, <a href="#GetNumOfRingsWithEvenSize">GetNumOfRingsWithEvenSize</a>, <a href="#GetNumOfRingsWithOddSize">GetNumOfRingsWithOddSize</a>, <a href="#GetNumOfRingsWithSize">GetNumOfRingsWithSize</a>, <a href="#GetNumOfRingsWithSizeGreaterThan">GetNumOfRingsWithSizeGreaterThan</a>, <a href="#GetNumOfRingsWithSizeLessThan">GetNumOfRingsWithSizeLessThan</a>, <a href="#GetNumOfSigmaAndPiBondsToHeavyAtoms">GetNumOfSigmaAndPiBondsToHeavyAtoms</a>, <a href="#GetNumOfSigmaAndPiBondsToNonHydrogenAtoms">GetNumOfSigmaAndPiBondsToNonHydrogenAtoms</a>, <a href="#GetNumOfSingleBondsToHeavyAtoms">GetNumOfSingleBondsToHeavyAtoms</a>, <a href="#GetNumOfSingleBondsToNonHydrogenAtoms">GetNumOfSingleBondsToNonHydrogenAtoms</a>, <a href="#GetNumOfTripleBondsToHeavyAtoms">GetNumOfTripleBondsToHeavyAtoms</a>, <a href="#GetNumOfTripleBondsToNonHydrogenAtoms">GetNumOfTripleBondsToNonHydrogenAtoms</a>, <a href="#GetPeriodNumber">GetPeriodNumber</a>, <a href="#GetPotentialTotalCommonValence">GetPotentialTotalCommonValence</a>, <a href="#GetRings">GetRings</a>, <a href="#GetRingsWithEvenSize">GetRingsWithEvenSize</a>, <a href="#GetRingsWithOddSize">GetRingsWithOddSize</a>, <a href="#GetRingsWithSize">GetRingsWithSize</a>, <a href="#GetRingsWithSizeGreaterThan">GetRingsWithSizeGreaterThan</a>, <a href="#GetRingsWithSizeLessThan">GetRingsWithSizeLessThan</a>, <a href="#GetSizeOfLargestRing">GetSizeOfLargestRing</a>, <a href="#GetSizeOfSmallestRing">GetSizeOfSmallestRing</a>, <a href="#GetSmallestRing">GetSmallestRing</a>, <a href="#GetSpinMultiplicity">GetSpinMultiplicity</a>, <a href="#GetSumOfBondOrders">GetSumOfBondOrders</a>, <a href="#GetSumOfBondOrdersToHeavyAtoms">GetSumOfBondOrdersToHeavyAtoms</a>, <a href="#GetSumOfBondOrdersToHydrogenAtoms">GetSumOfBondOrdersToHydrogenAtoms</a>, <a href="#GetSumOfBondOrdersToNonHydrogenAtoms">GetSumOfBondOrdersToNonHydrogenAtoms</a>, <a href="#GetValence">GetValence</a>, <a href="#GetValenceElectrons">GetValenceElectrons</a>, <a href="#GetValenceFreeElectrons">GetValenceFreeElectrons</a>, <a href="#GetX">GetX</a>, <a href="#GetXYZ">GetXYZ</a>, <a href="#GetXYZVector">GetXYZVector</a>, <a href="#GetY">GetY</a>, <a href="#GetZ">GetZ</a>, <a href="#IsAmideCarbon">IsAmideCarbon</a>, <a href="#IsAmideNitrogen">IsAmideNitrogen</a>, <a href="#IsAromatic">IsAromatic</a>, <a href="#IsArsenic">IsArsenic</a>, <a href="#IsBondedToAtom">IsBondedToAtom</a>, <a href="#IsBromine">IsBromine</a>, <a href="#IsCarbon">IsCarbon</a>, <a href="#IsCarboxylCarbon">IsCarboxylCarbon</a>, <a href="#IsCarboxylOxygen">IsCarboxylOxygen</a>, <a href="#IsCarboxylateCarbon">IsCarboxylateCarbon</a>, <a href="#IsCarboxylateOxygen">IsCarboxylateOxygen</a>, <a href="#IsChlorine">IsChlorine</a>, <a href="#IsFluorine">IsFluorine</a>, <a href="#IsFunctionalClassType">IsFunctionalClassType</a>, <a href="#IsGuadiniumCarbon">IsGuadiniumCarbon</a>, <a href="#IsGuadiniumNitrogen">IsGuadiniumNitrogen</a>, <a href="#IsHBondAcceptor">IsHBondAcceptor</a>, <a href="#IsHBondDonor">IsHBondDonor</a>, <a href="#IsHalogen">IsHalogen</a>, <a href="#IsHeteroAtom">IsHeteroAtom</a>, <a href="#IsHydrogen">IsHydrogen</a>, <a href="#IsHydrogenBondAcceptor">IsHydrogenBondAcceptor</a>, <a href="#IsHydrogenBondDonor">IsHydrogenBondDonor</a>, <a href="#IsHydrophobic">IsHydrophobic</a>, <a href="#IsInRing">IsInRing</a>, <a href="#IsInRingOfSize">IsInRingOfSize</a>, <a href="#IsIodine">IsIodine</a>, <a href="#IsIsotope">IsIsotope</a>, <a href="#IsLipophilic">IsLipophilic</a>, <a href="#IsMetallic">IsMetallic</a>, <a href="#IsNegativelyIonizable">IsNegativelyIonizable</a>, <a href="#IsNitrogen">IsNitrogen</a>, <a href="#IsNonCarbonOrHydrogen">IsNonCarbonOrHydrogen</a>, <a href="#IsNotInRing">IsNotInRing</a>, <a href="#IsOnlyInOneRing">IsOnlyInOneRing</a>, <a href="#IsOxygen">IsOxygen</a>, <a href="#IsPhosphateOxygen">IsPhosphateOxygen</a>, <a href="#IsPhosphatePhosphorus">IsPhosphatePhosphorus</a>, <a href="#IsPhosphorus">IsPhosphorus</a>, <a href="#IsPolarAtom">IsPolarAtom</a>, <a href="#IsPolarHydrogen">IsPolarHydrogen</a>, <a href="#IsPositivelyIonizable">IsPositivelyIonizable</a>, <a href="#IsSaturated">IsSaturated</a>, <a href="#IsSelenium">IsSelenium</a>, <a href="#IsSilicon">IsSilicon</a>, <a href="#IsStereoCenter">IsStereoCenter</a>, <a href="#IsSulfur">IsSulfur</a>, <a href="#IsSulphur">IsSulphur</a>, <a href="#IsTellurium">IsTellurium</a>, <a href="#IsTerminal">IsTerminal</a>, <a href="#IsTopologicalPharmacophoreType">IsTopologicalPharmacophoreType</a>, <a href="#IsUnsaturated">IsUnsaturated</a>, <a href="#SetAtomSymbol">SetAtomSymbol</a>, <a href="#SetAtomicNumber">SetAtomicNumber</a>, <a href="#SetExplicitHydrogens">SetExplicitHydrogens</a>, <a href="#SetMassNumber">SetMassNumber</a>, <a href="#SetStereoCenter">SetStereoCenter</a>, <a href="#SetStereochemistry">SetStereochemistry</a>, <a href="#SetX">SetX</a>, <a href="#SetXYZ">SetXYZ</a>, <a href="#SetY">SetY</a>, <a href="#SetZ">SetZ</a>, <a href="#StringifyAtom">StringifyAtom</a>
+</p><p><b>Atom</b> class is derived from <b>ObjectProperty</b> base class which provides methods not explicitly defined in <b>Atom</b> or <b>ObjectProperty</b> class using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewAtom = new Atom([%PropertyNameAndValues]);</div>
+<p>Using specified <i>Atom</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>Atom</b> object. By default, following properties are initialized:</p>
+<div class="OptionsBox">    ID = SequentialObjectID
+<br/>    Name = &quot;Atom &lt;SequentialObjectID&gt;&quot;
+<br/>    AtomSymbol = &quot;&quot;
+<br/>    AtomicNumber = 0
+<br/>    XYZ = ZeroVector</div>
+<p>Except for <i>ID</i> property, all other default properties and other additional properties can be set during invocation of this method.</p>
+<p>Examples:</p>
+<div class="OptionsBox">    $Atom = new Atom();
+<br/>    $CarbonAtom = new Atom(&#39;AtomSymbol&#39; =&gt; &#39;C&#39;, &#39;XYZ&#39; =&gt; (0.0, 1.0,
+                  0.0));
+<br/>    $OxygenAtom = new Atom(&#39;AtomName&#39; =&gt; &#39;Oxygen&#39;, AtomSymbol&#39; =&gt; &#39;O&#39;,
+                  &#39;XYZ&#39; =&gt; (1.0, 1.0, 1.0));</div>
+</dd>
+<dt id="AddHydrogens"><b>AddHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensAdded = $Atom-&gt;AddHydrogens();</div>
+<p>Adds hydrogens to an <b>Atom</b> present in a <b>Molecule</b> object and returns the number of added hydrogens. The current release of MayaChemTools doesn&#39;t assign hydrogen positions.</p>
+</dd>
+<dt id="Copy"><b>Copy</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomCopy = $Atom-&gt;Copy();</div>
+<p>Copy <i>Atom</i> and its associated data using <b>Storable::dclone</b> and return a new <b>Atom</b> object.</p>
+</dd>
+<dt id="DeleteAtom"><b>DeleteAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;DeleteAtom();</div>
+<p>Delete <i>Atom</i> from a molecule.</p>
+</dd>
+<dt id="DoesAtomNeighborhoodMatch"><b>DoesAtomNeighborhoodMatch</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;DoesAtomNeighborhoodMatch($CentralAtomSpec);
+<br/>    $Status = $Atom-&gt;DoesAtomNeighborhoodMatch($CentralAtomSpec,
+                              $NbrAtomSpecsRef);
+<br/>    $Status = $Atom-&gt;DoesAtomNeighborhoodMatch($CentralAtomSpec,
+                              $NbrAtomSpecsRef, $AllowedNbrBondSpecsRef);
+<br/>    $Status = $Atom-&gt;DoesAtomNeighborhoodMatch($CentralAtomSpec,
+                              $NbrAtomSpecsRef, $NbrBondSpecsRef,
+                              $AllowedNbrOfNbrAtomSpecsRef);</div>
+<p>Returns 1 or 0 based on whether atom matches central atom and its neighborhood using specified atom and bonds specifications. Neighborhood atom and bond specifications are specified as array references containing neighbor atom and bond specifications.</p>
+<p>Let:</p>
+<div class="OptionsBox">    AS = Atom symbol corresponding to element symbol, atomic number (#n)
+         or any atom (A)
+<br/>
+<br/>    X&lt;n&gt;  = Number of non-hydrogen atom neighbors or heavy atoms
+            attached to atom
+<br/>    T&lt;n&gt;  = Total number of atom neighbors including implicit and explicit
+            hydrogens
+<br/>    BO&lt;n&gt; = Sum of bond orders to non-hydrogen atom neighbors or heavy
+            atoms attached to atom
+<br/>    LBO&lt;n&gt; = Largest bond order of non-hydrogen atom neighbors or heavy
+             atoms attached to atom
+<br/>    SB&lt;n&gt; = Number of single bonds to non-hydrogen atom neighbors or
+            heavy atoms attached to atom
+<br/>    TSB&lt;n&gt; = Total number of single bonds to atom neighbors including implicit
+             and explicit hydrogens
+<br/>    DB&lt;n&gt; = Number of double bonds to non-hydrogen atom neighbors or
+            heavy atoms attached to atom
+<br/>    TB&lt;n&gt; = Number of triple bonds to non-hydrogen atom neighbors or
+            heavy atoms attached to atom
+<br/>    AB&lt;n&gt; = Number of aromatic bonds to non-hydrogen atom neighbors or
+            heavy atoms attached to atom
+<br/>    H&lt;n&gt;   = Number of implicit and explicit hydrogens for atom
+<br/>    Ar     = Aromatic annotation indicating whether atom is aromatic
+<br/>    RA or RA&lt;n&gt;  = Ring atom annotation indicating whether atom
+                   is a ring
+<br/>    TR&lt;n&gt;  = Total number of rings containing atom
+<br/>    FC&lt;+n/-n&gt; = Formal charge assigned to atom
+<br/>    MN&lt;n&gt; = Mass number indicating isotope other than most abundant isotope
+<br/>    SM&lt;n&gt; = Spin multiplicity of atom. Possible values: 1 (singlet),
+            2 (doublet) or 3 (triplet)</div>
+<p>Then, atom specification corresponds to:</p>
+<div class="OptionsBox">    AS.X&lt;n&gt;.T&lt;n&gt;.BO&lt;n&gt;.LBO&lt;n&gt;.&lt;SB&gt;&lt;n&gt;.TSB&lt;n&gt;.&lt;DB&gt;&lt;n&gt;.&lt;TB&gt;&lt;n&gt;.AB&lt;n&gt;.H&lt;n&gt;.Ar.
+<br/>    RA&lt;n&gt;.TR&lt;n&gt;FC&lt;+n/-n&gt;.MN&lt;n&gt;.SM&lt;n&gt;</div>
+<p>Except for AS which is a required atomic invariant in atom specification, all other atomic invariants are optional. For an atom specification to match an atom, the values of all specified atomic invariants must match. Exclamation in from of atomic invariant can be used to negate its effect during the match.</p>
+<p>For <i>FC</i> value matching, the following value operators are also supported:</p>
+<div class="OptionsBox">    o +* : Any positive value
+<br/>    o -* : Any negative value
+<br/>    o &gt; ValidNumber or &gt;= ValidNumber
+<br/>    o &lt; ValidNumber or &lt;= ValidNumber</div>
+<p>A comma delimited atom specification string is used to match any one of the specified atom specification.</p>
+<p>Notes:</p>
+<div class="OptionsBox">    o During atom specification match to an atom, the first atomic invariant is always assumed to
+      atom symbol.</div>
+<p>Examples:</p>
+<div class="OptionsBox">    o (&#39;N&#39;, &#39;N&#39;, &#39;N&#39;)
+<br/>    o (&#39;N.FC0&#39;, &#39;N.FC0&#39;, &#39;N,N.FC+1.H1&#39;)
+<br/>    o (&#39;N.H2&#39;, &#39;N.H2&#39;, &#39;N.H1&#39;)
+<br/>    o (&#39;C,N&#39;, &#39;!N&#39;, &#39;!H&#39;)
+<br/>    o (&#39;C,N&#39;, &#39;N.Ar&#39;, &#39;N.R5&#39;)</div>
+<p>Let:</p>
+<div class="OptionsBox">    -|1|s|Single = Single bond
+<br/>    =|2|d|Double = Double bond
+<br/>    #|3|t|Triple  = Triple bond
+<br/>    :|1.5|a|Ar|Aromatic = Aromatic bond
+<br/>
+<br/>    @|RB|Ring = Ring bond
+<br/>    ~|*|Any = Any bond</div>
+<p>Then, bond specification corresponds to:</p>
+<div class="OptionsBox">    -.:
+<br/>    =.@
+<br/>    Double.Aromatic</div>
+<p>For a bond specification to match bond between two atoms, the values of all specified bond symbols must match. Exclamation in from of bond symbol can be used to negate its effect during the match.</p>
+<p>A comma delimited bond specification string is used to match any one of the specified atom specification.</p>
+<p>Notes:</p>
+<div class="OptionsBox">    o During atom neighborhood match for central atom neighborhood atom and bond specifications,
+      implicit or missing hydrogens are automatically checked for any matches to unmatched
+      specifications.</div>
+<p>Examples:</p>
+<div class="OptionsBox">    Aromatic carbon in a 5 membered ring:
+                              $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.Ar.RA5&#39;);
+<br/>
+<br/>    AcetylenicCarbon: $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.T2.TB1&#39;); or
+                       $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.T2.TB1&#39;,
+                              [&#39;*&#39;, &#39;*&#39;], [&#39;#&#39;, &#39;-&#39;]);
+<br/>
+<br/>    GuadiniumCarbon: $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.X3.BO4&#39;,
+                              [&#39;N.FC0&#39;, &#39;N.FC0&#39;, &#39;N.FC0,N.FC+1&#39;],
+                              [&#39;-&#39;, &#39;-&#39;, &#39;=&#39;],
+                              [&#39;C,H&#39;, &#39;C,H&#39;, &#39;C,H&#39;]);
+<br/>
+<br/>    AmideCarbon: $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.X3.BO4,C.X2.BO3&#39;,
+                              [&#39;C,H&#39;, &#39;O&#39;, &#39;N&#39;],
+                              [&#39;-&#39;, &#39;=&#39;, &#39;-&#39;],
+                              [&#39;C,H&#39;, &#39;C&#39;, &#39;C,H,N,O,S,P,F,Cl,Br,I&#39;]);
+<br/>
+<br/>    CarboxylCarbon: $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.X3.BO4,C.X2.BO3&#39;,
+                              [&#39;C,H&#39;, &#39;O&#39;, &#39;O.X1.FC0&#39;],
+                              [&#39;-&#39;, &#39;=&#39;, &#39;-&#39;],
+                              [&#39;C,H&#39;, &#39;C&#39;, &#39;C&#39;]);
+<br/>
+<br/>    CarboxylateCarbon: $Atom-&gt;DoesAtomNeighborhoodMatch(&#39;C.X3.BO4,C.X2.BO3&#39;,
+                              [&#39;C,H&#39;, &#39;O&#39;, &#39;O.X1.FC-1&#39;],
+                              [&#39;-&#39;, &#39;=&#39;, &#39;-&#39;],
+                              [&#39;C,H&#39;, &#39;C&#39;, &#39;C&#39;]);</div>
+</dd>
+<dt id="DeleteHydrogens"><b>DeleteHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensDeleted = $Atom-&gt;AddHydrogens();</div>
+<p>Delete hydrogens from an <b>Atom</b> present in a <b>Molecule</b> object and returns the number of deleted hydrogens.</p>
+</dd>
+<dt id="GetAtomicInvariantValue"><b>GetAtomicInvariantValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Atom-&gt;GetAtomicInvariantValue($AtomicInvariant);</div>
+<p>Returns atomic invariant value for a specified <i>AtomicInvariant</i>. The current release of MayaChemTools supports following abbreviations and descriptive names for <i>AtomicInvarints</i>:</p>
+<div class="OptionsBox">    AS : Atom or element symbol
+<br/>    X : NumOfNonHydrogenAtomNeighbors or NumOfHeavyAtomNeighbors
+<br/>    T : TotalNumOfAtomNeighbors
+<br/>    BO : SumOfBondOrdersToNonHydrogenAtoms or SumOfBondOrdersToHeavyAtoms
+<br/>    LBO : LargestBondOrderToNonHydrogenAtoms or LargestBondOrderToHeavyAtoms
+<br/>    SB :  NumOfSingleBondsToNonHydrogenAtoms or NumOfSingleBondsToHeavyAtoms
+<br/>    TSB :  TotalNumOfSingleBonds
+<br/>    DB : NumOfDoubleBondsToNonHydrogenAtoms or NumOfDoubleBondsToHeavyAtoms
+<br/>    TB : NumOfTripleBondsToNonHydrogenAtoms or NumOfTripleBondsToHeavyAtoms
+<br/>    AB : NumOfAromaticBondsToNonHydrogenAtoms or NumOfAromaticBondsToHeavyAtoms
+<br/>    H :  NumOfImplicitAndExplicitHydrogens
+<br/>    Ar : Aromatic
+<br/>    Str : Stereochemistry
+<br/>    RA : RingAtom
+<br/>    FC : FormalCharge
+<br/>    AN : AtomicNumber
+<br/>    AM : AtomicMass
+<br/>    MN : MassNumber
+<br/>    SM : SpinMultiplicity</div>
+</dd>
+<dt id="GetAtomicWeight"><b>GetAtomicWeight</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Aom-&gt;GetAtomicWeight();</div>
+<p>Returns atomic weight of an <b>Atom</b> which corresponds to either explicity set <i>AtomicWeight</i> atom property or atomic weight of the corresponding element in the periodic table available by <b>PeriodicTable</b> module.</p>
+</dd>
+<dt id="GetBondToAtom"><b>GetBondToAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Bond = $Atom-&gt;GetBondToAtom($OtherAtom);</div>
+<p>Returns a <b>Bond</b> object corresponding to bond between <i>Atom</i> and <i>OtherAtom</i> in a molecule.</p>
+</dd>
+<dt id="GetBonds"><b>GetBonds</b></dt>
+<dd>
+<div class="OptionsBox">    @Bonds = $Aoto-&gt;GetBonds();</div>
+<p>Returns an array of <b>Bond</b> objects corresponding to all bonds from <i>Atom</i> to other bonded atoms in a molecule.</p>
+</dd>
+<dt id="GetBondsToHeavyAtoms"><b>GetBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @Bonds = $Atom-&gt;GetBondsToHeavyAtoms();</div>
+<p>Returns an array of <b>Bond</b> objects corresponding to bonds from <i>Atom</i> to other bonded non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetBondsToHydrogenAtoms"><b>GetBondsToHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @Bonds = $Atom-&gt;GetBondsToHydrogenAtoms();</div>
+<p>Returns an array of <b>Bond</b> objects corresponding to bonds from <i>Atom</i> to any other hydrogen atom in a molecule.</p>
+</dd>
+<dt id="GetBondsToNonHydrogenAtoms"><b>GetBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @Bonds = $Atom-&gt;GetBondsToNonHydrogenAtoms();</div>
+<p>Returns an array of <b>Bond</b> objects corresponding to bonds from <i>Atom</i> to other bonded non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetExactMass"><b>GetExactMass</b></dt>
+<dd>
+<div class="OptionsBox">    $ExactMass = $Atom-&gt;GetExactMass();</div>
+<p>Returns exact mass of an <i>Atom</i> which correspond to one of these three values: explicity set <i>ExactMass</i> property; mass of natural isotope for an explicty set value of <i>MassNumber</i>; most abundant natural isotope mass for <i>Atom</i> with valid atomic number value available by <b>PerodicTable</b> module.</p>
+</dd>
+<dt id="GetExplicitHydrogens"><b>GetExplicitHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfExplicitHydrogens = $Atom-&gt;GetExplicitHydrogens();</div>
+<p>Returns number of hydrogens explicity bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetFormalCharge"><b>GetFormalCharge</b></dt>
+<dd>
+<div class="OptionsBox">    $FormalCharge = $Atom-&gt;GetFormalCharge();</div>
+<p>Returns formal charge of an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetFreeRadicalElectrons"><b>GetFreeRadicalElectrons</b></dt>
+<dd>
+<div class="OptionsBox">    $FreeRadicalElectrons = $Atom-&gt;GetFreeRadicalElectrons();</div>
+<p>Returns number of free radical electrons corresponding to to one of these three values: <i>FreeRadicalElectrons</i> property; <i>SpinMultiplicity</i> property; value of 0.</p>
+<p>For atoms with explicit assignment of <i>SpinMultiplicity</i> atom property values,</p>
+<div class="OptionsBox">    Singlet  - two unparied electrons corresponding to one spin state
+<br/>    Doublet - free radical; an unpaired electron corresponding to two
+              spin states
+<br/>    Triplet - two unparied electrons corresponding to three spin states
+              (divalent carbon atoms: carbenes)</div>
+<p><b>FreeRadicalElectrons</b> are calculated as follows:</p>
+<div class="OptionsBox">    Doublet: 1 (one valence electron not available for bonding)
+<br/>    Singlet: 2 (two valence electrons not available for bonding)
+<br/>    Triplet: 2 (two valence electrons not available for bonding)</div>
+</dd>
+<dt id="GetGroupNumber"><b>GetGroupNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $GroupNumber = $Atom-&gt;GetGroupNumber();</div>
+<p>Returns group number of an <i>Atom</i> in a molecule with a valid atomic number.</p>
+</dd>
+<dt id="GetHeavyAtomNeighbors"><b>GetHeavyAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHeavyAtoms = $Atom-&gt;GetHeavyAtomNeighbors();
+<br/>    @HeavyAtoms = $Atom-&gt;GetHeavyAtomNeighbors();</div>
+<p>Return number of heavy atoms or an array of <b>Atom</b> objects corresponding to heavy atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetHeavyAtomNeighborsAtomInformation"><b>GetHeavyAtomNeighborsAtomInformation</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfAtomNeighbors, $AtomNeighborsRef,
+     $NumOfAtomNeighborsType, $AtomNeighborsTypeMapRef) = $Atom-&gt;
+                              GetHeavyAtomNeighborsAtomInformation();</div>
+<p>Returns atoms information for all non-hydrogen atoms attached to an <i>Atom</i> in a molecule.</p>
+<p>The following values are returned:</p>
+<div class="OptionsBox">    o Number of non-hydrogen atom neighbors
+<br/>    o A reference to an array containing atom objects corresponding to
+      non-hydrogen atom neighbors
+<br/>    o Number of different types of non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing atom symbol as key with value
+      corresponding to its count for non-hydrogen atom neighbors</div>
+</dd>
+<dt id="GetHeavyAtomNeighborsBondformation"><b>GetHeavyAtomNeighborsBondformation</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfBonds, $BondTypeCountMapRef,
+<br/>    $AtomsBondTypesCountMapRef,
+<br/>    $AtomsBondTypeAtomsMap) = $Atom-&gt;
+                              GetHeavyAtomNeighborsBondformation();</div>
+<p>Returns bonds information for all non-hydrogen atoms attached to an <i>Atom</i> in a molecule.</p>
+<p>The following values are returned:</p>
+<div class="OptionsBox">    o Number of bonds to non-hydrogen atom neighbors
+<br/>    o A reference to an array containing bond objects corresponding to
+      non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing bond type as key with value
+      corresponding to its count for non-hydrogen atom neighbors. Bond
+      types are: Single, Double or Triple
+<br/>    o A reference to a hash containing atom symbol as key pointing to bond
+      type as second key with values corresponding to count of bond types for atom
+      symbol for non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing atom symbol as key pointing to bond
+      type as second key with values corresponding to atom objects array involved
+      in corresponding bond type for atom symbol for non-hydrogen atom neighbors</div>
+</dd>
+<dt id="GetHighestCommonValence"><b>GetHighestCommonValence</b></dt>
+<dd>
+<div class="OptionsBox">    $HighestCommonValence = $Atom-&gt;GetHighestCommonValence();</div>
+<p>Returns highest common valence of an <i>Atom</i> which corresponds to either explicity set <i>HighestCommonValence</i> atom property or highest common valence of the corresponding element in the periodic table available by <b>PerodicTable</b> module.</p>
+</dd>
+<dt id="GetHydrogens"><b>GetHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogens = $Atom-&gt;GetHydrogens();</div>
+<p>Returns total number of hydrogens for an <i>Atom</i> in a molecule including both hydrogen atom neighbors and implicit hydrogens.</p>
+</dd>
+<dt id="GetHydrogenAtomNeighbors"><b>GetHydrogenAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogenAtomNeighbors = $Atom-&gt;GetHydrogenAtomNeighbors();
+<br/>    @HydrogenAtomNeighbors = $Atom-&gt;GetHydrogenAtomNeighbors();</div>
+<p>Return number of hydrogen atoms or an array of <i>Atom</i> objects corresponding to hydrogen atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetImplicitHydrogens"><b>GetImplicitHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfImplicitHydrogens = $Atom-&gt;GetImplicitHydrogens();</div>
+<p>Returns number of implicit hydrogens for an <i>Atom</i> in a molecule. This value either corresponds to explicitly set <i>ImplicitHydrogens</i> atom property or calculated as the difference between the value of potential total valence and sum of bond orders to both hydrogen and non-hydrogen atom neighbors.</p>
+</dd>
+<dt id="GetPotentialTotalCommonValence"><b>GetPotentialTotalCommonValence</b></dt>
+<dd>
+<div class="OptionsBox">    $PotentialTotalValence = $Atom-&gt;GetPotentialTotalCommonValence();</div>
+<p>Returns potential total common valence of an <i>Atom</i> in a molecule corresponding to a specific valence model set for the molecule using its <b>SetValenceModel</b> method or default internal valence model. It is used during the calculation of missing or implicit hydrogens.</p>
+<p>The current release of MayaChemTools supports three valence models: <i>MDLValenceModel, DaylightValenceModel, InternalValenceModel or MayaChemToolsValenceModel</i>.</p>
+<p>For <i>MDLValenceModel</i> and <i>DaylightValenceModel</i>, the following data files, distributed with the package, are used to calculate potential total valence:</p>
+<div class="OptionsBox">    lib/data/MDLValenceModelData.csv
+<br/>    lib/data/DaylightValenceModelData.csv</div>
+<p>The calculation of potential total common valence for these two models is performed as follows: Calculate current effective total valence of the <i>Atom</i> by adding up the bond order of its neighbors and number of free radical electrons; Find available common valence for the <i>Atom</i>, corresponding to any specified formal charge, higher than the effective total valence, and return it as <i>PotentialTotalValence</i>.</p>
+<p>The calculation of potential total common valence For <i>InternalValenceModel</i> or <i>MayaChenToolsValenceModel</i> doesn&#39;t uses <b>PeriodicTable</b> module to retrieve values for common valence, which in turn reads in PeriodicTableElements.csv file distributed with the package.</p>
+<p>For elements with one one common valence, potential total common valence corresponds to:</p>
+<div class="OptionsBox">    CommonValence + FormalCharge - FreeRadicalElectrons</div>
+<p>For elements with multiple common valences, each common valence is used to calculate total potential common valence as shown above, and the first total potential common valence greater than the sum of bond orders to all neighbors is selected as the final total common valence.</p>
+<p>FormalCharge sign is reversed for electropositive elements with positive formal charge during common valence calculations. Electropositive elements, metals and transition elements, have usually plus formal charge and it leads to decrease in common valence; the negative formal charge should result in the decrease of common valence.</p>
+<p>The sign of formal charge is adjusted as follows.</p>
+<p>Group numbers &gt; 14 - Group numbers 15 (N), 16 (O), 17 (F), 18 (He):</p>
+<p>Formal charge sign is not adjusted. Positive and negative values result in the increase and decrease of valence.</p>
+<p>Group 14 containing C, Si, Ge, Sn, Pb...:</p>
+<p>Formal charge sign is reversed for positive values. Both positive and negative values result in the decrease of valence.</p>
+<p>Group 13 containing B, Al, Ga, In, Tl...:</p>
+<p>Formal charge sign is always reversed. Positive and negative values result in the decrease and increase of valence.</p>
+<p>Groups 1 (H) through 12 (Zn)...:</p>
+<p>Formal charge sign is reversed for positive values. Both positive and negative values result in the decrease of valence.</p>
+<p>Lanthanides and actinides:</p>
+<p>Formal charge sign is reversed for positive values. Both positive and negative values result in the decrease of valence.</p>
+</dd>
+<dt id="GetLargestBondOrder"><b>GetLargestBondOrder</b></dt>
+<dd>
+<div class="OptionsBox">    $LargestBO =$Atom-&gt;GetLargestBondOrder();</div>
+<p>Returns largest bond order for an <i>Atom</i> among the bonds to other atoms in a molecule.</p>
+</dd>
+<dt id="GetLargestBondOrderToHeavyAtoms"><b>GetLargestBondOrderToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $LargestBO =$Atom-&gt;GetLargestBondOrderToHeavyAtoms();</div>
+<p>Returns largest bond order for an <i>Atom</i> among the bonds to other heavy atoms in a molecule.</p>
+</dd>
+<dt id="GetLargestBondOrderToNonHydrogenAtoms"><b>GetLargestBondOrderToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $LargestBO =$Atom-&gt;GetLargestBondOrderToNonHydrogenAtoms();</div>
+<p>Returns largest bond order for an <i>Atom</i> among the bonds to other non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetLargestRing"><b>GetLargestRing</b></dt>
+<dd>
+<div class="OptionsBox">    @RingAtoms = $Atom-&gt;GetLargestRing();</div>
+<p>Returns an array of ring <i>Atom</i> objects corresponding to the largest ring containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetLowestCommonValence"><b>GetLowestCommonValence</b></dt>
+<dd>
+<div class="OptionsBox">    $LowestCommonValence = $Atom-&gt;GetLowestCommonValence();</div>
+<p>Returns lowest common valence of an <i>Atom</i> which corresponds to either explicity set <i>LowestCommonValence</i> atom property or highest common valence of the corresponding element in the periodic table available by <b>PerodicTable</b> module.</p>
+</dd>
+<dt id="GetMassNumber"><b>GetMassNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $MassNumber = $Aom-&gt;GetMassNumber();</div>
+<p>Returns atomic weight of an <b>Atom</b> which corresponds to either explicity set <i>MassNumber</i> atom property or mass number of the most abundant natural isotope of the corresponding element in the periodic table available by <b>PeriodicTable</b> module.</p>
+</dd>
+<dt id="GetMissingHydrogens"><b>GetMissingHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfMissingHydrogens = $Atom-&gt;GetMissingHydrogens();</div>
+<p>Returns number of missing hydrogens for an <i>Atom</i> in a molecule. This value either corresponds to explicitly set <i>ImplicitHydrogens</i> atom property or calculated as the difference between the value of potential total valence and sum of bond orders to both hydrogen and non-hydrogen atom neighbors.</p>
+</dd>
+<dt id="GetNeighbors"><b>GetNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNeighbors = $Atom-&gt;GetNeighbors();
+<br/>    @Neighbors = $Atom-&gt;GetNeighbors();</div>
+<p>Returns number of neighbor atoms or an array of <i>Atom</i> objects corresponding to all atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNeighborsUsingAtomSpecification"><b>GetNeighborsUsingAtomSpecification</b></dt>
+<dd>
+<div class="OptionsBox">    @AtomNeighbors = $Atom-&gt;GetNeighborsUsingAtomSpecification($AtomSpec);
+<br/>    $NumOfNeighbors = $Atom-&gt;GetNeighborsUsingAtomSpecification($AtomSpec);
+<br/>
+<br/>    @AtomNeighbors = $Atom-&gt;GetNeighborsUsingAtomSpecification($AtomSpec,
+                     @ExcludeNeighbors);</div>
+<p>Returns number of neighbor atoms or an array of <i>Atom</i> objects matching atom specification corresponding to atom neighbors of an <i>Atom</i> in a molecule. Optionally, <i>Atom</i> neighbors can be excluded from the neighbors list using <i>ExcludeNeighbors</i>.</p>
+<p>Notes:</p>
+<div class="OptionsBox">    o AtomSpecification correspond to any valid AtomicInvariant based atomic specifications
+      as supported by DoesAtomNeighborhoodMatch method
+<br/>    o Multiple atom specifications can be used in a string delimited by comma</div>
+</dd>
+<dt id="GetNonHydrogenAtomNeighbors"><b>GetNonHydrogenAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNeighbors = $Atom-&gt;GetNonHydrogenAtomNeighbors();
+<br/>    @Neighbors = $Atom-&gt;GetNonHydrogenAtomNeighbors();</div>
+<p>Returns number of non-hydrogen atoms or an array of <b>Atom</b> objects corresponding to non-hydrogen atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNonHydrogenAtomNeighborsAtomInformation"><b>GetNonHydrogenAtomNeighborsAtomInformation</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfAtomNeighbors, $AtomNeighborsRef,
+     $NumOfAtomNeighborsType, $AtomNeighborsTypeMapRef) = $Atom-&gt;
+                              GetNonHydrogenAtomNeighborsAtomInformation();</div>
+<p>Returns atoms information for all non-hydrogen atoms attached to an <i>Atom</i> in a molecule.</p>
+<p>The following values are returned:</p>
+<div class="OptionsBox">    o Number of non-hydrogen atom neighbors
+<br/>    o A reference to an array containing atom objects corresponding to
+      non-hydrogen atom neighbors
+<br/>    o Number of different types of non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing atom symbol as key with value
+      corresponding to its count for non-hydrogen atom neighbors</div>
+</dd>
+<dt id="GetNonHydrogenAtomNeighborsBondInformation"><b>GetNonHydrogenAtomNeighborsBondInformation</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfBonds, $BondTypeCountMapRef,
+<br/>    $AtomsBondTypesCountMapRef,
+<br/>    $AtomsBondTypeAtomsMap) = $Atom-&gt;
+                              GetNonHydrogenAtomNeighborsBondInformation();</div>
+<p>Returns bonds information for all non-hydrogen atoms attached to an <i>Atom</i> in a molecule.</p>
+<p>The following values are returned:</p>
+<div class="OptionsBox">    o Number of bonds to non-hydrogen atom neighbors
+<br/>    o A reference to an array containing bond objects corresponding to
+      non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing bond type as key with value
+      corresponding to its count for non-hydrogen atom neighbors. Bond
+      types are: Single, Double or Triple
+<br/>    o A reference to a hash containing atom symbol as key pointing to bond
+      type as second key with values corresponding to count of bond types for atom
+      symbol for non-hydrogen atom neighbors
+<br/>    o A reference to a hash containing atom symbol as key pointing to bond
+      type as second key with values corresponding to atom objects array involved
+      in corresponding bond type for atom symbol for non-hydrogen atom neighbors</div>
+</dd>
+<dt id="GetNonHydrogenNeighborOfHydrogenAtom"><b>GetNonHydrogenNeighborOfHydrogenAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom = $Atom-&gt;GetNonHydrogenNeighborOfHydrogenAtom();</div>
+<p>Returns non-hydrogen or heavy atom neighbor of a hydrogen atom in a molecule..</p>
+</dd>
+<dt id="GetNumOfAromaticBondsToHeavyAtoms"><b>GetNumOfAromaticBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfAromaticBondsToHeavyAtoms();</div>
+<p>Returns number of aromatic bonds from an <i>Atom</i> to other non-hydrogen or heavy atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfAromaticBondsToNonHydrogenAtoms"><b>GetNumOfAromaticBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfAromaticBondsToNonHydrogenAtoms();</div>
+<p>Returns number of aromatic bonds from an <i>Atom</i> to other non-hydrogen or heavy atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfBonds"><b>GetNumOfBonds</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfBonds();</div>
+<p>Returns number of bonds from an <i>Atom</i> to other atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfBondsAvailableForHeavyAtoms"><b>GetNumOfBondsAvailableForHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfBondsAvailableForHeavyAtoms();</div>
+<p>Get number of bonds available to form additional bonds with heavy atoms, excluding any implicit bonds to hydrogens set using <i>ImplicitHydrogens</i> property.</p>
+<p>It&#39;s different from number of implicit or missing hydrogens, both of which are equivalent.</p>
+<p>For example, in a SMILES string, [nH] ring atom corresponds to an aromatic nitrogen. Although the hydrogen specified for n is treated internally as implicit hydrogen and shows up in missing hydrogen count, it&#39;s not available to participate in double bonds to additional heavy atoms.</p>
+</dd>
+<dt id="GetNumOfBondsAvailableForNonHydrogenAtoms"><b>GetNumOfBondsAvailableForNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfBondsAvailableForNonHydrogenAtoms();</div>
+<p>Get number of bonds available to form additional bonds with heavy atoms, excluding any implicit bonds to hydrogens set using ImplicitHydrogens property.</p>
+</dd>
+<dt id="GetNumOfBondsToHeavyAtoms"><b>GetNumOfBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBondsToHeavyAtoms = $Atom-&gt;GetNumOfBondsToHeavyAtoms();</div>
+<p>Returns number of bonds from an <i>Atom</i> to other heavy atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfBondsToHydrogenAtoms"><b>GetNumOfBondsToHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfBondsToHydrogenAtoms();</div>
+<p>Returns number of bonds from an <i>Atom</i> to other hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfBondsToNonHydrogenAtoms"><b>GetNumOfBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Atom-&gt;GetNumOfBondsToNonHydrogenAtoms();</div>
+<p>Returns number of bonds from an <i>Atom</i> to other non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfBondTypesToHeavyAtoms"><b>GetNumOfBondTypesToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfSingleBonds, $NumOfDoubleBonds,
+     $NumOfTripleBonds, $NumOfAromaticBonds) = $Atom-&gt;
+                   GetNumOfBondTypesToHeavyAtoms($CountAromaticBonds);</div>
+<p>Get number of single, double, triple, and aromatic bonds from an <i>Atom</i> to all other non-hydrogen atoms in a molecule.</p>
+<p>Value of <i>CountAtomaticBonds</i> parameter controls whether number of aromatic bonds is returned; default is not to count aromatic bonds. During counting of aromatic bonds, the bond marked aromatic is not included in the count of other bond types.</p>
+</dd>
+<dt id="GetNumOfBondTypesToNonHydrogenAtoms"><b>GetNumOfBondTypesToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfSingleBonds, $NumOfDoubleBonds,
+     $NumOfTripleBonds, $NumOfAromaticBonds) = $Atom-&gt;
+             GetNumOfBondTypesToNonHydrogenAtoms($CountAromaticBonds);</div>
+<p>Get number of single, double, triple, and aromatic bonds from an <i>Atom</i> to all other non-hydrogen atoms in a molecule.</p>
+<p>Value of <i>CountAtomaticBonds</i> parameter controls whether number of aromatic bonds is returned; default is not to count aromatic bonds. During counting of aromatic bonds, the bond marked aromatic is not included in the count of other bond types.</p>
+</dd>
+<dt id="GetNumOfDoubleBondsToHeavyAtoms"><b>GetNumOfDoubleBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfDoubleBonds = $Atom-&gt;GetNumOfDoubleBondsToHeavyAtoms();</div>
+<p>Returns number of double bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfDoubleBondsToNonHydrogenAtoms"><b>GetNumOfDoubleBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfDoubleBonds =$Atom-&gt;GetNumOfDoubleBondsToNonHydrogenAtoms();</div>
+<p>Returns number of double bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfHeavyAtomNeighbors"><b>GetNumOfHeavyAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNeighbors = $Atom-&gt;GetNumOfHeavyAtomNeighbors();</div>
+<p>Returns number heavy atom neighbors for an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfHydrogenAtomNeighbors"><b>GetNumOfHydrogenAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNeighbors = $Atom-&gt;GetNumOfHydrogenAtomNeighbors();</div>
+<p>Returns number hydrogens atom neighbors for an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfMissingHydrogens"><b>GetNumOfMissingHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfMissingHydrogens = $Atom-&gt;GetNumOfMissingHydrogens();</div>
+<p>Returns number of implicit hydrogens for an <i>Atom</i> in a molecule. This value either corresponds to explicitly set <i>ImplicitHydrogens</i> atom property or calculated as the difference between the value of potential total valence and sum of bond orders to both hydrogen and non-hydrogen atom neighbors.</p>
+</dd>
+<dt id="GetNumOfExplicitHydrogens"><b>GetNumOfExplicitHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfExplicitHydrogens = $Atom-&gt;GetNumOfExplicitHydrogens();</div>
+<p>Returns number hydrogens atom neighbors for an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfHydrogens"><b>GetNumOfHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogens = $Atom-&gt;GetNumOfHydrogens();</div>
+<p>Returns total number of hydrogens for an <i>Atom</i> in a molecule including both hydrogen atom neighbors and implicit hydrogens.</p>
+</dd>
+<dt id="GetNumOfImplicitHydrogens"><b>GetNumOfImplicitHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfImplicitHydrogens = $Atom-&gt;GetNumOfImplicitHydrogens();</div>
+<p>Returns number of implicit hydrogens for an <i>Atom</i> in a molecule. This value either corresponds to explicitly set <i>ImplicitHydrogens</i> atom property or calculated as the difference between the value of potential total valence and sum of bond orders to both hydrogen and non-hydrogen atom neighbors.</p>
+</dd>
+<dt id="GetNumOfNeighbors"><b>GetNumOfNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNeighbors = $Atom-&gt;GetNumOfNeighbors();</div>
+<p>Returns number atom neighbors for an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfNonHydrogenAtomNeighbors"><b>GetNumOfNonHydrogenAtomNeighbors</b></dt>
+<dd>
+<div class="OptionsBox">    $NumNeighbors = $This-&gt;GetNumOfNonHydrogenAtomNeighbors();</div>
+<p>Returns number non-hydrogens atom neighbors for an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRings"><b>GetNumOfRings</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRings();</div>
+<p>Returns number of rings containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRingsWithEvenSize"><b>GetNumOfRingsWithEvenSize</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRingsWithEvenSize();</div>
+<p>Returns number of rings with even size containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRingsWithOddSize"><b>GetNumOfRingsWithOddSize</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRingsWithOddSize();</div>
+<p>Returns number of rings with odd size containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRingsWithSize"><b>GetNumOfRingsWithSize</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRingsWithSize($RingSize);</div>
+<p>Returns number of rings with specific <i>RingSize</i> containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRingsWithSizeGreaterThan"><b>GetNumOfRingsWithSizeGreaterThan</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRingsWithSizeGreaterThan($RingSize);</div>
+<p>Returns number of rings with size greater than specific <i>RingSize</i> containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfRingsWithSizeLessThan"><b>GetNumOfRingsWithSizeLessThan</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfRings = $Atom-&gt;GetNumOfRingsWithSizeLessThan($RingSize);</div>
+<p>Returns number of rings with size less than specific <i>RingSize</i> containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetNumOfSigmaAndPiBondsToHeavyAtoms"><b>GetNumOfSigmaAndPiBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfSigmaBonds, $NumOfPiBonds) = $Atom-&gt;
+                              GetNumOfSigmaAndPiBondsToHeavyAtoms();</div>
+<p>Get number of sigma and pi bonds from an <i>Atom</i> to all other non-hydrogen atoms in a molecule.</p>
+<p>Sigma and pi bonds are counted using the following methodology: a single bond correspond to one sigma bond; a double bond contributes one to sigma bond count and one to pi bond count; a triple bond contributes one to sigma bond count and two to pi bond count.</p>
+</dd>
+<dt id="GetNumOfSigmaAndPiBondsToNonHydrogenAtoms"><b>GetNumOfSigmaAndPiBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfSigmaBonds, $NumOfPiBonds) = $Atom-&gt;
+                              GetNumOfSigmaAndPiBondsToNonHydrogenAtoms();</div>
+<p>Get number of sigma and pi bonds from an <i>Atom</i> to all other non-hydrogen atoms in a molecule.</p>
+<p>Sigma and pi bonds are counted using the following methodology: a single bond correspond to one sigma bond; a double bond contributes one to sigma bond count and one to pi bond count; a triple bond contributes one to sigma bond count and two to pi bond count.</p>
+</dd>
+<dt id="GetNumOfSingleBondsToNonHydrogenAtoms"><b>GetNumOfSingleBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfSingleBonds =$Atom-&gt;GetNumOfSingleBondsToNonHydrogenAtoms();</div>
+<p>Returns number of single bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfSingleBondsToHeavyAtoms"><b>GetNumOfSingleBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfSingleBonds = $Atom-&gt;GetNumOfSingleBondsToHeavyAtoms();</div>
+<p>Returns number of single bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfTripleBondsToNonHydrogenAtoms"><b>GetNumOfTripleBondsToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfTripleBonds =$Atom-&gt;GetNumOfTripleBondsToNonHydrogenAtoms();</div>
+<p>Returns number of triple bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetNumOfTripleBondsToHeavyAtoms"><b>GetNumOfTripleBondsToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfTripleBonds = $Atom-&gt;GetNumOfTripleBondsToHeavyAtoms();</div>
+<p>Returns number of triple bonds from an <i>Atom</i> to other heavy atoms or non-hydrogen atoms in a molecule.</p>
+</dd>
+<dt id="GetPeriodNumber"><b>GetPeriodNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $PeriodNumber = $Atom-&gt;GetPeriodNumber();</div>
+<p>Returns periodic table period number for an <i>Atom</i> in a molecule with a valid atomic number .</p>
+</dd>
+<dt id="GetRings"><b>GetRings</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRings();</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetRingsWithEvenSize"><b>GetRingsWithEvenSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRingsWithEvenSize();</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings with even size containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetRingsWithOddSize"><b>GetRingsWithOddSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRingsWithOddSize();</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings with odd size containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetRingsWithSize"><b>GetRingsWithSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRingsWithSize($RingSize);</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings with specific <i>RingSize </i>containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetRingsWithSizeGreaterThan"><b>GetRingsWithSizeGreaterThan</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRingsWithSizeGreaterThan($RingSize);</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings with size greater than specific <i>RingSize </i>containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetRingsWithSizeLessThan"><b>GetRingsWithSizeLessThan</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Aotm-&gt;GetRingsWithSizeLessThan($RingSize);</div>
+<p>Returns an array of references to arrays containing ring atoms corressponding to all rings with size less than specific <i>RingSize </i>containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSizeOfLargestRing"><b>GetSizeOfLargestRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Size = $Atom-&gt;GetSizeOfLargestRing();</div>
+<p>Returns size of the largest ring containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSizeOfSmallestRing"><b>GetSizeOfSmallestRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Size = $Atom-&gt;GetSizeOfSmallestRing();</div>
+<p>Returns size of the smallest ring containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSmallestRing"><b>GetSmallestRing</b></dt>
+<dd>
+<div class="OptionsBox">    @RingAtoms = $Atom-&gt;GetSmallestRing();</div>
+<p>Returns an array of ring <i>Atom</i> objects corresponding to the largest ring containing <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSpinMultiplicity"><b>GetSpinMultiplicity</b></dt>
+<dd>
+<div class="OptionsBox">    $SpinMultiplicity = $Atom-&gt;GetSpinMultiplicity();</div>
+<p>Returns spin multiplicity of an <i>Atom</i> corresponding to one of these three values: explicitly set <b>SpinMultiplicity</b> property value; calculated from <b>FreeRadicalElectrons</b> property; value of 0.</p>
+<p>The <b>SpinMultiplicity</b> is calculate from <i>FreeRadicalElectrons</i> property as follows:</p>
+<div class="OptionsBox">    FreeRadicalElectrons: 1; SpinMultiplicity: 2
+<br/>    FreeRadicalElectrons: 2; SpinMultiplicity: 1
+<br/>    FreeRadicalElectrons: other; SpinMultiplicity: 0</div>
+</dd>
+<dt id="GetSumOfBondOrders"><b>GetSumOfBondOrders</b></dt>
+<dd>
+<div class="OptionsBox">    $SumBondOrders = $Atom-&gt;GetSumOfBondOrders();</div>
+<p>Returns sum of bond orders corresponding to all atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSumOfBondOrdersToHeavyAtoms"><b>GetSumOfBondOrdersToHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $SumBondOrders = $Atom-&gt;GetSumOfBondOrdersToHeavyAtoms();</div>
+<p>Returns sum of bond orders corresponding to all heavy atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSumOfBondOrdersToHydrogenAtoms"><b>GetSumOfBondOrdersToHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $SumBondOrders = $Atom-&gt;GetSumOfBondOrdersToHydrogenAtoms();</div>
+<p>Returns sum of bond orders corresponding to all hydrogen atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetSumOfBondOrdersToNonHydrogenAtoms"><b>GetSumOfBondOrdersToNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $SumBondOrders = $Atom-&gt;GetSumOfBondOrdersToNonHydrogenAtoms();</div>
+<p>Returns sum of bond orders corresponding to all non-hydrogen atoms bonded to an <i>Atom</i> in a molecule.</p>
+</dd>
+<dt id="GetValence"><b>GetValence</b></dt>
+<dd>
+<div class="OptionsBox">    $Valence = $Atom-&gt;GetValence();</div>
+<p>Returns valence of an <i>Atom</i> in a molecule. Valence corresponds to number of electrons used by an atom in bonding:</p>
+<div class="OptionsBox">    Valence = ValenceElectrons - ValenceFreeElectrons = BondingElectrons</div>
+<p>Single, double and triple bonds with bond orders of 1, 2, and 3 correspond to contribution of 1, 2, and 3 bonding electrons. So:</p>
+<div class="OptionsBox">    Valence = SumOfBondOrders + NumOfMissingHydrogens + FormalCharge</div>
+<p>where positive and negative values of FormalCharge increase and decrease the number of bonding electrons, respectively.</p>
+<p>The current release of MayaChemTools supports the following three valence models, which are used during calculation of implicit hydrogens: MDLValenceModel, DaylightValenceModel, InternalValenceModel or MayaChemToolsValenceModel.</p>
+<p>Notes:</p>
+<div class="OptionsBox">    . Missing hydrogens are included in the valence.
+<br/>    . For neutral molecules, valence and sum of bond orders are equal.
+<br/>    . For molecules containing only single bonds, SumOfBondOrders and
+      NumOfBonds are equal.
+<br/>    . Free radical electrons lead to the decrease in valence. For atoms with
+      explicit assignment of SpinMultiplicity property values corresponding to
+      Singlet (two unparied electrons corresponding to one spin state), Doublet
+      (free radical; an unpaired electron corresponding to two spin states),
+      and Triplet (two unparied electrons corresponding to three spin states;
+      divalent carbon atoms (carbenes)), FreeRadicalElectrons are calculated as follows:
+<br/>
+       SpinMultiplicity: Doublet(2); FreeRadicalElectrons: 1 (one valence
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;           electron not available for bonding)
+<br/>&nbsp;&nbsp;&nbsp;       SpinMultiplicity: Singlet(1)/Triplet(3); FreeRadicalElectrons: 2 (two
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;           valence electrons not available for bonding)</div>
+</dd>
+<dt id="GetValenceElectrons"><b>GetValenceElectrons</b></dt>
+<dd>
+<div class="OptionsBox">    $ValenceElectrons = $Atom-&gt;GetValenceElectrons();</div>
+<p>Returns valence electrons for an <b>Atom</b> which corresponds to either explicity set <i>ValenceElectrons</i> atom property or valence electrons for the corresponding element in the periodic table available by <b>PeriodicTable</b> module.</p>
+</dd>
+<dt id="GetValenceFreeElectrons"><b>GetValenceFreeElectrons</b></dt>
+<dd>
+<div class="OptionsBox">    $ValenceFreeElectrons = $Atom-&gt;GetValenceFreeElectrons();
+<br/>    $ValenceFreeElectrons = $Atom-&gt;GetValenceFreeElectrons(
+                            $ExcludeFreeRadicalElectrons);</div>
+<p>Returns valence frees electrons for an <b>Atom</b> in a molecule. It corresponds to:</p>
+<div class="OptionsBox">    ValenceElectrons - Valence
+<br/>    or
+<br/>    ValenceElectrons - NumOfMissingHydrogens - SumOfBondOrders - FormalCharge</div>
+<p>Free radical electrons are included in the valence free electrons count by default.</p>
+<p>Examples:</p>
+<div class="OptionsBox">    NH3: ValenceFreeElectrons = 5 - 3 = 5 - 3 - 0 - 0 = 2
+<br/>    NH2: ValenceFreeElectrons = 5 - 3 = 5 - 2 - 1 - 0 = 2
+<br/>    NH4+; ValenceFreeElectrons = 5 - 5 = 5 - 4 - 0 - 1 = 0
+<br/>    NH3+; ValenceFreeElectrons = 5 - 5 = 5 - 3 - 1 - 1 = 0
+<br/>    C(=O)O- : ValenceFreeElectrons on O- = 6 - 0 = 6 - 1 - 0 - (-1) = 6
+<br/>    C(=O)O- : ValenceFreeElectrons on =O = 6 - 2 = 6 - 2 - 0 - 0 = 4</div>
+</dd>
+<dt id="GetX"><b>GetX</b></dt>
+<dd>
+<div class="OptionsBox">    $X = $Atom-&gt;GetX();</div>
+<p>Returns value of X-coordinate for an <i>Atom</i>.</p>
+</dd>
+<dt id="GetXYZ"><b>GetXYZ</b></dt>
+<dd>
+<div class="OptionsBox">    @XYZ = $Atom-&gt;GetXYZ();
+<br/>    $XYZRef = $Atom-&gt;GetXYZ();</div>
+<p>Returns an array or a reference to an array containing values for <i>Atom</i> coordinates.</p>
+</dd>
+<dt id="GetXYZVector"><b>GetXYZVector</b></dt>
+<dd>
+<div class="OptionsBox">    $XYZVector = $Atom-&gt;GetXYZVector();</div>
+<p>Returns a <i>Vector</i> object containing values for <i>Atom</i> coordinates</p>
+</dd>
+<dt id="GetY"><b>GetY</b></dt>
+<dd>
+<div class="OptionsBox">    $Y = $Atom-&gt;GetY();</div>
+<p>Returns value of Y-coordinate for an <i>Atom</i>.</p>
+</dd>
+<dt id="GetZ"><b>GetZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Z = $Atom-&gt;GetZ();</div>
+<p>Returns value of Z-coordinate for an <i>Atom</i>.</p>
+</dd>
+<dt id="IsAmideCarbon"><b>IsAmideCarbon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsAmideCarbon();</div>
+<p>Returns 1 or 0 based on whether it&#39;s amide carbon <i>Atom</i>.</p>
+<p>An amide group is defineds as:</p>
+<div class="OptionsBox">    R-C(=O)-N(-R&#39;)-R&#39;&#39;</div>
+<p>where:</p>
+<div class="OptionsBox">    o R = Hydrogen or groups of atoms attached through carbon
+<br/>    o R&#39; = Hydrogens or groups of atoms attached through carbon or
+           hetro atoms
+<br/>    o R&#39;&#39; = Hydrogens or groups of atoms attached through carbon or
+           hetro atoms</div>
+</dd>
+<dt id="IsAmideNitrogen"><b>IsAmideNitrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsAmideNitrogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s amide nitrogen <i>Atom</i>.</p>
+</dd>
+<dt id="IsAromatic"><b>IsAromatic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsAromatic();</div>
+<p>Returns 1 or 0 based on whether it&#39;s an aromatic <i>Atom</i>.</p>
+</dd>
+<dt id="IsArsenic"><b>IsArsenic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsArsenic();</div>
+<p>Returns 1 or 0 based on whether it&#39;s an arsenic <i>Atom</i>.</p>
+</dd>
+<dt id="IsBondedToAtom"><b>IsBondedToAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsBondedToAtom($OtherAtom);</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is bonded to <i>OtherAtom</i>.</p>
+</dd>
+<dt id="IsBromine"><b>IsBromine</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsBromine();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a bromine <i>Atom</i>.</p>
+</dd>
+<dt id="IsCarbon"><b>IsCarbon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsCarbon();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a carbon <i>Atom</i>.</p>
+</dd>
+<dt id="IsCarboxylCarbon"><b>IsCarboxylCarbon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsCarboxylCarbon();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a carboxyl carbon atom in carboxyl group: R-C(=O)-OH.</p>
+</dd>
+<dt id="IsCarboxylOxygen"><b>IsCarboxylOxygen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsCarboxylOxygen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a carboxyl oxygen atom in carboxyl group: R-C(=O)-OH.</p>
+</dd>
+<dt id="IsCarboxylateCarbon"><b>IsCarboxylateCarbon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsCarboxylateCarbon();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a carboxylate carbon atom in carboxyl group: R-C(=O)-O-.</p>
+</dd>
+<dt id="IsCarboxylateOxygen"><b>IsCarboxylateOxygen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsCarboxylateOxygen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a carboxylate oxygen atom in carboxyl group: R-C(=O)-O-.</p>
+</dd>
+<dt id="IsChlorine"><b>IsChlorine</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsChlorine();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a chlorine <i>Atom</i>.</p>
+</dd>
+<dt id="IsFluorine"><b>IsFluorine</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsFluorine();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a fluorine <i>Atom</i>.</p>
+</dd>
+<dt id="IsFunctionalClassType"><b>IsFunctionalClassType</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsFunctionalClassType($Type);</div>
+<p>Returns 1 or 0 based on whether it&#39;s a specified functional class <i>Type</i>.</p>
+<p>The current release of MayaChemTools supports following abbreviations and descriptive names for <i>FunctionalClassType</i>:</p>
+<div class="OptionsBox">    HBD: HydrogenBondDonor
+<br/>    HBA: HydrogenBondAcceptor
+<br/>    PI :  PositivelyIonizable
+<br/>    NI : NegativelyIonizable
+<br/>    Ar : Aromatic
+<br/>    Hal : Halogen
+<br/>    H : Hydrophobic
+<br/>    RA : RingAtom
+<br/>    CA : ChainAtom</div>
+<p>The following definitions are used to determine functional class types: [ Ref 60-61, Ref 65-66 ]:</p>
+<div class="OptionsBox">    HydrogenBondDonor: NH, NH2, OH
+<br/>    HydrogenBondAcceptor: N[!H], O
+<br/>    PositivelyIonizable: +, NH2
+<br/>    NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</div>
+</dd>
+<dt id="IsGuadiniumCarbon"><b>IsGuadiniumCarbon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsGuadiniumCarbon();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a guadinium carbon in guadinium group by checking its neighbors for a nitrogen in guadinium group.</p>
+</dd>
+<dt id="IsGuadiniumNitrogen"><b>IsGuadiniumNitrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsGuadiniumNitrogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a guadinium nitrogen in guadinium group.</p>
+<p>A guadinium group is defined as:</p>
+<div class="OptionsBox">    R2N-C(=NR)-(NR2) or R2N-C(=NR2+)-(NR2)</div>
+<p>where:</p>
+<div class="OptionsBox">    o R = Hydrogens or group of atoms attached through carbon
+<br/>    o Only one of the three nitrogens has a double bond to carbon
+      and has optional formal charge allowing it to be neutral or charged state</div>
+</dd>
+<dt id="IsHBondAcceptor"><b>IsHBondAcceptor</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHBondAcceptor();
+<br/>    $Status =$Atom-&gt;IsHBondAcceptor($HydrogenBondsType);</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrogen bond acceptor <i>Atom</i>.</p>
+</dd>
+<dt id="IsHBondDonor"><b>IsHBondDonor</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHBondDonor();
+<br/>    $Status =$Atom-&gt;IsHBondDonor($HydrogenBondsType);</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrogen bond donor <i>Atom</i>.</p>
+</dd>
+<dt id="IsHydrogenBondAcceptor"><b>IsHydrogenBondAcceptor</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHydrogenBondAcceptor();
+<br/>    $Status =$Atom-&gt;IsHydrogenBondAcceptor($HydrogenBondsType);</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrogen bond acceptor <i>Atom</i>.</p>
+</dd>
+<dt id="IsHydrogenBondDonor"><b>IsHydrogenBondDonor</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHydrogenBondDonor();
+<br/>    $Status =$Atom-&gt;IsHydrogenBondDonor($HydrogenBondsType);</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrogen bond donor <i>Atom</i>.</p>
+<p>The current release of MayaChemTools supports identification of two types of hydrogen bond donor and acceptor atoms with these names:</p>
+<div class="OptionsBox">    HBondsType1 or HydrogenBondsType1
+<br/>    HBondsType2 or HydrogenBondsType2</div>
+<p>The names of these hydrogen bond types are rather arbitrary. However, their definitions have specific meaning and are as follows:</p>
+<div class="OptionsBox">    HydrogenBondsType1 [ Ref 60-61, Ref 65-66 ]:
+<br/>
+        Donor: NH, NH2, OH - Any N and O with available H
+        Acceptor: N[!H], O - Any N without available H and any O
+<br/>
+<br/>    HydrogenBondsType2 [ Ref 91 ]:
+<br/>
+        Donor: NH, NH2, OH - N and O with available H
+        Acceptor: N, O - And N and O</div>
+<p>By default, <i>HydrogenBondsType1</i> is used to calculate number hydrogen bond donor and acceptor atoms. <i>HydrogenBondsType2</i> corresponds to <b>RuleOf5</b> definition of hydrogen bond donors and acceptors.</p>
+</dd>
+<dt id="IsHalogen"><b>IsHalogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHalogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a halogen <i>Atom</i>.</p>
+</dd>
+<dt id="IsHeteroAtom"><b>IsHeteroAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsHeteroAtom();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a hetro <i>Atom</i>. Following atoms are considered hetro atoms: <b>N, O, F, P, S, Cl, Br, I</b>.</p>
+</dd>
+<dt id="IsHydrogen"><b>IsHydrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsHydrogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrogen <i>Atom</i>.</p>
+</dd>
+<dt id="IsHydrophobic"><b>IsHydrophobic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsHydrophobic();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a hydrophobic <i>Atom</i>.</p>
+</dd>
+<dt id="IsInRing"><b>IsInRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsInRing();</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is present in a ring.</p>
+</dd>
+<dt id="IsInRingOfSize"><b>IsInRingOfSize</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsInRingOfSize($Size);</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is present in a ring of specific <i>Size</i>.</p>
+</dd>
+<dt id="IsIodine"><b>IsIodine</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsIodine();</div>
+<p>Returns 1 or 0 based on whether it&#39;s an iodine <i>Atom</i>.</p>
+</dd>
+<dt id="IsIsotope"><b>IsIsotope</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsIsotope();</div>
+<p>Returns 1 or 0 based on whether it&#39;s an isotope <i>Atom</i>.</p>
+</dd>
+<dt id="IsLipophilic"><b>IsLipophilic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsLipophilic();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a lipophilic <i>Atom</i>.</p>
+</dd>
+<dt id="IsMetallic"><b>IsMetallic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsMetallic();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a metallic <i>Atom</i>.</p>
+</dd>
+<dt id="IsNegativelyIonizable"><b>IsNegativelyIonizable</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsNegativelyIonizable();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a negatively ionizable atom <i>Atom</i>.</p>
+</dd>
+<dt id="IsNitrogen"><b>IsNitrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsNitrogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a nitrogen <i>Atom</i>.</p>
+</dd>
+<dt id="IsNonCarbonOrHydrogen"><b>IsNonCarbonOrHydrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsNonCarbonOrHydrogen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s not a carbon or hydrogen <i>Atom</i>.</p>
+</dd>
+<dt id="IsNotInRing"><b>IsNotInRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsNotInRing();</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is not present in a ring.</p>
+</dd>
+<dt id="IsOnlyInOneRing"><b>IsOnlyInOneRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsOnlyInOneRing();</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is only present in one ring.</p>
+</dd>
+<dt id="IsOxygen"><b>IsOxygen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsOxygen();</div>
+<p>Returns 0 or 1 based on whether it&#39;s an oxygen <i>Atom</i>.</p>
+</dd>
+<dt id="IsPhosphorus"><b>IsPhosphorus</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsPhosphorus();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a phosphorus <i>Atom</i>.</p>
+</dd>
+<dt id="IsPhosphateOxygen"><b>IsPhosphateOxygen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsPhosphateOxygen();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a phosphate oxygen in phosphate group.</p>
+<p>A phosphate group is defined as:</p>
+<div class="OptionsBox">    AO-(O=)P(-OA)-OA</div>
+<p>Where:</p>
+<div class="OptionsBox">   A - Any group of atoms including hydrogens</div>
+</dd>
+<dt id="IsPhosphatePhosphorus"><b>IsPhosphatePhosphorus</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsPhosphatePhosphorus();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a phosphate phosphorus in phosphate group.</p>
+</dd>
+<dt id="IsPolarAtom"><b>IsPolarAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsPolarAtom();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a polar <i>Atom</i>. Following atoms are considered polar atoms: <b>N, O, P, S</b>.</p>
+</dd>
+<dt id="IsPolarHydrogen"><b>IsPolarHydrogen</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsPolarHydrogen();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a hydrogen <i>Atom</i> bonded to a polar atom.</p>
+</dd>
+<dt id="IsPositivelyIonizable"><b>IsPositivelyIonizable</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsPositivelyIonizable();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a positively ionizable <i>Atom</i>.</p>
+</dd>
+<dt id="IsSaturated"><b>IsSaturated</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsSaturated();</div>
+<p>Returns 1 or 0 based on whether it&#39;s a saturated <i>Atom</i>. An atom attached to other atoms with only single bonds is considered a saturated atom.</p>
+</dd>
+<dt id="IsSelenium"><b>IsSelenium</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsSelenium();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a selenium <i>Atom</i>.</p>
+</dd>
+<dt id="IsStereoCenter"><b>IsStereoCenter</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsStereoCenter();</div>
+<p>Returns 0 or 1 based on whether it&#39;s marked as a stero center <i>Atom</i> by explicit setting of <i>StereoCenter</i> atom propert to value of <i>1</i>.</p>
+</dd>
+<dt id="IsSilicon"><b>IsSilicon</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsSilicon();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a silicon <i>Atom</i>.</p>
+</dd>
+<dt id="IsSulfur"><b>IsSulfur</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsSulfur();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a sulfur <i>Atom</i>.</p>
+</dd>
+<dt id="IsSulphur"><b>IsSulphur</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsSulphur();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a sulfur <i>Atom</i>.</p>
+</dd>
+<dt id="IsTellurium"><b>IsTellurium</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsTellurium();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a tellurium <i>Atom</i>.</p>
+</dd>
+<dt id="IsTerminal"><b>IsTerminal</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsTerminal();</div>
+<p>Returns 0 or 1 based on whether it&#39;s a terminal <i>Atom</i> attached to no more than one non-hydrogen atom.</p>
+</dd>
+<dt id="IsUnsaturated"><b>IsUnsaturated</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Atom-&gt;IsUnsaturated();</div>
+<p>Returns 1 or 0 based on whether it&#39;s as unsaturated <i>Atom</i>. An atom attached to other atoms with at least one non-single bond is considered an unsaturated atom.</p>
+</dd>
+<dt id="IsTopologicalPharmacophoreType"><b>IsTopologicalPharmacophoreType</b></dt>
+<dd>
+<div class="OptionsBox">    $Status =$Atom-&gt;IsTopologicalPharmacophoreType();</div>
+<p>Returns 1 or 0 based on whether it&#39;s any of the supportyed topological pharmacophore <i>Atom</i> type. See <i>IsFunctionalClassType</i> for a list of supported types.</p>
+</dd>
+<dt id="SetAtomSymbol"><b>SetAtomSymbol</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetAtomSymbol($AtomicSymbol);</div>
+<p>Sets atom symbol for <i>Atom</i> and returns <i>Atom</i> object. The appropriate atomic number is also set automatically.</p>
+</dd>
+<dt id="SetAtomicNumber"><b>SetAtomicNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetAtomicNumber($AtomicNumber);</div>
+<p>Sets atomic number for <i>Atom</i> and returns <i>Atom</i> object. The appropriate atom symbol is also set automatically.</p>
+</dd>
+<dt id="SetMassNumber"><b>SetMassNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetMassNumber($MassNumber);</div>
+<p>Sets mass number for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetStereoCenter"><b>SetStereoCenter</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetStereoCenter($StereoCenter);</div>
+<p>Sets stereo center for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetStereochemistry"><b>SetStereochemistry</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetStereochemistry($Stereochemistry);</div>
+<p>Sets stereo chemistry for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetX"><b>SetX</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetX($Value);</div>
+<p>Sets X-coordinate value for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetXYZ"><b>SetXYZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetXYZ(@XYZValues);
+<br/>    $Atom-&gt;SetXYZ($XYZValuesRef);
+<br/>    $Atom-&gt;SetXYZ($XYZVector);</div>
+<p>Sets <i>Atom</i> coordinates using an array, reference to an array or a <i>Vector</i> object and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetY"><b>SetY</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetY($Value);</div>
+<p>Sets Y-coordinate value for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="SetZ"><b>SetZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Atom-&gt;SetZ($Value);</div>
+<p>Sets Z-coordinate value for <i>Atom</i> and returns <i>Atom</i> object.</p>
+</dd>
+<dt id="StringifyAtom"><b>StringifyAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomString = $Atom-&gt;StringifyAtom();</div>
+<p>Returns a string containing information about <i>Atom</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Bond.html">Bond.pm</a>, <a href="./Molecule.html">Molecule.pm</a>, <a href="./MoleculeFileIO.html">MoleculeFileIO.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AminoAcids.html" title="AminoAcids.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomicDescriptors.html" title="AtomicDescriptors.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Atom.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

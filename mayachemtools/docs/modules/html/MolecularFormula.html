@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:MolecularFormula.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./WeightAndMassDescriptors.html" title="WeightAndMassDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Molecule.html" title="Molecule.html">Next</a></td><td width="34%" align="middle"><strong>MolecularFormula.pm</strong></td><td width="33%" align="right"><a href="././code/MolecularFormula.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/MolecularFormula.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/MolecularFormula.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/MolecularFormula.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/MolecularFormula.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>MolecularFormula</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use MolecularFormula;</p>
+<p>use MolecularFormula qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>MolecularFormula</b> module provides the following functions:</p>
+<p>
+ <a href="#CalculateElementalComposition">CalculateElementalComposition</a>, <a href="#CalculateExactMass">CalculateExactMass</a>, <a href="#CalculateMolecularWeight">CalculateMolecularWeight</a>, <a href="#FormatCompositionInfomation">FormatCompositionInfomation</a>, <a href="#GetElementsAndCount">GetElementsAndCount</a>, <a href="#IsMolecularFormula">IsMolecularFormula</a>
+</p><h1 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="CalculateMolecularWeight"><b>CalculateMolecularWeight</b></dt>
+<dd>
+<div class="OptionsBox">    $MolecularWeight = CalculateMolecularWeight($MolecularFormula);</div>
+<p>Calculates and returns the molecular weight for a specified <i>MolecularFormula</i>.</p>
+</dd>
+<dt id="CalculateElementalComposition"><b>CalculateElementalComposition</b></dt>
+<dd>
+<div class="OptionsBox">    ($ElementsRef, $ElementCompositionRef) =
+       CalculateElementalComposition($MolecularFormula);</div>
+<p>Calculates the percent composition in a specified <i>MolecularFormula</i> and returns references to arrays containing elements and their percent composition.</p>
+</dd>
+<dt id="CalculateExactMass"><b>CalculateExactMass</b></dt>
+<dd>
+<div class="OptionsBox">    $ExactMass = CalculateMolecularWeight($MolecularFormula);</div>
+<p>Calculates and returns the exact mass for a specified <i>MolecularFormula</i>.</p>
+</dd>
+<dt id="FormatCompositionInfomation"><b>FormatCompositionInfomation</b></dt>
+<dd>
+<div class="OptionsBox">    $FormattedString = FormatCompositionInfomation($ElementsRef,
+                       $ElementCompositionRef, [$Precision]);</div>
+<p>Returns a formatted elemental composition string using references to elements and elemental composition arrays. Precision is an optional parameter; its default value is <i>2</i>.</p>
+</dd>
+<dt id="GetElementsAndCount"><b>GetElementsAndCount</b></dt>
+<dd>
+<div class="OptionsBox">    ($ElementsRef, $ElementCountRef) = GetElementsAndCount(
+                                       $MolecularFormula);</div>
+<p>Retrieves elements and their count composition in a specified <i>MolecularFormula</i> and returns references to arrays containing elements and their count.</p>
+</dd>
+<dt id="IsMolecularFormula"><b>IsMolecularFormula</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsMolecularFormula($MolecularFormula);
+<br/>    ($Status, $ErrorMsg) = IsMolecularFormula($MolecularFormula);</div>
+<p>Returns 1 or 0 a based on whether it&#39;s a valid <i>MolecularFormula</i>.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Molecule.html">Molecule.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./WeightAndMassDescriptors.html" title="WeightAndMassDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Molecule.html" title="Molecule.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>MolecularFormula.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

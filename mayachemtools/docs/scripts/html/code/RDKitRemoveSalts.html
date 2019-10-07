@@ -1,0 +1,447 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitRemoveSalts.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitRemoveSalts.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit.Chem.SaltRemover</span> <span class="kn">import</span> <span class="n">SaltRemover</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit.Chem.SaltRemover</span> <span class="kn">import</span> <span class="n">InputFormat</span>
+  43     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  44 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  45     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  46     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  47     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  48 
+  49 <span class="c1"># MayaChemTools imports...</span>
+  50 <span class="k">try</span><span class="p">:</span>
+  51     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  52     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  53     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  54 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  55     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  56     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  57     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  58 
+  59 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  60 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  61 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  62 
+  63 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  64     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  65     
+  66     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  67     
+  68     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  69     
+  70     <span class="c1"># Retrieve command line arguments and options...</span>
+  71     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  72     
+  73     <span class="c1"># Process and validate command line arguments and options...</span>
+  74     <span class="n">ProcessOptions</span><span class="p">()</span>
+  75     
+  76     <span class="c1"># Perform actions required by the script...</span>
+  77     <span class="n">RemoveSalts</span><span class="p">()</span>
+  78     
+  79     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  80     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  81 
+  82 <span class="k">def</span> <span class="nf">RemoveSalts</span><span class="p">():</span>
+  83     <span class="sd">&quot;&quot;&quot;Identify and remove salts from molecules&quot;&quot;&quot;</span>
+  84     
+  85     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+  86     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+  87     
+  88     <span class="n">CountMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span>
+  89     
+  90     <span class="c1"># Setup a molecule reader...</span>
+  91     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+  92     <span class="n">Mols</span>  <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+  93     
+  94     <span class="c1"># Set up a molecule writer...</span>
+  95     <span class="n">Writer</span> <span class="o">=</span> <span class="bp">None</span>
+  96     <span class="n">DuplicatesWriter</span> <span class="o">=</span> <span class="bp">None</span>
+  97     <span class="k">if</span> <span class="ow">not</span> <span class="n">CountMode</span><span class="p">:</span>
+  98         <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+  99         <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 100             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 101         
+ 102         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Outfile</span><span class="p">))</span>
+ 103 
+ 104     <span class="c1"># Set up a salt remover...</span>
+ 105     <span class="n">SaltsByComponentsMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsByComponentsMode&quot;</span><span class="p">]</span>
+ 106     <span class="n">Remover</span> <span class="o">=</span> <span class="bp">None</span>
+ 107     <span class="k">if</span> <span class="ow">not</span> <span class="n">SaltsByComponentsMode</span><span class="p">:</span>
+ 108         <span class="n">Remover</span> <span class="o">=</span> <span class="n">SaltRemover</span><span class="p">(</span><span class="n">defnFilename</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsFile&quot;</span><span class="p">],</span> <span class="n">defnData</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsSMARTS&quot;</span><span class="p">],</span> <span class="n">defnFormat</span> <span class="o">=</span> <span class="n">InputFormat</span><span class="o">.</span><span class="n">SMARTS</span><span class="p">)</span>
+ 109     
+ 110     <span class="c1"># Process molecules...</span>
+ 111     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 112     <span class="n">ValidMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 113     <span class="n">SaltsMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 114     
+ 115     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 116 
+ 117     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 118         <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 119         
+ 120         <span class="k">if</span> <span class="n">Mol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 121             <span class="k">continue</span>
+ 122         
+ 123         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">Mol</span><span class="p">):</span>
+ 124             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 125             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring empty molecule: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolName</span><span class="p">)</span>
+ 126             <span class="k">continue</span>
+ 127         
+ 128         <span class="n">ValidMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 129         
+ 130         <span class="n">UnsaltedMol</span><span class="p">,</span> <span class="n">SaltyStatus</span> <span class="o">=</span> <span class="n">RemoveMolSalts</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Remover</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 131         
+ 132         <span class="k">if</span> <span class="n">SaltyStatus</span><span class="p">:</span>
+ 133             <span class="n">SaltsMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 134 
+ 135         <span class="k">if</span> <span class="ow">not</span> <span class="n">CountMode</span><span class="p">:</span>
+ 136             <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 137                 <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">UnsaltedMol</span><span class="p">)</span>
+ 138             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">UnsaltedMol</span><span class="p">)</span>
+ 139     
+ 140     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 141         <span class="n">Writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 142     
+ 143     <span class="k">if</span> <span class="n">DuplicatesWriter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 144         <span class="n">DuplicatesWriter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 145     
+ 146     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 147     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 148     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 149     
+ 150     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of molecules coontaining salts: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">SaltsMolCount</span><span class="p">))</span>
+ 151 
+ 152 <span class="k">def</span> <span class="nf">RemoveMolSalts</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Remover</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">):</span>
+ 153     <span class="sd">&quot;&quot;&quot;Remove salts from mol and return unsalted mol along with mol salty status.&quot;&quot;&quot;</span>
+ 154 
+ 155     <span class="n">UnsaltedMol</span> <span class="o">=</span> <span class="n">Mol</span>
+ 156     <span class="n">SaltyStatus</span> <span class="o">=</span> <span class="bp">False</span>
+ 157     
+ 158     <span class="k">if</span> <span class="n">Remover</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 159         <span class="n">KeptMol</span><span class="p">,</span> <span class="n">DeletedMols</span> <span class="o">=</span> <span class="n">Remover</span><span class="o">.</span><span class="n">StripMolWithDeleted</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">dontRemoveEverything</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+ 160         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">DeletedMols</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+ 161             <span class="n">SaltyStatus</span> <span class="o">=</span> <span class="bp">True</span>
+ 162         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">KeptMol</span><span class="p">):</span>
+ 163             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">DeletedMols</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+ 164                 <span class="c1"># Take the larged fragment from DeletedMols</span>
+ 165                 <span class="n">UnsaltedMol</span> <span class="o">=</span> <span class="n">GetLargestMol</span><span class="p">(</span><span class="n">DeletedMols</span><span class="p">)</span>
+ 166     <span class="k">else</span><span class="p">:</span>
+ 167         <span class="c1"># Use largest fragment as unsalted molecule...</span>
+ 168         <span class="n">MolFrags</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">GetMolFrags</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">asMols</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+ 169         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolFrags</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+ 170             <span class="c1"># Keep the largest fragment as unsalted molecule...</span>
+ 171             <span class="n">SaltyStatus</span> <span class="o">=</span> <span class="bp">True</span>
+ 172             <span class="n">UnsaltedMol</span> <span class="o">=</span> <span class="n">GetLargestMol</span><span class="p">(</span><span class="n">MolFrags</span><span class="p">)</span>
+ 173 
+ 174     <span class="k">if</span> <span class="n">SaltyStatus</span><span class="p">:</span>
+ 175         <span class="n">Chem</span><span class="o">.</span><span class="n">SanitizeMol</span><span class="p">(</span><span class="n">UnsaltedMol</span><span class="p">)</span>
+ 176         <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 177         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolName</span><span class="p">):</span>
+ 178             <span class="n">UnsaltedMol</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="s2">&quot;_Name&quot;</span><span class="p">,</span> <span class="n">MolName</span><span class="p">)</span>
+ 179     
+ 180     <span class="k">return</span> <span class="p">(</span><span class="n">UnsaltedMol</span><span class="p">,</span> <span class="n">SaltyStatus</span><span class="p">)</span>
+ 181 
+ 182 <span class="k">def</span> <span class="nf">GetLargestMol</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 183     <span class="sd">&quot;&quot;&quot;Get largest mol from list of mols&quot;&quot;&quot;</span>
+ 184 
+ 185     <span class="n">LargestMol</span> <span class="o">=</span> <span class="bp">None</span>
+ 186     <span class="n">LargestMolSize</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+ 187     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 188         <span class="n">Size</span> <span class="o">=</span> <span class="n">Mol</span><span class="o">.</span><span class="n">GetNumAtoms</span><span class="p">()</span>
+ 189         <span class="k">if</span> <span class="n">Size</span> <span class="o">&gt;</span> <span class="n">LargestMolSize</span><span class="p">:</span>
+ 190             <span class="n">LargestMol</span> <span class="o">=</span> <span class="n">Mol</span>
+ 191             <span class="n">LargestMolSize</span> <span class="o">=</span> <span class="n">Size</span>
+ 192 
+ 193     <span class="k">return</span> <span class="n">LargestMol</span>
+ 194     
+ 195 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 196     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 197     
+ 198     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 199     
+ 200     <span class="c1"># Validate options...</span>
+ 201     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 202     
+ 203     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 204     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 205     
+ 206     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 207     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 208 
+ 209     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 210 
+ 211     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 212     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^count$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 213         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;CountMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 214 
+ 215     <span class="n">SaltsByComponentsMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 216     <span class="n">SaltsBySMARTSFileMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 217     <span class="n">SaltsBySMARTSMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 218     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^ByComponent$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 219         <span class="n">SaltsByComponentsMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 220     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^BySMARTSFile$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 221         <span class="n">SaltsBySMARTSFileMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 222     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^BySMARTS$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 223         <span class="n">SaltsBySMARTSMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 224     <span class="k">else</span><span class="p">:</span>
+ 225         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The salts mode specified, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="s2">--saltsMode</span><span class="se">\&quot;</span><span class="s2"> option is not valid.&quot;</span> <span class="o">%</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">])</span>
+ 226     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsByComponentsMode&quot;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SaltsByComponentsMode</span>
+ 227     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsBySMARTSFileMode&quot;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SaltsBySMARTSFileMode</span>
+ 228     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsBySMARTSMode&quot;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SaltsBySMARTSMode</span>
+ 229 
+ 230     <span class="n">SaltsFile</span> <span class="o">=</span> <span class="bp">None</span>
+ 231     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^BySMARTSFile$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 232         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsFile&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 233             <span class="n">SaltsFile</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsFile&quot;</span><span class="p">]</span>
+ 234     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SaltsFile</span>
+ 235     
+ 236     <span class="n">SaltsSMARTS</span> <span class="o">=</span> <span class="bp">None</span>
+ 237     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^BySMARTS$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 238         <span class="k">if</span> <span class="ow">not</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsSMARTS&quot;</span><span class="p">]:</span>
+ 239             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No salts SMARTS pattern specified using </span><span class="se">\&quot;</span><span class="s2">--saltsSMARTS</span><span class="se">\&quot;</span><span class="s2"> option during </span><span class="se">\&quot;</span><span class="s2">BySMARTS</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-s, --saltsMode</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 240         <span class="n">SaltsSMARTS</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsSMARTS&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+ 241         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">SaltsSMARTS</span><span class="p">):</span>
+ 242             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Empty SMARTS pattern specified using </span><span class="se">\&quot;</span><span class="s2">--saltsSMARTS</span><span class="se">\&quot;</span><span class="s2"> option during </span><span class="se">\&quot;</span><span class="s2">BySMARTS</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-s, --saltsMode</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 243         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">SaltsSMARTS</span><span class="p">):</span>
+ 244             <span class="n">SaltsSMARTS</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[ ]+&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">SaltsSMARTS</span><span class="p">)</span>
+ 245         
+ 246     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SaltsSMARTS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SaltsSMARTS</span>
+ 247     
+ 248 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 249     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 250     
+ 251     <span class="c1"># Get options...</span>
+ 252     <span class="k">global</span> <span class="n">Options</span>
+ 253     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 254     
+ 255     <span class="c1"># Set current working directory to the specified directory...</span>
+ 256     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 257     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 258         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 259     
+ 260     <span class="c1"># Handle examples option...</span>
+ 261     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 262         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 263         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 264 
+ 265 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 266     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 267     
+ 268     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 269     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi txt csv tsv&quot;</span><span class="p">)</span>
+ 270     
+ 271     <span class="k">if</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]:</span>
+ 272         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi&quot;</span><span class="p">)</span>
+ 273         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 274         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 275 
+ 276     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-m, --mode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="s2">&quot;remove count&quot;</span><span class="p">)</span>
+ 277     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^remove$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 278         <span class="k">if</span> <span class="ow">not</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]:</span>
+ 279             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The outfile must be specified using </span><span class="se">\&quot;</span><span class="s2">-o, --outfile</span><span class="se">\&quot;</span><span class="s2"> during </span><span class="se">\&quot;</span><span class="s2">remove</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-m, --mode</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 280     
+ 281     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="s2">&quot;ByComponent BySMARTSFile BySMARTS&quot;</span><span class="p">)</span>
+ 282     
+ 283     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^BySMARTSFile$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 284         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsFile&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 285             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;--saltsFile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--saltsFile&quot;</span><span class="p">])</span>
+ 286 
+ 287 <span class="c1"># Setup a usage string for docopt...</span>
+ 288 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 289 <span class="s2">RDKitRemoveSalts.py - Remove salts</span>
+ 290 
+ 291 <span class="s2">Usage:</span>
+ 292 <span class="s2">    RDKitRemoveSalts.py  [--infileParams &lt;Name,Value,...&gt;] [--mode &lt;remove or count&gt;] [--outfileParams &lt;Name,Value,...&gt; ] [--overwrite]</span>
+ 293 <span class="s2">                         [--saltsMode &lt;ByComponent, BySMARTSFile, BySMARTS&gt;] [--saltsFile &lt;FileName or auto&gt;] [--saltsSMARTS &lt;SMARTS&gt;]</span>
+ 294 <span class="s2">                         [-w &lt;dir&gt;] [-o &lt;outfile&gt;]  -i &lt;infile&gt;</span>
+ 295 <span class="s2">    RDKitRemoveSalts.py -h | --help | -e | --examples</span>
+ 296 
+ 297 <span class="s2">Description:</span>
+ 298 <span class="s2">    Remove salts from molecules or simply count the number of molecules containing</span>
+ 299 <span class="s2">    salts. Salts are identified and removed based on either SMARTS strings or by selecting</span>
+ 300 <span class="s2">    the largest disconnected components in molecules as non-salt portion of molecules.</span>
+ 301 
+ 302 <span class="s2">    The supported input file formats are: SD (.sdf, .sd), SMILES (.smi., csv, .tsv, .txt)</span>
+ 303 
+ 304 <span class="s2">    The supported output file formats are: SD (.sdf, .sd), SMILES (.smi)</span>
+ 305 
+ 306 <span class="s2">Options:</span>
+ 307 <span class="s2">    -e, --examples</span>
+ 308 <span class="s2">        Print examples.</span>
+ 309 <span class="s2">    -h, --help</span>
+ 310 <span class="s2">        Print this help message.</span>
+ 311 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 312 <span class="s2">        Input file name.</span>
+ 313 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 314 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 315 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 316 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 317 <span class="s2">            </span>
+ 318 <span class="s2">            SD: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 319 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 320 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 321 <span class="s2">            </span>
+ 322 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 323 <span class="s2">    -m, --mode &lt;remove or count&gt;  [default: remove]</span>
+ 324 <span class="s2">        Specify whether to remove salts from molecules and write out molecules</span>
+ 325 <span class="s2">        or or simply count the number of molecules containing salts.</span>
+ 326 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 327 <span class="s2">        Output file name.</span>
+ 328 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 329 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 330 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 331 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 332 <span class="s2">            </span>
+ 333 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 334 <span class="s2">            SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,</span>
+ 335 <span class="s2">                smilesTitleLine,yes</span>
+ 336 <span class="s2">            </span>
+ 337 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 338 <span class="s2">        file types.</span>
+ 339 <span class="s2">    --overwrite</span>
+ 340 <span class="s2">        Overwrite existing files.</span>
+ 341 <span class="s2">    -s, --saltsMode &lt;ByComponent, BySMARTSFile, BySMARTS&gt;  [default: ByComponent]</span>
+ 342 <span class="s2">        Specify whether to identify and remove salts based on SMARTS strings or</span>
+ 343 <span class="s2">        by selecting the largest disconnected component as non-salt portion of a</span>
+ 344 <span class="s2">        molecule. Possible values: ByComponent, BySMARTSFile or BySMARTS.</span>
+ 345 <span class="s2">    --saltsFile &lt;FileName or auto&gt;  [default: auto]</span>
+ 346 <span class="s2">        Specify a file name containing specification for SMARTS corresponding to salts or</span>
+ 347 <span class="s2">        use default salts file, Salts.txt, available in RDKit data directory. This option is only</span>
+ 348 <span class="s2">        used during &#39;BySMARTSFile&#39; value of &#39;-s, --saltsMode&#39; option.</span>
+ 349 <span class="s2">        </span>
+ 350 <span class="s2">        RDKit data format: Smarts&lt;tab&gt;Name(optional)</span>
+ 351 <span class="s2">        </span>
+ 352 <span class="s2">        For example:</span>
+ 353 <span class="s2">            </span>
+ 354 <span class="s2">            [Cl,Br,I]</span>
+ 355 <span class="s2">            [N](=O)(O)O</span>
+ 356 <span class="s2">            [CH3]C(=O)O	  Acetic acid</span>
+ 357 <span class="s2">            </span>
+ 358 <span class="s2">    --saltsSMARTS &lt;SMARTS text&gt;</span>
+ 359 <span class="s2">        Space delimited SMARTS specifications to use for salts identification instead</span>
+ 360 <span class="s2">        their specifications in &#39;--saltsFile&#39;. This option is only used during &#39;BySMARTS&#39;</span>
+ 361 <span class="s2">        value of &#39;-s, --saltsMode&#39; option.</span>
+ 362 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 363 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 364 
+ 365 <span class="s2">Examples:</span>
+ 366 <span class="s2">    To remove salts from molecules in a SMILES file by keeping largest disconnected</span>
+ 367 <span class="s2">    components as non-salt portion of molecules and write out a SMILES file, type:</span>
+ 368 
+ 369 <span class="s2">        % RDKitRemoveSalts.py -i Sample.smi -o SampleOut.smi</span>
+ 370 
+ 371 <span class="s2">    To count number of molecule containing salts from in a SD file, using largest</span>
+ 372 <span class="s2">    components as non-salt portion of molecules, without generating any output</span>
+ 373 <span class="s2">    file, type:</span>
+ 374 
+ 375 <span class="s2">        % RDKitRemoveSalts.py -m count -i Sample.sdf</span>
+ 376 
+ 377 <span class="s2">    To remove salts from molecules in a SMILES file using SMARTS strings in default</span>
+ 378 <span class="s2">    Salts.txt distributed with RDKit to identify salts and write out a SMILES file, type:</span>
+ 379 
+ 380 <span class="s2">        % RDKitRemoveSalts.py -m remove -s BySMARTSFile -i Sample.smi</span>
+ 381 <span class="s2">          -o SampleOut.smi</span>
+ 382 
+ 383 <span class="s2">    To remove salts from molecules in a SD file using SMARTS strings in a local</span>
+ 384 <span class="s2">    CustomSalts.txt to identify salts and write out a SMILES file, type:</span>
+ 385 
+ 386 <span class="s2">        % RDKitRemoveSalts.py -m remove -s BySMARTSFile --saltsFile</span>
+ 387 <span class="s2">          CustomSalts.txt -i Sample.sdf -o SampleOut.smi</span>
+ 388 
+ 389 <span class="s2">    To remove salts from molecules in a SD file using specified SMARTS to identify</span>
+ 390 <span class="s2">    salts and write out a SD file, type:</span>
+ 391 
+ 392 <span class="s2">        % RDKitRemoveSalts.py -m remove -s BySMARTS  --saltsSMARTS</span>
+ 393 <span class="s2">          &#39;[Cl,Br,I]  [N](=O)(O)O [N](=O)(O)O&#39;</span>
+ 394 <span class="s2">          -i Sample.sdf -o SampleOut.smi</span>
+ 395 
+ 396 <span class="s2">    To remove salts form  molecules from a CSV SMILES file, SMILES strings in column 1,</span>
+ 397 <span class="s2">    name in column 2, and generate output SD file, type:</span>
+ 398 
+ 399 <span class="s2">        % RDKitRemoveSalts.py --infileParams </span>
+ 400 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 401 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;</span>
+ 402 <span class="s2">          -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 403 
+ 404 <span class="s2">Author:</span>
+ 405 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 406 
+ 407 <span class="s2">See also:</span>
+ 408 <span class="s2">    RDKitConvertFileFormat.py, RDKitRemoveDuplicateMolecules.py,</span>
+ 409 <span class="s2">    RDKitSearchFunctionalGroups.py, RDKitSearchSMARTS.py</span>
+ 410 
+ 411 <span class="s2">Copyright:</span>
+ 412 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 413 
+ 414 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 415 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 416 
+ 417 <span class="s2">    This file is part of MayaChemTools.</span>
+ 418 
+ 419 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 420 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 421 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 422 <span class="s2">    later version.</span>
+ 423 
+ 424 <span class="s2">&quot;&quot;&quot;</span>
+ 425 
+ 426 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 427     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

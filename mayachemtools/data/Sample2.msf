@@ -1,0 +1,25 @@
+DNA_MULTIPLE_ALIGNMENT 1.0 
+Four anthropoidea 
+MSF: 50  Type: N  Check: 2666 .. 
+
+Name: Homo_sapiens     Len: 50   Check: 8318   Weight: 1.00 
+Name: Pan_paniscus     Len: 50   Check: 7854   Weight: 1.00 
+Name: Gorilla_gorilla  Len: 50   Check: 7778   Weight: 1.00 
+Name: Pongo_pigmaeus   Len: 50   Check: 8716   Weight: 1.00
+//
+
+
+Homo_sapiens        AGUCGAGUC...GCAGAAAC 
+Pan_paniscus        AGUCGCGUCG..GCAGAAAC 
+Gorilla_gorilla     AGUCGCGUCG..GCAGAUAC 
+Pongo_pigmaeus      AGUCGCGUCGAAGCAGA..C 
+
+Homo_sapiens        GCAUGAC.GACCACAUUUU. 
+Pan_paniscus        GCAUGACGGACCACAUCAU. 
+Gorilla_gorilla     GCAUCACGGAC.ACAUCAUC 
+Pongo_pigmaeus      GCAUGACGGACCACAUCAUC 
+
+Homo_sapiens        CCUUGCAAAG 
+Pan_paniscus        CCUUGCAAAG 
+Gorilla_gorilla     CCUCGCAGAG 
+Pongo_pigmaeus      CCUUGCAGAG 

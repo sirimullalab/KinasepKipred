@@ -1,0 +1,935 @@
+<html>
+<head>
+<title>MayaChemTools:Code:SequenceFileUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-SequenceFileUtil-"></a>   1 <span class="k">package </span><span class="i">SequenceFileUtil</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: SequenceFileUtil.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Text::ParseWords</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">TextUtil</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">FileUtil</span><span class="sc">;</span>
+  31 
+  32 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  33 
+  34 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  35 <span class="i">@EXPORT</span> = <span class="q">qw(AreSequenceLengthsIdentical CalcuatePercentSequenceIdentity CalculatePercentSequenceIdentityMatrix GetLongestSequence GetShortestSequence GetSequenceLength IsGapResidue IsSupportedSequenceFile IsClustalWSequenceFile IsPearsonFastaSequenceFile IsMSFSequenceFile ReadSequenceFile RemoveSequenceGaps RemoveSequenceAlignmentGapColumns WritePearsonFastaSequenceFile)</span><span class="sc">;</span>
+  36 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  37 
+  38 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  39 
+  40 <span class="c"># Compare lengths of all sequences...</span>
+<a name="AreSequenceLengthsIdentical-"></a>  41 <span class="k">sub </span><span class="m">AreSequenceLengthsIdentical</span> <span class="s">{</span>
+  42   <span class="k">my</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  43   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$FirstID</span><span class="cm">,</span> <span class="i">$FirstSeqLen</span><span class="cm">,</span> <span class="i">$FirstDifferentLenID</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="s">)</span><span class="sc">;</span>
+  44 
+  45   <span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span>
+  46   <span class="i">$FirstID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  47   <span class="i">$FirstDifferentLenID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  48 
+  49   <span class="j">ID:</span> <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequencesDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+  50     <span class="k">if</span> <span class="s">(</span>!<span class="i">$FirstID</span><span class="s">)</span> <span class="s">{</span>
+  51       <span class="i">$FirstID</span> = <span class="i">$ID</span><span class="sc">;</span>
+  52       <span class="i">$FirstSeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span><span class="sc">;</span>
+  53       <span class="k">next</span> <span class="j">ID</span><span class="sc">;</span>
+  54     <span class="s">}</span>
+  55     <span class="i">$SeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span><span class="sc">;</span>
+  56     <span class="k">if</span> <span class="s">(</span><span class="i">$SeqLen</span> != <span class="i">$FirstSeqLen</span><span class="s">)</span> <span class="s">{</span>
+  57       <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+  58       <span class="i">$FirstDifferentLenID</span> = <span class="i">$ID</span><span class="sc">;</span>
+  59       <span class="k">last</span> <span class="j">ID</span><span class="sc">;</span>
+  60     <span class="s">}</span>
+  61   <span class="s">}</span>
+  62   <span class="k">return</span> <span class="s">(</span><span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+  63 <span class="s">}</span>
+  64 
+  65 <span class="c"># Calculate percent identity between two sequences. By default, gaps are ignored.</span>
+<a name="CalcuatePercentSequenceIdentity-"></a>  66 <span class="k">sub </span><span class="m">CalcuatePercentSequenceIdentity</span> <span class="s">{</span>
+  67   <span class="k">my</span><span class="s">(</span><span class="i">$Sequence1</span><span class="cm">,</span> <span class="i">$Sequence2</span><span class="cm">,</span> <span class="i">$PercentIdentity</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$Precision</span><span class="s">)</span><span class="sc">;</span>
+  68 
+  69   <span class="i">$PercentIdentity</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  70   <span class="i">$Precision</span> = <span class="n">1</span><span class="sc">;</span>
+  71   <span class="i">$IgnoreGaps</span> = <span class="n">1</span><span class="sc">;</span>
+  72   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">4</span><span class="s">)</span> <span class="s">{</span>
+  73     <span class="s">(</span><span class="i">$Sequence1</span><span class="cm">,</span> <span class="i">$Sequence2</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$Precision</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  74   <span class="s">}</span>
+  75   <span class="k">elsif</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+  76     <span class="s">(</span><span class="i">$Sequence1</span><span class="cm">,</span> <span class="i">$Sequence2</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  77   <span class="s">}</span>
+  78   <span class="k">elsif</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+  79     <span class="s">(</span><span class="i">$Sequence1</span><span class="cm">,</span> <span class="i">$Sequence2</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  80   <span class="s">}</span>
+  81   <span class="k">else</span> <span class="s">{</span>
+  82     <span class="k">return</span> <span class="i">$PercentIdentity</span><span class="sc">;</span>
+  83   <span class="s">}</span>
+  84   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$Sequence1</span><span class="s">)</span> &amp;&amp; <span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$Sequence2</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  85     <span class="k">return</span> <span class="i">$PercentIdentity</span><span class="sc">;</span>
+  86   <span class="s">}</span>
+  87   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$Identity</span><span class="cm">,</span> <span class="i">$Sequence1Len</span><span class="cm">,</span> <span class="i">$Sequence2Len</span><span class="cm">,</span> <span class="i">$Residue1</span><span class="cm">,</span> <span class="i">$Residue2</span><span class="cm">,</span> <span class="i">$ResMatchCount</span><span class="cm">,</span> <span class="i">$ResCount</span><span class="s">)</span><span class="sc">;</span>
+  88 
+  89   <span class="i">$Sequence1Len</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Sequence1</span><span class="s">)</span><span class="sc">;</span>
+  90   <span class="i">$Sequence2Len</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Sequence2</span><span class="s">)</span><span class="sc">;</span>
+  91 
+  92   <span class="i">$ResMatchCount</span> = <span class="n">0</span><span class="sc">;</span>
+  93   <span class="i">$ResCount</span> = <span class="n">0</span><span class="sc">;</span>
+  94   <span class="j">RESIDUE:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="s">(</span><span class="i">$Sequence1Len</span> - <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  95     <span class="i">$Residue1</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Sequence1</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+  96     <span class="i">$Residue2</span> = <span class="s">(</span><span class="i">$Index</span> &lt; <span class="i">$Sequence2Len</span><span class="s">)</span> ? <span class="k">substr</span><span class="s">(</span><span class="i">$Sequence2</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span> <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  97     <span class="k">if</span> <span class="s">(</span><span class="i">$IgnoreGaps</span><span class="s">)</span> <span class="s">{</span>
+  98       <span class="k">if</span> <span class="s">(</span><span class="i">$Residue1</span> !~ <span class="q">/[A-Z]/i</span> || <span class="i">$Residue2</span> !~ <span class="q">/[A-Z]/i</span><span class="s">)</span> <span class="s">{</span>
+  99         <span class="k">next</span> <span class="j">RESIDUE</span><span class="sc">;</span>
+ 100       <span class="s">}</span>
+ 101     <span class="s">}</span>
+ 102     <span class="k">if</span> <span class="s">(</span><span class="i">$Residue1</span> <span class="k">eq</span> <span class="i">$Residue2</span><span class="s">)</span> <span class="s">{</span>
+ 103       <span class="i">$ResMatchCount</span>++<span class="sc">;</span>
+ 104     <span class="s">}</span>
+ 105     <span class="i">$ResCount</span>++<span class="sc">;</span>
+ 106   <span class="s">}</span>
+ 107   <span class="i">$Identity</span> = <span class="i">$ResCount</span> ? <span class="s">(</span><span class="i">$ResMatchCount</span>/<span class="i">$ResCount</span><span class="s">)</span> <span class="co">:</span> <span class="n">0.0</span><span class="sc">;</span>
+ 108   <span class="i">$PercentIdentity</span> = <span class="k">sprintf</span><span class="s">(</span><span class="q">&quot;%.${Precision}f&quot;</span><span class="cm">,</span> <span class="s">(</span><span class="i">$Identity</span> * <span class="n">100</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 109 
+ 110   <span class="k">return</span> <span class="i">$PercentIdentity</span><span class="sc">;</span>
+ 111 <span class="s">}</span>
+ 112 
+ 113 <span class="c"># Calculate pairwise identify matrix for all the sequences and return a reference</span>
+ 114 <span class="c"># to a hash with the following keys:</span>
+ 115 <span class="c">#</span>
+ 116 <span class="c"># {IDs} - Sequence IDs</span>
+ 117 <span class="c"># {Count} - Number of IDs</span>
+ 118 <span class="c"># {PercentIdentity}{$RowID}{$ColID} - Percent identify for a pair of sequences</span>
+ 119 <span class="c">#</span>
+<a name="CalculatePercentSequenceIdentityMatrix-"></a> 120 <span class="k">sub </span><span class="m">CalculatePercentSequenceIdentityMatrix</span> <span class="s">{</span>
+ 121   <span class="k">my</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="cm">,</span> <span class="i">$Precision</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$RowID</span><span class="cm">,</span> <span class="i">$ColID</span><span class="cm">,</span> <span class="i">$RowIDSeq</span><span class="cm">,</span> <span class="i">$ColIDSeq</span><span class="cm">,</span> <span class="i">$PercentIdentity</span><span class="cm">,</span> <span class="i">%IdentityMatrixData</span><span class="s">)</span><span class="sc">;</span>
+ 122 
+ 123   <span class="i">$IgnoreGaps</span> = <span class="n">1</span><span class="sc">;</span>
+ 124   <span class="i">$Precision</span> = <span class="n">1</span><span class="sc">;</span>
+ 125   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 126     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$Precision</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 127   <span class="s">}</span>
+ 128   <span class="k">elsif</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 129     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 130   <span class="s">}</span>
+ 131   <span class="k">else</span> <span class="s">{</span>
+ 132     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 133   <span class="s">}</span>
+ 134 
+ 135   <span class="i">%IdentityMatrixData</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 136   <span class="i">@</span>{<span class="i">$IdentityMatrixData</span>{<span class="w">IDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 137   <span class="i">%</span>{<span class="i">$IdentityMatrixData</span>{<span class="w">PercentIdentity</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 138   <span class="i">$IdentityMatrixData</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 139 
+ 140   <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequencesDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 141     <span class="k">push</span> <span class="i">@</span>{<span class="i">$IdentityMatrixData</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 142     <span class="i">$IdentityMatrixData</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 143   <span class="s">}</span>
+ 144   <span class="c"># Initialize and calculate percent identity data values...</span>
+ 145   <span class="k">for</span> <span class="i">$RowID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequencesDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 146     <span class="i">%</span>{<span class="i">$IdentityMatrixData</span>{<span class="w">PercentIdentity</span>}{<span class="i">$RowID</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 147     <span class="i">$RowIDSeq</span> = <span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$RowID</span>}<span class="sc">;</span>
+ 148     <span class="k">for</span> <span class="i">$ColID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequencesDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 149       <span class="i">$IdentityMatrixData</span>{<span class="i">$RowID</span>}{<span class="i">$ColID</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 150       <span class="i">$ColIDSeq</span> = <span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ColID</span>}<span class="sc">;</span>
+ 151       <span class="i">$PercentIdentity</span> = <span class="i">CalcuatePercentSequenceIdentity</span><span class="s">(</span><span class="i">$RowIDSeq</span><span class="cm">,</span> <span class="i">$ColIDSeq</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$Precision</span><span class="s">)</span><span class="sc">;</span>
+ 152       <span class="i">$IdentityMatrixData</span>{<span class="w">PercentIdentity</span>}{<span class="i">$RowID</span>}{<span class="i">$ColID</span>} = <span class="i">$PercentIdentity</span><span class="sc">;</span>
+ 153     <span class="s">}</span>
+ 154   <span class="s">}</span>
+ 155   <span class="k">return</span> \<span class="i">%IdentityMatrixData</span><span class="sc">;</span>
+ 156 <span class="s">}</span>
+ 157 
+ 158 <span class="c"># Retrieve information about shortest sequence...</span>
+<a name="GetShortestSequence-"></a> 159 <span class="k">sub </span><span class="m">GetShortestSequence</span> <span class="s">{</span>
+ 160   <span class="k">my</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span><span class="sc">;</span>
+ 161 
+ 162   <span class="i">$IgnoreGaps</span> = <span class="n">1</span><span class="sc">;</span>
+ 163   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 164     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 165   <span class="s">}</span>
+ 166   <span class="k">else</span> <span class="s">{</span>
+ 167     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 168   <span class="s">}</span>
+ 169 
+ 170   <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span> =  <span class="i">_GetShortestOrLongestSequence</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="q">&#39;Shortest&#39;</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span><span class="sc">;</span>
+ 171   <span class="k">return</span> <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span><span class="sc">;</span>
+ 172 <span class="s">}</span>
+ 173 
+ 174 <span class="c"># Retrieve information about longest sequence..</span>
+<a name="GetLongestSequence-"></a> 175 <span class="k">sub </span><span class="m">GetLongestSequence</span> <span class="s">{</span>
+ 176   <span class="k">my</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span><span class="sc">;</span>
+ 177 
+ 178   <span class="i">$IgnoreGaps</span> = <span class="n">1</span><span class="sc">;</span>
+ 179   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 180     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 181   <span class="s">}</span>
+ 182   <span class="k">else</span> <span class="s">{</span>
+ 183     <span class="s">(</span><span class="i">$SequencesDataRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 184   <span class="s">}</span>
+ 185 
+ 186   <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span> =  <span class="i">_GetShortestOrLongestSequence</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="q">&#39;Longest&#39;</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span><span class="sc">;</span>
+ 187   <span class="k">return</span> <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span><span class="sc">;</span>
+ 188 <span class="s">}</span>
+ 189 
+ 190 <span class="c"># Get sequence length...</span>
+<a name="GetSequenceLength-"></a> 191 <span class="k">sub </span><span class="m">GetSequenceLength</span> <span class="s">{</span>
+ 192   <span class="k">my</span><span class="s">(</span><span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span><span class="sc">;</span>
+ 193 
+ 194   <span class="i">$SeqLen</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span> <span class="i">$IgnoreGaps</span> = <span class="n">1</span><span class="sc">;</span>
+ 195   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 196     <span class="s">(</span><span class="i">$Seq</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 197   <span class="s">}</span>
+ 198   <span class="k">else</span> <span class="s">{</span>
+ 199     <span class="s">(</span><span class="i">$Seq</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 200   <span class="s">}</span>
+ 201   <span class="k">if</span> <span class="s">(</span><span class="i">$IgnoreGaps</span><span class="s">)</span> <span class="s">{</span>
+ 202     <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$Residue</span><span class="s">)</span><span class="sc">;</span>
+ 203     <span class="i">$SeqLen</span> = <span class="n">0</span><span class="sc">;</span>
+ 204     <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="s">(</span><span class="k">length</span><span class="s">(</span><span class="i">$Seq</span><span class="s">)</span> - <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 205       <span class="i">$Residue</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Seq</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 206       <span class="k">if</span> <span class="s">(</span><span class="i">$Residue</span> =~ <span class="q">/[A-Z]/i</span><span class="s">)</span> <span class="s">{</span>
+ 207         <span class="i">$SeqLen</span>++<span class="sc">;</span>
+ 208       <span class="s">}</span>
+ 209     <span class="s">}</span>
+ 210   <span class="s">}</span>
+ 211   <span class="k">else</span> <span class="s">{</span>
+ 212     <span class="i">$SeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Seq</span><span class="s">)</span><span class="sc">;</span>
+ 213   <span class="s">}</span>
+ 214 
+ 215   <span class="k">return</span> <span class="i">$SeqLen</span><span class="sc">;</span>
+ 216 <span class="s">}</span>
+ 217 
+ 218 <span class="c"># Is it a gap residue...</span>
+<a name="IsGapResidue-"></a> 219 <span class="k">sub </span><span class="m">IsGapResidue</span> <span class="s">{</span>
+ 220   <span class="k">my</span><span class="s">(</span><span class="i">$Residue</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 221   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 222 
+ 223   <span class="i">$Status</span> = <span class="s">(</span><span class="i">$Residue</span> !~ <span class="q">/[A-Z]/i</span> <span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 224 
+ 225   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 226 <span class="s">}</span>
+ 227 
+ 228 <span class="c"># Is it a supported sequence file?</span>
+ 229 <span class="c">#</span>
+ 230 <span class="c"># Supported seqence formats are:</span>
+ 231 <span class="c">#</span>
+ 232 <span class="c"># ALN/ClustalW   .aln</span>
+ 233 <span class="c"># GCG/MSF         .msf</span>
+ 234 <span class="c"># PILEUP/MSF     .msf</span>
+ 235 <span class="c"># Fasts(Pearson) .fasta, .fta</span>
+ 236 <span class="c"># NBRF/PIR         .pir</span>
+ 237 <span class="c">#</span>
+<a name="IsSupportedSequenceFile-"></a> 238 <span class="k">sub </span><span class="m">IsSupportedSequenceFile</span> <span class="s">{</span>
+ 239   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 240   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$SequenceFormat</span><span class="s">)</span><span class="sc">;</span>
+ 241   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;NotSupported&#39;</span><span class="sc">;</span>
+ 242 
+ 243   <span class="j">SEQFORMAT:</span> <span class="s">{</span>
+ 244       <span class="k">if</span> <span class="s">(</span><span class="i">IsClustalWSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span><span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;ClustalW&#39;</span><span class="sc">;</span> <span class="k">last</span> <span class="j">SEQFORMAT</span><span class="s">}</span>
+ 245       <span class="k">if</span> <span class="s">(</span><span class="i">IsPearsonFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span><span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;Pearson&#39;</span><span class="sc">;</span> <span class="k">last</span> <span class="j">SEQFORMAT</span><span class="s">}</span>
+ 246       <span class="k">if</span> <span class="s">(</span><span class="i">IsPIRFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span><span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;PIR&#39;</span><span class="sc">;</span> <span class="k">last</span> <span class="j">SEQFORMAT</span><span class="s">}</span>
+ 247       <span class="k">if</span> <span class="s">(</span><span class="i">IsMSFSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span><span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;MSF&#39;</span><span class="sc">;</span> <span class="k">last</span> <span class="j">SEQFORMAT</span><span class="s">}</span>
+ 248       <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$SequenceFormat</span> = <span class="q">&#39;NotSupported&#39;</span><span class="sc">;</span>
+ 249   <span class="s">}</span>
+ 250   <span class="k">return</span> <span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$SequenceFormat</span><span class="s">)</span><span class="sc">;</span>
+ 251 <span class="s">}</span>
+ 252 
+ 253 <span class="c"># Is it a ClustalW multiple sequence sequence file...</span>
+<a name="IsClustalWSequenceFile-"></a> 254 <span class="k">sub </span><span class="m">IsClustalWSequenceFile</span> <span class="s">{</span>
+ 255   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 256   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 257 
+ 258   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 259 
+ 260   <span class="k">open</span> <span class="w">SEQUENCEFILE</span><span class="cm">,</span> <span class="q">&quot;$SequenceFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $SequenceFile: $!\n&quot;</span><span class="sc">;</span>
+ 261   <span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*SEQUENCEFILE</span><span class="s">)</span><span class="sc">;</span>
+ 262   <span class="i">$Status</span> = <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/(ClustalW|Clustal W|Clustal)/i</span> <span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 263   <span class="k">close</span> <span class="w">SEQUENCEFILE</span><span class="sc">;</span>
+ 264 
+ 265   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 266 <span class="s">}</span>
+ 267 
+ 268 <span class="c"># Is it a valid Pearson fasta sequence or alignment file?</span>
+ 269 <span class="c">#</span>
+<a name="IsPearsonFastaSequenceFile-"></a> 270 <span class="k">sub </span><span class="m">IsPearsonFastaSequenceFile</span> <span class="s">{</span>
+ 271   <span class="k">my</span><span class="s">(</span><span class="i">$FastaFile</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 272 
+ 273   <span class="s">(</span><span class="i">$FastaFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 274   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 275 
+ 276   <span class="k">open</span> <span class="w">FASTAFILE</span><span class="cm">,</span> <span class="q">&quot;$FastaFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $FastaFile: $!\n&quot;</span><span class="sc">;</span>
+ 277   <span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*FASTAFILE</span><span class="s">)</span><span class="sc">;</span>
+ 278 
+ 279   <span class="c"># First line starts with &gt; and the fourth character is not &#39;;&#39;; otherwise, it&#39;s</span>
+ 280   <span class="c"># PIR FASTA format.</span>
+ 281   <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^&gt;/</span><span class="s">)</span> <span class="s">{</span>
+ 282     <span class="k">my</span><span class="s">(</span><span class="i">$FourthChar</span><span class="s">)</span><span class="sc">;</span>
+ 283     <span class="i">$FourthChar</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="n">3</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 284     <span class="i">$Status</span> = <span class="s">(</span><span class="i">$FourthChar</span> !~ <span class="q">/\;/</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 285   <span class="s">}</span>
+ 286   <span class="k">close</span> <span class="w">FASTAFILE</span><span class="sc">;</span>
+ 287 
+ 288   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 289 <span class="s">}</span>
+ 290 
+ 291 <span class="c"># Is it a valid NBRF/PIR fasta sequence or alignment file?</span>
+ 292 <span class="c">#</span>
+<a name="IsPIRFastaSequenceFile-"></a> 293 <span class="k">sub </span><span class="m">IsPIRFastaSequenceFile</span> <span class="s">{</span>
+ 294   <span class="k">my</span><span class="s">(</span><span class="i">$FastaFile</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 295 
+ 296   <span class="s">(</span><span class="i">$FastaFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 297   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 298 
+ 299   <span class="k">open</span> <span class="w">FASTAFILE</span><span class="cm">,</span> <span class="q">&quot;$FastaFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $FastaFile: $!\n&quot;</span><span class="sc">;</span>
+ 300   <span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*FASTAFILE</span><span class="s">)</span><span class="sc">;</span>
+ 301 
+ 302   <span class="c"># First line starts with &gt; and the fourth character is &#39;;&#39;; otherwise, it&#39;s</span>
+ 303   <span class="c"># a Pearson FASTA format.</span>
+ 304   <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^&gt;/</span><span class="s">)</span> <span class="s">{</span>
+ 305     <span class="k">my</span><span class="s">(</span><span class="i">$FourthChar</span><span class="s">)</span><span class="sc">;</span>
+ 306     <span class="i">$FourthChar</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="n">3</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 307     <span class="i">$Status</span> = <span class="s">(</span><span class="i">$FourthChar</span> =~ <span class="q">/\;/</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 308   <span class="s">}</span>
+ 309   <span class="k">close</span> <span class="w">FASTAFILE</span><span class="sc">;</span>
+ 310 
+ 311   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 312 <span class="s">}</span>
+ 313 
+ 314 <span class="c"># Is it a valid MSF sequence or alignment file?</span>
+ 315 <span class="c">#</span>
+<a name="IsMSFSequenceFile-"></a> 316 <span class="k">sub </span><span class="m">IsMSFSequenceFile</span> <span class="s">{</span>
+ 317   <span class="k">my</span><span class="s">(</span><span class="i">$MSFFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 318 
+ 319   <span class="k">open</span> <span class="w">MSFFILE</span><span class="cm">,</span> <span class="q">&quot;$MSFFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $MSFFile: $!\n&quot;</span><span class="sc">;</span>
+ 320 
+ 321   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 322 
+ 323   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 324   <span class="c"># Find a line that contains MSF: keyword and ends with &#39;..&#39;</span>
+ 325   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*MSFFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 326     <span class="i">$Line</span> = <span class="i">RemoveLeadingWhiteSpaces</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 327     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/MSF:/i</span> &amp;&amp; <span class="i">$Line</span> =~ <span class="q">/\.\.[ ]*$/</span><span class="s">)</span> <span class="s">{</span>
+ 328       <span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span>
+ 329       <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+ 330     <span class="s">}</span>
+ 331     <span class="k">elsif</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/(!!AA_MULTIPLE_ALIGNMENT|!!NA_MULTIPLE_ALIGNMENT|PILEUP)/i</span><span class="s">)</span> <span class="s">{</span>
+ 332       <span class="c"># Pileup MSF...</span>
+ 333       <span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span>
+ 334       <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+ 335     <span class="s">}</span>
+ 336   <span class="s">}</span>
+ 337   <span class="k">close</span> <span class="w">MSFFILE</span><span class="sc">;</span>
+ 338 
+ 339   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 340 <span class="s">}</span>
+ 341 
+ 342 <span class="c"># Read sequence or sequence alignment file...</span>
+<a name="ReadSequenceFile-"></a> 343 <span class="k">sub </span><span class="m">ReadSequenceFile</span> <span class="s">{</span>
+ 344   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 345 
+ 346   <span class="k">if</span> <span class="s">(</span><span class="i">IsPearsonFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 347     <span class="k">return</span> <span class="i">ReadPearsonFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 348   <span class="s">}</span>
+ 349   <span class="k">elsif</span> <span class="s">(</span><span class="i">IsPIRFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 350     <span class="k">return</span> <span class="i">ReadPIRFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 351   <span class="s">}</span>
+ 352   <span class="k">elsif</span> <span class="s">(</span><span class="i">IsMSFSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 353     <span class="k">return</span> <span class="i">ReadMSFSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 354   <span class="s">}</span>
+ 355   <span class="k">elsif</span> <span class="s">(</span><span class="i">IsClustalWSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 356     <span class="k">return</span> <span class="i">ReadClustalWSequenceFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 357   <span class="s">}</span>
+ 358   <span class="k">else</span> <span class="s">{</span>
+ 359     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 360   <span class="s">}</span>
+ 361 <span class="s">}</span>
+ 362 
+ 363 <span class="c"># Read file and setup alignment data...</span>
+<a name="ReadClustalWSequenceFile-"></a> 364 <span class="k">sub </span><span class="m">ReadClustalWSequenceFile</span> <span class="s">{</span>
+ 365   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 366 
+ 367   <span class="k">return</span> <span class="i">_ReadFileAndSetupSequencesData</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="cm">,</span> <span class="q">&#39;ClustalW&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 368 <span class="s">}</span>
+ 369 
+ 370 <span class="c"># Read file and setup alignment data...</span>
+<a name="ReadPearsonFastaSequenceFile-"></a> 371 <span class="k">sub </span><span class="m">ReadPearsonFastaSequenceFile</span> <span class="s">{</span>
+ 372   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 373 
+ 374   <span class="k">return</span> <span class="i">_ReadFileAndSetupSequencesData</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="cm">,</span> <span class="q">&#39;Pearson&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 375 <span class="s">}</span>
+ 376 
+ 377 <span class="c"># Read file and setup alignment data...</span>
+<a name="ReadPIRFastaSequenceFile-"></a> 378 <span class="k">sub </span><span class="m">ReadPIRFastaSequenceFile</span> <span class="s">{</span>
+ 379   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 380 
+ 381   <span class="k">return</span> <span class="i">_ReadFileAndSetupSequencesData</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="cm">,</span> <span class="q">&#39;PIR&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 382 <span class="s">}</span>
+ 383 
+ 384 
+ 385 <span class="c"># Read file and setup sequence data...</span>
+<a name="ReadMSFSequenceFile-"></a> 386 <span class="k">sub </span><span class="m">ReadMSFSequenceFile</span> <span class="s">{</span>
+ 387   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 388 
+ 389   <span class="k">return</span> <span class="i">_ReadFileAndSetupSequencesData</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="cm">,</span> <span class="q">&#39;MSF&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 390 <span class="s">}</span>
+ 391 
+ 392 <span class="c"># Write out a Pearson FASTA file...</span>
+<a name="WritePearsonFastaSequenceFile-"></a> 393 <span class="k">sub </span><span class="m">WritePearsonFastaSequenceFile</span> <span class="s">{</span>
+ 394   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFileName</span><span class="cm">,</span> <span class="i">$SequenceDataRef</span><span class="cm">,</span> <span class="i">$MaxLength</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$WrappedSequence</span><span class="s">)</span><span class="sc">;</span>
+ 395 
+ 396   <span class="i">$MaxLength</span> = <span class="n">80</span><span class="sc">;</span>
+ 397   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 398     <span class="s">(</span><span class="i">$SequenceFileName</span><span class="cm">,</span> <span class="i">$SequenceDataRef</span><span class="cm">,</span> <span class="i">$MaxLength</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 399   <span class="s">}</span>
+ 400   <span class="k">elsif</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 401     <span class="s">(</span><span class="i">$SequenceFileName</span><span class="cm">,</span> <span class="i">$SequenceDataRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 402   <span class="s">}</span>
+ 403   <span class="k">open</span> <span class="w">SEQUENCEFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$SequenceFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Can&#39;t open $SequenceFileName: $!\n&quot;</span><span class="sc">;</span>
+ 404   <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequenceDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 405     <span class="i">$Description</span> = <span class="i">$SequenceDataRef</span>-&gt;{<span class="w">Description</span>}{<span class="i">$ID</span>}<span class="sc">;</span>
+ 406     <span class="i">$Sequence</span> = <span class="i">$SequenceDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="sc">;</span>
+ 407     <span class="i">$WrappedSequence</span> = <span class="i">WrapText</span><span class="s">(</span><span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$MaxLength</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="s">)</span><span class="sc">;</span>
+ 408 
+ 409     <span class="c"># Description also contains ID...</span>
+ 410     <span class="k">print</span> <span class="i">SEQUENCEFILE</span> <span class="q">&quot;&gt;$Description\n&quot;</span><span class="sc">;</span>
+ 411     <span class="k">print</span> <span class="i">SEQUENCEFILE</span> <span class="q">&quot;$WrappedSequence\n&quot;</span><span class="sc">;</span>
+ 412   <span class="s">}</span>
+ 413   <span class="k">close</span> <span class="w">SEQUENCEFILE</span><span class="sc">;</span>
+ 414 <span class="s">}</span>
+ 415 
+ 416 <span class="c"># Get ID, Sequence and Length for smallest or longest sequence</span>
+<a name="_GetShortestOrLongestSequence-"></a> 417 <span class="k">sub </span><span class="m">_GetShortestOrLongestSequence</span> <span class="s">{</span>
+ 418   <span class="k">my</span><span class="s">(</span><span class="i">$SequencesDataRef</span><span class="cm">,</span> <span class="i">$SequenceType</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 419   <span class="k">my</span><span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$FirstID</span><span class="cm">,</span> <span class="i">$FirstSeqLen</span><span class="cm">,</span> <span class="i">$CurrentID</span><span class="cm">,</span> <span class="i">$CurrentSeq</span><span class="cm">,</span> <span class="i">$CurrentSeqLen</span><span class="cm">,</span> <span class="i">$CurrentDescription</span><span class="s">)</span><span class="sc">;</span>
+ 420 
+ 421   <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="s">)</span> = <span class="s">(</span><span class="q">&#39;&#39;</span><span class="cm">,</span> <span class="q">&#39;&#39;</span><span class="cm">,</span> <span class="q">&#39;&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 422   <span class="i">$FirstID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 423 
+ 424   <span class="j">ID:</span> <span class="k">for</span> <span class="i">$CurrentID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequencesDataRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 425     <span class="i">$CurrentSeq</span> = <span class="i">$IgnoreGaps</span> ? <span class="i">RemoveSequenceGaps</span><span class="s">(</span><span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$CurrentID</span>}<span class="s">)</span> <span class="co">:</span> <span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$CurrentID</span>}<span class="sc">;</span>
+ 426     <span class="i">$CurrentSeqLen</span> = <span class="i">GetSequenceLength</span><span class="s">(</span><span class="i">$CurrentSeq</span><span class="cm">,</span> <span class="i">$IgnoreGaps</span><span class="s">)</span><span class="sc">;</span>
+ 427     <span class="i">$CurrentDescription</span> = <span class="i">$SequencesDataRef</span>-&gt;{<span class="w">Description</span>}{<span class="i">$CurrentID</span>}<span class="sc">;</span>
+ 428     <span class="k">if</span> <span class="s">(</span>!<span class="i">$FirstID</span><span class="s">)</span> <span class="s">{</span>
+ 429       <span class="i">$FirstID</span> = <span class="i">$ID</span><span class="sc">;</span> <span class="i">$FirstSeqLen</span> = <span class="i">$CurrentSeqLen</span><span class="sc">;</span>
+ 430       <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span> = <span class="s">(</span><span class="i">$CurrentID</span><span class="cm">,</span> <span class="i">$CurrentSeq</span><span class="cm">,</span> <span class="i">$CurrentSeqLen</span><span class="cm">,</span> <span class="i">$CurrentDescription</span><span class="s">)</span><span class="sc">;</span>
+ 431       <span class="k">next</span> <span class="j">ID</span><span class="sc">;</span>
+ 432     <span class="s">}</span>
+ 433     <span class="k">if</span> <span class="s">(</span><span class="i">$CurrentSeqLen</span> != <span class="i">$SeqLen</span><span class="s">)</span> <span class="s">{</span>
+ 434       <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/Shortest/i</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$CurrentSeqLen</span> &lt; <span class="i">$SeqLen</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 435         <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span> = <span class="s">(</span><span class="i">$CurrentID</span><span class="cm">,</span> <span class="i">$CurrentSeq</span><span class="cm">,</span> <span class="i">$CurrentSeqLen</span><span class="cm">,</span> <span class="i">$CurrentDescription</span><span class="s">)</span><span class="sc">;</span>
+ 436       <span class="s">}</span>
+ 437       <span class="k">elsif</span> <span class="s">(</span><span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/Longest/i</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$CurrentSeqLen</span> &gt; <span class="i">$SeqLen</span><span class="s">)</span> <span class="s">)</span> <span class="s">{</span>
+ 438         <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span> = <span class="s">(</span><span class="i">$CurrentID</span><span class="cm">,</span> <span class="i">$CurrentSeq</span><span class="cm">,</span> <span class="i">$CurrentSeqLen</span><span class="cm">,</span> <span class="i">$CurrentDescription</span><span class="s">)</span><span class="sc">;</span>
+ 439       <span class="s">}</span>
+ 440     <span class="s">}</span>
+ 441   <span class="s">}</span>
+ 442   <span class="k">return</span> <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Seq</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Description</span><span class="s">)</span><span class="sc">;</span>
+ 443 <span class="s">}</span>
+ 444 
+ 445 <span class="c"># Remove gaps in the sequence and return new sequence...</span>
+<a name="RemoveSequenceGaps-"></a> 446 <span class="k">sub </span><span class="m">RemoveSequenceGaps</span> <span class="s">{</span>
+ 447   <span class="k">my</span><span class="s">(</span><span class="i">$Seq</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 448   <span class="k">my</span><span class="s">(</span><span class="i">$SeqWithoutGaps</span><span class="cm">,</span> <span class="i">$SeqLen</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$Residue</span><span class="s">)</span><span class="sc">;</span>
+ 449 
+ 450   <span class="i">$SeqWithoutGaps</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 451   <span class="i">$SeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Seq</span><span class="s">)</span><span class="sc">;</span>
+ 452   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="s">(</span><span class="i">$SeqLen</span> - <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 453     <span class="i">$Residue</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Seq</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 454     <span class="k">if</span> <span class="s">(</span><span class="i">$Residue</span> =~ <span class="q">/[A-Z]/i</span><span class="s">)</span> <span class="s">{</span>
+ 455       <span class="i">$SeqWithoutGaps</span> .= <span class="i">$Residue</span><span class="sc">;</span>
+ 456     <span class="s">}</span>
+ 457   <span class="s">}</span>
+ 458 
+ 459   <span class="k">return</span> <span class="i">$SeqWithoutGaps</span><span class="sc">;</span>
+ 460 <span class="s">}</span>
+ 461 
+ 462 <span class="c"># Using input alignment data map ref containing following keys, generate</span>
+ 463 <span class="c"># a new hash with same set of keys after residue columns containg only</span>
+ 464 <span class="c"># gaps have been removed:</span>
+ 465 <span class="c">#</span>
+ 466 <span class="c"># {IDs} : Array of IDs in order as they appear in file</span>
+ 467 <span class="c"># {Count}: ID count...</span>
+ 468 <span class="c"># {Description}{$ID} : Description data...</span>
+ 469 <span class="c"># {Sequence}{$ID} : Sequence data...</span>
+ 470 <span class="c">#</span>
+<a name="RemoveSequenceAlignmentGapColumns-"></a> 471 <span class="k">sub </span><span class="m">RemoveSequenceAlignmentGapColumns</span> <span class="s">{</span>
+ 472   <span class="k">my</span><span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$AlignmentDataMapRef</span><span class="cm">,</span> <span class="i">%NewAlignmentDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 473 
+ 474   <span class="s">(</span><span class="i">$AlignmentDataMapRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 475 
+ 476   <span class="i">%NewAlignmentDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 477   <span class="i">@</span>{<span class="i">$NewAlignmentDataMap</span>{<span class="w">IDs</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 478   <span class="i">%</span>{<span class="i">$NewAlignmentDataMap</span>{<span class="w">Description</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 479   <span class="i">%</span>{<span class="i">$NewAlignmentDataMap</span>{<span class="w">Sequence</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 480   <span class="i">$NewAlignmentDataMap</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 481 
+ 482   <span class="c"># Transfer ID and count information...</span>
+ 483   <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 484     <span class="k">push</span> <span class="i">@</span>{<span class="i">$NewAlignmentDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 485     <span class="i">$NewAlignmentDataMap</span>{<span class="w">Description</span>}{<span class="i">$ID</span>} = <span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">Description</span>}{<span class="i">$ID</span>}<span class="sc">;</span>
+ 486     <span class="i">$NewAlignmentDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 487     <span class="i">$NewAlignmentDataMap</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 488   <span class="s">}</span>
+ 489 
+ 490   <span class="c"># Go over residue columns and transfer the data...</span>
+ 491   <span class="k">my</span><span class="s">(</span><span class="i">$FirstID</span><span class="cm">,</span> <span class="i">$FirstSeq</span><span class="cm">,</span> <span class="i">$FirstSeqLen</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$Res</span><span class="cm">,</span> <span class="i">$GapColumn</span><span class="s">)</span><span class="sc">;</span>
+ 492 
+ 493   <span class="i">$FirstID</span> = <span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">IDs</span>}[<span class="n">0</span>]<span class="sc">;</span>
+ 494   <span class="i">$FirstSeq</span> = <span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$FirstID</span>}<span class="sc">;</span>
+ 495   <span class="i">$FirstSeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$FirstSeq</span><span class="s">)</span><span class="sc">;</span>
+ 496 
+ 497   <span class="j">RES:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="s">(</span><span class="i">$FirstSeqLen</span> - <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 498     <span class="c"># Is this a gap column?</span>
+ 499     <span class="i">$GapColumn</span> = <span class="n">1</span><span class="sc">;</span>
+ 500     <span class="j">ID:</span> <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 501       <span class="i">$Res</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 502       <span class="k">if</span> <span class="s">(</span><span class="i">$Res</span> =~ <span class="q">/[A-Z]/i</span><span class="s">)</span> <span class="s">{</span>
+ 503         <span class="i">$GapColumn</span> = <span class="n">0</span><span class="sc">;</span>
+ 504         <span class="k">last</span> <span class="j">ID</span><span class="sc">;</span>
+ 505       <span class="s">}</span>
+ 506     <span class="s">}</span>
+ 507     <span class="k">if</span> <span class="s">(</span><span class="i">$GapColumn</span><span class="s">)</span> <span class="s">{</span>
+ 508       <span class="k">next</span> <span class="j">RES</span><span class="sc">;</span>
+ 509     <span class="s">}</span>
+ 510     <span class="c"># Transfer this residue...</span>
+ 511     <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 512       <span class="i">$Res</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$AlignmentDataMapRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 513       <span class="i">$NewAlignmentDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} .= <span class="i">$Res</span><span class="sc">;</span>
+ 514     <span class="s">}</span>
+ 515   <span class="s">}</span>
+ 516 
+ 517   <span class="k">return</span> <span class="s">(</span>\<span class="i">%NewAlignmentDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 518 <span class="s">}</span>
+ 519 
+ 520 <span class="c">#</span>
+ 521 <span class="c"># Read sequences file and return a reference to hash with the following keys:</span>
+ 522 <span class="c">#</span>
+ 523 <span class="c"># {IDs} - Array of sequence IDs</span>
+ 524 <span class="c"># {Count} - Number of sequences</span>
+ 525 <span class="c"># {Description}{$ID} - Sequence description</span>
+ 526 <span class="c"># {Sequence}{$ID} - Sequence for a specific ID</span>
+ 527 <span class="c"># {InputFileType} - Sequence file format</span>
+ 528 <span class="c"># {ConservedAnnotation} - Conserved residue annonation</span>
+ 529 <span class="c">#</span>
+ 530 <span class="c"># Note:</span>
+ 531 <span class="c">#   . Conserved residue annotation either exist in the input sequence alignment file or set</span>
+ 532 <span class="c">#     for a file containing same number of residues for all the sequence using the following</span>
+ 533 <span class="c">#     notation: * - Residue conserved; &#39; &#39; - Residue not conserved.</span>
+ 534 <span class="c">#</span>
+<a name="_ReadFileAndSetupSequencesData-"></a> 535 <span class="k">sub </span><span class="m">_ReadFileAndSetupSequencesData</span> <span class="s">{</span>
+ 536   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="cm">,</span> <span class="i">$SequenceType</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 537   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceDataMapRef</span><span class="s">)</span><span class="sc">;</span>
+ 538 
+ 539   <span class="i">$SequenceDataMapRef</span> = <span class="k">undef</span><span class="sc">;</span>
+ 540 
+ 541   <span class="c"># Read sequence file...</span>
+ 542   <span class="i">$SequenceDataMapRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 543   <span class="k">if</span> <span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/^ClustalW$/i</span><span class="s">)</span> <span class="s">{</span>
+ 544     <span class="i">$SequenceDataMapRef</span> = <span class="i">_ReadClustalWFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 545   <span class="s">}</span>
+ 546   <span class="k">elsif</span> <span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/^Pearson$/i</span><span class="s">)</span> <span class="s">{</span>
+ 547     <span class="i">$SequenceDataMapRef</span> = <span class="i">_ReadPearsonFastaFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 548   <span class="s">}</span>
+ 549   <span class="k">elsif</span> <span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/^PIR$/i</span><span class="s">)</span> <span class="s">{</span>
+ 550     <span class="i">$SequenceDataMapRef</span> = <span class="i">_ReadPIRFastaFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 551   <span class="s">}</span>
+ 552   <span class="k">elsif</span> <span class="s">(</span><span class="i">$SequenceType</span> =~ <span class="q">/^MSF$/i</span><span class="s">)</span> <span class="s">{</span>
+ 553     <span class="i">$SequenceDataMapRef</span> = <span class="i">_ReadMSFFile</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span><span class="sc">;</span>
+ 554   <span class="s">}</span>
+ 555   <span class="k">else</span> <span class="s">{</span>
+ 556     <span class="k">return</span> <span class="i">$SequenceDataMapRef</span><span class="sc">;</span>
+ 557   <span class="s">}</span>
+ 558 
+ 559   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">ConservedAnnotation</span>}<span class="s">)</span> <span class="s">{</span>
+ 560     <span class="k">return</span> <span class="s">(</span><span class="i">$SequenceDataMapRef</span><span class="s">)</span><span class="sc">;</span>
+ 561   <span class="s">}</span>
+ 562   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="s">(</span><span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">Count</span>} &gt; <span class="n">1</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">AreSequenceLengthsIdentical</span><span class="s">(</span><span class="i">$SequenceDataMapRef</span><span class="s">)</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 563     <span class="k">return</span> <span class="s">(</span><span class="i">$SequenceDataMapRef</span><span class="s">)</span><span class="sc">;</span>
+ 564   <span class="s">}</span>
+ 565 
+ 566   <span class="c"># Use the first sequence to setup an empty ConservedAnnotation key...</span>
+ 567   <span class="c"># And mark fully conserved residues...</span>
+ 568   <span class="c">#</span>
+ 569   <span class="k">my</span><span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$FirstSequence</span><span class="cm">,</span> <span class="i">$FirstSeqLen</span><span class="cm">,</span> <span class="i">$Res</span><span class="cm">,</span> <span class="i">$FirstRes</span><span class="cm">,</span> <span class="i">$ResConserved</span><span class="cm">,</span> <span class="i">$Index</span><span class="s">)</span><span class="sc">;</span>
+ 570   <span class="i">$ID</span> = <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">IDs</span>}[<span class="n">0</span>]<span class="sc">;</span>
+ 571   <span class="i">$FirstSequence</span> = <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="sc">;</span>
+ 572   <span class="i">$FirstSeqLen</span> = <span class="k">length</span><span class="s">(</span><span class="i">$FirstSequence</span><span class="s">)</span><span class="sc">;</span>
+ 573   <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">ConservedAnnotation</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 574   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="s">(</span><span class="i">$FirstSeqLen</span> - <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 575     <span class="i">$FirstRes</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 576     <span class="i">$ResConserved</span> = <span class="n">1</span><span class="sc">;</span>
+ 577     <span class="j">ID:</span> <span class="k">for</span> <span class="i">$ID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">IDs</span>}}<span class="s">)</span> <span class="s">{</span>
+ 578       <span class="i">$Sequence</span> = <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="sc">;</span>
+ 579       <span class="i">$Res</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 580       <span class="k">if</span> <span class="s">(</span>!<span class="i">$FirstRes</span><span class="s">)</span> <span class="s">{</span>
+ 581         <span class="i">$FirstRes</span> = <span class="i">$Res</span><span class="sc">;</span>
+ 582         <span class="k">next</span> <span class="j">ID</span><span class="sc">;</span>
+ 583       <span class="s">}</span>
+ 584       <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">$Res</span> !~ <span class="q">/[A-Z]/i</span><span class="s">)</span> || <span class="s">(</span><span class="i">$Res</span> <span class="k">ne</span> <span class="i">$FirstRes</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 585         <span class="i">$ResConserved</span> = <span class="n">0</span><span class="sc">;</span>
+ 586         <span class="k">last</span> <span class="j">ID</span><span class="sc">;</span>
+ 587       <span class="s">}</span>
+ 588     <span class="s">}</span>
+ 589     <span class="k">if</span> <span class="s">(</span><span class="i">$ResConserved</span><span class="s">)</span> <span class="s">{</span>
+ 590       <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">ConservedAnnotation</span>} .= <span class="q">&#39;*&#39;</span><span class="sc">;</span>
+ 591     <span class="s">}</span>
+ 592     <span class="k">else</span> <span class="s">{</span>
+ 593       <span class="i">$SequenceDataMapRef</span>-&gt;{<span class="w">ConservedAnnotation</span>} .= <span class="q">&#39; &#39;</span><span class="sc">;</span>
+ 594     <span class="s">}</span>
+ 595   <span class="s">}</span>
+ 596 
+ 597   <span class="k">return</span> <span class="s">(</span><span class="i">$SequenceDataMapRef</span><span class="s">)</span><span class="sc">;</span>
+ 598 <span class="s">}</span>
+ 599 
+ 600 <span class="c"># Read sequence data in ClustalW multiple sequence alignment file and</span>
+ 601 <span class="c"># return a reference to hash with these keys and values:</span>
+ 602 <span class="c">#</span>
+ 603 <span class="c"># {IDs} - Array of sequence IDs</span>
+ 604 <span class="c"># {Count} - Number of sequences</span>
+ 605 <span class="c"># {Description}{$ID} - Sequence description</span>
+ 606 <span class="c"># {Sequence}{$ID} - Sequence for a specific ID</span>
+ 607 <span class="c"># {InputFileType} - Sequence file format</span>
+ 608 <span class="c"># {ConservedAnnotation} - Conserved residue annonations: space, *, : , .</span>
+ 609 <span class="c">#</span>
+ 610 <span class="c">#</span>
+ 611 <span class="c">#</span>
+ 612 <span class="c"># And based on ClustalW/X manual, here is what the ConservedAnnonations mean:</span>
+ 613 <span class="c">#</span>
+ 614 <span class="c"># &#39;*&#39; indicates positions which have a single, fully conserved residue</span>
+ 615 <span class="c">#</span>
+ 616 <span class="c"># &#39;:&#39; indicates that one of the following &#39;strong&#39; groups is fully conserved: STA</span>
+ 617 <span class="c">#    NEQK NHQK NDEQ QHRK MILV MILF HY FYW</span>
+ 618 
+ 619 <span class="c"># &#39;.&#39; indicates that one of the following &#39;weaker&#39; groups is fully conserved:</span>
+ 620 <span class="c">#     CSA ATV SAG STNK STPA SGND SNDEQK NDEQHK NEQHRK FVLIM HFY</span>
+ 621 <span class="c">#</span>
+ 622 <span class="c"># These are all the positively scoring groups that occur in the Gonnet Pam250</span>
+ 623 <span class="c"># matrix. The strong and weak groups are defined as strong score &gt;0.5 and weak</span>
+ 624 <span class="c"># score =&lt;0.5 respectively.</span>
+ 625 <span class="c">#</span>
+<a name="_ReadClustalWFile-"></a> 626 <span class="k">sub </span><span class="m">_ReadClustalWFile</span> <span class="s">{</span>
+ 627   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceFile</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 628   <span class="k">my</span><span class="s">(</span><span class="i">%SequencesDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 629 
+ 630   <span class="c"># Initialize data...</span>
+ 631   <span class="i">%SequencesDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 632   <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 633   <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 634   <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 635   <span class="i">$SequencesDataMap</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 636   <span class="i">$SequencesDataMap</span>{<span class="w">ConservedAnnotation</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 637   <span class="i">$SequencesDataMap</span>{<span class="w">InputFileType</span>} = <span class="q">&#39;ClustalW&#39;</span><span class="sc">;</span>
+ 638 
+ 639   <span class="k">open</span> <span class="w">SEQUENCEFILE</span><span class="cm">,</span> <span class="q">&quot;$SequenceFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $SequenceFile: $!\n&quot;</span><span class="sc">;</span>
+ 640 
+ 641   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$LineLength</span><span class="cm">,</span> <span class="i">$AnnotationStart</span><span class="cm">,</span> <span class="i">$AnnotationLength</span><span class="cm">,</span> <span class="i">$Annotation</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$SequenceLength</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$IDIndex</span><span class="s">)</span><span class="sc">;</span>
+ 642 
+ 643   <span class="c"># Ignore the header line...</span>
+ 644   <span class="i">$Line</span> = <span class="q">&lt;SEQUENCEFILE&gt;</span><span class="sc">;</span>
+ 645 
+ 646   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*SEQUENCEFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 647     <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^[ \*\:\.]/</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$Line</span> !~ <span class="q">/[A-Z]/i</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 648       <span class="c"># Annotation for sequences: fully conserverd, weaker or stronger group conserverd.</span>
+ 649       <span class="c"># Extract it and save...</span>
+ 650       <span class="i">$LineLength</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 651       <span class="i">$AnnotationStart</span> = <span class="i">$LineLength</span> - <span class="i">$SequenceLength</span><span class="sc">;</span>
+ 652       <span class="i">$AnnotationLength</span> = <span class="i">$SequenceLength</span><span class="sc">;</span>
+ 653       <span class="i">$Annotation</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$AnnotationStart</span><span class="cm">,</span> <span class="i">$AnnotationLength</span><span class="s">)</span><span class="sc">;</span>
+ 654       <span class="i">$SequencesDataMap</span>{<span class="w">ConservedAnnotation</span>} .= <span class="i">$Annotation</span><span class="sc">;</span>
+ 655     <span class="s">}</span>
+ 656     <span class="k">else</span> <span class="s">{</span>
+ 657       <span class="c"># Extract ID and sequences...</span>
+ 658       <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="s">)</span>= <span class="i">$Line</span> =~ <span class="q">/^[ ]*(.*?)[ ]+(.*?)[ 01-9]*$/</span><span class="sc">;</span>
+ 659       <span class="i">$Sequence</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 660       <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">$ID</span> &amp;&amp; <span class="i">$Sequence</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 661         <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 662       <span class="s">}</span>
+ 663 
+ 664       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 665         <span class="c"># Append to existing alignment value...</span>
+ 666         <span class="i">$SequenceLength</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Sequence</span><span class="s">)</span><span class="sc">;</span>
+ 667         <span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} .= <span class="i">$Sequence</span><span class="sc">;</span>
+ 668       <span class="s">}</span>
+ 669       <span class="k">else</span> <span class="s">{</span>
+ 670         <span class="c"># New alignment data...</span>
+ 671         <span class="i">$SequencesDataMap</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 672         <span class="k">push</span> <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 673         <span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}{<span class="i">$ID</span>} = <span class="i">$ID</span><span class="sc">;</span>
+ 674         <span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} = <span class="i">$Sequence</span><span class="sc">;</span>
+ 675         <span class="i">$SequenceLength</span> = <span class="k">length</span><span class="s">(</span><span class="i">$Sequence</span><span class="s">)</span><span class="sc">;</span>
+ 676       <span class="s">}</span>
+ 677     <span class="s">}</span>
+ 678   <span class="s">}</span>
+ 679   <span class="k">close</span> <span class="w">SEQUENCEFILE</span><span class="sc">;</span>
+ 680   <span class="k">return</span> <span class="s">(</span>\<span class="i">%SequencesDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 681 <span class="s">}</span>
+ 682 
+ 683 <span class="c"># Read Pearson fasta file and return a reference to hash with these keys:</span>
+ 684 <span class="c">#</span>
+ 685 <span class="c"># {IDs} - Array of sequence IDs</span>
+ 686 <span class="c"># {Count} - Number of sequences</span>
+ 687 <span class="c"># {Description}{$ID} - Sequence description</span>
+ 688 <span class="c"># {Sequence}{$ID} - Sequence for a specific ID</span>
+ 689 <span class="c"># {InputFileType} - Sequence file format</span>
+ 690 <span class="c"># {ConservedAnnotation} - Conserved residue annonation</span>
+ 691 <span class="c">#</span>
+<a name="_ReadPearsonFastaFile-"></a> 692 <span class="k">sub </span><span class="m">_ReadPearsonFastaFile</span> <span class="s">{</span>
+ 693   <span class="k">my</span><span class="s">(</span><span class="i">$FastaFileName</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">$IgnoreID</span><span class="cm">,</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">%FastaDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 694 
+ 695   <span class="s">(</span><span class="i">$FastaFileName</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 696 
+ 697   <span class="i">%FastaDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 698   <span class="i">@</span>{<span class="i">$FastaDataMap</span>{<span class="w">IDs</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 699   <span class="i">%</span>{<span class="i">$FastaDataMap</span>{<span class="w">Description</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 700   <span class="i">%</span>{<span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 701   <span class="i">$FastaDataMap</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 702   <span class="i">$FastaDataMap</span>{<span class="w">InputFileType</span>} = <span class="q">&#39;Pearson&#39;</span><span class="sc">;</span>
+ 703 
+ 704   <span class="k">open</span> <span class="w">FASTAFILE</span><span class="cm">,</span> <span class="q">&quot;$FastaFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $FastaFileName: $!\n&quot;</span><span class="sc">;</span>
+ 705   <span class="i">$ID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 706   <span class="i">$IgnoreID</span> = <span class="n">0</span><span class="sc">;</span>
+ 707   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*FASTAFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 708     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^\&gt;/</span><span class="s">)</span> <span class="s">{</span>
+ 709       <span class="c"># Start of a new ID...</span>
+ 710       <span class="i">$Line</span> =~ <span class="q">s/^\&gt;//</span><span class="sc">;</span>
+ 711       <span class="i">$Line</span> = <span class="i">RemoveLeadingWhiteSpaces</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 712       <span class="i">@LineWords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 713       <span class="i">@LineWords</span> = <span class="k">split</span> <span class="q">/ /</span><span class="cm">,</span> <span class="i">$Line</span><span class="sc">;</span>
+ 714 
+ 715       <span class="i">$ID</span> = <span class="i">$LineWords</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 716       <span class="i">$ID</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 717       <span class="i">$Description</span> = <span class="i">$Line</span><span class="sc">;</span>
+ 718 
+ 719       <span class="i">$IgnoreID</span> = <span class="n">0</span><span class="sc">;</span>
+ 720       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 721         <span class="i">$IgnoreID</span> = <span class="n">1</span><span class="sc">;</span>
+ 722         <span class="k">warn</span> <span class="q">&quot;Warning: ID, $ID, in Fasta file already exists. Ignoring ID and sequence data...\n&quot;</span><span class="sc">;</span>
+ 723         <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 724       <span class="s">}</span>
+ 725       <span class="k">push</span> <span class="i">@</span>{<span class="i">$FastaDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 726       <span class="i">$FastaDataMap</span>{<span class="w">Description</span>}{<span class="i">$ID</span>} = <span class="i">$Description</span><span class="sc">;</span>
+ 727       <span class="i">$FastaDataMap</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 728       <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 729     <span class="s">}</span>
+ 730     <span class="k">if</span> <span class="s">(</span><span class="i">$IgnoreID</span><span class="s">)</span> <span class="s">{</span> <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span> <span class="s">}</span>
+ 731 
+ 732     <span class="c"># Remove any spaces in the sequence...</span>
+ 733     <span class="i">$Line</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 734     <span class="c"># Sequence data for active ID...</span>
+ 735     <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 736       <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} .= <span class="i">$Line</span><span class="sc">;</span>
+ 737     <span class="s">}</span>
+ 738     <span class="k">else</span> <span class="s">{</span>
+ 739       <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} = <span class="i">$Line</span><span class="sc">;</span>
+ 740     <span class="s">}</span>
+ 741   <span class="s">}</span>
+ 742   <span class="k">close</span> <span class="w">FASTAFILE</span><span class="sc">;</span>
+ 743   <span class="k">return</span> \<span class="i">%FastaDataMap</span><span class="sc">;</span>
+ 744 <span class="s">}</span>
+ 745 
+ 746 <span class="c"># Read PIR fasta file and return a reference to hash with these keys:</span>
+ 747 <span class="c">#</span>
+ 748 <span class="c"># {IDs} - Array of sequence IDs</span>
+ 749 <span class="c"># {Count} - Number of sequences</span>
+ 750 <span class="c"># {Description}{$ID} - Sequence description</span>
+ 751 <span class="c"># {Sequence}{$ID} - Sequence for a specific ID</span>
+ 752 <span class="c"># {InputFileType} - Sequence file format</span>
+ 753 <span class="c"># {ConservedAnnotation} - Conserved residue annonation</span>
+ 754 <span class="c">#</span>
+ 755 <span class="c"># Format:</span>
+ 756 <span class="c"># A sequence in PIR format consists of:</span>
+ 757 <span class="c"># One line starting with</span>
+ 758 <span class="c">#   a &quot;&gt;&quot; (greater-than) sign, followed by</span>
+ 759 <span class="c">#   a two-letter code describing the sequence type code (P1, F1, DL, DC, RL, RC, N3, N1 or XX), followed by</span>
+ 760 <span class="c">#   a semicolon, followed by</span>
+ 761 <span class="c">#   the sequence identification code (the database ID-code).</span>
+ 762 <span class="c"># One line containing a textual description of the sequence.</span>
+ 763 <span class="c"># One or more lines containing the sequence itself. The end of the</span>
+ 764 <span class="c"># sequence is marked by a &quot;*&quot; (asterisk) character.</span>
+ 765 <span class="c">#</span>
+ 766 <span class="c"># A file in PIR format may comprise more than one sequence.</span>
+ 767 <span class="c">#</span>
+ 768 <span class="c"># The PIR format is also often referred to as the NBRF format.</span>
+ 769 <span class="c">#</span>
+ 770 <span class="c"># Code SequenceType</span>
+ 771 <span class="c"># P1    Protein (complete)</span>
+ 772 <span class="c"># F1    Protein (fragment)</span>
+ 773 <span class="c"># DL    DNA (linear)</span>
+ 774 <span class="c"># DC    DNA (circular)</span>
+ 775 <span class="c"># RL    RNA (linear)</span>
+ 776 <span class="c"># RC   RNA (circular)</span>
+ 777 <span class="c"># N3    tRNA</span>
+ 778 <span class="c"># N1    Other functional RNA</span>
+ 779 <span class="c">#</span>
+ 780 
+<a name="_ReadPIRFastaFile-"></a> 781 <span class="k">sub </span><span class="m">_ReadPIRFastaFile</span> <span class="s">{</span>
+ 782   <span class="k">my</span><span class="s">(</span><span class="i">$FastaFileName</span><span class="cm">,</span> <span class="i">$ID</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">$SequenceTypeCode</span><span class="cm">,</span> <span class="i">$ReadingSequenceData</span><span class="cm">,</span> <span class="i">%FastaDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 783 
+ 784   <span class="s">(</span><span class="i">$FastaFileName</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 785 
+ 786   <span class="i">%FastaDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 787   <span class="i">@</span>{<span class="i">$FastaDataMap</span>{<span class="w">IDs</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 788   <span class="i">%</span>{<span class="i">$FastaDataMap</span>{<span class="w">Description</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 789   <span class="i">%</span>{<span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 790   <span class="i">%</span>{<span class="i">$FastaDataMap</span>{<span class="w">SequenceTypeCode</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 791   <span class="i">$FastaDataMap</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 792   <span class="i">$FastaDataMap</span>{<span class="w">InputFileType</span>} = <span class="q">&#39;PIR&#39;</span><span class="sc">;</span>
+ 793 
+ 794   <span class="k">open</span> <span class="w">FASTAFILE</span><span class="cm">,</span> <span class="q">&quot;$FastaFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $FastaFileName: $!\n&quot;</span><span class="sc">;</span>
+ 795   <span class="i">$ID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 796   <span class="i">$ReadingSequenceData</span> = <span class="n">0</span><span class="sc">;</span>
+ 797   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*FASTAFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 798     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^\&gt;/</span><span class="s">)</span> <span class="s">{</span>
+ 799       <span class="c"># Start of a new ID...</span>
+ 800       <span class="i">$Line</span> =~ <span class="q">s/^\&gt;//</span><span class="sc">;</span>
+ 801       <span class="i">$Line</span> = <span class="i">RemoveLeadingWhiteSpaces</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 802       <span class="s">(</span><span class="i">$SequenceTypeCode</span><span class="cm">,</span> <span class="i">$ID</span><span class="s">)</span> = <span class="q">/^\&gt;(.*?)\;(.*?)$/</span><span class="sc">;</span>
+ 803 
+ 804       <span class="c"># Use next line to retrieve sequence description...</span>
+ 805       <span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*FASTAFILE</span><span class="s">)</span><span class="sc">;</span>
+ 806       <span class="i">$Line</span> = <span class="i">RemoveLeadingWhiteSpaces</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 807       <span class="i">$Description</span> = <span class="i">$Line</span><span class="sc">;</span>
+ 808 
+ 809       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 810         <span class="k">warn</span> <span class="q">&quot;Warning: ID, $ID, in Fasta file already exists. Ignoring ID and sequence data...\n&quot;</span><span class="sc">;</span>
+ 811         <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 812       <span class="s">}</span>
+ 813       <span class="i">$ReadingSequenceData</span> = <span class="n">1</span><span class="sc">;</span>
+ 814       <span class="k">push</span> <span class="i">@</span>{<span class="i">$FastaDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 815       <span class="i">$FastaDataMap</span>{<span class="w">SequenceTypeCode</span>}{<span class="i">$ID</span>} = <span class="i">$SequenceTypeCode</span><span class="sc">;</span>
+ 816       <span class="i">$FastaDataMap</span>{<span class="w">Description</span>}{<span class="i">$ID</span>} = <span class="i">$Description</span><span class="sc">;</span>
+ 817       <span class="i">$FastaDataMap</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 818       <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 819     <span class="s">}</span>
+ 820     <span class="k">if</span> <span class="s">(</span>!<span class="i">$ReadingSequenceData</span><span class="s">)</span> <span class="s">{</span> <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span> <span class="s">}</span>
+ 821 
+ 822     <span class="c"># Remove any spaces in the sequence...</span>
+ 823     <span class="i">$Line</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 824     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/[\*]$/</span><span class="s">)</span> <span class="s">{</span>
+ 825       <span class="c"># End of sequence...</span>
+ 826       <span class="i">$ReadingSequenceData</span> = <span class="n">0</span><span class="sc">;</span>
+ 827       <span class="i">$Line</span> =~ <span class="q">s/[\*]$//</span><span class="sc">;</span>
+ 828     <span class="s">}</span>
+ 829     <span class="c"># Sequence data for active ID...</span>
+ 830     <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 831       <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} .= <span class="i">$Line</span><span class="sc">;</span>
+ 832     <span class="s">}</span>
+ 833     <span class="k">else</span> <span class="s">{</span>
+ 834       <span class="i">$FastaDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} = <span class="i">$Line</span><span class="sc">;</span>
+ 835     <span class="s">}</span>
+ 836   <span class="s">}</span>
+ 837   <span class="k">close</span> <span class="w">FASTAFILE</span><span class="sc">;</span>
+ 838   <span class="k">return</span> \<span class="i">%FastaDataMap</span><span class="sc">;</span>
+ 839 <span class="s">}</span>
+ 840 
+ 841 <span class="c"># Read MSF file and return a reference to hash with these keys:</span>
+ 842 <span class="c">#</span>
+ 843 <span class="c"># {IDs} : Array of IDs in order as they appear in file</span>
+ 844 <span class="c"># {Count}: ID count...</span>
+ 845 <span class="c"># {Description}{$ID} : Description data...</span>
+ 846 <span class="c"># {Sequence}{$ID} : Sequence data...</span>
+ 847 <span class="c">#</span>
+<a name="_ReadMSFFile-"></a> 848 <span class="k">sub </span><span class="m">_ReadMSFFile</span> <span class="s">{</span>
+ 849   <span class="k">my</span><span class="s">(</span><span class="i">$MSFFileName</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">%MSFDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 850 
+ 851   <span class="s">(</span><span class="i">$MSFFileName</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 852 
+ 853   <span class="i">%MSFDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 854   <span class="i">@</span>{<span class="i">$MSFDataMap</span>{<span class="w">IDs</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 855   <span class="i">%</span>{<span class="i">$MSFDataMap</span>{<span class="w">Description</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 856   <span class="i">%</span>{<span class="i">$MSFDataMap</span>{<span class="w">Sequence</span>}} =<span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 857   <span class="i">$MSFDataMap</span>{<span class="w">Count</span>} = <span class="n">0</span><span class="sc">;</span>
+ 858   <span class="i">$MSFDataMap</span>{<span class="w">InputFileType</span>} = <span class="q">&#39;MSF&#39;</span><span class="sc">;</span>
+ 859 
+ 860   <span class="k">open</span> <span class="w">MSFFILE</span><span class="cm">,</span> <span class="q">&quot;$MSFFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $MSFFileName: $!\n&quot;</span><span class="sc">;</span>
+ 861 
+ 862   <span class="c"># Collect sequences and IDs...</span>
+ 863   <span class="c">#</span>
+ 864   <span class="c"># &#39;//&#39; after the name fields indicates end of header list and start of sequence data.</span>
+ 865   <span class="c">#</span>
+ 866   <span class="k">my</span><span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Len</span><span class="cm">,</span> <span class="i">$Check</span><span class="cm">,</span> <span class="i">$Weight</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">$NameFieldsFound</span><span class="cm">,</span> <span class="i">%MSFIDsMap</span><span class="s">)</span><span class="sc">;</span>
+ 867   <span class="i">%MSFIDsMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 868   <span class="i">$NameFieldsFound</span> = <span class="n">0</span><span class="sc">;</span>
+ 869   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*MSFFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 870     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/Name:/</span><span class="s">)</span> <span class="s">{</span>
+ 871       <span class="i">$NameFieldsFound</span>++<span class="sc">;</span>
+ 872       <span class="s">(</span><span class="i">$ID</span><span class="cm">,</span> <span class="i">$Len</span><span class="cm">,</span> <span class="i">$Check</span><span class="cm">,</span> <span class="i">$Weight</span><span class="s">)</span> = <span class="i">$Line</span> =~ <span class="q">/^[ ]*Name:[ ]+(.*?)[ ]+Len:[ ]+(.*?)[ ]+Check:[ ]+(.*?)[ ]+Weight:[ ]+(.*?)[ ]*$/</span><span class="sc">;</span>
+ 873       <span class="k">if</span> <span class="s">(</span><span class="i">$ID</span> =~ <span class="q">/ /</span><span class="s">)</span> <span class="s">{</span>
+ 874         <span class="s">(</span><span class="i">$ID</span><span class="s">)</span> = <span class="i">$ID</span> =~ <span class="q">/^(.*?)[ ]+/</span>
+ 875       <span class="s">}</span>
+ 876       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$MSFIDsMap</span>{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 877         <span class="k">warn</span> <span class="q">&quot;Warning: ID, $ID, in MSF file already exists. Ignoring ID and sequence data...\n&quot;</span><span class="sc">;</span>
+ 878         <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 879       <span class="s">}</span>
+ 880       <span class="i">$MSFIDsMap</span>{<span class="i">$ID</span>} = <span class="i">$ID</span><span class="sc">;</span>
+ 881       <span class="k">push</span> <span class="i">@</span>{<span class="i">$MSFDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ID</span><span class="sc">;</span>
+ 882       <span class="i">$MSFDataMap</span>{<span class="w">Description</span>}{<span class="i">$ID</span>} = <span class="i">$ID</span><span class="sc">;</span>
+ 883       <span class="i">$MSFDataMap</span>{<span class="w">Count</span>} += <span class="n">1</span><span class="sc">;</span>
+ 884     <span class="s">}</span>
+ 885     <span class="k">elsif</span> <span class="s">(</span> <span class="q">/\/\//</span> &amp;&amp; <span class="i">$NameFieldsFound</span><span class="s">)</span> <span class="s">{</span>
+ 886       <span class="c"># End of header list...</span>
+ 887       <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+ 888     <span class="s">}</span>
+ 889   <span class="s">}</span>
+ 890   <span class="c"># Collect all sequences...</span>
+ 891   <span class="c">#</span>
+ 892   <span class="k">my</span><span class="s">(</span><span class="i">$FirstField</span><span class="cm">,</span> <span class="i">$SecondField</span><span class="s">)</span><span class="sc">;</span>
+ 893   <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*MSFFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 894     <span class="s">(</span><span class="i">$FirstField</span><span class="cm">,</span> <span class="i">$SecondField</span><span class="s">)</span> = <span class="i">$Line</span> =~ <span class="q">/^[ ]*(.*?)[ ]+(.*?)$/</span><span class="sc">;</span>
+ 895     <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$MSFIDsMap</span>{<span class="i">$FirstField</span>}<span class="s">)</span> <span class="s">{</span>
+ 896       <span class="c"># It&#39;s ID and sequence data...</span>
+ 897       <span class="i">$ID</span> = <span class="i">$FirstField</span><span class="sc">;</span>
+ 898       <span class="i">$Sequence</span> = <span class="i">$SecondField</span><span class="sc">;</span>
+ 899       <span class="c"># Take out spaces and leave the gap characters...</span>
+ 900       <span class="i">$Sequence</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 901       <span class="k">if</span> <span class="s">(</span><span class="i">$MSFDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>}<span class="s">)</span> <span class="s">{</span>
+ 902         <span class="i">$MSFDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} .= <span class="i">$Sequence</span><span class="sc">;</span>
+ 903       <span class="s">}</span>
+ 904       <span class="k">else</span> <span class="s">{</span>
+ 905         <span class="i">$MSFDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ID</span>} = <span class="i">$Sequence</span><span class="sc">;</span>
+ 906       <span class="s">}</span>
+ 907     <span class="s">}</span>
+ 908   <span class="s">}</span>
+ 909 
+ 910   <span class="k">close</span> <span class="w">MSFFILE</span><span class="sc">;</span>
+ 911   <span class="k">return</span> \<span class="i">%MSFDataMap</span><span class="sc">;</span>
+ 912 <span class="s">}</span>
+ 913 
+ 914 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<html>
+<head>
+<title>MayaChemTools:Code:ObjectProperty.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-ObjectProperty-"></a>   1 <span class="k">package </span><span class="i">ObjectProperty</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: ObjectProperty.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 
+  29 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw($AUTOLOAD)</span><span class="sc">;</span>
+  30 
+  31 <span class="c"># Set property for an object...</span>
+<a name="SetProperty-"></a>  32 <span class="k">sub </span><span class="m">SetProperty</span> <span class="s">{</span>
+  33   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  34 
+  35   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span> &amp;&amp; <span class="k">defined</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  36     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  37   <span class="s">}</span>
+  38   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_SetProperty</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  39 <span class="s">}</span>
+  40 
+  41 <span class="c"># Set properties for an object...</span>
+<a name="SetProperties-"></a>  42 <span class="k">sub </span><span class="m">SetProperties</span> <span class="s">{</span>
+  43   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  44   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  45 
+  46   <span class="k">while</span> <span class="s">(</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">each</span>  <span class="i">%NamesAndValues</span><span class="s">)</span> <span class="s">{</span>
+  47     <span class="i">$This</span><span class="i">-&gt;_SetProperty</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  48   <span class="s">}</span>
+  49 
+  50   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  51 <span class="s">}</span>
+  52 
+  53 <span class="c"># Set object property...</span>
+<a name="_SetProperty-"></a>  54 <span class="k">sub </span><span class="m">_SetProperty</span> <span class="s">{</span>
+  55   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  56 
+  57   <span class="i">$This</span>-&gt;{<span class="i">$Name</span>} = <span class="i">$Value</span><span class="sc">;</span>
+  58 <span class="s">}</span>
+  59 
+  60 <span class="c"># Get property for an object...</span>
+<a name="GetProperty-"></a>  61 <span class="k">sub </span><span class="m">GetProperty</span> <span class="s">{</span>
+  62   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  63 
+  64   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Name</span><span class="s">)</span> <span class="s">{</span>
+  65     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  66   <span class="s">}</span>
+  67   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_GetProperty</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span><span class="sc">;</span>
+  68 <span class="s">}</span>
+  69 
+  70 <span class="c"># Get object property...</span>
+<a name="_GetProperty-"></a>  71 <span class="k">sub </span><span class="m">_GetProperty</span> <span class="s">{</span>
+  72   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  73 
+  74   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="i">$Name</span>}<span class="s">)</span> <span class="s">{</span>
+  75     <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="i">$Name</span>}<span class="sc">;</span>
+  76   <span class="s">}</span>
+  77   <span class="k">else</span> <span class="s">{</span>
+  78     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  79   <span class="s">}</span>
+  80 <span class="s">}</span>
+  81 
+  82 <span class="c"># Does this property exist?</span>
+<a name="HasProperty-"></a>  83 <span class="k">sub </span><span class="m">HasProperty</span> <span class="s">{</span>
+  84   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  85 
+  86   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Name</span><span class="s">)</span> <span class="s">{</span>
+  87     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+  88   <span class="s">}</span>
+  89   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="i">$Name</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+  90 <span class="s">}</span>
+  91 
+  92 <span class="c"># Delete object property...</span>
+<a name="DeleteProperty-"></a>  93 <span class="k">sub </span><span class="m">DeleteProperty</span> <span class="s">{</span>
+  94   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  95 
+  96   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Name</span><span class="s">)</span> <span class="s">{</span>
+  97     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  98   <span class="s">}</span>
+  99   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_DeleteProperty</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span><span class="sc">;</span>
+ 100 <span class="s">}</span>
+ 101 
+ 102 <span class="c"># Delete object property...</span>
+<a name="_DeleteProperty-"></a> 103 <span class="k">sub </span><span class="m">_DeleteProperty</span> <span class="s">{</span>
+ 104   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 105 
+ 106   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="i">$Name</span>}<span class="s">)</span> <span class="s">{</span>
+ 107     <span class="k">delete</span> <span class="i">$This</span>-&gt;{<span class="i">$Name</span>}<span class="sc">;</span>
+ 108   <span class="s">}</span>
+ 109   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 110 <span class="s">}</span>
+ 111 
+ 112 <span class="c"># Implements Set&lt;PropertyName&gt; and Get&lt;PropertyName&gt; methods...</span>
+<a name="AUTOLOAD-"></a> 113 <span class="k">sub </span><span class="m">AUTOLOAD</span> <span class="s">{</span>
+ 114   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 115   <span class="k">my</span><span class="s">(</span><span class="i">$PackageName</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="cm">,</span> <span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">$ThisType</span><span class="s">)</span><span class="sc">;</span>
+ 116 
+ 117   <span class="c"># Do a greedy match to make sure package name and method names are</span>
+ 118   <span class="c"># picked up correctly from invocation names containing multiple occurences</span>
+ 119   <span class="c"># of ::. For example: FileIO::SDFileIO::GetFileHandle and so on.</span>
+ 120   <span class="c">#</span>
+ 121   <span class="s">(</span><span class="i">$PackageName</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span> = <span class="i">$AUTOLOAD</span> =~ <span class="q">/^(.*)::(.*)$/</span><span class="sc">;</span>
+ 122 
+ 123   <span class="k">if</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^(BEGIN|DESTROY)$/</span><span class="s">)</span> <span class="s">{</span>
+ 124     <span class="k">return</span><span class="sc">;</span>
+ 125   <span class="s">}</span>
+ 126 
+ 127   <span class="i">$ThisType</span> = <span class="k">ref</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> <span class="k">or</span> <span class="w">croak</span> <span class="q">&quot;Error: Invocation of function ${PackageName}::${MethodName} invocation is not supported: It must be invoked using an object reference...&quot;</span><span class="sc">;</span>
+ 128 
+ 129   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Get/</span> || <span class="i">$MethodName</span> =~ <span class="q">/^Set/</span> || <span class="i">$MethodName</span> =~ <span class="q">/^Delete/</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 130     <span class="w">croak</span> <span class="q">&quot;Error: Can&#39;t locate object method \&quot;$MethodName\&quot; via package \&quot;$ThisType\&quot;: This method is not automatically implemented by AUTOLOAD: Only Get&lt;PropertyName&gt;, Set&lt;PropertyName&gt; and Delete&lt;PropertyName&gt; functions are implemented via AUTOLOAD...&quot;</span><span class="sc">;</span>
+ 131   <span class="s">}</span>
+ 132   <span class="k">if</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Delete/</span><span class="s">)</span> <span class="s">{</span>
+ 133     <span class="s">(</span><span class="i">$PropertyName</span><span class="s">)</span> = <span class="i">$MethodName</span> =~ <span class="q">/^Delete(.*?)$/</span><span class="sc">;</span>
+ 134   <span class="s">}</span>
+ 135   <span class="k">else</span> <span class="s">{</span>
+ 136     <span class="s">(</span><span class="i">$PropertyName</span><span class="s">)</span> = <span class="i">$MethodName</span> =~ <span class="q">/^[SG]et(.*?)$/</span><span class="sc">;</span>
+ 137   <span class="s">}</span>
+ 138   <span class="k">if</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Set/</span> &amp;&amp; !<span class="k">defined</span><span class="s">(</span><span class="i">$PropertyValue</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 139     <span class="w">carp</span> <span class="q">&quot;Warning:  ${PackageName}::${MethodName}: Didn&#39;t set value for property $PropertyName: Property value for must be specified...\n&quot;</span><span class="sc">;</span>
+ 140     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 141   <span class="s">}</span>
+ 142 
+ 143   <span class="k">if</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Get/</span><span class="s">)</span> <span class="s">{</span>
+ 144     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_GetProperty</span><span class="s">(</span><span class="i">$PropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 145   <span class="s">}</span>
+ 146   <span class="k">elsif</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Set/</span><span class="s">)</span> <span class="s">{</span>
+ 147     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_SetProperty</span><span class="s">(</span><span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="s">)</span><span class="sc">;</span>
+ 148   <span class="s">}</span>
+ 149   <span class="k">elsif</span> <span class="s">(</span><span class="i">$MethodName</span> =~ <span class="q">/^Delete/</span><span class="s">)</span> <span class="s">{</span>
+ 150     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_DeleteProperty</span><span class="s">(</span><span class="i">$PropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 151   <span class="s">}</span>
+ 152 
+ 153 <span class="s">}</span>
+ 154 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

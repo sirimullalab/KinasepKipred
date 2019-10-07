@@ -1,0 +1,246 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Python/RDKitUtil.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MiscUtil.py.html" title="MiscUtil.py.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./SDFileUtil.html" title="SDFileUtil.html">Next</a></td><td width="34%" align="middle"><strong>Python/RDKitUtil.py</strong></td><td width="33%" align="right"><a href="././code/RDKitUtil.py.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/RDKitUtil.py.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/RDKitUtil.py.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/RDKitUtil.py.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/RDKitUtil.py.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>RDKitUtil</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>import RDKitUtil</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>RDKitUtil</b> module provides the following functions:</p>
+<p>
+ <a href="#GetInlineSVGForMolecule">GetInlineSVGForMolecule</a>, <a href="#GetInlineSVGForMolecules">GetInlineSVGForMolecules</a>, <a href="#GetMolName">GetMolName</a>, <a href="#GetSVGForMolecule">GetSVGForMolecule</a>, <a href="#GetSVGForMolecules">GetSVGForMolecules</a>, <a href="#IsMolEmpty">IsMolEmpty</a>, <a href="#MoleculesWriter">MoleculesWriter</a>, <a href="#ReadAndValidateMolecules">ReadAndValidateMolecules</a>, <a href="#ReadMolecules">ReadMolecules</a>, <a href="#ReadMoleculesFromMol2File">ReadMoleculesFromMol2File</a>, <a href="#ReadMoleculesFromMolFile">ReadMoleculesFromMolFile</a>, <a href="#ReadMoleculesFromPDBFile">ReadMoleculesFromPDBFile</a>, <a href="#ReadMoleculesFromSDFile">ReadMoleculesFromSDFile</a>, <a href="#ReadMoleculesFromSMILESFile">ReadMoleculesFromSMILESFile</a>, <a href="#WriteMolecules">WriteMolecules</a>
+</p><h1 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="GetInlineSVGForMolecule"><b>GetInlineSVGForMolecule</b></dt>
+<dd>
+<div class="OptionsBox">    GetInlineSVGForMolecule(Mol, Width, Height, Legend = None, AtomListToHighlight = None, BondListToHighlight = None, BoldText = True)</div>
+<p>Get SVG image text for a molecule suitable for inline embedding into a HTML page.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mol (object): RDKit molecule object.
+<br/>    Width (int): Width of a molecule image in pixels.
+<br/>    Height (int): Height of a molecule image in pixels.
+<br/>    Legend (str): Text to display under the image.
+<br/>    AtomListToHighlight (list): List of atoms to highlight.
+<br/>    BondListToHighlight (list): List of bonds to highlight.
+<br/>    BoldText (bool): Flag to make text bold in the image of molecule. </div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    str : SVG image text for inline embedding into a HTML page using &quot;img&quot;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        tag: &lt;img src=&quot;data:image/svg+xml;charset=UTF-8,SVGImageText&gt;</div>
+</dd>
+<dt id="GetInlineSVGForMolecules"><b>GetInlineSVGForMolecules</b></dt>
+<dd>
+<div class="OptionsBox">    GetInlineSVGForMolecules(Mols, MolsPerRow, MolWidth, MolHeight, Legends = None, AtomListsToHighlight = None, BondListsToHighLight = None, BoldText = True)</div>
+<p>Get SVG image text for molecules suitable for inline embedding into a HTML page.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mols (list): List of RDKit molecule objects.
+<br/>    MolsPerRow (int): Number of molecules per row.
+<br/>    Width (int): Width of a molecule image in pixels.
+<br/>    Height (int): Height of a molecule image in pixels.
+<br/>    Legends (list): List containing strings to display under images.
+<br/>    AtomListsToHighlight (list): List of lists containing atoms to highlight
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        for molecules.
+<br/>    BondListsToHighlight (list): List of lists containing bonds to highlight
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        for molecules
+<br/>    BoldText (bool): Flag to make text bold in the image of molecules. </div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    str : SVG image text for inline embedding into a HTML page using &quot;img&quot;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        tag: &lt;img src=&quot;data:image/svg+xml;charset=UTF-8,SVGImageText&gt;</div>
+</dd>
+<dt id="GetMolName"><b>GetMolName</b></dt>
+<dd>
+<div class="OptionsBox">    GetMolName(Mol, MolNum = None)</div>
+<p>Get molecule name.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mol (object): RDKit molecule object.
+<br/>    MolNum (int or None): Molecule number in input file.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    str : Molname corresponding to _Name property of a molecule, generated
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        from specieid MolNum using the format &quot;Mol%d&quot; % MolNum, or an
+        empty string.</div>
+</dd>
+<dt id="GetSVGForMolecule"><b>GetSVGForMolecule</b></dt>
+<dd>
+<div class="OptionsBox">    GetSVGForMolecule(Mol, Width, Height, Legend = None, AtomListToHighlight = None, BondListToHighlight = None, BoldText = True)</div>
+<p>Get SVG image text for a molecule suitable for viewing in a browser.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mol (object): RDKit molecule object.
+<br/>    Width (int): Width of a molecule image in pixels.
+<br/>    Height (int): Height of a molecule image in pixels.
+<br/>    Legend (str): Text to display under the image.
+<br/>    AtomListToHighlight (list): List of atoms to highlight.
+<br/>    BondListToHighlight (list): List of bonds to highlight.
+<br/>    BoldText (bool): Flag to make text bold in the image of molecule. </div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    str : SVG image text for writing to a SVG file for viewing in a browser.</div>
+</dd>
+<dt id="GetSVGForMolecules"><b>GetSVGForMolecules</b></dt>
+<dd>
+<div class="OptionsBox">    GetSVGForMolecules(Mols, MolsPerRow, MolWidth, MolHeight, Legends = None, AtomListsToHighlight = None, BondListsToHighlight = None, BoldText = True)</div>
+<p>Get SVG image text for molecules suitable for viewing in a browser.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mols (list): List of RDKit molecule objects.
+<br/>    MolsPerRow (int): Number of molecules per row.
+<br/>    Width (int): Width of a molecule image in pixels.
+<br/>    Height (int): Height of a molecule image in pixels.
+<br/>    Legends (list): List containing strings to display under images.
+<br/>    AtomListsToHighlight (list): List of lists containing atoms to highlight
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        for molecules.
+<br/>    BondListsToHighlight (list): List of lists containing bonds to highlight
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        for molecules
+<br/>    BoldText (bool): Flag to make text bold in the image of molecules. </div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    str : SVG image text for writing to a SVG file for viewing in a browser.</div>
+</dd>
+<dt id="IsMolEmpty"><b>IsMolEmpty</b></dt>
+<dd>
+<div class="OptionsBox">    IsMolEmpty(Mol)</div>
+<p>Check for the presence of atoms in a molecule.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    Mol (object): RDKit molecule object.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    bool : True - No atoms in molecule; Otherwise, false. </div>
+</dd>
+<dt id="MoleculesWriter"><b>MoleculesWriter</b></dt>
+<dd>
+<div class="OptionsBox">    MoleculesWriter(FileName, **KeyWordArgs)</div>
+<p>Set up a molecule writer.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    **KeyWordArgs (dictionary) : Parameter name and value pairs for writing and
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        processing molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    RDKit object : Molecule writer.</div>
+<p>The file extension is used to determine type of the file and set up an appropriate file writer.</p>
+</dd>
+<dt id="ReadAndValidateMolecules"><b>ReadAndValidateMolecules</b></dt>
+<dd>
+<div class="OptionsBox">    ReadAndValidateMolecules(FileName, **KeyWordArgs)</div>
+<p>Read molecules from an input file, validate all molecule objects, and return a list of valid and non-valid molecule objects along with their counts.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    **KeyWordArgs (dictionary) : Parameter name and value pairs for reading and
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        processing molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of valid RDKit molecule objects.
+<br/>    int : Number of total molecules in input file. 
+<br/>    int : Number of valid molecules in input file. </div>
+<p>The file extension is used to determine type of the file and set up an appropriate file reader.</p>
+</dd>
+<dt id="ReadMolecules"><b>ReadMolecules</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMolecules(FileName, **KeyWordArgs)</div>
+<p>Read molecules from an input file without performing any validation and creation of molecule objects.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    **KeyWordArgs (dictionary) : Parameter name and value pairs for reading and
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        processing molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+<p>The file extension is used to determine type of the file and set up an appropriate file reader.</p>
+</dd>
+<dt id="ReadMoleculesFromMol2File"><b>ReadMoleculesFromMol2File</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMoleculesFromMol2File(FileName, Sanitize = True, RemoveHydrogens = True)</div>
+<p>Read molecule from a Tripos Mol2 file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    Sanitize (bool): Sanitize molecules.
+<br/>    RemoveHydrogens (bool): Remove hydrogens from molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+</dd>
+<dt id="ReadMoleculesFromMolFile"><b>ReadMoleculesFromMolFile</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMoleculesFromMolFile(FileName, Sanitize = True, RemoveHydrogens = True, StrictParsing = True)</div>
+<p>Read molecule from a MDL Mol file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    Sanitize (bool): Sanitize molecules.
+<br/>    RemoveHydrogens (bool): Remove hydrogens from molecules.
+<br/>    StrictParsing (bool): Perform strict parsing.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+</dd>
+<dt id="ReadMoleculesFromPDBFile"><b>ReadMoleculesFromPDBFile</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMoleculesFromPDBFile(FileName, Sanitize = True, RemoveHydrogens = True)</div>
+<p>Read molecule from a PDB file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    Sanitize (bool): Sanitize molecules.
+<br/>    RemoveHydrogens (bool): Remove hydrogens from molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+</dd>
+<dt id="ReadMoleculesFromSDFile"><b>ReadMoleculesFromSDFile</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMoleculesFromSDFile(FileName, Sanitize = True, RemoveHydrogens = True, StrictParsing = True)</div>
+<p>Read molecules from a SD file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    Sanitize (bool): Sanitize molecules.
+<br/>    RemoveHydrogens (bool): Remove hydrogens from molecules.
+<br/>    StrictParsing (bool): Perform strict parsing.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+</dd>
+<dt id="ReadMoleculesFromSMILESFile"><b>ReadMoleculesFromSMILESFile</b></dt>
+<dd>
+<div class="OptionsBox">    ReadMoleculesFromSMILESFile(FileName, SMILESDelimiter = &#39; &#39;, SMILESColIndex = 0, SMILESNameColIndex = 1, SMILESTitleLine = 1, Sanitize = 1)</div>
+<p>Read molecules from a SMILES file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    SMILESDelimiter (str): Delimiter for parsing SMILES line
+<br/>    SMILESColIndex (int): Column index containing SMILES string.
+<br/>    SMILESNameColIndex (int): Column index containing molecule name.
+<br/>    SMILESTitleLine (int): Flag to indicate presence of title line.
+<br/>    Sanitize (int): Sanitize molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    list : List of RDKit molecule objects.</div>
+</dd>
+<dt id="WriteMolecules"><b>WriteMolecules</b></dt>
+<dd>
+<div class="OptionsBox">    WriteMolecules(FileName, Mols, **KeyWordArgs)</div>
+<p>Write molecules to an output file.</p>
+<p><i>Arguments:</i></p>
+<div class="OptionsBox">    FileName (str): Name of a file with complete path.
+<br/>    Mols (list): List of RDKit molecule objects. 
+<br/>    **KeyWordArgs (dictionary) : Parameter name and value pairs for writing and
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        processing molecules.</div>
+<p><i>Returns:</i></p>
+<div class="OptionsBox">    int : Number of total molecules.
+<br/>    int : Number of processed molecules written to output file.</div>
+<p>The file extension is used to determine type of the file and set up an appropriate file writer.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>The functionality available in the script is implemented using RDKit, an open source toolkit for cheminformatics developed by Greg Landrum.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MiscUtil.py.html" title="MiscUtil.py.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./SDFileUtil.html" title="SDFileUtil.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Python/RDKitUtil.py</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

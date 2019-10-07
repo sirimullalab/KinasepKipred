@@ -1,0 +1,63 @@
+NAME
+    PackageInfo
+
+SYNOPSIS
+    use PackageInfo;
+
+    use PackageInfo qw(:all);
+
+DESCRIPTION
+    PackageInfo module provides the following functions:
+
+    GetPackageKeyValue, IsPackageKeyNameAvailable, SetPackageKeyValue
+
+    The functions to set and get package keyvalues not explicitly defined in
+    this module are implemented using Perl's AUTOLOAD functionality. These
+    methods are generated on-the-fly for a specified key:
+
+        Set<KeyName>(<KeyValue>);
+        $KeyValue = Get<KeyName>();
+
+    PackageInfo module provides functionality to retrieve information about
+    MayaChemTools package from PackagaInfo.csv which contains the following
+    types key name and values:
+
+        "KeyName","KeyValue"
+        "PackageName","MayaChemTools"
+        "ReleaseDate","Oct 21, 2010"
+        "VersionNumber","7.4"
+        "DevSoftwareEnvironment","Cygwin on Windows XP"
+        ... ...
+        ... ...
+
+FUNCTIONS
+    GetPackageKeyValue
+            $KeyValue = GetPackageKeyValue($KeyName);
+
+        Returns KeyValue for a specified *KeyName*.
+
+    IsPackageKeyNameAvailable
+            $Status = IsPackageKeyNameAvailable($KeyName);
+
+        Returns 1 or 0 based on whether *KeyName* is available in package
+        info file.
+
+    SetPackageKeyValue
+            SetPackageKeyValue($KeyName, $KeyValue);
+
+        Sets *KeyValue* for a *KeyName*. No data is written to package info
+        file.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

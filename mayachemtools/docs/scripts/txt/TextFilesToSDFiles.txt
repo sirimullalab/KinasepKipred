@@ -1,0 +1,77 @@
+NAME
+    TextFilesToSDFiles.pl - Generate SD files from CSV or TSV TextFile(s)
+
+SYNOPSIS
+    TextFilesToSDFiles.pl TextFile(s)...
+
+    TextFilesToSDFiles.pl [-h, --help] [--indelim comma | semicolon] [-l,
+    --label yes | no] [-o, --overwrite] [-r, --root rootname] [-w,
+    --workingdir dirname] TextFile(s)...
+
+DESCRIPTION
+    Generate SD files from CSV or TSV *TextFile(s)*. The new SD files
+    contain no structure data as indicated by empty structure data block;
+    Data fields and values in SD files are generated using *TextFile(s)*
+    column labels and corresponding data values.
+
+    Multiple *TextFile(s)* names are separated by space. The valid file
+    extensions are *.csv* and *.tsv* for comma/semicolon and tab delimited
+    text files respectively. All other file names are ignored. All the text
+    files in a current directory can be specified by **.csv*, **.tsv*, or
+    the current directory name. The --indelim option determines the format
+    of *TextFile(s)*. Any file which doesn't correspond to the format
+    indicated by --indelim option is ignored.
+
+OPTIONS
+    -h, --help
+        Print this help message.
+
+    --indelim *comma | semicolon*
+        Input delimiter for CSV *TextFile(s)*. Possible values: *comma or
+        semicolon*. Default value: *comma*. For TSV files, this option is
+        ignored and *tab* is used as a delimiter.
+
+    -l, --label *yes | no*
+        First line contains column labels. Possible values: *yes or no*.
+        Default value: *yes*. Column labels are used to create SD data field
+        labels; otherwise, data field labels look like
+        Column<colnumber>Data.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    -r, --root *rootname*
+        New SD file names are generated using the root: <Root>.sdf. Default
+        new file names: <TextFileName>WithNoStrData.sdf. This option is
+        ignored for multiple input files.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To generate NewSample1.sdf file from Sample1.csv file, type:
+
+        % TextFilesToSDFiles.pl -o -r NewSample1 Sample1.csv
+
+    To generate NewSample1.sdf file from Sample1.tsv file which doesn't
+    contain column labels line, type:
+
+        % TextFilesToSDFiles.pl --label no -o -r NewSample1 Sample1.tsv
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    JoinTextFiles.pl, MergeTextFiles.pl, ModifySDFilesDataFields.pl,
+    ModifyTextFilesFormat.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

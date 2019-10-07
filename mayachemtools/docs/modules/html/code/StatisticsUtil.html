@@ -1,0 +1,835 @@
+<html>
+<head>
+<title>MayaChemTools:Code:StatisticsUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-StatisticsUtil-"></a>   1 <span class="k">package </span><span class="i">StatisticsUtil</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: StatisticsUtil.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 
+  29 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  30 
+  31 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  32 <span class="i">@EXPORT</span> = <span class="q">qw(Average AverageDeviation Covariance Correlation Euclidean Factorial FactorialDivison GeometricMean Frequency HarmonicMean KLargest KSmallest Kurtosis Maximum Minimum Mean Median Mode PearsonCorrelation Permutations Product Range RSquare Skewness Sum SumOfSquares StandardDeviation StandardDeviationN  StandardError Standardize StandardScores StandardScoresN TrimMean Variance VarianceN)</span><span class="sc">;</span>
+  33 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  34 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  35 
+  36 <span class="c"># Compute the mean of an array of numbers</span>
+<a name="Average-"></a>  37 <span class="k">sub </span><span class="m">Average</span> <span class="s">{</span>
+  38   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  39   <span class="k">return</span> <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  40 <span class="s">}</span>
+  41 
+  42 <span class="c"># Compute the average of the absolute deviation of an array of numbers: SUM( ABS(x[i] - Xmean) ) / n</span>
+<a name="AverageDeviation-"></a>  43 <span class="k">sub </span><span class="m">AverageDeviation</span> <span class="s">{</span>
+  44   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  45 
+  46   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+  47     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  48   <span class="s">}</span>
+  49   <span class="k">my</span><span class="s">(</span><span class="i">$AverageDeviation</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$SumOfDeviations</span><span class="s">)</span><span class="sc">;</span>
+  50 
+  51   <span class="i">$AverageDeviation</span> = <span class="n">0</span><span class="sc">;</span>
+  52   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  53   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+  54     <span class="i">$SumOfDeviations</span> += <span class="k">abs</span><span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span><span class="sc">;</span>
+  55   <span class="s">}</span>
+  56   <span class="i">$AverageDeviation</span> = <span class="i">$SumOfDeviations</span> / <span class="i">@$XArrayRef</span><span class="sc">;</span>
+  57 
+  58   <span class="k">return</span> <span class="i">$AverageDeviation</span><span class="sc">;</span>
+  59 <span class="s">}</span>
+  60 
+  61 <span class="c"># Compute correlation coefficient between two arrays of numbers</span>
+<a name="Correlation-"></a>  62 <span class="k">sub </span><span class="m">Correlation</span> <span class="s">{</span>
+  63   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  64   <span class="k">return</span> <span class="i">PearsonCorrelation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  65 <span class="s">}</span>
+  66 
+  67 <span class="c"># Compute the covariance between two arrays of numbers: SUM( (x[i] - Xmean) (y[i] - Ymean) ) / n</span>
+<a name="Covariance-"></a>  68 <span class="k">sub </span><span class="m">Covariance</span> <span class="s">{</span>
+  69   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  70 
+  71   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$XArrayRef</span> &amp;&amp; <span class="i">@$YArrayRef</span> &amp;&amp; <span class="s">(</span><span class="i">@$XArrayRef</span> == <span class="i">@$YArrayRef</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  72     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  73   <span class="s">}</span>
+  74   <span class="k">my</span><span class="s">(</span><span class="i">$Covariance</span><span class="cm">,</span> <span class="i">$XMean</span><span class="cm">,</span> <span class="i">$YMean</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$ProductOfDeviations</span><span class="s">)</span><span class="sc">;</span>
+  75 
+  76   <span class="i">$Covariance</span> = <span class="n">0</span><span class="sc">;</span>
+  77   <span class="i">$XMean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  78   <span class="i">$YMean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$YArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  79   <span class="i">$ProductOfDeviations</span> = <span class="n">0</span><span class="sc">;</span>
+  80   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">@$XArrayRef</span>}<span class="s">)</span> <span class="s">{</span>
+  81     <span class="i">$ProductOfDeviations</span> += <span class="s">(</span><span class="s">(</span><span class="i">$XArrayRef</span>-&gt;[<span class="i">$Index</span>] - <span class="i">$XMean</span><span class="s">)</span> * <span class="s">(</span><span class="i">$YArrayRef</span>-&gt;[<span class="i">$Index</span>] - <span class="i">$YMean</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+  82   <span class="s">}</span>
+  83   <span class="i">$Covariance</span> = <span class="i">$ProductOfDeviations</span> / <span class="i">@$XArrayRef</span><span class="sc">;</span>
+  84   <span class="k">return</span> <span class="i">$Covariance</span><span class="sc">;</span>
+  85 <span class="s">}</span>
+  86 
+  87 <span class="c"># Compute the euclidean distance of an array of numbers: SQRT( SUM( x[i] ** 2) )</span>
+<a name="Euclidean-"></a>  88 <span class="k">sub </span><span class="m">Euclidean</span> <span class="s">{</span>
+  89   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  90 
+  91   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+  92     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  93   <span class="s">}</span>
+  94   <span class="k">my</span><span class="s">(</span><span class="i">$SumOfSquares</span><span class="s">)</span><span class="sc">;</span>
+  95 
+  96   <span class="i">$SumOfSquares</span> = <span class="i">SumOfSquares</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+  97 
+  98   <span class="k">return</span> <span class="k">sqrt</span> <span class="i">$SumOfSquares</span><span class="sc">;</span>
+  99 <span class="s">}</span>
+ 100 
+ 101 <span class="c"># Compute factorial of a number...</span>
+<a name="Factorial-"></a> 102 <span class="k">sub </span><span class="m">Factorial</span> <span class="s">{</span>
+ 103   <span class="k">my</span><span class="s">(</span><span class="i">$Num</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 104 
+ 105   <span class="k">return</span> <span class="i">_Factorial</span><span class="s">(</span><span class="i">$Num</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 106 <span class="s">}</span>
+ 107 
+ 108 <span class="c"># Perform factorial division of two numbers...</span>
+<a name="FactorialDivison-"></a> 109 <span class="k">sub </span><span class="m">FactorialDivison</span> <span class="s">{</span>
+ 110   <span class="k">my</span><span class="s">(</span><span class="i">$Numerator</span><span class="cm">,</span> <span class="i">$Denominator</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 111 
+ 112   <span class="c"># Only works for integer numbers...</span>
+ 113   <span class="k">if</span> <span class="s">(</span><span class="i">$Numerator</span> &lt;= <span class="n">0</span> || <span class="s">(</span><span class="i">$Numerator</span> != <span class="k">int</span><span class="s">(</span><span class="i">$Numerator</span><span class="s">)</span><span class="s">)</span> ||
+ 114      <span class="i">$Denominator</span> &lt;= <span class="n">0</span> || <span class="s">(</span><span class="i">$Denominator</span> != <span class="k">int</span><span class="s">(</span><span class="i">$Denominator</span><span class="s">)</span><span class="s">)</span> <span class="s">)</span> <span class="s">{</span>
+ 115     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 116   <span class="s">}</span>
+ 117   <span class="k">my</span><span class="s">(</span><span class="i">$LargerNum</span><span class="cm">,</span> <span class="i">$SmallerNum</span><span class="cm">,</span> <span class="i">$Result</span><span class="s">)</span><span class="sc">;</span>
+ 118   <span class="i">$LargerNum</span> = <span class="s">(</span><span class="i">$Numerator</span> &gt; <span class="i">$Denominator</span><span class="s">)</span> ? <span class="i">$Numerator</span> <span class="co">:</span> <span class="i">$Denominator</span><span class="sc">;</span>
+ 119   <span class="i">$SmallerNum</span> = <span class="s">(</span><span class="i">$Numerator</span> &lt; <span class="i">$Denominator</span><span class="s">)</span> ? <span class="i">$Numerator</span> <span class="co">:</span> <span class="i">$Denominator</span><span class="sc">;</span>
+ 120 
+ 121   <span class="i">$Result</span> = <span class="i">_Factorial</span><span class="s">(</span><span class="i">$LargerNum</span><span class="cm">,</span> <span class="i">$SmallerNum</span><span class="s">)</span><span class="sc">;</span>
+ 122   <span class="k">if</span> <span class="s">(</span><span class="i">$Numerator</span> &lt; <span class="i">$Denominator</span><span class="s">)</span> <span class="s">{</span>
+ 123     <span class="i">$Result</span> = <span class="n">1</span>/<span class="i">$Result</span><span class="sc">;</span>
+ 124   <span class="s">}</span>
+ 125   <span class="k">return</span> <span class="i">$Result</span><span class="sc">;</span>
+ 126 <span class="s">}</span>
+ 127 
+ 128 <span class="c"># Calculate factorial of a number upto a specific limit...</span>
+<a name="_Factorial-"></a> 129 <span class="k">sub </span><span class="m">_Factorial</span> <span class="s">{</span>
+ 130   <span class="k">my</span><span class="s">(</span><span class="i">$Num</span><span class="cm">,</span> <span class="i">$Limit</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 131 
+ 132   <span class="c"># Only works for integer numbers...</span>
+ 133   <span class="k">if</span> <span class="s">(</span><span class="i">$Num</span> &lt;= <span class="n">0</span> || <span class="s">(</span><span class="i">$Num</span> != <span class="k">int</span><span class="s">(</span><span class="i">$Num</span><span class="s">)</span><span class="s">)</span> || <span class="i">$Limit</span> &lt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 134     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 135   <span class="s">}</span>
+ 136 
+ 137   <span class="k">my</span><span class="s">(</span><span class="i">$Result</span><span class="s">)</span> = <span class="n">1</span><span class="sc">;</span>
+ 138 
+ 139   <span class="k">while</span> <span class="s">(</span><span class="i">$Num</span> &gt; <span class="i">$Limit</span><span class="s">)</span> <span class="s">{</span>
+ 140     <span class="i">$Result</span> *= <span class="i">$Num</span><span class="sc">;</span>
+ 141     <span class="i">$Num</span>--<span class="sc">;</span>
+ 142   <span class="s">}</span>
+ 143   <span class="k">return</span> <span class="i">$Result</span><span class="sc">;</span>
+ 144 <span class="s">}</span>
+ 145 
+ 146 <span class="c"># Generate all possible permuations or a specific permutations of items in an array</span>
+ 147 <span class="c"># and return a reference to an array containing array references to generated permuations...</span>
+ 148 <span class="c">#</span>
+ 149 <span class="c"># This alogrithm is based on the example provided by Mark Jason-Dominus, and is available</span>
+ 150 <span class="c"># at CPAN as mjd_permute standalone script.</span>
+ 151 <span class="c">#</span>
+<a name="Permutations-"></a> 152 <span class="k">sub </span><span class="m">Permutations</span> <span class="s">{</span>
+ 153   <span class="k">my</span><span class="s">(</span><span class="i">@DataToPermute</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 154   <span class="k">my</span><span class="s">(</span><span class="i">$PermutationNum</span><span class="cm">,</span> <span class="i">$NumOfPermutations</span><span class="cm">,</span> <span class="i">@Permutations</span><span class="s">)</span><span class="sc">;</span>
+ 155 
+ 156   <span class="k">if</span> <span class="s">(</span>!<span class="i">@DataToPermute</span><span class="s">)</span> <span class="s">{</span>
+ 157     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 158   <span class="s">}</span>
+ 159 
+ 160   <span class="i">@Permutations</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 161   <span class="i">$NumOfPermutations</span> = <span class="i">Factorial</span><span class="s">(</span><span class="k">scalar</span> <span class="i">@DataToPermute</span><span class="s">)</span><span class="sc">;</span>
+ 162 
+ 163   <span class="k">for</span> <span class="s">(</span><span class="i">$PermutationNum</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$PermutationNum</span> &lt; <span class="i">$NumOfPermutations</span><span class="sc">;</span> <span class="i">$PermutationNum</span>++<span class="s">)</span> <span class="s">{</span>
+ 164     <span class="k">my</span> <span class="i">@Permutation</span> = <span class="i">@DataToPermute</span>[<span class="i">_PermutationNumToPermutation</span><span class="s">(</span><span class="i">$PermutationNum</span><span class="cm">,</span> <span class="i">$#DataToPermute</span><span class="s">)</span>]<span class="sc">;</span>
+ 165     <span class="k">push</span> <span class="i">@Permutations</span><span class="cm">,</span> \<span class="i">@Permutation</span><span class="sc">;</span>
+ 166   <span class="s">}</span>
+ 167 
+ 168   <span class="k">return</span> \<span class="i">@Permutations</span><span class="sc">;</span>
+ 169 <span class="s">}</span>
+ 170 
+ 171 <span class="c"># Generte Nth permutation for a collection of specific size...</span>
+ 172 <span class="c">#</span>
+<a name="_PermutationNumToPermutation-"></a> 173 <span class="k">sub </span><span class="m">_PermutationNumToPermutation</span> <span class="s">{</span>
+ 174   <span class="k">my</span><span class="s">(</span><span class="i">$Num</span><span class="cm">,</span> <span class="i">$Size</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 175 
+ 176   <span class="k">return</span> <span class="i">_PatternToPermutation</span><span class="s">(</span><span class="i">_PermutationNumToPattern</span><span class="s">(</span><span class="i">$Num</span><span class="cm">,</span> <span class="i">$Size</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 177 <span class="s">}</span>
+ 178 
+ 179 <span class="c"># Generate Nth pattern for a collection of specific size...</span>
+ 180 <span class="c">#</span>
+<a name="_PermutationNumToPattern-"></a> 181 <span class="k">sub </span><span class="m">_PermutationNumToPattern</span> <span class="s">{</span>
+ 182   <span class="k">my</span><span class="s">(</span><span class="i">$Num</span><span class="cm">,</span> <span class="i">$Size</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 183   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">@Pattern</span><span class="s">)</span><span class="sc">;</span>
+ 184 
+ 185   <span class="i">$Index</span> = <span class="n">1</span><span class="sc">;</span>
+ 186 
+ 187   <span class="k">while</span> <span class="s">(</span><span class="i">$Index</span> &lt;= <span class="i">$Size</span> + <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 188     <span class="k">push</span> <span class="i">@Pattern</span><span class="cm">,</span> <span class="i">$Num</span> % <span class="i">$Index</span><span class="sc">;</span>
+ 189     <span class="i">$Num</span> = <span class="k">int</span><span class="s">(</span><span class="i">$Num</span>/<span class="i">$Index</span><span class="s">)</span><span class="sc">;</span>
+ 190     <span class="i">$Index</span>++<span class="sc">;</span>
+ 191   <span class="s">}</span>
+ 192 
+ 193   <span class="k">return</span> <span class="i">@Pattern</span><span class="sc">;</span>
+ 194 <span class="s">}</span>
+ 195 
+ 196 <span class="c"># Generate permutation of integers from pattern...</span>
+ 197 <span class="c">#</span>
+<a name="_PatternToPermutation-"></a> 198 <span class="k">sub </span><span class="m">_PatternToPermutation</span> <span class="s">{</span>
+ 199   <span class="k">my</span><span class="s">(</span><span class="i">@Pattern</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 200   <span class="k">my</span><span class="s">(</span><span class="i">@Source</span><span class="cm">,</span> <span class="i">@Permutation</span><span class="s">)</span><span class="sc">;</span>
+ 201 
+ 202   <span class="i">@Source</span> = <span class="s">(</span><span class="n">0</span> .. <span class="i">$#Pattern</span><span class="s">)</span><span class="sc">;</span>
+ 203 
+ 204   <span class="k">while</span> <span class="s">(</span><span class="i">@Pattern</span><span class="s">)</span> <span class="s">{</span>
+ 205     <span class="k">push</span> <span class="i">@Permutation</span><span class="cm">,</span> <span class="k">splice</span><span class="s">(</span><span class="i">@Source</span><span class="cm">,</span> <span class="s">(</span><span class="k">pop</span> <span class="i">@Pattern</span><span class="s">)</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 206   <span class="s">}</span>
+ 207 
+ 208   <span class="k">return</span> <span class="i">@Permutation</span><span class="sc">;</span>
+ 209 <span class="s">}</span>
+ 210 
+ 211 <span class="c"># Compute the frequency of occurance of values in an array of numbers. Three different</span>
+ 212 <span class="c"># invocation methods are supported:</span>
+ 213 <span class="c">#</span>
+ 214 <span class="c"># Frequency(\@ArrayRef) : Using the smallest and largest values, group the numbers into</span>
+ 215 <span class="c"># 10 bins.</span>
+ 216 <span class="c">#</span>
+ 217 <span class="c"># Frequency(\@ArrayRef, $NumOfBins) : Using the smallest and largest values, group the</span>
+ 218 <span class="c"># numbers into specified bins.</span>
+ 219 <span class="c">#</span>
+ 220 <span class="c"># Frequency(\@ArrayRef, \@BinRange): Use bin range to goup the values into different bins.</span>
+ 221 <span class="c">#</span>
+ 222 <span class="c"># A hash array is returned with keys and values representing range and frequency values respectively.</span>
+ 223 <span class="c"># The frequency value for a specific key corresponds to all the values which are greater than</span>
+ 224 <span class="c"># the previous key and less than or equal to the current key. A key value representing maximum value is</span>
+ 225 <span class="c"># added for generating frequency distribution for specific number of bins, and whenever the maximum</span>
+ 226 <span class="c"># array value is greater than the maximum specified in bin range, it is also added to bin range.</span>
+ 227 <span class="c">#</span>
+<a name="Frequency-"></a> 228 <span class="k">sub </span><span class="m">Frequency</span> <span class="s">{</span>
+ 229   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 230 
+ 231   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 232     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 233   <span class="s">}</span>
+ 234 
+ 235   <span class="k">my</span><span class="s">(</span><span class="i">$BinRange</span><span class="cm">,</span> <span class="i">$NumOfBins</span><span class="cm">,</span> <span class="i">$BinRangeSpecified</span><span class="s">)</span><span class="sc">;</span>
+ 236 
+ 237   <span class="i">$BinRangeSpecified</span> = <span class="n">0</span><span class="sc">;</span>
+ 238   <span class="i">$NumOfBins</span> = <span class="n">10</span><span class="sc">;</span>
+ 239   <span class="k">if</span> <span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 240     <span class="k">if</span> <span class="s">(</span><span class="k">ref</span><span class="s">(</span><span class="i">$_</span>[<span class="n">1</span>]<span class="s">)</span> <span class="k">eq</span> <span class="q">&#39;ARRAY&#39;</span><span class="s">)</span> <span class="s">{</span>
+ 241       <span class="i">$BinRange</span> = <span class="i">$_</span>[<span class="n">1</span>]<span class="sc">;</span>
+ 242       <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$BinRange</span> &amp;&amp; <span class="s">(</span><span class="i">@$BinRange</span> &gt; <span class="n">1</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 243         <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 244       <span class="s">}</span>
+ 245       <span class="c"># Make sure the bin range contains values in increasing order...</span>
+ 246       <span class="k">my</span><span class="s">(</span><span class="i">$Index1</span><span class="cm">,</span> <span class="i">$Index2</span><span class="s">)</span><span class="sc">;</span>
+ 247       <span class="k">for</span> <span class="i">$Index1</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">@$BinRange</span>}<span class="s">)</span> <span class="s">{</span>
+ 248         <span class="k">for</span> <span class="i">$Index2</span> <span class="s">(</span><span class="s">(</span><span class="i">$Index1</span> + <span class="n">1</span><span class="s">)</span> .. <span class="i">$#</span>{<span class="i">@$BinRange</span>}<span class="s">)</span> <span class="s">{</span>
+ 249           <span class="k">if</span> <span class="s">(</span><span class="i">$BinRange</span>-&gt;[<span class="i">$Index1</span>] &gt;= <span class="i">$BinRange</span>-&gt;[<span class="i">$Index2</span>]<span class="s">)</span> <span class="s">{</span>
+ 250             <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 251           <span class="s">}</span>
+ 252         <span class="s">}</span>
+ 253       <span class="s">}</span>
+ 254       <span class="i">$BinRangeSpecified</span> = <span class="n">1</span><span class="sc">;</span>
+ 255     <span class="s">}</span>
+ 256     <span class="k">else</span> <span class="s">{</span>
+ 257       <span class="i">$NumOfBins</span> = <span class="i">$_</span>[<span class="n">1</span>]<span class="sc">;</span>
+ 258       <span class="k">if</span> <span class="s">(</span><span class="i">$NumOfBins</span> &lt;= <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 259         <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 260       <span class="s">}</span>
+ 261     <span class="s">}</span>
+ 262   <span class="s">}</span>
+ 263 
+ 264   <span class="c"># Setup range keys...</span>
+ 265   <span class="k">my</span><span class="s">(</span><span class="i">@RangeKeys</span><span class="s">)</span><span class="sc">;</span>
+ 266   <span class="i">@RangeKeys</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 267 
+ 268   <span class="k">my</span><span class="s">(</span><span class="i">$MinValue</span><span class="cm">,</span> <span class="i">$MaxValue</span><span class="s">)</span> = <span class="i">Range</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 269   <span class="k">if</span> <span class="s">(</span><span class="i">$BinRangeSpecified</span><span class="s">)</span> <span class="s">{</span>
+ 270     <span class="k">push</span> <span class="i">@RangeKeys</span><span class="cm">,</span> <span class="i">@$BinRange</span><span class="sc">;</span>
+ 271     <span class="k">if</span> <span class="s">(</span><span class="i">$MaxValue</span> &gt; <span class="i">$RangeKeys</span>[<span class="i">$#RangeKeys</span>]<span class="s">)</span> <span class="s">{</span>
+ 272       <span class="k">push</span> <span class="i">@RangeKeys</span><span class="cm">,</span> <span class="i">$MaxValue</span><span class="sc">;</span>
+ 273     <span class="s">}</span>
+ 274   <span class="s">}</span>
+ 275   <span class="k">else</span> <span class="s">{</span>
+ 276     <span class="k">my</span><span class="s">(</span><span class="i">$MinValue</span><span class="cm">,</span> <span class="i">$MaxValue</span><span class="s">)</span> = <span class="i">Range</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 277     <span class="k">my</span><span class="s">(</span><span class="i">$Interval</span><span class="s">)</span> = <span class="s">(</span><span class="i">$MaxValue</span> - <span class="i">$MinValue</span><span class="s">)</span>/<span class="i">$NumOfBins</span><span class="sc">;</span>
+ 278     <span class="k">my</span><span class="s">(</span><span class="i">$KeyValue</span><span class="s">)</span> = <span class="i">$MinValue</span> + <span class="i">$Interval</span><span class="sc">;</span>
+ 279     <span class="k">while</span> <span class="s">(</span><span class="i">$KeyValue</span>  &lt; <span class="i">$MaxValue</span><span class="s">)</span> <span class="s">{</span>
+ 280       <span class="k">push</span> <span class="i">@RangeKeys</span><span class="cm">,</span> <span class="i">$KeyValue</span><span class="sc">;</span>
+ 281       <span class="i">$KeyValue</span> += <span class="i">$Interval</span><span class="sc">;</span>
+ 282     <span class="s">}</span>
+ 283     <span class="k">push</span> <span class="i">@RangeKeys</span><span class="cm">,</span> <span class="i">$MaxValue</span><span class="sc">;</span>
+ 284   <span class="s">}</span>
+ 285 
+ 286   <span class="c">#Setup frequency hash array...</span>
+ 287   <span class="k">my</span><span class="s">(</span><span class="i">%FrequencyMap</span><span class="s">)</span><span class="sc">;</span>
+ 288   <span class="i">%FrequencyMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 289 
+ 290   <span class="i">%FrequencyMap</span> = <span class="k">map</span> <span class="s">{</span> <span class="i">$_</span> <span class="cm">=&gt;</span> <span class="n">0</span> <span class="s">}</span> <span class="i">@RangeKeys</span><span class="sc">;</span>
+ 291 
+ 292   <span class="c"># Count values...</span>
+ 293   <span class="k">my</span><span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 294 
+ 295   <span class="j">VALUE:</span> <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 296       <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@RangeKeys</span><span class="s">)</span> <span class="s">{</span>
+ 297         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> &lt;= <span class="i">$Key</span><span class="s">)</span> <span class="s">{</span>
+ 298           <span class="i">$FrequencyMap</span>{<span class="i">$Key</span>} += <span class="n">1</span><span class="sc">;</span>
+ 299           <span class="k">next</span> <span class="j">VALUE</span><span class="sc">;</span>
+ 300         <span class="s">}</span>
+ 301       <span class="s">}</span>
+ 302   <span class="s">}</span>
+ 303   <span class="k">return</span> <span class="s">(</span><span class="i">%FrequencyMap</span><span class="s">)</span><span class="sc">;</span>
+ 304 <span class="s">}</span>
+ 305 
+ 306 <span class="c"># Compute the geometric mean of an array of numbers: NthROOT( PRODUCT(x[i]) )</span>
+<a name="GeometricMean-"></a> 307 <span class="k">sub </span><span class="m">GeometricMean</span> <span class="s">{</span>
+ 308   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 309 
+ 310   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 311     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 312   <span class="s">}</span>
+ 313   <span class="k">my</span><span class="s">(</span><span class="i">$Mean</span><span class="cm">,</span> <span class="i">$Product</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 314   <span class="i">$Product</span> = <span class="n">1</span><span class="sc">;</span>
+ 315   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 316     <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> &lt;= <span class="n">0</span> <span class="s">)</span> <span class="s">{</span>
+ 317       <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 318     <span class="s">}</span>
+ 319     <span class="i">$Product</span> *= <span class="i">$Value</span><span class="sc">;</span>
+ 320   <span class="s">}</span>
+ 321   <span class="i">$Mean</span> = <span class="i">$Product</span> ** <span class="s">(</span><span class="n">1</span> / <span class="i">@$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 322   <span class="k">return</span> <span class="i">$Mean</span><span class="sc">;</span>
+ 323 <span class="s">}</span>
+ 324 
+ 325 <span class="c"># Compute the harmonic mean of an array of numbers: 1 / ( SUM(1/x[i]) / n )</span>
+<a name="HarmonicMean-"></a> 326 <span class="k">sub </span><span class="m">HarmonicMean</span> <span class="s">{</span>
+ 327   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 328 
+ 329   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 330     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 331   <span class="s">}</span>
+ 332   <span class="k">my</span><span class="s">(</span><span class="i">$Mean</span><span class="cm">,</span> <span class="i">$Sum</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 333   <span class="i">$Sum</span> = <span class="n">0</span><span class="sc">;</span>
+ 334   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 335     <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> &lt;= <span class="n">0</span> <span class="s">)</span> <span class="s">{</span>
+ 336       <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 337     <span class="s">}</span>
+ 338     <span class="i">$Sum</span> += <span class="n">1</span>/<span class="i">$Value</span><span class="sc">;</span>
+ 339   <span class="s">}</span>
+ 340   <span class="i">$Mean</span> = <span class="n">1</span>/<span class="s">(</span><span class="i">$Sum</span>/<span class="i">@$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 341   <span class="k">return</span> <span class="i">$Mean</span><span class="sc">;</span>
+ 342 <span class="s">}</span>
+ 343 
+ 344 <span class="c"># Return the k-largest value from an array of numbers</span>
+<a name="KLargest-"></a> 345 <span class="k">sub </span><span class="m">KLargest</span> <span class="s">{</span>
+ 346   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$K</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 347 
+ 348   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$XArrayRef</span> &amp;&amp; <span class="s">(</span><span class="i">$K</span> &gt; <span class="n">0</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$K</span> &lt;= <span class="i">@$XArrayRef</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 349     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 350   <span class="s">}</span>
+ 351   <span class="k">my</span><span class="s">(</span><span class="i">$KLargest</span><span class="cm">,</span> <span class="i">@SortedXArray</span><span class="s">)</span><span class="sc">;</span>
+ 352   <span class="i">@SortedXArray</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$b</span> &lt;=&gt; <span class="i">$a</span> <span class="s">}</span> <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 353   <span class="i">$KLargest</span> = <span class="i">$SortedXArray</span>[<span class="i">$K</span> - <span class="n">1</span>]<span class="sc">;</span>
+ 354   <span class="k">return</span> <span class="i">$KLargest</span><span class="sc">;</span>
+ 355 <span class="s">}</span>
+ 356 
+ 357 <span class="c"># Return the k-smallest value from an array of numbers</span>
+<a name="KSmallest-"></a> 358 <span class="k">sub </span><span class="m">KSmallest</span> <span class="s">{</span>
+ 359   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$K</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 360 
+ 361   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$XArrayRef</span> &amp;&amp; <span class="s">(</span><span class="i">$K</span> &gt; <span class="n">0</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$K</span> &lt;= <span class="i">@$XArrayRef</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 362     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 363   <span class="s">}</span>
+ 364   <span class="k">my</span><span class="s">(</span><span class="i">$KSmallest</span><span class="cm">,</span> <span class="i">@SortedXArray</span><span class="s">)</span><span class="sc">;</span>
+ 365   <span class="i">@SortedXArray</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$a</span> &lt;=&gt; <span class="i">$b</span> <span class="s">}</span> <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 366   <span class="i">$KSmallest</span> = <span class="i">$SortedXArray</span>[<span class="i">$K</span> - <span class="n">1</span>]<span class="sc">;</span>
+ 367   <span class="k">return</span> <span class="i">$KSmallest</span><span class="sc">;</span>
+ 368 <span class="s">}</span>
+ 369 
+ 370 <span class="c"># Compute the kurtosis of an array of numbers:</span>
+ 371 <span class="c"># [ {n(n + 1)/(n - 1)(n - 2)(n - 3)}  SUM{ ((x[i] - Xmean)/STDDEV)^4 } ] - {3((n - 1)^2)}/{(n - 2)(n-3)}</span>
+ 372 <span class="c">#</span>
+<a name="Kurtosis-"></a> 373 <span class="k">sub </span><span class="m">Kurtosis</span> <span class="s">{</span>
+ 374   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 375 
+ 376   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span> || <span class="s">(</span><span class="s">(</span><span class="i">@$XArrayRef</span> - <span class="n">3</span><span class="s">)</span> &lt;= <span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 377     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 378   <span class="s">}</span>
+ 379   <span class="k">my</span><span class="s">(</span><span class="i">$Kurtosis</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$StandardDeviation</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 380   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 381   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Mean</span><span class="s">)</span> <span class="s">{</span>
+ 382     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 383   <span class="s">}</span>
+ 384   <span class="i">$StandardDeviation</span> = <span class="i">StandardDeviation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 385   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span> <span class="i">$StandardDeviation</span> &amp;&amp;  <span class="i">$StandardDeviation</span> != <span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 386     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 387   <span class="s">}</span>
+ 388 
+ 389   <span class="k">my</span><span class="s">(</span><span class="i">$SumOfScores</span><span class="cm">,</span> <span class="i">$SampleSize</span><span class="s">)</span><span class="sc">;</span>
+ 390   <span class="i">$SumOfScores</span> = <span class="n">0</span><span class="sc">;</span>
+ 391   <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 392     <span class="i">$SumOfScores</span> += <span class="s">(</span><span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span>/<span class="i">$StandardDeviation</span><span class="s">)</span> ** <span class="n">4</span><span class="sc">;</span>
+ 393   <span class="s">}</span>
+ 394   <span class="i">$SampleSize</span> = <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 395   <span class="i">$Kurtosis</span> = <span class="s">(</span><span class="s">(</span><span class="s">(</span><span class="i">$SampleSize</span> * <span class="s">(</span><span class="i">$SampleSize</span> + <span class="n">1</span><span class="s">)</span><span class="s">)</span>/<span class="s">(</span><span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">1</span><span class="s">)</span> * <span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">2</span><span class="s">)</span> * <span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">3</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> * <span class="i">$SumOfScores</span><span class="s">)</span> - <span class="s">(</span><span class="s">(</span><span class="n">3</span> * <span class="s">(</span><span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">1</span><span class="s">)</span> ** <span class="n">2</span><span class="s">)</span><span class="s">)</span>/<span class="s">(</span><span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">2</span><span class="s">)</span> * <span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">3</span><span class="s">)</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 396   <span class="k">return</span> <span class="i">$Kurtosis</span><span class="sc">;</span>
+ 397 <span class="s">}</span>
+ 398 
+ 399 <span class="c"># Return the smallest value from an array of numbers</span>
+<a name="Minimum-"></a> 400 <span class="k">sub </span><span class="m">Minimum</span> <span class="s">{</span>
+ 401   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 402   <span class="k">return</span> <span class="i">KSmallest</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 403 <span class="s">}</span>
+ 404 
+ 405 <span class="c"># Return the largest value from an array of numbers</span>
+<a name="Maximum-"></a> 406 <span class="k">sub </span><span class="m">Maximum</span> <span class="s">{</span>
+ 407   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 408   <span class="k">return</span> <span class="i">KLargest</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 409 <span class="s">}</span>
+ 410 
+ 411 <span class="c"># Compute the mean of an array of numbers: SUM( x[i] ) / n</span>
+<a name="Mean-"></a> 412 <span class="k">sub </span><span class="m">Mean</span> <span class="s">{</span>
+ 413   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 414 
+ 415   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 416     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 417   <span class="s">}</span>
+ 418   <span class="k">my</span><span class="s">(</span><span class="i">$Mean</span><span class="cm">,</span> <span class="i">$Sum</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 419   <span class="i">$Sum</span> = <span class="n">0</span><span class="sc">;</span>
+ 420   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 421     <span class="i">$Sum</span> += <span class="i">$Value</span><span class="sc">;</span>
+ 422   <span class="s">}</span>
+ 423   <span class="i">$Mean</span> = <span class="i">$Sum</span> / <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 424   <span class="k">return</span> <span class="i">$Mean</span><span class="sc">;</span>
+ 425 <span class="s">}</span>
+ 426 
+ 427 <span class="c"># Compute the median value of an array of numbers. For an even number array, it&#39;s</span>
+ 428 <span class="c"># the average of two middle values.</span>
+ 429 <span class="c">#</span>
+ 430 <span class="c"># For even values of n: Xsorted[(n - 1)/2 + 1]</span>
+ 431 <span class="c"># For odd values of n: (Xsorted[n/2] + Xsorted[n/2 + 1])/2</span>
+ 432 <span class="c">#</span>
+<a name="Median-"></a> 433 <span class="k">sub </span><span class="m">Median</span> <span class="s">{</span>
+ 434   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 435 
+ 436   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 437     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 438   <span class="s">}</span>
+ 439   <span class="k">my</span><span class="s">(</span><span class="i">$Median</span><span class="cm">,</span> <span class="i">@SortedXArray</span><span class="s">)</span><span class="sc">;</span>
+ 440   <span class="i">$Median</span> = <span class="n">0</span><span class="sc">;</span>
+ 441   <span class="i">@SortedXArray</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$a</span> &lt;=&gt; <span class="i">$b</span> <span class="s">}</span> <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 442   <span class="k">if</span> <span class="s">(</span><span class="i">@$XArrayRef</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 443     <span class="k">my</span><span class="s">(</span><span class="i">$MidIndex</span><span class="s">)</span><span class="sc">;</span>
+ 444     <span class="i">$MidIndex</span> = <span class="k">int</span><span class="s">(</span><span class="i">@SortedXArray</span> - <span class="n">1</span><span class="s">)</span>/<span class="n">2</span><span class="sc">;</span>
+ 445     <span class="i">$Median</span> = <span class="i">$SortedXArray</span>[<span class="i">$MidIndex</span>]<span class="sc">;</span>
+ 446   <span class="s">}</span>
+ 447   <span class="k">else</span> <span class="s">{</span>
+ 448     <span class="c"># Even number array...</span>
+ 449     <span class="k">my</span><span class="s">(</span><span class="i">$MidPosition</span><span class="s">)</span><span class="sc">;</span>
+ 450     <span class="i">$MidPosition</span> = <span class="k">int</span><span class="s">(</span><span class="i">@SortedXArray</span> / <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 451     <span class="i">$Median</span> = <span class="s">(</span><span class="i">$SortedXArray</span>[<span class="i">$MidPosition</span> - <span class="n">1</span>] + <span class="i">$SortedXArray</span>[<span class="i">$MidPosition</span>]<span class="s">)</span> / <span class="n">2</span><span class="sc">;</span>
+ 452   <span class="s">}</span>
+ 453   <span class="k">return</span> <span class="i">$Median</span><span class="sc">;</span>
+ 454 <span class="s">}</span>
+ 455 
+ 456 <span class="c"># Return the most frequently occuring value in an array of numbers</span>
+<a name="Mode-"></a> 457 <span class="k">sub </span><span class="m">Mode</span> <span class="s">{</span>
+ 458   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 459 
+ 460   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 461     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 462   <span class="s">}</span>
+ 463   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">%ValueToCountMap</span><span class="cm">,</span> <span class="i">@CountList</span><span class="cm">,</span> <span class="i">@SortedCountList</span><span class="s">)</span><span class="sc">;</span>
+ 464   <span class="i">%ValueToCountMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 465   <span class="i">@CountList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 466   <span class="i">@SortedCountList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 467   <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 468     <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>}<span class="s">)</span> <span class="s">{</span>
+ 469       <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} += <span class="n">1</span><span class="sc">;</span>
+ 470     <span class="s">}</span>
+ 471     <span class="k">else</span> <span class="s">{</span>
+ 472       <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} = <span class="n">1</span><span class="sc">;</span>
+ 473     <span class="s">}</span>
+ 474   <span class="s">}</span>
+ 475   <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%ValueToCountMap</span><span class="s">)</span> <span class="s">{</span>
+ 476     <span class="k">push</span> <span class="i">@CountList</span><span class="cm">,</span> <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>}<span class="sc">;</span>
+ 477   <span class="s">}</span>
+ 478   <span class="i">@SortedCountList</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$b</span> &lt;=&gt; <span class="i">$a</span> <span class="s">}</span> <span class="i">@CountList</span><span class="sc">;</span>
+ 479 
+ 480   <span class="c"># Make sure the frequency of mode value is greater than one and check for</span>
+ 481   <span class="c"># multiple modes as well...</span>
+ 482   <span class="c">#</span>
+ 483   <span class="k">my</span><span class="s">(</span><span class="i">$ModeCount</span><span class="cm">,</span> <span class="i">$ModeValue</span><span class="s">)</span><span class="sc">;</span>
+ 484   <span class="i">$ModeCount</span> = <span class="i">$SortedCountList</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 485   <span class="k">if</span> <span class="s">(</span><span class="i">$ModeCount</span> &lt;= <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 486     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 487   <span class="s">}</span>
+ 488   <span class="c"># Get the first mode value...</span>
+ 489   <span class="j">VALUE:</span> <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%ValueToCountMap</span><span class="s">)</span> <span class="s">{</span>
+ 490     <span class="k">if</span> <span class="s">(</span><span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} == <span class="i">$ModeCount</span><span class="s">)</span> <span class="s">{</span>
+ 491       <span class="i">$ModeValue</span> = <span class="i">$Value</span><span class="sc">;</span>
+ 492       <span class="c"># Set it to zero to skip it next time...</span>
+ 493       <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} = <span class="n">0</span><span class="sc">;</span>
+ 494       <span class="k">last</span> <span class="j">VALUE</span><span class="sc">;</span>
+ 495     <span class="s">}</span>
+ 496   <span class="s">}</span>
+ 497 
+ 498   <span class="k">if</span> <span class="s">(</span><span class="k">wantarray</span><span class="s">)</span> <span class="s">{</span>
+ 499     <span class="c"># Retrieve all the modes...</span>
+ 500     <span class="k">my</span><span class="s">(</span><span class="i">@Modes</span><span class="cm">,</span> <span class="i">$Count</span><span class="s">)</span><span class="sc">;</span>
+ 501     <span class="i">@Modes</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 502     <span class="k">push</span> <span class="i">@Modes</span><span class="cm">,</span> <span class="i">$ModeValue</span><span class="sc">;</span>
+ 503     <span class="k">for</span> <span class="i">$Count</span> <span class="s">(</span><span class="i">@SortedCountList</span><span class="s">)</span> <span class="s">{</span>
+ 504       <span class="k">if</span> <span class="s">(</span><span class="i">$Count</span> == <span class="i">$ModeCount</span><span class="s">)</span> <span class="s">{</span>
+ 505       <span class="j">VALUE:</span> <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%ValueToCountMap</span><span class="s">)</span> <span class="s">{</span>
+ 506           <span class="k">if</span> <span class="s">(</span><span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} == <span class="i">$ModeCount</span><span class="s">)</span> <span class="s">{</span>
+ 507             <span class="k">push</span> <span class="i">@Modes</span><span class="cm">,</span> <span class="i">$Value</span><span class="sc">;</span>
+ 508             <span class="c"># Set it to zero to skip it next time...</span>
+ 509             <span class="i">$ValueToCountMap</span>{<span class="i">$Value</span>} = <span class="n">0</span><span class="sc">;</span>
+ 510             <span class="k">last</span> <span class="j">VALUE</span><span class="sc">;</span>
+ 511           <span class="s">}</span>
+ 512         <span class="s">}</span>
+ 513       <span class="s">}</span>
+ 514     <span class="s">}</span>
+ 515     <span class="k">return</span> <span class="k">sort</span> <span class="s">{</span><span class="i">$b</span> &lt;=&gt; <span class="i">$a</span><span class="s">}</span> <span class="i">@Modes</span><span class="sc">;</span>
+ 516   <span class="s">}</span>
+ 517   <span class="k">else</span> <span class="s">{</span>
+ 518     <span class="k">return</span> <span class="i">$ModeValue</span><span class="sc">;</span>
+ 519   <span class="s">}</span>
+ 520 <span class="s">}</span>
+ 521 
+ 522 
+ 523 <span class="c"># Compute the Pearson correlation coefficient between two arrays of numbers:</span>
+ 524 <span class="c">#</span>
+ 525 <span class="c">#  SUM( (x[i] - Xmean)(y[i] - Ymean) ) / SQRT( SUM( (x[i] - Xmean)^2 )(SUM( (y[i] - Ymean)^2 ))   )</span>
+ 526 <span class="c">#</span>
+ 527 <span class="c"># It returns values in the range from -1.0 to 1.0</span>
+<a name="PearsonCorrelation-"></a> 528 <span class="k">sub </span><span class="m">PearsonCorrelation</span> <span class="s">{</span>
+ 529   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 530 
+ 531   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$XArrayRef</span> &amp;&amp; <span class="i">@$YArrayRef</span> &amp;&amp; <span class="s">(</span><span class="i">@$XArrayRef</span> == <span class="i">@$YArrayRef</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 532     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 533   <span class="s">}</span>
+ 534   <span class="k">my</span><span class="s">(</span><span class="i">$Correlation</span><span class="cm">,</span> <span class="i">$XMean</span><span class="cm">,</span> <span class="i">$YMean</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$XValueDeviation</span><span class="cm">,</span> <span class="i">$YValueDeviation</span><span class="cm">,</span> <span class="i">$SquareOfXDeviations</span><span class="cm">,</span> <span class="i">$SquareOfYDeviations</span><span class="cm">,</span> <span class="i">$ProductOfDeviations</span><span class="s">)</span><span class="sc">;</span>
+ 535 
+ 536   <span class="i">$Correlation</span> = <span class="n">0</span><span class="sc">;</span>
+ 537   <span class="i">$XMean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 538   <span class="i">$YMean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$YArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 539   <span class="i">$ProductOfDeviations</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$SquareOfXDeviations</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$SquareOfYDeviations</span> = <span class="n">0</span><span class="sc">;</span>
+ 540   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">@$XArrayRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 541     <span class="i">$XValueDeviation</span> = <span class="i">$XArrayRef</span>-&gt;[<span class="i">$Index</span>] - <span class="i">$XMean</span><span class="sc">;</span>
+ 542     <span class="i">$YValueDeviation</span> = <span class="i">$YArrayRef</span>-&gt;[<span class="i">$Index</span>] - <span class="i">$YMean</span><span class="sc">;</span>
+ 543     <span class="i">$ProductOfDeviations</span> += <span class="s">(</span><span class="i">$XValueDeviation</span> * <span class="i">$YValueDeviation</span><span class="s">)</span><span class="sc">;</span>
+ 544     <span class="i">$SquareOfXDeviations</span> += <span class="i">$XValueDeviation</span> ** <span class="n">2</span><span class="sc">;</span>
+ 545     <span class="i">$SquareOfYDeviations</span> += <span class="i">$YValueDeviation</span> ** <span class="n">2</span><span class="sc">;</span>
+ 546   <span class="s">}</span>
+ 547   <span class="i">$Correlation</span> = <span class="i">$ProductOfDeviations</span> / <span class="k">sqrt</span><span class="s">(</span><span class="i">$SquareOfXDeviations</span> *  <span class="i">$SquareOfYDeviations</span><span class="s">)</span><span class="sc">;</span>
+ 548   <span class="k">return</span> <span class="i">$Correlation</span><span class="sc">;</span>
+ 549 <span class="s">}</span>
+ 550 
+ 551 <span class="c"># Return the smallest and largest values from an array of numbers</span>
+<a name="Range-"></a> 552 <span class="k">sub </span><span class="m">Range</span> <span class="s">{</span>
+ 553   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 554 
+ 555   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 556     <span class="k">return</span> <span class="s">(</span><span class="k">undef</span><span class="cm">,</span> <span class="k">undef</span><span class="s">)</span><span class="sc">;</span>
+ 557   <span class="s">}</span>
+ 558   <span class="k">my</span><span class="s">(</span><span class="i">$Smallest</span><span class="cm">,</span> <span class="i">$Largest</span><span class="cm">,</span> <span class="i">@SortedXArray</span><span class="s">)</span><span class="sc">;</span>
+ 559   <span class="i">@SortedXArray</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$a</span> &lt;=&gt; <span class="i">$b</span> <span class="s">}</span> <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 560   <span class="i">$Smallest</span> = <span class="i">$SortedXArray</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 561   <span class="i">$Largest</span> = <span class="i">$SortedXArray</span>[<span class="i">$#SortedXArray</span>]<span class="sc">;</span>
+ 562   <span class="k">return</span> <span class="s">(</span><span class="i">$Smallest</span><span class="cm">,</span> <span class="i">$Largest</span><span class="s">)</span><span class="sc">;</span>
+ 563 <span class="s">}</span>
+ 564 
+ 565 <span class="c"># Compute square of the Pearson correlation coefficient between two arrays of numbers.</span>
+ 566 <span class="c">#</span>
+<a name="RSquare-"></a> 567 <span class="k">sub </span><span class="m">RSquare</span> <span class="s">{</span>
+ 568   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 569   <span class="k">my</span><span class="s">(</span><span class="i">$RSquare</span><span class="cm">,</span> <span class="i">$Correlation</span><span class="s">)</span><span class="sc">;</span>
+ 570 
+ 571   <span class="i">$RSquare</span> = <span class="k">undef</span><span class="sc">;</span>
+ 572   <span class="i">$Correlation</span> = <span class="i">PearsonCorrelation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$YArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 573   <span class="k">if</span> <span class="s">(</span><span class="k">defined</span> <span class="i">$Correlation</span><span class="s">)</span> <span class="s">{</span>
+ 574     <span class="i">$RSquare</span> = <span class="i">$Correlation</span> ** <span class="n">2</span><span class="sc">;</span>
+ 575   <span class="s">}</span>
+ 576   <span class="k">return</span> <span class="i">$RSquare</span><span class="sc">;</span>
+ 577 <span class="s">}</span>
+ 578 
+ 579 <span class="c"># Compute the skewness of an array of numbers:</span>
+ 580 <span class="c">#  {n/(n - 1)(n - 2)} SUM{ ((x[i] - Xmean)/STDDEV)^3 }</span>
+ 581 <span class="c">#</span>
+<a name="Skewness-"></a> 582 <span class="k">sub </span><span class="m">Skewness</span> <span class="s">{</span>
+ 583   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 584 
+ 585   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span> || <span class="s">(</span><span class="s">(</span><span class="i">@$XArrayRef</span> - <span class="n">2</span><span class="s">)</span> &lt;= <span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 586     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 587   <span class="s">}</span>
+ 588   <span class="k">my</span><span class="s">(</span><span class="i">$Skewness</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$StandardDeviation</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 589   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 590   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span> <span class="i">$Mean</span><span class="s">)</span> <span class="s">{</span>
+ 591     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 592   <span class="s">}</span>
+ 593   <span class="i">$StandardDeviation</span> = <span class="i">StandardDeviation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 594   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span> <span class="i">$StandardDeviation</span> &amp;&amp;  <span class="i">$StandardDeviation</span> != <span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 595     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 596   <span class="s">}</span>
+ 597 
+ 598   <span class="k">my</span><span class="s">(</span><span class="i">$SumOfScores</span><span class="cm">,</span> <span class="i">$SampleSize</span><span class="s">)</span><span class="sc">;</span>
+ 599   <span class="i">$SumOfScores</span> = <span class="n">0</span><span class="sc">;</span>
+ 600   <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 601     <span class="i">$SumOfScores</span> += <span class="s">(</span><span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span>/<span class="i">$StandardDeviation</span><span class="s">)</span> ** <span class="n">3</span><span class="sc">;</span>
+ 602   <span class="s">}</span>
+ 603   <span class="i">$SampleSize</span> = <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 604   <span class="i">$Skewness</span> = <span class="s">(</span><span class="i">$SampleSize</span>/<span class="s">(</span><span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">1</span><span class="s">)</span> * <span class="s">(</span><span class="i">$SampleSize</span> - <span class="n">2</span><span class="s">)</span> <span class="s">)</span><span class="s">)</span> * <span class="i">$SumOfScores</span><span class="sc">;</span>
+ 605   <span class="k">return</span> <span class="i">$Skewness</span><span class="sc">;</span>
+ 606 <span class="s">}</span>
+ 607 
+ 608 <span class="c"># Compute the standard deviation of an array of numbers</span>
+<a name="StandardDeviation-"></a> 609 <span class="k">sub </span><span class="m">StandardDeviation</span> <span class="s">{</span>
+ 610   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 611   <span class="k">return</span> <span class="i">_CalculateStandardDeviation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 612 <span class="s">}</span>
+ 613 
+ 614 <span class="c"># Compute the standard deviation of an array of numbers representing entire population</span>
+<a name="StandardDeviationN-"></a> 615 <span class="k">sub </span><span class="m">StandardDeviationN</span> <span class="s">{</span>
+ 616   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 617   <span class="k">return</span> <span class="i">_CalculateStandardDeviation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 618 <span class="s">}</span>
+ 619 
+ 620 <span class="c"># Compute the standard deviation of an array of numbers.</span>
+ 621 <span class="c"># Mode 1: SQRT ( SUM( (x[i] - mean)^2 ) / n )</span>
+ 622 <span class="c"># Mode 2: SQRT ( SUM( (x[i] - mean)^2 ) / (n - 1) )</span>
+ 623 <span class="c">#</span>
+<a name="_CalculateStandardDeviation-"></a> 624 <span class="k">sub </span><span class="m">_CalculateStandardDeviation</span> <span class="s">{</span>
+ 625   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$Mode</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 626 
+ 627   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 628     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 629   <span class="s">}</span>
+ 630   <span class="k">my</span><span class="s">(</span><span class="i">$StandardDeviation</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$SquareOfDeviations</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$N</span><span class="s">)</span><span class="sc">;</span>
+ 631 
+ 632   <span class="i">$StandardDeviation</span> = <span class="n">0</span><span class="sc">;</span>
+ 633   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 634   <span class="i">$SquareOfDeviations</span> = <span class="n">0</span><span class="sc">;</span>
+ 635   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 636     <span class="i">$SquareOfDeviations</span> += <span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span> ** <span class="n">2</span><span class="sc">;</span>
+ 637   <span class="s">}</span>
+ 638   <span class="i">$N</span> = <span class="s">(</span><span class="i">$Mode</span> == <span class="n">1</span><span class="s">)</span> ? <span class="i">@$XArrayRef</span> <span class="co">:</span> <span class="s">(</span><span class="i">@$XArrayRef</span> - <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 639   <span class="i">$StandardDeviation</span> =  <span class="k">sqrt</span><span class="s">(</span><span class="i">$SquareOfDeviations</span> / <span class="i">$N</span><span class="s">)</span><span class="sc">;</span>
+ 640 
+ 641   <span class="k">return</span> <span class="i">$StandardDeviation</span><span class="sc">;</span>
+ 642 <span class="s">}</span>
+ 643 
+ 644 <span class="c"># Compute the standard error using standard deviation and sample size</span>
+<a name="StandardError-"></a> 645 <span class="k">sub </span><span class="m">StandardError</span> <span class="s">{</span>
+ 646   <span class="k">my</span><span class="s">(</span><span class="i">$StandardDeviation</span><span class="cm">,</span> <span class="i">$Count</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 647 
+ 648   <span class="k">if</span> <span class="s">(</span><span class="i">$Count</span> &lt;= <span class="n">0</span><span class="s">)</span> <span class="s">{</span>
+ 649     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 650   <span class="s">}</span>
+ 651   <span class="k">my</span><span class="s">(</span><span class="i">$StandardError</span><span class="s">)</span><span class="sc">;</span>
+ 652   <span class="i">$StandardError</span> = <span class="i">$StandardDeviation</span> / <span class="k">sqrt</span><span class="s">(</span><span class="i">$Count</span><span class="s">)</span><span class="sc">;</span>
+ 653 
+ 654   <span class="k">return</span> <span class="i">$StandardError</span><span class="sc">;</span>
+ 655 <span class="s">}</span>
+ 656 
+ 657 <span class="c"># Standardize the value using mean and standard deviation</span>
+<a name="Standardize-"></a> 658 <span class="k">sub </span><span class="m">Standardize</span> <span class="s">{</span>
+ 659   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$StandardDeviation</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 660 
+ 661   <span class="k">if</span> <span class="s">(</span><span class="i">$StandardDeviation</span> &lt;= <span class="n">0</span><span class="s">)</span> <span class="s">{</span>
+ 662     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 663   <span class="s">}</span>
+ 664   <span class="k">my</span><span class="s">(</span><span class="i">$StandardizedValue</span><span class="s">)</span><span class="sc">;</span>
+ 665   <span class="i">$StandardizedValue</span> = <span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span>/<span class="i">$StandardDeviation</span><span class="sc">;</span>
+ 666 
+ 667   <span class="k">return</span> <span class="i">$StandardizedValue</span><span class="sc">;</span>
+ 668 <span class="s">}</span>
+ 669 
+ 670 <span class="c"># Compute the standard deviation above the mean for an array of numbers.</span>
+<a name="StandardScores-"></a> 671 <span class="k">sub </span><span class="m">StandardScores</span> <span class="s">{</span>
+ 672   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 673   <span class="k">return</span> <span class="i">_CalculateStandardScores</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 674 <span class="s">}</span>
+ 675 
+ 676 <span class="c"># Compute the standard deviation above the mean for an array of numbers representing entire population</span>
+<a name="StandardScoresN-"></a> 677 <span class="k">sub </span><span class="m">StandardScoresN</span> <span class="s">{</span>
+ 678   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 679   <span class="k">return</span> <span class="i">_CalculateStandardScores</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 680 <span class="s">}</span>
+ 681 
+ 682 <span class="c"># Compute the standard deviation above the mean for an array of numbers.</span>
+ 683 <span class="c"># Mode 1:  (x[i] - mean) / n</span>
+ 684 <span class="c"># Mode 2:  (x[i] - mean) / (n - 1)</span>
+ 685 <span class="c">#</span>
+<a name="_CalculateStandardScores-"></a> 686 <span class="k">sub </span><span class="m">_CalculateStandardScores</span> <span class="s">{</span>
+ 687   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$Mode</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 688 
+ 689   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 690     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 691   <span class="s">}</span>
+ 692   <span class="k">my</span><span class="s">(</span><span class="i">@StandardScores</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$StandardDeviation</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 693 
+ 694   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 695   <span class="i">$StandardDeviation</span> = <span class="i">_CalculateStandardDeviation</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$Mode</span><span class="s">)</span><span class="sc">;</span>
+ 696   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$StandardDeviation</span><span class="s">)</span> &amp;&amp; <span class="i">$StandardDeviation</span> &gt; <span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 697     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 698   <span class="s">}</span>
+ 699   <span class="i">@StandardScores</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 700   <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 701     <span class="k">push</span> <span class="i">@StandardScores</span><span class="cm">,</span> <span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span>/<span class="i">$StandardDeviation</span><span class="sc">;</span>
+ 702   <span class="s">}</span>
+ 703 
+ 704   <span class="k">return</span> <span class="i">@StandardScores</span><span class="sc">;</span>
+ 705 <span class="s">}</span>
+ 706 
+ 707 <span class="c"># Compute the product of an array of numbers</span>
+<a name="Product-"></a> 708 <span class="k">sub </span><span class="m">Product</span> <span class="s">{</span>
+ 709   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 710 
+ 711   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 712     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 713   <span class="s">}</span>
+ 714   <span class="k">my</span><span class="s">(</span><span class="i">$Product</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 715   <span class="i">$Product</span> = <span class="n">1</span><span class="sc">;</span>
+ 716   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 717     <span class="i">$Product</span> *= <span class="i">$Value</span><span class="sc">;</span>
+ 718   <span class="s">}</span>
+ 719   <span class="k">return</span> <span class="i">$Product</span><span class="sc">;</span>
+ 720 <span class="s">}</span>
+ 721 
+ 722 <span class="c"># Compute the sum of an array of numbers</span>
+<a name="Sum-"></a> 723 <span class="k">sub </span><span class="m">Sum</span> <span class="s">{</span>
+ 724   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 725 
+ 726   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 727     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 728   <span class="s">}</span>
+ 729   <span class="k">my</span><span class="s">(</span><span class="i">$Sum</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 730   <span class="i">$Sum</span> = <span class="n">0</span><span class="sc">;</span>
+ 731   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 732     <span class="i">$Sum</span> += <span class="i">$Value</span><span class="sc">;</span>
+ 733   <span class="s">}</span>
+ 734   <span class="k">return</span> <span class="i">$Sum</span><span class="sc">;</span>
+ 735 <span class="s">}</span>
+ 736 
+ 737 <span class="c"># Compute the sum of squares of an array of numbers</span>
+<a name="SumOfSquares-"></a> 738 <span class="k">sub </span><span class="m">SumOfSquares</span> <span class="s">{</span>
+ 739   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 740 
+ 741   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 742     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 743   <span class="s">}</span>
+ 744   <span class="k">my</span><span class="s">(</span><span class="i">$SumOfSquares</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 745   <span class="i">$SumOfSquares</span> = <span class="n">0</span><span class="sc">;</span>
+ 746   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 747     <span class="i">$SumOfSquares</span> += <span class="i">$Value</span> ** <span class="n">2</span><span class="sc">;</span>
+ 748   <span class="s">}</span>
+ 749   <span class="k">return</span> <span class="i">$SumOfSquares</span><span class="sc">;</span>
+ 750 <span class="s">}</span>
+ 751 
+ 752 <span class="c"># Compute the mean of an array of numbers by excluding a fraction of</span>
+ 753 <span class="c"># numbers from the top and bottom of the data set.</span>
+<a name="TrimMean-"></a> 754 <span class="k">sub </span><span class="m">TrimMean</span> <span class="s">{</span>
+ 755   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$FractionToExclude</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 756 
+ 757   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@$XArrayRef</span> &amp;&amp; <span class="i">$FractionToExclude</span> &gt; <span class="n">0</span> &amp;&amp; <span class="i">$FractionToExclude</span> &lt;= <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 758     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 759   <span class="s">}</span>
+ 760   <span class="k">my</span><span class="s">(</span><span class="i">$NumberToExclude</span><span class="s">)</span><span class="sc">;</span>
+ 761   <span class="i">$NumberToExclude</span> = <span class="k">int</span><span class="s">(</span><span class="i">@$XArrayRef</span> * <span class="i">$FractionToExclude</span><span class="s">)</span><span class="sc">;</span>
+ 762   <span class="i">$NumberToExclude</span> = <span class="s">(</span><span class="i">$NumberToExclude</span> % <span class="n">2</span><span class="s">)</span> ? <span class="s">(</span><span class="i">$NumberToExclude</span> - <span class="n">1</span><span class="s">)</span> <span class="co">:</span> <span class="i">$NumberToExclude</span><span class="sc">;</span>
+ 763   <span class="k">if</span> <span class="s">(</span><span class="i">$NumberToExclude</span> == <span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 764     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 765   <span class="s">}</span>
+ 766   <span class="k">my</span><span class="s">(</span><span class="i">$Mean</span><span class="cm">,</span> <span class="i">$Sum</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$FirstIndex</span><span class="cm">,</span> <span class="i">$LastIndex</span><span class="s">)</span><span class="sc">;</span>
+ 767   <span class="i">$FirstIndex</span> = <span class="i">$NumberToExclude</span>/<span class="n">2</span><span class="sc">;</span>
+ 768   <span class="i">$LastIndex</span> = <span class="i">@$XArrayRef</span> - <span class="s">(</span><span class="i">$NumberToExclude</span>/<span class="n">2</span><span class="s">)</span> - <span class="n">1</span><span class="sc">;</span>
+ 769   <span class="i">$Sum</span> = <span class="n">0</span><span class="sc">;</span>
+ 770   <span class="k">my</span><span class="s">(</span><span class="i">@SortedXArray</span><span class="s">)</span><span class="sc">;</span>
+ 771   <span class="i">@SortedXArray</span> = <span class="k">sort</span> <span class="s">{</span> <span class="i">$a</span> &lt;=&gt; <span class="i">$b</span> <span class="s">}</span> <span class="i">@$XArrayRef</span><span class="sc">;</span>
+ 772   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="i">$FirstIndex</span> .. <span class="i">$LastIndex</span><span class="s">)</span> <span class="s">{</span>
+ 773     <span class="i">$Sum</span> += <span class="i">$SortedXArray</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 774   <span class="s">}</span>
+ 775   <span class="i">$Mean</span> = <span class="i">$Sum</span>/<span class="s">(</span><span class="i">@SortedXArray</span> - <span class="i">$NumberToExclude</span><span class="s">)</span><span class="sc">;</span>
+ 776   <span class="k">return</span> <span class="i">$Mean</span><span class="sc">;</span>
+ 777 <span class="s">}</span>
+ 778 
+ 779 <span class="c"># Compute the variance of an array of numbers</span>
+<a name="Variance-"></a> 780 <span class="k">sub </span><span class="m">Variance</span> <span class="s">{</span>
+ 781   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 782   <span class="k">return</span> <span class="i">_CalculateVariance</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 783 <span class="s">}</span>
+ 784 
+ 785 <span class="c"># Compute the variance of an array of numbers representing entire population</span>
+<a name="VarianceN-"></a> 786 <span class="k">sub </span><span class="m">VarianceN</span> <span class="s">{</span>
+ 787   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 788   <span class="k">return</span> <span class="i">_CalculateVariance</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 789 <span class="s">}</span>
+ 790 
+ 791 <span class="c"># Compute the variance of an array of numbers:</span>
+ 792 <span class="c"># Mode 1: SUM( (x[i] - Xmean)^2  / n )</span>
+ 793 <span class="c"># Mode 2: SUM( (x[i] - Xmean)^2  / (n - 1) )</span>
+ 794 <span class="c">#</span>
+<a name="_CalculateVariance-"></a> 795 <span class="k">sub </span><span class="m">_CalculateVariance</span> <span class="s">{</span>
+ 796   <span class="k">my</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="cm">,</span> <span class="i">$Mode</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 797 
+ 798   <span class="k">if</span> <span class="s">(</span>!<span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 799     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 800   <span class="s">}</span>
+ 801   <span class="k">my</span><span class="s">(</span><span class="i">$Variance</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$SquareOfDeviations</span><span class="cm">,</span> <span class="i">$Mean</span><span class="cm">,</span> <span class="i">$N</span><span class="s">)</span><span class="sc">;</span>
+ 802 
+ 803   <span class="i">$Variance</span> = <span class="n">0</span><span class="sc">;</span>
+ 804   <span class="i">$Mean</span> = <span class="i">Mean</span><span class="s">(</span><span class="i">$XArrayRef</span><span class="s">)</span><span class="sc">;</span>
+ 805   <span class="i">$SquareOfDeviations</span> = <span class="n">0</span><span class="sc">;</span>
+ 806   <span class="k">foreach</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@$XArrayRef</span><span class="s">)</span> <span class="s">{</span>
+ 807     <span class="i">$SquareOfDeviations</span> += <span class="s">(</span><span class="i">$Value</span> - <span class="i">$Mean</span><span class="s">)</span> ** <span class="n">2</span><span class="sc">;</span>
+ 808   <span class="s">}</span>
+ 809   <span class="i">$N</span> = <span class="s">(</span><span class="i">$Mode</span> == <span class="n">1</span><span class="s">)</span> ? <span class="i">@$XArrayRef</span> <span class="co">:</span> <span class="s">(</span><span class="i">@$XArrayRef</span> - <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 810   <span class="i">$Variance</span> =  <span class="i">$SquareOfDeviations</span> / <span class="i">$N</span><span class="sc">;</span>
+ 811 
+ 812   <span class="k">return</span> <span class="i">$Variance</span><span class="sc">;</span>
+ 813 <span class="s">}</span>
+ 814 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

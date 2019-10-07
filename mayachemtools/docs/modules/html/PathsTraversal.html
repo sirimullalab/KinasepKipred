@@ -1,0 +1,240 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Graph/PathsTraversal.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./PathGraph.html" title="PathGraph.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Graph.html" title="Graph.html">Next</a></td><td width="34%" align="middle"><strong>Graph/PathsTraversal.pm</strong></td><td width="33%" align="right"><a href="././code/PathsTraversal.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/PathsTraversal.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/PathsTraversal.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/PathsTraversal.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/PathsTraversal.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>PathsTraversal</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Graph::PathsTraversal;</p>
+<p>use Graph::PathsTraversal qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>PathsTraversal</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#Copy">Copy</a>, <a href="#GetConnectedComponentsVertices">GetConnectedComponentsVertices</a>, <a href="#GetPaths">GetPaths</a>, <a href="#GetVertices">GetVertices</a>, <a href="#GetVerticesDepth">GetVerticesDepth</a>, <a href="#GetVerticesNeighborhoods">GetVerticesNeighborhoods</a>, <a href="#GetVerticesNeighborhoodsWithSuccessors">GetVerticesNeighborhoodsWithSuccessors</a>, <a href="#GetVerticesPredecessors">GetVerticesPredecessors</a>, <a href="#GetVerticesRoots">GetVerticesRoots</a>, <a href="#PerformAllPathsSearch">PerformAllPathsSearch</a>, <a href="#PerformAllPathsSearchWithLength">PerformAllPathsSearchWithLength</a>, <a href="#PerformAllPathsSearchWithLengthUpto">PerformAllPathsSearchWithLengthUpto</a>, <a href="#PerformBreadthFirstSearch">PerformBreadthFirstSearch</a>, <a href="#PerformBreadthFirstSearchWithLimit">PerformBreadthFirstSearchWithLimit</a>, <a href="#PerformDepthFirstSearch">PerformDepthFirstSearch</a>, <a href="#PerformDepthFirstSearchWithLimit">PerformDepthFirstSearchWithLimit</a>, <a href="#PerformNeighborhoodVerticesSearch">PerformNeighborhoodVerticesSearch</a>, <a href="#PerformNeighborhoodVerticesSearchWithRadiusUpto">PerformNeighborhoodVerticesSearchWithRadiusUpto</a>, <a href="#PerformNeighborhoodVerticesSearchWithSuccessors">PerformNeighborhoodVerticesSearchWithSuccessors</a>, <a href="#PerformNeighborhoodVerticesSearchWithSuccessorsAndRadiusUpto">PerformNeighborhoodVerticesSearchWithSuccessorsAndRadiusUpto</a>, <a href="#PerformPathsSearch">PerformPathsSearch</a>, <a href="#PerformPathsSearchBetween">PerformPathsSearchBetween</a>, <a href="#PerformPathsSearchWithLength">PerformPathsSearchWithLength</a>, <a href="#PerformPathsSearchWithLengthUpto">PerformPathsSearchWithLengthUpto</a>, <a href="#StringifyPaths">StringifyPaths</a>, <a href="#StringifyPathsTraversal">StringifyPathsTraversal</a>, <a href="#StringifyVerticesDepth">StringifyVerticesDepth</a>, <a href="#StringifyVerticesNeighborhoods">StringifyVerticesNeighborhoods</a>, <a href="#StringifyVerticesNeighborhoodsWithSuccessors">StringifyVerticesNeighborhoodsWithSuccessors</a>, <a href="#StringifyVerticesPredecessors">StringifyVerticesPredecessors</a>, <a href="#StringifyVerticesRoots">StringifyVerticesRoots</a>, <a href="#StringifyVerticesSuccessors">StringifyVerticesSuccessors</a>
+</p><h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal = new Graph::PathsTraversal($Graph);</div>
+<p>Using specified <i>Graph</i>, <b>new</b> method creates a new <b>PathsTraversal</b> object and returns newly created <b>PathsTraversal</b> object.</p>
+</dd>
+<dt id="Copy"><b>Copy</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal = $PathsTraversal-&gt;Copy();</div>
+<p>Copies <i>PathsTraversal</i> and its associated data using <b>Storable::dclone</b> and returns a new <b>PathsTraversal</b> object.</p>
+</dd>
+<dt id="GetConnectedComponentsVertices"><b>GetConnectedComponentsVertices</b></dt>
+<dd>
+<div class="OptionsBox">    @Components = $PathsTraversal-&gt;GetConnectedComponentsVertices();
+<br/>    $NumOfComponents = $PathsTraversal-&gt;GetConnectedComponentsVertices();</div>
+<p>Returns an array of <b>Components</b> containing references to arrays of vertex IDs corresponding to connected components of graph after a search. In scalar context, the number of connected components is returned.</p>
+<p>Connected <b>Components</b> is sorted in descending order of number of vertices in each connected component.</p>
+</dd>
+<dt id="GetPaths"><b>GetPaths</b></dt>
+<dd>
+<div class="OptionsBox">    @Paths = $PathsTraversal-&gt;GetPaths();
+<br/>    $NumOfPaths = $PathsTraversal-&gt;GetPaths();</div>
+<p>Returns an array of <b>Paths</b> containing references to arrays of vertex IDs corresponding to to paths traversed in a graph after a search. In scalar context, number of paths is returned.</p>
+<p><b>Paths</b> array is sorted in ascending order of path lengths.</p>
+</dd>
+<dt id="GetVertices"><b>GetVertices</b></dt>
+<dd>
+<div class="OptionsBox">    @Vertices = $PathsTraversal-&gt;GetVertices();
+<br/>    $NumOfVertices = $PathsTraversal-&gt;GetVertices();</div>
+<p>Returns an array containing an ordered list of vertex IDs traversed during a search. In scalar context, the number of vertices is returned.</p>
+</dd>
+<dt id="GetVerticesDepth"><b>GetVerticesDepth</b></dt>
+<dd>
+<div class="OptionsBox">    %VerticesDepth = $PathsTraversal-&gt;GetVerticesDepth();</div>
+<p>Returns a hash <i>VerticesDepth</i> containing vertex ID and depth from root vertex as a key and value pair for all vertices traversed during a search.</p>
+</dd>
+<dt id="GetVerticesNeighborhoods"><b>GetVerticesNeighborhoods</b></dt>
+<dd>
+<div class="OptionsBox">    @VerticesNeighborhoods =
+       $PathsTraversal-&gt;GetVerticesNeighborhoods();
+<br/>    $NumOfVerticesNeighborhoods =
+      $PathsTraversal-&gt;GetVerticesNeighborhoods();</div>
+<p>Returns an array <i>VerticesNeighborhoods</i> containing references to arrays corresponding to vertices collected at various neighborhood radii around a specified vertex during a vertex neighborhood search. In scalar context, the number of neighborhoods is returned.</p>
+</dd>
+<dt id="GetVerticesNeighborhoodsWithSuccessors"><b>GetVerticesNeighborhoodsWithSuccessors</b></dt>
+<dd>
+<div class="OptionsBox">    @VerticesNeighborhoodsWithSucceessors =
+       $PathsTraversal-&gt;GetVerticesNeighborhoodsWithSuccessors();
+<br/>    $NumOfVerticesNeighborhoodsWithSucceessors =
+      $PathsTraversal-&gt;GetVerticesNeighborhoodsWithSuccessors();</div>
+<p>Returns an array <i>VerticesNeighborhoodsWithSucceessors</i> containing references to arrays with first value corresponding to vertex IDs corresponding to a vertex at a specific neighborhood radius level and second value a reference to an arraty containing its successors.</p>
+</dd>
+<dt id="GetVerticesPredecessors"><b>GetVerticesPredecessors</b></dt>
+<dd>
+<div class="OptionsBox">    %VerticesPredecessors = $PathsTraversal-&gt;GetVerticesPredecessors();</div>
+<p>Returns a hash <i>VerticesPredecessors</i> containing vertex ID and predecessor vertex ID as key and value pair for all vertices traversed during a search.</p>
+</dd>
+<dt id="GetVerticesRoots"><b>GetVerticesRoots</b></dt>
+<dd>
+<div class="OptionsBox">    %VerticesRoots = $PathsTraversal-&gt;GetVerticesRoots();</div>
+<p>Returns a hash <i>VerticesPredecessors</i> containing vertex ID and root vertex ID as a key and value pair for all vertices traversed during a search.</p>
+</dd>
+<dt id="PerformAllPathsSearch"><b>PerformAllPathsSearch</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformAllPathsSearch($StartVertexID, [$AllowCycles]);</div>
+<p>Searches all paths starting from a <i>StartVertexID</i> with sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="PerformAllPathsSearchWithLength"><b>PerformAllPathsSearchWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformAllPathsSearchWithLength($StartVertexID,
+                     $Length, [$AllowCycles]);</div>
+<p>Searches all paths starting from <i>StartVertexID</i> of specific <i>Length</i> with sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="PerformAllPathsSearchWithLengthUpto"><b>PerformAllPathsSearchWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformAllPathsSearchWithLengthUpto($StartVertexID,
+                     $Length, [$AllowCycles]);</div>
+<p>Searches all paths starting from <i>StartVertexID</i> of length upto a <i>Length</i> with sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="PerformBreadthFirstSearch"><b>PerformBreadthFirstSearch</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformBreadthFirstSearch();</div>
+<p>Performs Breadth First Search (BFS) and returns <i>PathsTraversal</i>.</p>
+</dd>
+<dt id="PerformBreadthFirstSearchWithLimit"><b>PerformBreadthFirstSearchWithLimit</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformBreadthFirstSearchWithLimit($DepthLimit,
+                     [$RootVertexID]);</div>
+<p>Performs BFS with depth up to <i>DepthLimit</i> starting at <i>RootVertexID</i> and returns <i>PathsTraversal</i>. By default, root vertex ID corresponds to an arbitrary vertex.</p>
+</dd>
+<dt id="PerformDepthFirstSearch"><b>PerformDepthFirstSearch</b></dt>
+<dd>
+<div class="OptionsBox">    $Return = $PathsTraversal-&gt;PerformDepthFirstSearch();</div>
+<p>Performs Depth First Search (DFS) and returns <i>PathsTraversal</i>.</p>
+</dd>
+<dt id="PerformDepthFirstSearchWithLimit"><b>PerformDepthFirstSearchWithLimit</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformDepthFirstSearchWithLimit($DepthLimit,
+                     [$RootVertexID]);</div>
+<p>Performs DFS with depth up to <i>DepthLimit</i> starting at <i>RootVertexID</i> and returns <i>PathsTraversal</i>. By default, root vertex ID corresponds to an arbitrary vertex.</p>
+</dd>
+<dt id="PerformNeighborhoodVerticesSearch"><b>PerformNeighborhoodVerticesSearch</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformNeighborhoodVerticesSearch($StartVertexID);</div>
+<p>Searches vertices around <i>StartVertexID</i> at all neighborhood radii and returns <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="PerformNeighborhoodVerticesSearchWithRadiusUpto"><b>PerformNeighborhoodVerticesSearchWithRadiusUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformNeighborhoodVerticesSearchWithRadiusUpto(
+                     $StartVertexID, $Radius);</div>
+<p>Searches vertices around <i>StartVertexID</i> with neighborhood radius up to <i>Radius</i> and returns <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="PerformNeighborhoodVerticesSearchWithSuccessors"><b>PerformNeighborhoodVerticesSearchWithSuccessors</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformNeighborhoodVerticesSearchWithSuccessors(
+                     $StartVertexID);</div>
+<p>Searches vertices around <i>StartVertexID</i> at all neighborhood radii along with identification of successor vertices for each vertex found during the traversal and returns <i>PathsTraversal</i>.</p>
+</dd>
+<dt id="PerformNeighborhoodVerticesSearchWithSuccessorsAndRadiusUpto"><b>PerformNeighborhoodVerticesSearchWithSuccessorsAndRadiusUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                PerformNeighborhoodVerticesSearchWithSuccessorsAndRadiusUpto(
+                     $StartVertexID, $Radius);</div>
+<p>Searches vertices around <i>StartVertexID</i> with neighborhood radius upto <i>Radius</i> along with identification of successor vertices for each vertex found during the traversal and returns <i>PathsTraversal</i>.</p>
+</dd>
+<dt id="PerformPathsSearch"><b>PerformPathsSearch</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformPathsSearch($StartVertexID, [$AllowCycles]);</div>
+<p>Searches paths starting from <i>StartVertexID</i> with no sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="PerformPathsSearchBetween"><b>PerformPathsSearchBetween</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformPathsSearchBetween($StartVertexID, $EndVertexID);</div>
+<p>Searches paths between <i>StartVertexID</i> and <i>EndVertexID</i> and returns <i>PathsTraversal</i></p>
+</dd>
+<dt id="PerformPathsSearchWithLength"><b>PerformPathsSearchWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformPathsSearchWithLength($StartVertexID, $Length,
+                     [$AllowCycles]);</div>
+<p>Searches paths starting from <i>StartVertexID</i> with length <i>Length</i> with no sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="PerformPathsSearchWithLengthUpto"><b>PerformPathsSearchWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $PathsTraversal-&gt;PerformPathsSearchWithLengthUpto($StartVertexID, $Length,
+                     [$AllowCycles]);</div>
+<p>Searches paths starting from <i>StartVertexID</i> with length upto <i>Length</i> with no sharing of edges in paths traversed and returns <i>PathsTraversal</i>.</p>
+<p>By default, cycles are included in paths. A path containing a cycle is terminated at a vertex completing the cycle.</p>
+</dd>
+<dt id="StringifyPaths"><b>StringifyPaths</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyPaths();</div>
+<p>Returns a string containing information about traversed paths in <i>PathsTraversal</i> object</p>
+</dd>
+<dt id="StringifyPathsTraversal"><b>StringifyPathsTraversal</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyPathsTraversal();</div>
+<p>Returns a string containing information about <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesDepth"><b>StringifyVerticesDepth</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesDepth();</div>
+<p>Returns a string containing information about depth of vertices found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesNeighborhoods"><b>StringifyVerticesNeighborhoods</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesNeighborhoods();</div>
+<p>Returns a string containing information about neighborhoods of vertices found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesNeighborhoodsWithSuccessors"><b>StringifyVerticesNeighborhoodsWithSuccessors</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesNeighborhoodsWithSuccessors();</div>
+<p>Returns a string containing information about neighborhoods of vertices along with their successors found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesPredecessors"><b>StringifyVerticesPredecessors</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesPredecessors();</div>
+<p>Returns a string containing information about predecessors of vertices found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesRoots"><b>StringifyVerticesRoots</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesRoots();</div>
+<p>Returns a string containing information about roots of vertices found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+<dt id="StringifyVerticesSuccessors"><b>StringifyVerticesSuccessors</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $PathsTraversal-&gt;StringifyVerticesSuccessors();</div>
+<p>Returns a string containing information about successors of vertices found during search by <i>PathsTraversal</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Graph.html">Graph.pm</a>, <a href="./Path.html">Path.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./PathGraph.html" title="PathGraph.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Graph.html" title="Graph.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Graph/PathsTraversal.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

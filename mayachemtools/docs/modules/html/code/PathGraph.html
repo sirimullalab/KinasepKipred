@@ -1,0 +1,327 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Graph/PathGraph.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-Graph::PathGraph-"></a>   1 <span class="k">package </span><span class="i">Graph::PathGraph</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: PathGraph.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Storable</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">Scalar::Util</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">Graph</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">Graph::Path</span><span class="sc">;</span>
+  33 
+  34 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  35 
+  36 <span class="i">@ISA</span> = <span class="q">qw(Graph Exporter)</span><span class="sc">;</span>
+  37 <span class="i">@EXPORT</span> = <span class="q">qw(IsPathGraph)</span><span class="sc">;</span>
+  38 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  39 
+  40 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  41 
+  42 <span class="c"># Setup class variables...</span>
+  43 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="cm">,</span> <span class="i">$PathsPropertyName</span><span class="cm">,</span> <span class="i">$CyclicPathsPropertyName</span><span class="s">)</span><span class="sc">;</span>
+  44 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  45 
+  46 <span class="c"># Overload Perl functions...</span>
+  47 <span class="k">use</span> <span class="w">overload</span> <span class="q">&#39;&quot;&quot;&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;StringifyPathGraph&#39;</span><span class="sc">;</span>
+  48 
+  49 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  50 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  51   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">$Graph</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  52 
+  53   <span class="c"># Initialize object...</span>
+  54   <span class="k">my</span> <span class="i">$This</span> = <span class="i">$Class</span><span class="i">-&gt;SUPER::new</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  55   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  56   <span class="i">$This</span><span class="i">-&gt;_InitializePathGraph</span><span class="s">(</span><span class="i">$Graph</span><span class="s">)</span><span class="sc">;</span>
+  57 
+  58   <span class="i">$This</span><span class="i">-&gt;_ConvertGraphIntoPathGraph</span><span class="s">(</span><span class="i">$Graph</span><span class="s">)</span><span class="sc">;</span>
+  59 
+  60   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  61 <span class="s">}</span>
+  62 
+  63 <span class="c"># Initialize object data...</span>
+<a name="_InitializePathGraph-"></a>  64 <span class="k">sub </span><span class="m">_InitializePathGraph</span> <span class="s">{</span>
+  65   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Graph</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  66 
+  67   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$Graph</span><span class="s">)</span> &amp;&amp; <span class="i">Graph::IsGraph</span><span class="s">(</span><span class="i">$Graph</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  68     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;new: PathGraph object can&#39;t be instantiated without a Graph object...&quot;</span><span class="sc">;</span>
+  69   <span class="s">}</span>
+  70 
+  71   <span class="i">$This</span>-&gt;{<span class="w">Graph</span>} = <span class="i">$Graph</span><span class="sc">;</span>
+  72 
+  73   <span class="c"># Maximum time allowed for cycles detection during collapse vertex cycles detection</span>
+  74   <span class="c"># methodology in seconds...</span>
+  75   <span class="i">$This</span>-&gt;{<span class="w">MaxAllowedTime</span>} = <span class="n">30</span><span class="sc">;</span>
+  76 
+  77   <span class="c"># Starting time for cycles detection during collapse vertex cycles detection</span>
+  78   <span class="c"># methodology...</span>
+  79   <span class="i">$This</span>-&gt;{<span class="w">StartTime</span>} = <span class="k">time</span><span class="sc">;</span>
+  80 
+  81   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  82 <span class="s">}</span>
+  83 
+  84 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a>  85 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+  86   <span class="c">#Class name...</span>
+  87   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+  88 
+  89   <span class="c"># Path edge property name...</span>
+  90   <span class="i">$PathsPropertyName</span> = <span class="q">&#39;Paths&#39;</span><span class="sc">;</span>
+  91 
+  92   <span class="c"># Cyclic path vertex property name...</span>
+  93   <span class="i">$CyclicPathsPropertyName</span> = <span class="q">&#39;CyclicPaths&#39;</span><span class="sc">;</span>
+  94 <span class="s">}</span>
+  95 
+  96 <span class="c"># Convert graph into a path graph...</span>
+  97 <span class="c">#</span>
+<a name="_ConvertGraphIntoPathGraph-"></a>  98 <span class="k">sub </span><span class="m">_ConvertGraphIntoPathGraph</span> <span class="s">{</span>
+  99   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Graph</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 100 
+ 101   <span class="c"># Copy graph vertices and edges without any associated properties data</span>
+ 102   <span class="c"># from Graph to This: Graph properties data is available using Graph object reference</span>
+ 103   <span class="c"># store in This object...</span>
+ 104   <span class="c">#</span>
+ 105   <span class="i">$Graph</span><span class="i">-&gt;CopyVerticesAndEdges</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span><span class="sc">;</span>
+ 106 
+ 107   <span class="c"># . Attach Path property to each edge...</span>
+ 108   <span class="c">#</span>
+ 109   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$VertexID1</span><span class="cm">,</span> <span class="i">$VertexID2</span><span class="cm">,</span> <span class="i">$Path</span><span class="cm">,</span> <span class="i">@EdgesVertexIDs</span><span class="s">)</span><span class="sc">;</span>
+ 110 
+ 111   <span class="i">@EdgesVertexIDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 112   <span class="i">@EdgesVertexIDs</span> = <span class="i">$This</span><span class="i">-&gt;GetEdges</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 113   <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index</span> &lt; <span class="i">$#EdgesVertexIDs</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 114     <span class="i">$VertexID1</span> = <span class="i">$EdgesVertexIDs</span>[<span class="i">$Index</span>]<span class="sc">;</span> <span class="i">$VertexID2</span> = <span class="i">$EdgesVertexIDs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 115     <span class="i">$Path</span> = <span class="i">new</span> <span class="i">Graph::Path</span><span class="s">(</span><span class="i">$VertexID1</span><span class="cm">,</span> <span class="i">$VertexID2</span><span class="s">)</span><span class="sc">;</span>
+ 116     <span class="k">my</span><span class="s">(</span><span class="i">@Paths</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 117     <span class="k">push</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">$Path</span><span class="sc">;</span>
+ 118     <span class="i">$This</span><span class="i">-&gt;SetEdgeProperty</span><span class="s">(</span><span class="i">$PathsPropertyName</span><span class="cm">,</span> \<span class="i">@Paths</span><span class="cm">,</span> <span class="i">$VertexID1</span><span class="cm">,</span> <span class="i">$VertexID2</span><span class="s">)</span><span class="sc">;</span>
+ 119   <span class="s">}</span>
+ 120   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 121 <span class="s">}</span>
+ 122 
+ 123 <span class="c"># Collapse paths around a specified vertex by updating paths around the vertex</span>
+ 124 <span class="c"># and adding any resulting cyclic paths to vertices attached to specified vertex.</span>
+ 125 <span class="c">#</span>
+ 126 <span class="c"># Notes:</span>
+ 127 <span class="c">#   . Path object references are stored as a list attached to Paths property on edges.</span>
+ 128 <span class="c">#     Usage of list allows multiple paths attached to the egde between a pair of vertices;</span>
+ 129 <span class="c">#     Graph doesn&#39;t support multiple egdes between a pair of vertices.</span>
+ 130 <span class="c">#</span>
+ 131 <span class="c">#   . Cyclic path object references are stored as list on vertices as CyclicPaths graph property.</span>
+ 132 <span class="c">#     List allows multiple Loop properties attached to a vertex.</span>
+ 133 <span class="c">#</span>
+ 134 <span class="c">#   . For topologically complex graphs containing large number of cycles, cycles detection algorithm</span>
+ 135 <span class="c">#     [ Ref 31 ] as implemented implemented in CollapseVertexAndCollectCyclicPathsDetectCycles</span>
+ 136 <span class="c">#     might not be able to find all the cycles in a reasonable amount of time and is designed to</span>
+ 137 <span class="c">#     abandon cycles detection after MaxAllowedTime. Consequently, no cycles are detected</span>
+ 138 <span class="c">#     or assigned.</span>
+ 139 <span class="c">#</span>
+<a name="CollapseVertexAndCollectCyclicPaths-"></a> 140 <span class="k">sub </span><span class="m">CollapseVertexAndCollectCyclicPaths</span> <span class="s">{</span>
+ 141   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$VertexID</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 142 
+ 143   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;HasVertex</span><span class="s">(</span><span class="i">$VertexID</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 144     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;CollapseVertexAndCollectCyclicPaths: Didn&#39;t collapse vertex $VertexID: Vertex $VertexID doesn&#39;t exist...&quot;</span><span class="sc">;</span>
+ 145     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 146   <span class="s">}</span>
+ 147   <span class="c"># Collect all paths around specified VertexID by going over paths associated with its edges...</span>
+ 148   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$EdgePathsRef</span><span class="cm">,</span> <span class="i">$EdgeVertexID1</span><span class="cm">,</span> <span class="i">$EdgeVertexID2</span><span class="cm">,</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@EdgesVertexIDs</span><span class="s">)</span><span class="sc">;</span>
+ 149 
+ 150   <span class="i">@EdgesVertexIDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 151   <span class="i">@EdgesVertexIDs</span> = <span class="i">$This</span><span class="i">-&gt;GetEdges</span><span class="s">(</span><span class="i">$VertexID</span><span class="s">)</span><span class="sc">;</span>
+ 152 
+ 153   <span class="i">@Paths</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 154   <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index</span> &lt; <span class="i">$#EdgesVertexIDs</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 155     <span class="s">(</span><span class="i">$EdgeVertexID1</span><span class="cm">,</span> <span class="i">$EdgeVertexID2</span><span class="s">)</span> = <span class="s">(</span><span class="i">$EdgesVertexIDs</span>[<span class="i">$Index</span>]<span class="cm">,</span> <span class="i">$EdgesVertexIDs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="s">)</span><span class="sc">;</span>
+ 156     <span class="i">$EdgePathsRef</span> = <span class="i">$This</span><span class="i">-&gt;GetEdgeProperty</span><span class="s">(</span><span class="i">$PathsPropertyName</span><span class="cm">,</span> <span class="i">$EdgeVertexID1</span><span class="cm">,</span> <span class="i">$EdgeVertexID2</span><span class="s">)</span><span class="sc">;</span>
+ 157     <span class="k">push</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$EdgePathsRef</span>}<span class="sc">;</span>
+ 158   <span class="s">}</span>
+ 159 
+ 160   <span class="c"># Go over each pair of paths around the specified vertex, join paths and associate</span>
+ 161   <span class="c"># joined path to appropriate edge...</span>
+ 162   <span class="k">my</span><span class="s">(</span><span class="i">$Index1</span><span class="cm">,</span> <span class="i">$Index2</span><span class="cm">,</span> <span class="i">$Path1</span><span class="cm">,</span> <span class="i">$Path2</span><span class="cm">,</span> <span class="i">$JoinedPath</span><span class="cm">,</span> <span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="cm">,</span> <span class="i">@CommonVertices</span><span class="s">)</span><span class="sc">;</span>
+ 163 
+ 164   <span class="k">for</span> <span class="s">(</span><span class="i">$Index1</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index1</span> &lt; <span class="i">$#Paths</span><span class="sc">;</span> <span class="i">$Index1</span> +=<span class="n">1</span> <span class="s">)</span> <span class="s">{</span>
+ 165     <span class="i">$Path1</span> = <span class="i">$Paths</span>[<span class="i">$Index1</span>]<span class="sc">;</span>
+ 166 
+ 167     <span class="j">PATH2:</span> <span class="k">for</span> <span class="s">(</span><span class="i">$Index2</span> = <span class="i">$Index1</span> + <span class="n">1</span><span class="sc">;</span> <span class="i">$Index2</span> &lt;= <span class="i">$#Paths</span><span class="sc">;</span> <span class="i">$Index2</span> +=<span class="n">1</span> <span class="s">)</span> <span class="s">{</span>
+ 168       <span class="i">$Path2</span> = <span class="i">$Paths</span>[<span class="i">$Index2</span>]<span class="sc">;</span>
+ 169 
+ 170       <span class="c"># For JoinedPath to be valid cycle, Path1 and Path2 must have exactly two vertices in common.</span>
+ 171       <span class="c"># Otherwise, joined path contains duplicate vertices besides the terminal vertices and</span>
+ 172       <span class="c"># indicates a path from a different direction.</span>
+ 173       <span class="c">#</span>
+ 174       <span class="c"># For paths leading to cycles, it only makes sense to join paths with only one common vertex;</span>
+ 175       <span class="c"># otherwise, it wouldn&#39;t lead to a cycle and can be ignored.</span>
+ 176       <span class="c">#</span>
+ 177       <span class="i">@CommonVertices</span> = <span class="i">$Path1</span><span class="i">-&gt;GetCommonVertices</span><span class="s">(</span><span class="i">$Path2</span><span class="s">)</span><span class="sc">;</span>
+ 178       <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@CommonVertices</span> &lt;= <span class="n">2</span> &amp;&amp; <span class="s">(</span><span class="i">$CommonVertices</span>[<span class="n">0</span>] == <span class="i">$VertexID</span> || <span class="i">$CommonVertices</span>[<span class="n">1</span>] == <span class="i">$VertexID</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 179         <span class="k">next</span> <span class="j">PATH2</span><span class="sc">;</span>
+ 180       <span class="s">}</span>
+ 181 
+ 182       <span class="i">$JoinedPath</span> = <span class="i">$Path1</span><span class="i">-&gt;JoinAtVertex</span><span class="s">(</span><span class="i">$Path2</span><span class="cm">,</span> <span class="i">$VertexID</span><span class="s">)</span><span class="sc">;</span>
+ 183       <span class="s">(</span><span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span> = <span class="i">$JoinedPath</span><span class="i">-&gt;GetTerminalVertices</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 184 
+ 185       <span class="k">if</span> <span class="s">(</span>!<span class="i">$JoinedPath</span><span class="i">-&gt;IsIndependentPath</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 186         <span class="k">next</span> <span class="j">PATH2</span><span class="sc">;</span>
+ 187       <span class="s">}</span>
+ 188 
+ 189       <span class="c"># Decide whether to give up or keep going...</span>
+ 190       <span class="k">if</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;_IsTimeToGiveUpCyclesDetection</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 191         <span class="k">warn</span> <span class="q">&quot;Warning: ${ClassName}-&gt;CollapseVertexAndCollectCyclicPaths: Cycles detection algorithm [ Ref 31 ] as implemented in the current release of MayaChemTools didn&#39;t finish with in the maximum allowed time of $This-&gt;{MaxAllowedTime} seconds; Cycles detection has been abandoned...&quot;</span><span class="sc">;</span>
+ 192         <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 193       <span class="s">}</span>
+ 194 
+ 195       <span class="k">if</span> <span class="s">(</span><span class="i">$JoinedPathStartVertexID</span> == <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span> <span class="s">{</span>
+ 196         <span class="c"># It&#39;s a cycle. Attach it to the graph as CylicPaths property...</span>
+ 197         <span class="k">if</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;HasGraphProperty</span><span class="s">(</span><span class="i">$CyclicPathsPropertyName</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 198           <span class="k">my</span><span class="s">(</span><span class="i">$ExistingCyclicPathsRef</span><span class="s">)</span><span class="sc">;</span>
+ 199           <span class="i">$ExistingCyclicPathsRef</span> = <span class="i">$This</span><span class="i">-&gt;GetGraphProperty</span><span class="s">(</span><span class="i">$CyclicPathsPropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 200           <span class="k">push</span> <span class="i">@</span>{<span class="i">$ExistingCyclicPathsRef</span>}<span class="cm">,</span> <span class="i">$JoinedPath</span><span class="sc">;</span>
+ 201         <span class="s">}</span>
+ 202         <span class="k">else</span> <span class="s">{</span>
+ 203           <span class="k">my</span><span class="s">(</span><span class="i">@NewCyclicPaths</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 204           <span class="k">push</span> <span class="i">@NewCyclicPaths</span><span class="cm">,</span> <span class="i">$JoinedPath</span><span class="sc">;</span>
+ 205           <span class="i">$This</span><span class="i">-&gt;SetGraphProperty</span><span class="s">(</span><span class="i">$CyclicPathsPropertyName</span><span class="cm">,</span> \<span class="i">@NewCyclicPaths</span><span class="cm">,</span> <span class="i">$JoinedPathStartVertexID</span><span class="s">)</span><span class="sc">;</span>
+ 206         <span class="s">}</span>
+ 207       <span class="s">}</span>
+ 208       <span class="k">else</span> <span class="s">{</span>
+ 209         <span class="k">if</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;HasEdge</span><span class="s">(</span><span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 210           <span class="c"># Append to the list of exisiting paths property of the edge...</span>
+ 211           <span class="k">my</span><span class="s">(</span><span class="i">$ExistingPathsRef</span><span class="s">)</span><span class="sc">;</span>
+ 212           <span class="i">$ExistingPathsRef</span> = <span class="i">$This</span><span class="i">-&gt;GetEdgeProperty</span><span class="s">(</span><span class="i">$PathsPropertyName</span><span class="cm">,</span> <span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span><span class="sc">;</span>
+ 213           <span class="k">push</span> <span class="i">@</span>{<span class="i">$ExistingPathsRef</span>}<span class="cm">,</span> <span class="i">$JoinedPath</span><span class="sc">;</span>
+ 214         <span class="s">}</span>
+ 215         <span class="k">else</span> <span class="s">{</span>
+ 216           <span class="c"># Create a new edge and associate path property...</span>
+ 217           <span class="k">my</span><span class="s">(</span><span class="i">@NewPaths</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 218           <span class="k">push</span> <span class="i">@NewPaths</span><span class="cm">,</span> <span class="i">$JoinedPath</span><span class="sc">;</span>
+ 219           <span class="i">$This</span><span class="i">-&gt;AddEdge</span><span class="s">(</span><span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span><span class="sc">;</span>
+ 220           <span class="i">$This</span><span class="i">-&gt;SetEdgeProperty</span><span class="s">(</span><span class="i">$PathsPropertyName</span><span class="cm">,</span> \<span class="i">@NewPaths</span><span class="cm">,</span> <span class="i">$JoinedPathStartVertexID</span><span class="cm">,</span> <span class="i">$JoinedPathEndVertexID</span><span class="s">)</span><span class="sc">;</span>
+ 221         <span class="s">}</span>
+ 222       <span class="s">}</span>
+ 223     <span class="s">}</span>
+ 224   <span class="s">}</span>
+ 225   <span class="i">$This</span><span class="i">-&gt;DeleteVertex</span><span class="s">(</span><span class="i">$VertexID</span><span class="s">)</span><span class="sc">;</span>
+ 226 
+ 227   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 228 <span class="s">}</span>
+ 229 
+ 230 <span class="c"># Decide whether to give up cycles detection using collapse vertex methodology...</span>
+ 231 <span class="c">#</span>
+<a name="_IsTimeToGiveUpCyclesDetection-"></a> 232 <span class="k">sub </span><span class="m">_IsTimeToGiveUpCyclesDetection</span> <span class="s">{</span>
+ 233   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 234 
+ 235   <span class="k">return</span> <span class="s">(</span><span class="s">(</span><span class="k">time</span> - <span class="i">$This</span>-&gt;{<span class="w">StartTime</span>}<span class="s">)</span> &gt; <span class="i">$This</span>-&gt;{<span class="w">MaxAllowedTime</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 236 <span class="s">}</span>
+ 237 
+ 238 <span class="c"># Delete vertices with degree less than a specifed degree...</span>
+ 239 <span class="c">#</span>
+<a name="DeleteVerticesWithDegreeLessThan-"></a> 240 <span class="k">sub </span><span class="m">DeleteVerticesWithDegreeLessThan</span> <span class="s">{</span>
+ 241   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Degree</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 242   <span class="k">my</span><span class="s">(</span><span class="i">$VertexID</span><span class="cm">,</span> <span class="i">@VertexIDs</span><span class="s">)</span><span class="sc">;</span>
+ 243 
+ 244   <span class="k">while</span> <span class="s">(</span><span class="i">@VertexIDs</span> = <span class="i">$This</span><span class="i">-&gt;GetVerticesWithDegreeLessThan</span><span class="s">(</span><span class="i">$Degree</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 245     <span class="k">for</span> <span class="i">$VertexID</span> <span class="s">(</span><span class="i">@VertexIDs</span><span class="s">)</span> <span class="s">{</span>
+ 246       <span class="i">$This</span><span class="i">-&gt;DeleteVertex</span><span class="s">(</span><span class="i">$VertexID</span><span class="s">)</span><span class="sc">;</span>
+ 247     <span class="s">}</span>
+ 248   <span class="s">}</span>
+ 249   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 250 <span class="s">}</span>
+ 251 
+ 252 <span class="c"># Get paths associated with edges...</span>
+ 253 <span class="c">#</span>
+<a name="GetPaths-"></a> 254 <span class="k">sub </span><span class="m">GetPaths</span> <span class="s">{</span>
+ 255   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 256   <span class="k">my</span><span class="s">(</span><span class="i">$PathsRef</span><span class="cm">,</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@PathsList</span><span class="s">)</span><span class="sc">;</span>
+ 257 
+ 258   <span class="i">@Paths</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span> <span class="i">@PathsList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 259   <span class="i">@PathsList</span> = <span class="i">$This</span><span class="i">-&gt;GetEdgesProperty</span><span class="s">(</span><span class="i">$PathsPropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 260   <span class="k">for</span> <span class="i">$PathsRef</span> <span class="s">(</span><span class="i">@PathsList</span><span class="s">)</span> <span class="s">{</span>
+ 261     <span class="k">push</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$PathsRef</span>}<span class="sc">;</span>
+ 262   <span class="s">}</span>
+ 263   <span class="k">return</span> <span class="k">wantarray</span> ? <span class="i">@Paths</span> <span class="co">:</span> <span class="k">scalar</span> <span class="i">@Paths</span><span class="sc">;</span>
+ 264 <span class="s">}</span>
+ 265 
+ 266 <span class="c"># Get paths associated with edges which make a cylce...</span>
+ 267 <span class="c">#</span>
+<a name="GetCyclicPaths-"></a> 268 <span class="k">sub </span><span class="m">GetCyclicPaths</span> <span class="s">{</span>
+ 269   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 270   <span class="k">my</span><span class="s">(</span><span class="i">$PathsRef</span><span class="cm">,</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@PathsList</span><span class="s">)</span><span class="sc">;</span>
+ 271 
+ 272   <span class="i">@Paths</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span> <span class="i">@PathsList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 273   <span class="i">@PathsList</span> = <span class="i">$This</span><span class="i">-&gt;GetGraphProperty</span><span class="s">(</span><span class="i">$CyclicPathsPropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 274   <span class="j">PATHS:</span> <span class="k">for</span> <span class="i">$PathsRef</span> <span class="s">(</span><span class="i">@PathsList</span><span class="s">)</span> <span class="s">{</span>
+ 275     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$PathsRef</span><span class="s">)</span> &amp;&amp; <span class="i">@</span>{<span class="i">$PathsRef</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 276       <span class="k">next</span> <span class="j">PATHS</span><span class="sc">;</span>
+ 277     <span class="s">}</span>
+ 278     <span class="k">push</span> <span class="i">@Paths</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$PathsRef</span>}<span class="sc">;</span>
+ 279   <span class="s">}</span>
+ 280   <span class="k">return</span> <span class="k">wantarray</span> ? <span class="i">@Paths</span> <span class="co">:</span> <span class="k">scalar</span> <span class="i">@Paths</span><span class="sc">;</span>
+ 281 <span class="s">}</span>
+ 282 
+ 283 <span class="c"># Is it a path graph object?</span>
+<a name="IsPathGraph-"></a> 284 <span class="k">sub </span><span class="m">IsPathGraph ($)</span> <span class="s">{</span>
+ 285   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 286 
+ 287   <span class="k">return</span> <span class="i">_IsPathGraph</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span><span class="sc">;</span>
+ 288 <span class="s">}</span>
+ 289 
+ 290 <span class="c"># Return a string containg data for PathGraph object...</span>
+<a name="StringifyPathGraph-"></a> 291 <span class="k">sub </span><span class="m">StringifyPathGraph</span> <span class="s">{</span>
+ 292   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 293   <span class="k">my</span><span class="s">(</span><span class="i">$PathGraphString</span><span class="s">)</span><span class="sc">;</span>
+ 294 
+ 295   <span class="i">$PathGraphString</span> = <span class="q">&#39;PathGraph:&#39;</span> . <span class="i">$This</span><span class="i">-&gt;StringifyVerticesAndEdges</span><span class="s">(</span><span class="s">)</span> . <span class="q">&#39;; &#39;</span> . <span class="i">$This</span><span class="i">-&gt;StringifyProperties</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 296 
+ 297   <span class="k">return</span> <span class="i">$PathGraphString</span><span class="sc">;</span>
+ 298 <span class="s">}</span>
+ 299 
+ 300 <span class="c"># Is it a PathGraph object?</span>
+<a name="_IsPathGraph-"></a> 301 <span class="k">sub </span><span class="m">_IsPathGraph</span> <span class="s">{</span>
+ 302   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 303 
+ 304   <span class="k">return</span> <span class="s">(</span><span class="i">Scalar::Util::blessed</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> &amp;&amp; <span class="i">$Object</span><span class="i">-&gt;isa</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 305 <span class="s">}</span>
+ 306 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

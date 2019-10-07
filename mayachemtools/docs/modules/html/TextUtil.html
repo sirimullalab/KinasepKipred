@@ -1,0 +1,172 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:TextUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./StatisticsUtil.html" title="StatisticsUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TimeUtil.html" title="TimeUtil.html">Next</a></td><td width="34%" align="middle"><strong>TextUtil.pm</strong></td><td width="33%" align="right"><a href="././code/TextUtil.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/TextUtil.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/TextUtil.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/TextUtil.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/TextUtil.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>TextUtil</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use TextUtil;</p>
+<p>use TextUtil qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>TextUtil</b> module provides the following functions:</p>
+<p>
+ <a href="#AddNumberSuffix">AddNumberSuffix</a>, <a href="#ContainsWhiteSpaces">ContainsWhiteSpaces</a>, <a href="#GetTextFileDataByNonUniqueKey">GetTextFileDataByNonUniqueKey</a>, <a href="#GetTextFileDataByUniqueKey">GetTextFileDataByUniqueKey</a>, <a href="#GetTextLine">GetTextLine</a>, <a href="#HashCode">HashCode</a>, <a href="#IsEmpty">IsEmpty</a>, <a href="#IsFloat">IsFloat</a>, <a href="#IsInteger">IsInteger</a>, <a href="#IsNotEmpty">IsNotEmpty</a>, <a href="#IsNumberPowerOfNumber">IsNumberPowerOfNumber</a>, <a href="#IsNumerical">IsNumerical</a>, <a href="#IsPositiveInteger">IsPositiveInteger</a>, <a href="#JoinWords">JoinWords</a>, <a href="#QuoteAWord">QuoteAWord</a>, <a href="#RemoveLeadingAndTrailingWhiteSpaces">RemoveLeadingAndTrailingWhiteSpaces</a>, <a href="#RemoveLeadingWhiteSpaces">RemoveLeadingWhiteSpaces</a>, <a href="#RemoveTrailingWhiteSpaces">RemoveTrailingWhiteSpaces</a>, <a href="#SplitWords">SplitWords</a>, <a href="#WrapText">WrapText</a>
+</p><h1 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="AddNumberSuffix"><b>AddNumberSuffix</b></dt>
+<dd>
+<div class="OptionsBox">    $NumberWithSuffix = AddNumberSuffix($IntegerValue);</div>
+<p>Returns number with appropriate suffix: 0, 1st, 2nd, 3rd, 4th, and so on.</p>
+</dd>
+<dt id="ContainsWhiteSpaces"><b>ContainsWhiteSpaces</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = ContainsWhiteSpaces($TheString);</div>
+<p>Returns 1 or 0 based on whether the string contains any white spaces.</p>
+</dd>
+<dt id="GetTextLine"><b>GetTextLine</b></dt>
+<dd>
+<div class="OptionsBox">    $Line = GetTextLine(\*TEXTFILE);</div>
+<p>Reads next line from an already opened text file, takes out any carriage return, and returns it as a string. NULL is returned for EOF.</p>
+</dd>
+<dt id="GetTextFileDataByNonUniqueKey"><b>GetTextFileDataByNonUniqueKey</b></dt>
+<dd>
+<div class="OptionsBox">    GetTextFileDataByNonUniqueKey($TextDataFile, $TextDataMapRef,
+                                  $DataKeyColNum, $InDelim);</div>
+<p>Load data from a text file into the specified hash reference using a specific column for non-unique data key values.</p>
+<p>The lines starting with # are treated as comments and ignored. First line not starting with # must contain column labels and the number of columns in all other data rows must match the number of column labels.</p>
+<p>The first column is assumed to contain data key value by default; all other columns contain data as indicated in their column labels.</p>
+<p>In order to avoid dependence of data access on the specified column labels, the column data is loaded into hash with Column&lt;Num&gt; hash keys, where column number start from 1. The data key column is not available as Colnum&lt;Num&gt; hash key;</p>
+<p>The format of the data structure loaded into a specified hash reference is:</p>
+<div class="OptionsBox">    @{$TextDataMapRef-&gt;{DataKeys}} - Array of unique data keys
+<br/>    @{$TextDataMapRef-&gt;{ColLabels}} - Array of column labels
+<br/>    @{$TextDataMapRef-&gt;{DataColIDs}} - Array of data column IDs
+<br/>    $TextDataMapRef-&gt;{NumOfCols} - Number of columns
+<br/>    %{$TextDataMapRef-&gt;{DataKey}} - Hash keys pair: &lt;DataKey, DataKey&gt;
+<br/>    @{$TextDataMapRef-&gt;{DataCol&lt;Num&gt;}} - Hash keys pair with data as an array:
+                                         &lt;DataCol&lt;Num&gt;, DataKey&gt;</div>
+</dd>
+<dt id="GetTextFileDataByUniqueKey"><b>GetTextFileDataByUniqueKey</b></dt>
+<dd>
+<div class="OptionsBox">    GetTextFileDataByUniqueKey($TextDataFile, $TextDataMapRef, $DataKeyColNum,
+                                $InDelim);</div>
+<p>Load data from a text file into the specified hash reference using a a specific column for unique data key values.</p>
+<p>The lines starting with # are treated as comments and ignored. First line not starting with # must contain column labels and the number of columns in all other data rows must match the number of column labels.</p>
+<p>The first column is assumed to contain data key value by default; all other columns contain data as indicated in their column labels.</p>
+<p>In order to avoid dependence of data access on the specified column labels, the column data is loaded into hash with Column&lt;Num&gt; hash keys, where column number start from 1. The data key column is not available as Colnum&lt;Num&gt; hash key;</p>
+<p>The format of the data structure loaded into a specified hash reference is:</p>
+<div class="OptionsBox">    @{$TextDataMapRef-&gt;{DataKeys}} - Array of unique data keys
+<br/>    @{$TextDataMapRef-&gt;{ColLabels}} - Array of column labels
+<br/>    @{$TextDataMapRef-&gt;{DataColIDs}} - Array of data column IDs
+<br/>    $TextDataMapRef-&gt;{NumOfCols} - Number of columns
+<br/>    %{$TextDataMapRef-&gt;{DataKey}} - Hash keys pair: &lt;DataKey, DataKey&gt;
+<br/>    %{$TextDataMapRef-&gt;{DataCol&lt;Num&gt;}} - Hash keys pair: &lt;DataCol&lt;Num&gt;, DataKey&gt;</div>
+</dd>
+<dt id="HashCode"><b>HashCode</b></dt>
+<dd>
+<div class="OptionsBox">    $HashCode = HashCode($TheString);</div>
+<p>Returns a 32 bit integer hash code using One-at-a-time algorithm By Bob Jenkins [Ref 38]. It&#39;s also implemented in Perl for internal hash keys in hv.h include file.</p>
+</dd>
+<dt id="IsEmpty"><b>IsEmpty</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsEmpty($TheString);</div>
+<p>Returns 1 or 0 based on whether the string is empty.</p>
+</dd>
+<dt id="IsInteger"><b>IsInteger</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsInteger($TheString);</div>
+<p>Returns 1 or 0 based on whether the string is a positive integer.</p>
+</dd>
+<dt id="IsPositiveInteger"><b>IsPositiveInteger</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsPositiveInteger($TheString);</div>
+<p>Returns 1 or 0 based on whether the string is an integer.</p>
+</dd>
+<dt id="IsFloat"><b>IsFloat</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsFloat($TheString);</div>
+<p>Returns 1 or 0 based on whether the string is a float.</p>
+</dd>
+<dt id="IsNotEmpty"><b>IsNotEmpty</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsNotEmpty($TheString);</div>
+<p>Returns 0 or 1 based on whether the string is empty.</p>
+</dd>
+<dt id="IsNumerical"><b>IsNumerical</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsNumerical($TheString);</div>
+<p>Returns 1 or 0 based on whether the string is a number.</p>
+</dd>
+<dt id="IsNumberPowerOfNumber"><b>IsNumberPowerOfNumber</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsNumberPowerOfNumber($FirstNum, $SecondNum);</div>
+<p>Returns 1 or 0 based on whether the first number is a power of second number.</p>
+</dd>
+<dt id="JoinWords"><b>JoinWords</b></dt>
+<dd>
+<div class="OptionsBox">    $JoinedWords = JoinWords($Words, $Delim, $Quote);</div>
+<p>Joins different words using delimiter and quote parameters, and returns it as a string.</p>
+</dd>
+<dt id="QuoteAWord"><b>QuoteAWord</b></dt>
+<dd>
+<div class="OptionsBox">    $QuotedWord = QuoteAWord($Word, $Quote);</div>
+<p>Returns a quoted string based on <i>Quote</i> value.</p>
+</dd>
+<dt id="RemoveLeadingWhiteSpaces"><b>RemoveLeadingWhiteSpaces</b></dt>
+<dd>
+<div class="OptionsBox">    $OutString = RemoveLeadingWhiteSpaces($InString);</div>
+<p>Returns a string without any leading and traling white spaces.</p>
+</dd>
+<dt id="RemoveTrailingWhiteSpaces"><b>RemoveTrailingWhiteSpaces</b></dt>
+<dd>
+<div class="OptionsBox">    $OutString = RemoveTrailingWhiteSpaces($InString);</div>
+<p>Returns a string without any trailing white spaces.</p>
+</dd>
+<dt id="RemoveLeadingAndTrailingWhiteSpaces"><b>RemoveLeadingAndTrailingWhiteSpaces</b></dt>
+<dd>
+<div class="OptionsBox">    $OutString = RemoveLeadingAndTrailingWhiteSpaces($InString);</div>
+<p>Returns a string without any leading and traling white spaces.</p>
+</dd>
+<dt id="SplitWords"><b>SplitWords</b></dt>
+<dd>
+<div class="OptionsBox">    @Words = SplitWords($Line, $Delimiter);</div>
+<p>Returns an array <i>Words</i> ontaining unquoted words generated after spliting string value <i>Line</i> containing quoted or unquoted words.</p>
+<p>This function is used to split strings generated by JoinWords as replacement for Perl&#39;s core module funtion Text::ParseWords::quotewords() which dumps core on very long strings.</p>
+</dd>
+<dt id="WrapText"><b>WrapText</b></dt>
+<dd>
+<div class="OptionsBox">    $OutString = WrapText($InString, [$WrapLength, $WrapDelimiter]);</div>
+<p>Returns a wrapped string. By default, <i>WrapLenght</i> is <i>40</i> and <i>WrapDelimiter</i> is Unix new line character.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./FileUtil.html">FileUtil.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./StatisticsUtil.html" title="StatisticsUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TimeUtil.html" title="TimeUtil.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>TextUtil.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

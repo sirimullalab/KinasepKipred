@@ -1,0 +1,142 @@
+NAME
+    DBToTextFiles.pl - Export data from database TableName(s) into CSV/TSV
+    text files
+
+SYNOPSIS
+    DBTablesToTextFiles.pl TableName(s)...
+
+    DBTablesToTextFiles.pl [-d, --dbdriver mysql | Oracle | Postgres or Pg]
+    [--dbhost hostname] [--dbname databasename] [--dbpassword password]
+    [--dbusername username] [--exportdatalabels yes | no] [--exportlobs yes
+    | no] [-h, --help] [-m, --mode exportdata | describetable] [-o,
+    --overwrite] [--outdelim comma | tab | semicolon] [-q, --quote yes | no]
+    [-r, --root rootname] [--replacenullstr string] [-w --workingdir
+    dirname] TableName(s)...
+
+DESCRIPTION
+    Export data from MySQL, Oracle or PostgreSQL database tables into
+    CSV/TSV text files. Or perform describe on all tables and store its
+    output into CSV/TSV text files. A text file is generated for each table.
+
+OPTIONS
+    -d, --dbdriver *mysql | Oracle | Postgres or Pg*
+        Database driver name. Possible values: *mysql, Oracle, Postgres or
+        Pg*. Default: *MySQL* or value of environment variable DBI_DRIVER.
+        This script has only been tested with MySQL, Oracle and PostgreSQL
+        drivers.
+
+    --dbhost *hostname*
+        Database host name. Default: *127.0.0.1* for both MySQL and Oracle.
+        For remote databases, specify complete remote host domain:
+        *dbhostname.org* or something like it.
+
+    --dbname *databasename*
+        Database name. Default: mysql for MySQL, postgres for PostgreSQL and
+        none for Oracle. For connecting to local/remote Oracle databases,
+        this value can be left undefined assuming --dbhost is correctly
+        specified.
+
+    --dbpassword *password*
+        Database user password. Default: *none* and value of environment
+        variable DBI_PASS is used for connecting to database.
+
+    --dbusername *username*
+        Database user name. Default: *none* and value of environment
+        variable DBI_USER is used for connecting to database.
+
+    --exportdatalabels *yes | no*
+        This option is mode specific and controls exporting of column data
+        labels during exportdata mode. Possible values: *yes or no*.
+        Default: *yes*.
+
+    --exportlobs *yes | no*
+        This option is mode specific and controls exporting of CLOB/BLOB or
+        BYTEA data columns during exportdata mode. Possible values: *yes or
+        no*. Default: *no*.
+
+    -h, --help
+        Print this help message.
+
+    -m, --mode *exportdata | describetable*
+        Data selection criterion from database. Possible values: *exportdata
+        or describetable*. Default value: *exportdata*.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    --outdelim *comma | tab | semicolon*
+        Output text file delimiter. Possible values: *comma, tab, or
+        semicolon* Default value: *comma*.
+
+    -q, --quote *yes | no*
+        Put quotes around column values in output text file. Possible
+        values: *yes or no*. Default value: *yes*.
+
+    -r, --root *rootname*
+        New file name is generated using the root:<Root>.<Ext>. Default new
+        file file names: <Mode><TableName>.<Ext>. The csv and tsv <Ext>
+        values are used for comma/semicolon, and tab delimited text files
+        respectively.This option is ignored for multiple input table names.
+
+    --replacenullstr *string*
+        Replace NULL or undefined row values with specified value. Default:
+        *none*
+
+        For importing output text files into MySQL database using "load data
+        local infile '<tablename>.tsv' into table <tablename>" command, use
+        *--raplacenullstr "NULL"* in conjunction with *--exportdatalabels
+        no*, *--quote no*, and *--outdelim tab* options: it'll generate
+        files for direct import into MySQL assuming tables already exists.
+
+    -w --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To export all data in user and user_info tables from a MySQL server
+    running on a local machine using username/password from DBI_USER and
+    DBI_PASS environmental variables, type:
+
+        % DBTablesToTextFiles.pl -o user user_info
+
+    To describe user and user_info tables in a MySQL server running on a
+    remote machine using explicit username/password and capturing the output
+    into a DescribeTables.csv file, type:
+
+        % DBTablesToTextFiles.pl --dbdriver mysql --dbuser <name> --dbpassword
+          <pasword> --dbname mysql --dbhost <mysqlhostname.org>
+          -r DescribeTable -m describetable -o user user_info
+
+    To describe table all_tables in Oracle running on a remote machine using
+    explicit username/password and capturing the output into a
+    DescribeAllTable.tsv file, type:
+
+        % DBTablesToTextFiles.pl --dbdriver Oracle --dbuser <name> --dbpassword
+          <pasword> --dbhost <oraclehostname.com> -r DescribeAllTable
+          -m describetable --outdelim tab --quote no -o all_tables
+
+    To export all data in user and user_info tables from MySQL server
+    running on a local machine using explicit username/password and
+    capturing the data in ExportTables.tsv file with empty values
+    substituted with NULL and no column labels, type:
+
+        % DBTablesToTextFiles.pl --dbdriver Oracle --dbuser <name> --dbpassword
+          <pasword> -r ExportTables --outdelim tab --quote no --replacenullstr
+          "\N" -m exportdata --exportlobs no  --exportdatalabels no -o
+          user user_info
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    DBSchemaTablesToTextFiles.pl, DBSQLToTextFiles.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

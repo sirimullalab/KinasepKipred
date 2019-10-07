@@ -1,3 +1,5 @@
+#from __future__ import print_function, absolute_import 
+
 # Script to predict (or test) the model using protein (kinase) sequence and SMILE pattern of a compound.
 # Usage: python2 get_kinase_pki.py protein_sequence "SMILE_Pattern"
 
@@ -13,6 +15,9 @@ import numpy as np
 from utility import FeatureGenerator
 #from keras.models import load_model
 import pickle
+
+filepath = os.getcwd()
+
 def get_smi_features(smiles):
     try:
         feat_gen = FeatureGenerator(smiles)
@@ -41,6 +46,7 @@ def get_features(seq, smi):
 if __name__=='__main__':
     seq = "MGCGCSSHPEDDWMENIDVCENCHYPIVPLDGKGTLLIRNGSEVRDPLVTYEGSNPPASPLQDNLVIALHSYEPSHDGDLGFEKGEQLRILEQSGEWWKAQSLTTGQEGFIPFNFVAKANSLEPEPWFFKNLSRKDAERQLLAPGNTHGSFLIRESESTAGSFSLSVRDFDQNQGEVVKHYKIRNLDNGGFYISPRITFPGLHELVRHYTNASDGLCTRLSRPCQTQKPQKPWWEDEWEVPRETLKLVERLGAGQFGEVWMGYYNGHTKVAVKSLKQGSMSPDAFLAEANLMKQLQHQRLVRLYAVVTQEPIYIITEYMENGSLVDFLKTPSGIKLTINKLLDMAAQIAEGMAFIEERNYIHRDLRAANILVSDTLSCKIADFGLARLIEDNEYTAREGAKFPIKWTAPEAINYGTFTIKSDVWSFGILLTEIVTHGRIPYPGMTNPEVIQNLERGYRMVRPDNCPEELYQLMRLCWKERPEDRPTFDYLRSVLEDFFTATEGQYQPQP"
     smile = "CC(C)Oc1ccc(cc1Cl)c2noc(n2)c3ccc(N[C@H]4CC[C@H](C4)C(=O)O)cc3"
+    print filepath
     protein_feature = get_features(seq, smile)
     #protein_feature = get_features(sys.argv[1], sys.argv[2])
     load_model = joblib.load('Random_forest_gridsearch_py27.mdl')

@@ -1,0 +1,210 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Vector.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./TimeUtil.html" title="TimeUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;</td><td width="34%" align="middle"><strong>Vector.pm</strong></td><td width="33%" align="right"><a href="././code/Vector.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/Vector.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/Vector.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/Vector.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/Vector.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>Vector</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Vector;</p>
+<p>use Vector qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>Vector</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#AddValues">AddValues</a>, <a href="#Copy">Copy</a>, <a href="#GetLength">GetLength</a>, <a href="#GetMagnitude">GetMagnitude</a>, <a href="#GetNumOfNonZeroValues">GetNumOfNonZeroValues</a>, <a href="#GetPercentOfNonZeroValues">GetPercentOfNonZeroValues</a>, <a href="#GetSize">GetSize</a>, <a href="#GetValue">GetValue</a>, <a href="#GetValues">GetValues</a>, <a href="#GetX">GetX</a>, <a href="#GetXYZ">GetXYZ</a>, <a href="#GetY">GetY</a>, <a href="#GetZ">GetZ</a>, <a href="#IsVector">IsVector</a>, <a href="#Normalize">Normalize</a>, <a href="#SetValue">SetValue</a>, <a href="#SetValuePrintFormat">SetValuePrintFormat</a>, <a href="#SetX">SetX</a>, <a href="#SetXYZ">SetXYZ</a>, <a href="#SetY">SetY</a>, <a href="#SetZ">SetZ</a>, <a href="#StringifyVector">StringifyVector</a>, <a href="#IsVector">IsVector</a>
+</p><p>The following functions are available:</p>
+<p>IsVector, SetValuePrintFormat UnitXVector, UnitYVector, UnitZVector, UnitVector, ZeroVector</p>
+<p>The following operators are overloaded:</p>
+<div class="OptionsBox">    &quot;&quot; 0+ bool
+<br/>    @{}
+<br/>    + - * / %
+<br/>    x .
+<br/>    == != &lt; &lt;= &gt; &gt;=
+<br/>    neg
+<br/>    abs exp log sqrt cos sin</div>
+<h2 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewVector = new Vector();
+<br/>    $NewVector = new Vector(@Values);
+<br/>    $NewVector = new Vector(\@Values);
+<br/>    $NewVector = new Vector($AnotherVector);</div>
+<p>Creates a new <b>Vector</b> object containing <i>Values</i> and returns <b>NewVector</b> object. In case no <i>Values</i> are specified, an empty <b>Vector</b> is created.</p>
+</dd>
+<dt id="AddValues"><b>AddValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;AddValues(@Values);
+<br/>    $Vector-&gt;AddValues(\@Values);
+<br/>    $Vector-&gt;AddValues($AnotherVector);</div>
+<p>Adds values to <i>Vector</i> using an array, reference to an array or another vector and returns <i>Vector</i>.</p>
+</dd>
+<dt id="Copy"><b>Copy</b></dt>
+<dd>
+<div class="OptionsBox">    $NewVector = $Vector-&gt;Copy();</div>
+<p>Creates a copy of <i>Vector</i> and returns <i>NewVector</i>.</p>
+</dd>
+<dt id="GetLength"><b>GetLength</b></dt>
+<dd>
+<div class="OptionsBox">    $Length = $Vector-&gt;GetLength();</div>
+<p>Returns <i>Lengh</i> of a 3D <i>Vector</i> corresponding to its dot product.</p>
+</dd>
+<dt id="GetMagnitude"><b>GetMagnitude</b></dt>
+<dd>
+<div class="OptionsBox">    $Length = $Vector-&gt;GetMagnitude();</div>
+<p>Returns <i>Lengh</i> of a 3D <i>Vector</i> corresponding to its dot product.</p>
+</dd>
+<dt id="GetNumOfNonZeroValues"><b>GetNumOfNonZeroValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Vector-&gt;GetNumOfNonZeroValues();</div>
+<p>Returns number of non-zero values in <i>Vector</i>.</p>
+</dd>
+<dt id="GetPercentOfNonZeroValues"><b>GetPercentOfNonZeroValues</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Vector-&gt;GetPercentOfNonZeroValues();</div>
+<p>Returns percent of non-zero values in <i>Vector</i>.</p>
+</dd>
+<dt id="GetSize"><b>GetSize</b></dt>
+<dd>
+<div class="OptionsBox">    $Size = $Vector-&gt;GetSize();</div>
+<p>Returns size of a <i>Vector</i> corresponding to number of its values.</p>
+</dd>
+<dt id="GetValue"><b>GetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $Vector-&gt;GetValues($Index);</div>
+<p>Returns vector <b>Value</b> specified using <i>Index</i> starting at 0.</p>
+</dd>
+<dt id="GetValues"><b>GetValues</b></dt>
+<dd>
+<div class="OptionsBox">    @Values = $Vector-&gt;GetValues();
+<br/>    $ValuesRef = $Vector-&gt;GetValues();</div>
+<p>Returns an array or a reference to an array containing all <i>Vector</i> values.</p>
+</dd>
+<dt id="GetX"><b>GetX</b></dt>
+<dd>
+<div class="OptionsBox">    $X = $Vector-&gt;GetX();</div>
+<p>Returns <b>X</b> value of a 3D <i>Vector</i></p>
+</dd>
+<dt id="GetXYZ"><b>GetXYZ</b></dt>
+<dd>
+<div class="OptionsBox">    @XYZValues = $Vector-&gt;GetXYZ();
+<br/>    $XYZValuesRef = $Vector-&gt;GetXYZ();</div>
+<p>Returns <b>XYZ</b> values of a 3D <i>Vector</i> as an array or a reference to an array containing the values.</p>
+</dd>
+<dt id="GetY"><b>GetY</b></dt>
+<dd>
+<div class="OptionsBox">    $Y = $Vector-&gt;GetY();</div>
+<p>Returns <b>Y</b> value of a 3D <i>Vector</i>.</p>
+</dd>
+<dt id="GetZ"><b>GetZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Z = $Vector-&gt;GetZ();</div>
+<p>Returns <b>Z</b> value of a 3D <i>Vector</i>.</p>
+</dd>
+<dt id="IsVector"><b>IsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = Vector::IsVector($Object);</div>
+<p>Returns 1 or 0 based on whether <i>Object</i> is a <b>Vector</b> object.</p>
+</dd>
+<dt id="Normalize"><b>Normalize</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;Normalize();</div>
+<p>Normalizes a 3D <i>Vector</i> by dividing its values by the length and returns <i>Vector</i>.</p>
+</dd>
+<dt id="SetValue"><b>SetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetValue($Index, $Value);</div>
+<p>Sets a <i>Vector</i> value specified by <i>Index</i> to <i>Value</i> and returns <i>Vector</i>.</p>
+</dd>
+<dt id="SetValuePrintFormat"><b>SetValuePrintFormat</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetValuePrintFormat($ValuePrintFormat);
+<br/>    Vector::SetValuePrintFormat($ValuePrintFormat);</div>
+<p>Sets format for printing vector values for a specified <i>Vector</i> or the whole class. Default format: <i>%g</i>.</p>
+</dd>
+<dt id="SetX"><b>SetX</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetX($Value);</div>
+<p>Sets <b>X</b> value of a 3D vector to <i>Value</i> and returns <i>Vector</i>.</p>
+</dd>
+<dt id="SetXYZ"><b>SetXYZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetXYZ(@Values);
+<br/>    $Vector-&gt;SetXYZ(\@Values);
+<br/>    $Vector-&gt;SetXYZ($AnotherVector);</div>
+<p>Sets <b>XYZ</b> values of a 3D vector and returns <i>Vector</i>.</p>
+</dd>
+<dt id="SetY"><b>SetY</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetY($Value);</div>
+<p>Sets <b>Y</b> value of a 3D vector to <i>Value</i> and returns <i>Vector</i>.</p>
+</dd>
+<dt id="SetZ"><b>SetZ</b></dt>
+<dd>
+<div class="OptionsBox">    $Vector-&gt;SetZ($Value);</div>
+<p>Sets <b>Z</b> value of a 3D vector to <i>Value</i> and returns <i>Vector</i>.</p>
+</dd>
+<dt id="StringifyVector"><b>StringifyVector</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $Vector-&gt;StringifyVector();</div>
+<p>Returns a string containing information about <i>Vector</i> object.</p>
+</dd>
+<dt id="UnitVector"><b>UnitVector</b></dt>
+<dd>
+<div class="OptionsBox">    $UnitVector = UnitVector([$Size]);
+<br/>    $UnitVector = Vector::UnitVector([$Size]);</div>
+<p>Returns a <b>UnitVector</b> of <i>Size</i>. Default size: <i>3</i>.</p>
+</dd>
+<dt id="UnitXVector"><b>UnitXVector</b></dt>
+<dd>
+<div class="OptionsBox">    $UnitXVector = UnitXVector();</div>
+<p>Returns a 3D <b>UnitXVector</b>.</p>
+</dd>
+<dt id="UnitYVector"><b>UnitYVector</b></dt>
+<dd>
+<div class="OptionsBox">    $UnitYVector = UnitYVector();</div>
+<p>Returns a 3D <b>UnitYVector</b>.</p>
+</dd>
+<dt id="UnitZVector"><b>UnitZVector</b></dt>
+<dd>
+<div class="OptionsBox">    $UnitZVector = UnitZVector();</div>
+<p>Returns a 3D <b>UnitZVector</b>.</p>
+</dd>
+<dt id="ZeroVector"><b>ZeroVector</b></dt>
+<dd>
+<div class="OptionsBox">    $UnitVector = ZeroVector([$Size]);
+<br/>    $UnitVector = Vector::ZeroVector([$Size]);</div>
+<p>Returns a <b>ZeroVector</b> of <i>Size</i>. Default size: <i>3</i>.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./BitVector.html">BitVector.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./TimeUtil.html" title="TimeUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;</td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Vector.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

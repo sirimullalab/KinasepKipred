@@ -1,0 +1,176 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:ModifySDFilesDataFields.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ModifyPDBFiles.html" title="ModifyPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ModifyTextFilesFormat.html" title="ModifyTextFilesFormat.html">Next</a></td><td width="34%" align="middle"><strong>ModifySDFilesDataFields.pl</strong></td><td width="33%" align="right"><a href="././code/ModifySDFilesDataFields.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/ModifySDFilesDataFields.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/ModifySDFilesDataFields.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/ModifySDFilesDataFields.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/ModifySDFilesDataFields.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>ModifySDFilesDataFields.pl - Modify data fields in SDFile(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>ModifySDFilesDataFields.pl SDFile(s)...</p>
+<p>ModifySDFilesDataFields.pl [<b>-d, --detail</b> infolevel] [<b>--datafieldscommon</b> newfieldlabel, newfieldvalue, [newfieldlabel, newfieldvalue,...]] [<b>--datafieldsmap</b> newfieldlabel, oldfieldlabel, [oldfieldlabel,...]; [newfieldlabel, oldfieldlabel, [oldfieldlabel,...]]] [<b>--datafieldsmapfile</b> filename] [<b>--datafieldURL</b> URLDataFieldLabel, CGIScriptPath, CGIParamName, CmpdIDFieldLabel] [<b>-h, --help</b>] [<b>-k, --keepolddatafields</b> all | unmappedonly | none] [<b>-m, --mode</b> molname | datafields | both] [<b>--molnamemode</b> datafield | labelprefix] [<b>--molname</b> datafieldname or prefixstring] [<b>--molnamereplace</b> always | empty] [<b>-o, --overwrite</b>] [<b>-r, --root</b> rootname] [<b>-w, --workingdir</b> dirname] SDFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Modify molname line and data fields in <i>SDFile(s)</i>. Molname line can be replaced by a data field value or assigned a sequential ID prefixed with a specific string. For data fields and modification of their values, these types of options are supported: replace data field labels by another set of labels; combine values of multiple data fields and assign a new label; add specific set of data field labels and values to all compound records; and others.</p>
+<p>The file names are separated by space.The valid file extensions are <i>.sdf</i> and <i>.sd</i>. All other file names are ignored. All the SD files in a current directory can be specified either by <i>*.sdf</i> or the current directory name.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="d---detail-infolevel"><b>-d, --detail</b> <i>infolevel</i></dt>
+<dd>
+<p>Level of information to print about compound records being ignored. Default: <i>1</i>. Possible values: <i>1, 2 or 3</i>.</p>
+</dd>
+<dt id="datafieldscommon-newfieldlabel-newfieldvalue-newfieldlabel-newfieldvalue"><b>--datafieldscommon</b> <i>newfieldlabel, newfieldvalue, [newfieldlabel, newfieldvalue,...]</i></dt>
+<dd>
+<p>Specify data field labels and values for addition to each compound record. It&#39;s a comma delimited list of data field label and values pair. Default: <i>none</i>.</p>
+<p>Examples:</p>
+<div class="OptionsBox">    DepositionDate,YYYY-MM-DD
+<br/>    Source,www.domainname.org,ReleaseData,YYYY-MM-DD</div>
+</dd>
+<dt id="datafieldsmap-newfieldlabel-oldfieldlabel-oldfieldlabel-...-newfieldlabel-oldfieldlabel-oldfieldlabel"><b>--datafieldsmap</b> <i>newfieldlabel, oldfieldlabel, [oldfieldlabel,...]; [newfieldlabel, oldfieldlabel, [oldfieldlabel,...]]</i></dt>
+<dd>
+<p>Specify how various data field labels and values are combined to generate a new data field labels and their values. All the comma delimited data fields, with in a semicolon delimited set, are mapped to the first new data field label along with the data field values joined via new line character. Default: <i>none</i>.</p>
+<p>Examples:</p>
+<div class="OptionsBox">    Synonym,Name,SystematicName,Synonym;CmpdID,Extreg
+<br/>    HBondDonors,SumNHOH</div>
+</dd>
+<dt id="datafieldsmapfile-filename"><b>--datafieldsmapfile</b> <i>filename</i></dt>
+<dd>
+<p>Filename containing mapping of data fields. Format of data fields line in this file corresponds to <b>--datafieldsmap</b> option. Example:</p>
+<div class="OptionsBox">    Line 1: Synonym,Name,SystematicName,Synonym;CmpdID,Extreg
+<br/>    Line 2: HBondDonors,SumNHOH</div>
+</dd>
+<dt id="datafieldURL-URLDataFieldLabel-CGIScriptPath-CGIParamName-CmpdIDFieldLabel"><b>--datafieldURL</b> <i>URLDataFieldLabel, CGIScriptPath, CGIParamName, CmpdIDFieldLabel</i></dt>
+<dd>
+<p>Specify how to generate a URL for retrieving compound data from a web server and add it to each compound record. <i>URLDataFieldLabel</i> is used as the data field label for URL value which is created by combining <i>CGIScriptPath,CGIParamName,CmpdIDFieldLabel</i> values: CGIScriptPath?CGIParamName=CmpdIDFieldLabelValue. Default: <i>none</i>.</p>
+<p>Example:</p>
+<div class="OptionsBox">    Source,http://www.yourdomain.org/GetCmpd.pl,Reg_ID,Mol_ID</div>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="k---keepolddatafields-all-unmappedonly-none"><b>-k, --keepolddatafields</b> <i>all | unmappedonly | none</i></dt>
+<dd>
+<p>Specify how to transfer old data fields from input SDFile(s) to new SDFile(s) during <i>datafields | both</i> value of <b>-m, --mode</b> option: keep all old data fields; write out the ones not mapped to new fields as specified by <b>--datafieldsmap</b> or &lt;--datafieldsmapfile&gt; options; or ignore all old data field labels. For <i>molname</i> <b>-m --mode</b>, old datafields are always kept. Possible values: <i>all | unmappedonly | none</i>. Default: <i>none</i>.</p>
+</dd>
+<dt id="m---mode-molname-datafields-both"><b>-m, --mode</b> <i>molname | datafields | both</i></dt>
+<dd>
+<p>Specify how to modify SDFile(s): <i>molname</i> - change molname line by another datafield or value; <i>datafield</i> - modify data field labels and values by replacing one label by another, combining multiple data field labels and values, adding specific set of data field labels and values to all compound, or inserting an URL for compound retrieval to each record; <i>both</i> - change molname line and datafields simultaneously. Possible values: <i>molname | datafields | both</i>. Default: <i>molname</i></p>
+</dd>
+<dt id="molnamemode-datafield-labelprefix"><b>--molnamemode</b> <i>datafield | labelprefix</i></dt>
+<dd>
+<p>Specify how to change molname line for <b>-m --mode</b> option values of <i>molname | both</i>: use a datafield label value or assign a sequential ID prefixed with <i>labelprefix</i>. Possible values: <i>datafield | labelprefix</i>. Default: <i>labelprefix</i>.</p>
+</dd>
+<dt id="molname-datafieldname-or-prefixstring"><b>--molname</b> <i>datafieldname or prefixstring</i></dt>
+<dd>
+<p>Molname generation method. For <i>datafield</i> value of <b>--molnamemode</b> option, it corresponds to datafield label name whose value is used for molname; otherwise, it&#39;s a prefix string used for generating compound IDs like labelprefixstring&lt;Number&gt;. Default value, <i>Cmpd</i>, generates compound IDs like Cmpd&lt;Number&gt; for molname.</p>
+</dd>
+<dt id="molnamereplace-always-empty"><b>--molnamereplace</b> <i>always | empty</i></dt>
+<dd>
+<p>Specify when to replace molname line for <b>-m --mode</b> option values of <i>molname | both</i>: always replace the molname line using <b>--molname</b> option or only when it&#39;s empty. Possible values: <i>always | empty</i>. Default: <i>empty</i>.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New SD file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default new file name: &lt;InitialSDFileName&gt;ModifiedDataFields.&lt;Ext&gt;. This option is ignored for multiple input files.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w, --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To replace empty molname lines by Cmpd&lt;CmpdNumber&gt; and generate a new SD file NewSample1.sdf, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl -o -r NewSample1 Sample1.sdf</div>
+<p>To replace all molname lines by Mol_ID data field generate a new SD file NewSample1.sdf, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+    --molnamereplace always -r NewSample1 -o Sample1.sdf</div>
+<p>To replace all molname lines by Mol_ID data field, map Name and CompoundName to a new datafield Synonym, and generate a new SD file NewSample1.sdf, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap &quot;Synonym,Name,CompoundName&quot; -r
+      NewSample1 -o Sample1.sdf</div>
+<p>To replace all molname lines by Mol_ID data field, map Name and CompoundName to a new datafield Synonym, add common fields ReleaseDate and Source, and generate a new SD file NewSample1.sdf without keeping any old SD data fields, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap &quot;Synonym,Name,CompoundName&quot;
+      --datafieldscommon &quot;ReleaseDate,yyyy-mm-dd,Source,
+      www.mayachemtools.org&quot; --keepolddatafields none -r
+      NewSample1 -o Sample1.sdf</div>
+<p><b>Preparing SD files PubChem deposition:</b></p>
+<p>Consider a SD file with these fields: Mol_ID, Name, Synonyms and Systematic_Name. And Mol_ID data field uniquely identifies your compound.</p>
+<p>To prepare a new SD file CmpdDataForPubChem.sdf containing only required PUBCHEM_EXT_DATASOURCE_REGID field, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --m datafields
+      --datafieldsmap
+      &quot;PUBCHEM_EXT_DATASOURCE_REGID,Mol_ID&quot;
+      -r CmpdDataForPubChem -o Sample1.sdf</div>
+<p>To prepare a new SD file CmpdDataForPubChem.sdf containing only required PUBCHEM_EXT_DATASOURCE_REGID field and replace molname line with Mol_ID, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap
+       &quot;PUBCHEM_EXT_DATASOURCE_REGID,Mol_ID&quot;
+      -r CmpdDataForPubChem -o Sample1.sdf</div>
+<p>In addition to required PubChem data field, you can also add optional PubChem data fields.</p>
+<p>To map your Name, Synonyms and Systematic_Name data fields to optional PUBCHEM_SUBSTANCE_SYNONYM data field along with required ID field, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap
+      &quot;PUBCHEM_EXT_DATASOURCE_REGID,Mol_ID;
+      PUBCHEM_SUBSTANCE_SYNONYM,Name,CompoundName&quot;
+      -r CmpdDataForPubChem -o Sample1.sdf</div>
+<p>To add your &lt;domain.org&gt; as PUBCHEM_EXT_SUBSTANCE_URL and link substance retrieval to your CGI script &lt;http://www.yourdomain.org/GetCmpd.pl,Reg_ID,Mol_ID&gt; via PUBCHEM_EXT_DATASOURCE_REGID field along with optional and required data fields, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap
+      &quot;PUBCHEM_EXT_DATASOURCE_REGID,Mol_ID;
+      PUBCHEM_SUBSTANCE_SYNONYM,Name,CompoundName&quot;
+      --datafieldscommon
+      &quot;PUBCHEM_EXT_SUBSTANCE_URL,domain.org&quot;
+      --datafieldURL &quot;PUBCHEM_EXT_DATASOURCE_URL,
+      http://www.yourdomain.org/GetCmpd.pl,Reg_ID,Mol_ID&quot;
+      -r CmpdDataForPubChem -o Sample1.sdf</div>
+<p>And to add a publication date and request a release data using PUBCHEM_PUBLICATION_DATE and PUBCHEM_DEPOSITOR_RECORD_DATE data fields along with all the data fields in earlier examples, type: optional fields, type:</p>
+<div class="ExampleBox">    % ModifySDFilesDataFields.pl --molnamemode datafield
+      --molnamereplace always --molname Mol_ID --mode both
+      --datafieldsmap
+      &quot;PUBCHEM_EXT_DATASOURCE_REGID,Mol_ID;
+      PUBCHEM_SUBSTANCE_SYNONYM,Name,CompoundName&quot;
+      --datafieldURL &quot;PUBCHEM_EXT_DATASOURCE_URL,
+      http://www.yourdomain.org/GetCmpd.pl,Reg_ID,Mol_ID&quot;
+      --datafieldscommon
+      &quot;PUBCHEM_EXT_SUBSTANCE_URL,domain.org,
+      PUBCHEM_PUBLICATION_DATE,YYY-MM-DD,
+      PUBCHEM_DEPOSITOR_RECORD_DATE,YYYY-MM-DD&quot;
+      -r CmpdDataForPubChem -o Sample1.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./InfoSDFiles.html">InfoSDFiles.pl</a>, <a href="./JoinSDFiles.html">JoinSDFiles.pl</a>, <a href="./MergeTextFilesWithSD.html">MergeTextFilesWithSD.pl</a>, <a href="./SplitSDFiles.html">SplitSDFiles.pl</a>, <a href="./SDFilesToHTML.html">SDFilesToHTML.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ModifyPDBFiles.html" title="ModifyPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ModifyTextFilesFormat.html" title="ModifyTextFilesFormat.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>ModifySDFilesDataFields.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

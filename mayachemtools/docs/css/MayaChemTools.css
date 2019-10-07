@@ -1,0 +1,396 @@
+body
+{
+   background-color: #ffffff;
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   line-height: 1.8;
+}
+p
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   line-height: 1.8;
+}
+h1
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 14px;
+   color: #0054aa;
+}
+h2
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   font-weight: bold;
+   color: #0054aa;
+}
+h3
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+   color: #0054aa;
+   line-height: 1;
+}
+hr
+{
+   color: #0054aa;
+}
+em {
+   font-style: normal;
+   color: #0054aa;
+   font-weight: bold
+}
+/*   background: #e0e9eb; */
+pre  {
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   white-space: pre;
+   color: #0054aa;
+   padding: 1 2 1 2;
+}
+strong
+{
+   font-weight: bold;
+   color: #000000;
+}
+b
+{
+   font-weight: bold;
+}
+td
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   line-height: 18px;
+}
+th
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+   color: #0054aa;
+}
+a, a:link, a:active, a:visited
+{
+   color: #0000cc;
+   text-decoration: none;
+   font-weight: normal;
+}
+a:hover
+{
+   color: #ff0000;
+   text-decoration: none;
+}
+ul
+{
+   list-style-type: circle;
+   font-size: 11px;
+   font-weight: normal;
+}
+div
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+}
+/* Footer */
+Div.Footer, Div.Footer p
+{
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 9px;
+   color: #888888;
+   font-weight: normal;
+   line-height: 0.8;
+}
+Div.Footer a, Div.Footer a:link, Div.Footer a:active, Div.Footer a:visited, Div.Footer a:hover
+{
+   color: #0000cc;
+   text-decoration: none;
+   font-size: 9px;
+   font-weight: normal;
+}
+
+/* Form */
+Form td, Form input, Form button, Form select {
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: normal;
+}
+
+Form th {
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   font-weight: bold;
+}
+
+/* Horizontal tabs */
+/*  padding and margins: top right bottom left */
+/* Tabs styles, based on http://www.alistapart.com/articles/slidingdoors */
+
+Div.HorizontalTabs
+{
+   float: left;
+   width: 100%;
+   background: url("../images/BluePixel.gif") repeat-x bottom;
+   line-height: normal;
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+}
+
+Div.HorizontalTabs ul
+{
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+   list-style: none;
+}
+
+Div.HorizontalTabs li
+{
+   display: inline;
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+}
+
+Div.HorizontalTabs a
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   float: left;
+   background: url("../images/BlueRight.gif") no-repeat right top;
+   border-bottom: 1px solid #84B0C7;
+   text-decoration: none;
+   margin: 0 5 0 0;
+}
+
+Div.HorizontalTabs a:link, Div.HorizontalTabs a:visited,
+Div.HorizontalTabs a:active, Div.HorizontalTabs a:hover
+{
+   color: #0000bb;
+   font-weight: normal;
+}
+
+Div.HorizontalTabs a:hover
+{
+   color: #ff0000;
+}
+
+/*  Make sure Div.HorizontalTabs #Current:padding-bottom is */
+/*  Div.HorizontalTabs span:padding: FirstNumber + 1  */
+Div.HorizontalTabs span
+{
+   float: left;
+   display: block;
+   background: url("../images/BlueLeft.gif") no-repeat left top;
+   padding: 7 21 7 21;
+   white-space: nowrap;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+Div.HorizontalTabs span {float : none;}
+/* End IE5-Mac hack */
+
+Div.HorizontalTabs a:hover
+{
+   background-position: 100% -150px;
+}
+Div.HorizontalTabs a:hover span
+{
+   background-position: 0% -150px;
+}
+
+Div.HorizontalTabs #Current a
+{
+   background-position: 100% -150px;
+   border-width: 0px;
+   font-weight: bold;
+   color: #0054aa;
+}
+
+Div.HorizontalTabs #Current span
+{
+   background-position: 0% -150px;
+   padding-bottom: 8;
+}
+
+/* Documentation top line with navigation to previous, TOC, and next  */
+Div.DocNav, Div.DocNav p, Div.DocNav td
+{
+   color: #0054aa;
+   font-size: 11px;
+}
+Div.DocNav strong
+{
+   color: #0054aa;
+   font-weight: bold;
+   font-size: 11px;
+}
+Div.DocNav strong2
+{
+   font-weight: normal;
+   font-size: 12px;
+}
+Div.DocNav a
+{
+   color: #0000cc;
+   text-decoration: none;
+   font-size: 11px;
+   font-weight: normal;
+}
+Div.DocNav a:link, Div.DocNav a:active, Div.DocNav a:visited, Div.DocNav a:hover
+{
+   color: #0000cc;
+   text-decoration: none;
+}
+
+/* TOC */
+Div.Toc ul
+{
+   list-style-type: decimal;
+   font-size: 11px;
+   font-weight: normal;
+}
+Div.Toc li
+{
+   color: #0054aa;
+}
+Div.Toc h1
+{
+   Font-size: 14px;
+   color: #0054aa;
+}
+Div.Toc h2
+{
+   font-size: 12px;
+   font-weight: bold;
+   color: #0054aa;
+}
+
+/* References */
+Div.References
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+}
+
+Div.References ul
+{
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+   list-style: none;
+   font-size: 11px;
+   font-weight: normal;
+}
+Div.References li
+{
+   margin: 0 0 0 20;
+   padding: 0 0 0 0;
+}
+
+Div.References h1
+{
+   Font-size: 14px;
+   color: #0054aa;
+}
+Div.References h2
+{
+   font-size: 12px;
+   font-weight: bold;
+   color: #0054aa;
+}
+/* Lists with blue squares */
+Div.List ul
+{
+   list-style-type: none;
+   font-size: 11px;
+   font-weight: normal;
+}
+Div.List li
+{
+   background-image: url("../images/DarkBlueSquare.gif");
+   background-repeat: no-repeat;
+   background-position: 0px 9px;
+   padding-left: 10px;
+}
+
+/* Displaying  options examples and decriptions */
+Div.OptionsBox
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   padding: 6 14 4 14;
+   color: #0054aa;
+}
+
+/* Displaying  examples */
+Div.ExampleBox
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   padding: 4 14 4 14;
+   color: #0054aa;
+}
+
+
+/* Top navigation box to contain logo and tabs */
+Div.TopNav
+{
+   background: url("../images/BluePixel.gif") repeat-x bottom;
+   line-height: normal;
+   margin: 0 0 0 0;
+   padding: 0 0 8 0;
+}
+
+/* To avoid wrapping of navigation tabs */
+td.TopNavTab {
+   width: 520;
+}
+
+/* Top sub navigation */
+Div.TopSubNav
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   margin: 0 0 0 0;
+   padding: 4 0 4 0;
+}
+
+Div.TopSubNav ul
+{
+   margin: 0 0 0 0;
+   padding: 0 0 0 100;
+   list-style: none;
+}
+
+Div.TopSubNav li
+{
+   display: inline;
+   margin: 0 0 0 0;
+   padding: 0 0 0 0;
+}
+
+Div.TopSubNav a
+{
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 11px;
+   text-decoration: none;
+   margin: 0 50 0 0;
+}
+
+Div.TopSubNav a:link, Div.TopSubNav a:visited,
+Div.TopSubNav a:active, Div.TopSubNav a:hover
+{
+   color: #0000bb;
+   font-weight: normal;
+}
+
+Div.TopSubNav a:hover
+{
+    color: #ff0000;
+}
+
+Div.TopSubNav #Current a
+{
+   color: #0000bb;
+   font-weight: bold;
+   color: #0054aa;
+}

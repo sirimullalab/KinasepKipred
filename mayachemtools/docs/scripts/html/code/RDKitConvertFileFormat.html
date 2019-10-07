@@ -1,0 +1,266 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitConvertFileFormat.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitConvertFileFormat.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  42     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  43     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  44     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  45 
+  46 <span class="c1"># MayaChemTools imports...</span>
+  47 <span class="k">try</span><span class="p">:</span>
+  48     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  49     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  50     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  51 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  52     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  53     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  54     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  55 
+  56 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  57 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  58 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  59 
+  60 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  61     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  62     
+  63     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  64     
+  65     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  66     
+  67     <span class="c1"># Retrieve command line arguments and options...</span>
+  68     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  69     
+  70     <span class="c1"># Process and validate command line arguments and options...</span>
+  71     <span class="n">ProcessOptions</span><span class="p">()</span>
+  72     
+  73     <span class="c1"># Perform actions required by the script...</span>
+  74     <span class="n">ConvertFileFormat</span><span class="p">()</span>
+  75     
+  76     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  77     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  78 
+  79 <span class="k">def</span> <span class="nf">ConvertFileFormat</span><span class="p">():</span>
+  80     <span class="sd">&quot;&quot;&quot;Convert between  file formats&quot;&quot;&quot;</span>
+  81     
+  82     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+  83     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+  84     
+  85     <span class="c1"># Read molecules...</span>
+  86     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reading file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+  87     <span class="n">Mols</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+  88     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">Mols</span><span class="p">))</span>
+  89     
+  90     <span class="c1"># Write molecules...</span>
+  91     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+  92     <span class="n">MolCount</span><span class="p">,</span> <span class="n">ProcessedMolCount</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">WriteMolecules</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="n">Mols</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+  93     
+  94     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+  95     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of molecules processed: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ProcessedMolCount</span><span class="p">)</span>
+  96     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of molecules ignored: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ProcessedMolCount</span><span class="p">))</span>
+  97 
+  98 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+  99     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 100     
+ 101     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 102     
+ 103     <span class="c1"># Validate options...</span>
+ 104     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 105     
+ 106     <span class="c1"># Process and setup options for RDKit functions...</span>
+ 107     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 108     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 109     
+ 110     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 111     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 112     
+ 113     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 114 
+ 115 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 116     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 117     
+ 118     <span class="c1"># Get options...</span>
+ 119     <span class="k">global</span> <span class="n">Options</span>
+ 120     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 121     
+ 122     <span class="c1"># Set current working directory to the specified directory...</span>
+ 123     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 124     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 125         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 126     
+ 127     <span class="c1"># Handle examples option...</span>
+ 128     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 129         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 130         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 131 
+ 132 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 133     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 134     
+ 135     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 136     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd mol smi txt csv tsv mol2 pdb&quot;</span><span class="p">)</span>
+ 137     
+ 138     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd mol smi pdb&quot;</span><span class="p">)</span>
+ 139     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 140     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 141     
+ 142 <span class="c1"># Setup a usage string for docopt...</span>
+ 143 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 144 <span class="s2">RDKitConvertFileFormat.py - Convert between molecular file formats</span>
+ 145 
+ 146 <span class="s2">Usage:</span>
+ 147 <span class="s2">    RDKitConvertFileFormat.py [--infileParams &lt;Name,Value,...&gt;]</span>
+ 148 <span class="s2">                              [ --outfileParams &lt;Name,Value,...&gt; ] [--overwrite]</span>
+ 149 <span class="s2">                              [-w &lt;dir&gt;] -i &lt;infile&gt; -o &lt;outfile&gt;</span>
+ 150 <span class="s2">    RDKitConvertFileFormat.py -h | --help | -e | --examples</span>
+ 151 
+ 152 <span class="s2">Description:</span>
+ 153 <span class="s2">    Convert between molecular file formats.</span>
+ 154 
+ 155 <span class="s2">    The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi,</span>
+ 156 <span class="s2">    .txt, .csv, .tsv), MOL2 (.mol2), PDB (.pdb)</span>
+ 157 
+ 158 <span class="s2">    The supported output file formats are: SD (.sdf, .sd), SMILES (.smi), PDB (.pdb)</span>
+ 159 
+ 160 <span class="s2">Options:</span>
+ 161 <span class="s2">    -e, --examples</span>
+ 162 <span class="s2">        Print examples.</span>
+ 163 <span class="s2">    -h, --help</span>
+ 164 <span class="s2">        Print this help message.</span>
+ 165 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 166 <span class="s2">        Input file name.</span>
+ 167 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 168 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 169 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 170 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 171 <span class="s2">            </span>
+ 172 <span class="s2">            SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 173 <span class="s2">            MOL2: removeHydrogens,yes,sanitize,yes</span>
+ 174 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 175 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 176 <span class="s2">            PDB: removeHydrogens,yes,sanitize,yes</span>
+ 177 <span class="s2">            </span>
+ 178 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 179 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 180 <span class="s2">        Output file name.</span>
+ 181 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 182 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 183 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 184 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 185 <span class="s2">            </span>
+ 186 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 187 <span class="s2">            SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,</span>
+ 188 <span class="s2">                smilesTitleLine,yes</span>
+ 189 <span class="s2">            </span>
+ 190 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 191 <span class="s2">        file types.</span>
+ 192 <span class="s2">    --overwrite</span>
+ 193 <span class="s2">        Overwrite existing files.</span>
+ 194 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 195 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 196 
+ 197 <span class="s2">Examples:</span>
+ 198 <span class="s2">    To convert a SD file  into a isomeric SMILES file, type:</span>
+ 199 
+ 200 <span class="s2">        % RDKitConvertFileFormat.py -i Sample.sdf -o SampleOut.smi</span>
+ 201 
+ 202 <span class="s2">    To convert a SD file into a non isomeric SMILES file, type</span>
+ 203 
+ 204 <span class="s2">        % RDKitConvertFileFormat.py --outfileParams &quot;smilesIsomeric,no&quot;</span>
+ 205 <span class="s2">          -i Sample.sdf -o SampleOut.smi</span>
+ 206 
+ 207 <span class="s2">    To convert a SMILES file into a SD file along with calculation of 2D</span>
+ 208 <span class="s2">    coordinates, type:</span>
+ 209 
+ 210 <span class="s2">        % RDKitConvertFileFormat.py -i Sample.smi -o SampleOut.sdf</span>
+ 211 
+ 212 <span class="s2">    To convert a MDL MOL file into a PDB file, type:</span>
+ 213 
+ 214 <span class="s2">        % RDKitConvertFileFormat.py -i Sample.mol -o SampleOut.pdb</span>
+ 215 
+ 216 <span class="s2">    To convert a CSV SMILES file  with column headers, SMILES strings</span>
+ 217 <span class="s2">    in column 1, and name in column 2 into a SD file containing 2D coordinates, type:</span>
+ 218 
+ 219 <span class="s2">        % RDKitConvertFileFormat.py --infileParams &quot;smilesDelimiter,comma,</span>
+ 220 <span class="s2">          smilesTitleLine,yes,smilesColumn,1,smilesNameColumn,2&quot; -i Sample.csv</span>
+ 221 <span class="s2">          -o SampleOut.sdf</span>
+ 222 
+ 223 <span class="s2">Author:</span>
+ 224 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 225 
+ 226 <span class="s2">See also:</span>
+ 227 <span class="s2">    RDKitDrawMolecules.py, RDKitRemoveDuplicateMolecules.py, RDKitSearchFunctionalGroups.py,</span>
+ 228 <span class="s2">    RDKitSearchSMARTS.py</span>
+ 229 
+ 230 <span class="s2">Copyright:</span>
+ 231 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 232 
+ 233 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 234 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 235 
+ 236 <span class="s2">    This file is part of MayaChemTools.</span>
+ 237 
+ 238 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 239 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 240 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 241 <span class="s2">    later version.</span>
+ 242 
+ 243 <span class="s2">&quot;&quot;&quot;</span>
+ 244 
+ 245 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 246     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

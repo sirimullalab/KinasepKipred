@@ -1,0 +1,115 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:InfoSequenceFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoSDFiles.html" title="InfoSDFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoTextFiles.html" title="InfoTextFiles.html">Next</a></td><td width="34%" align="middle"><strong>InfoSequenceFiles.pl</strong></td><td width="33%" align="right"><a href="././code/InfoSequenceFiles.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/InfoSequenceFiles.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/InfoSequenceFiles.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/InfoSequenceFiles.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/InfoSequenceFiles.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>InfoSequenceFiles.pl - List information about sequence and alignment files</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>InfoSequenceFiles.pl SequenceFile(s) AlignmentFile(s)...</p>
+<p>InfoSequenceFiles.pl [<b>-a, --all</b>] [<b>-c, --count</b>] [<b>-d, --detail</b> infolevel] [<b>-f, --frequency</b>] [<b>--FrequencyBins</b> number | &quot;number, number, [number,...]&quot;] [<b>-h, --help</b>] [<b>-i, --IgnoreGaps</b> yes | no] [<b>-l, --longest</b>] [<b>-s, --shortest</b>] [<b>--SequenceLengths</b>] [<b>-w, --workingdir</b> dirname] SequenceFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>List information about contents of <i>SequenceFile(s) and AlignmentFile(s)</i>: number of sequences, shortest and longest sequences, distribution of sequence lengths and so on. The file names are separated by spaces. All the sequence files in a current directory can be specified by <i>*.aln</i>, <i>*.msf</i>, <i>*.fasta</i>, <i>*.fta</i>, <i>*.pir</i> or any other supported formats; additionally, <i>DirName</i> corresponds to all the sequence files in the current directory with any of the supported file extension: <i>.aln, .msf, .fasta, .fta, and .pir</i>.</p>
+<p>Supported sequence formats are: <i>ALN/CLustalW</i>, <i>GCG/MSF</i>, <i>PILEUP/MSF</i>, <i>Pearson/FASTA</i>, and <i>NBRF/PIR</i>. Instead of using file extensions, file formats are detected by parsing the contents of <i>SequenceFile(s) and AlignmentFile(s)</i>.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="a---all"><b>-a, --all</b></dt>
+<dd>
+<p>List all the available information.</p>
+</dd>
+<dt id="c---count"><b>-c, --count</b></dt>
+<dd>
+<p>List number of of sequences. This is <b>default behavior</b>.</p>
+</dd>
+<dt id="d---detail-InfoLevel"><b>-d, --detail</b> <i>InfoLevel</i></dt>
+<dd>
+<p>Level of information to print about sequences during various options. Default: <i>1</i>. Possible values: <i>1, 2 or 3</i>.</p>
+</dd>
+<dt id="f---frequency"><b>-f, --frequency</b></dt>
+<dd>
+<p>List distribution of sequence lengths using the specified number of bins or bin range specified using <b>FrequencyBins</b> option.</p>
+<p>This option is ignored for input files containing only single sequence.</p>
+</dd>
+<dt id="FrequencyBins-number-number-number-number"><b>--FrequencyBins</b> <i>number | &quot;number,number,[number,...]&quot;</i></dt>
+<dd>
+<p>This value is used with <b>-f, --frequency</b> option to list distribution of sequence lengths using the specified number of bins or bin range. Default value: <i>10</i>.</p>
+<p>The bin range list is used to group sequence lengths into different groups; It must contain values in ascending order. Examples:</p>
+<div class="OptionsBox">    100,200,300,400,500,600
+<br/>    200,400,600,800,1000</div>
+<p>The frequency value calculated for a specific bin corresponds to all the sequence lengths which are greater than the previous bin value and less than or equal to the current bin value.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="i---IgnoreGaps-yes-no"><b>-i, --IgnoreGaps</b> <i>yes | no</i></dt>
+<dd>
+<p>Ignore gaps during calculation of sequence lengths. Possible values: <i>yes or no</i>. Default value: <i>no</i>.</p>
+</dd>
+<dt id="l---longest"><b>-l, --longest</b></dt>
+<dd>
+<p>List information about longest sequence: ID, sequence and sequence length. This option is ignored for input files containing only single sequence.</p>
+</dd>
+<dt id="s---shortest"><b>-s, --shortest</b></dt>
+<dd>
+<p>List information about shortest sequence: ID, sequence and sequence length. This option is ignored for input files containing only single sequence.</p>
+</dd>
+<dt id="SequenceLengths"><b>--SequenceLengths</b></dt>
+<dd>
+<p>List information about sequence lengths.</p>
+</dd>
+<dt id="w---WorkingDir-dirname"><b>-w, --WorkingDir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To count number of sequences in sequence files, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl Sample1.fasta
+    <br/>% InfoSequenceFiles.pl Sample1.msf Sample1.aln Sample1.pir
+    <br/>% InfoSequenceFiles.pl *.fasta *.fta *.msf *.pir *.aln</div>
+<p>To list all available information with maximum level of available detail for a sequence alignment file Sample1.msf, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl -a -d 3 Sample1.msf</div>
+<p>To list sequence length information after ignoring sequence gaps in Sample1.aln file, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl --SequenceLengths --IgnoreGaps Yes
+      Sample1.aln</div>
+<p>To list shortest and longest sequence length information after ignoring sequence gaps in Sample1.aln file, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl --longest --shortest --IgnoreGaps Yes
+      Sample1.aln</div>
+<p>To list distribution of sequence lengths after ignoring sequence gaps in Sample1.aln file and report the frequency distribution into 10 bins, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl --frequency --FrequencyBins 10
+      --IgnoreGaps Yes Sample1.aln</div>
+<p>To list distribution of sequence lengths after ignoring sequence gaps in Sample1.aln file and report the frequency distribution into specified bin range, type:</p>
+<div class="ExampleBox">    % InfoSequenceFiles.pl --frequency --FrequencyBins
+      &quot;150,200,250,300,350&quot; --IgnoreGaps Yes Sample1.aln</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./AnalyzeSequenceFilesData.html">AnalyzeSequenceFilesData.pl</a>, <a href="./ExtractFromSequenceFiles.html">ExtractFromSequenceFiles.pl</a>, <a href="./InfoAminoAcids.html">InfoAminoAcids.pl</a>, <a href="./InfoNucleicAcids.html">InfoNucleicAcids.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoSDFiles.html" title="InfoSDFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoTextFiles.html" title="InfoTextFiles.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>InfoSequenceFiles.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

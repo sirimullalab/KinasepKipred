@@ -1,0 +1,505 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Fingerprints/FingerprintsVector.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./FingerprintsStringUtil.html" title="FingerprintsStringUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MACCSKeys.html" title="MACCSKeys.html">Next</a></td><td width="34%" align="middle"><strong>Fingerprints/FingerprintsVector.pm</strong></td><td width="33%" align="right"><a href="././code/FingerprintsVector.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/FingerprintsVector.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/FingerprintsVector.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/FingerprintsVector.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/FingerprintsVector.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>FingerprintsVector</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Fingerprints::FingerprintsVector;</p>
+<p>use Fingerprints::FingerprintsVector qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>FingerprintsVector</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#AddValueIDs">AddValueIDs</a>, <a href="#AddValues">AddValues</a>, <a href="#CityBlockDistanceCoefficient">CityBlockDistanceCoefficient</a>, <a href="#CosineSimilarityCoefficient">CosineSimilarityCoefficient</a>, <a href="#CzekanowskiSimilarityCoefficient">CzekanowskiSimilarityCoefficient</a>, <a href="#DiceSimilarityCoefficient">DiceSimilarityCoefficient</a>, <a href="#EuclideanDistanceCoefficient">EuclideanDistanceCoefficient</a>, <a href="#GetDescription">GetDescription</a>, <a href="#GetFingerprintsVectorString">GetFingerprintsVectorString</a>, <a href="#GetID">GetID</a>, <a href="#GetIDsAndValuesPairsString">GetIDsAndValuesPairsString</a>, <a href="#GetIDsAndValuesString">GetIDsAndValuesString</a>, <a href="#GetNumOfNonZeroValues">GetNumOfNonZeroValues</a>, <a href="#GetNumOfValueIDs">GetNumOfValueIDs</a>, <a href="#GetNumOfValues">GetNumOfValues</a>, <a href="#GetSupportedDistanceAndSimilarityCoefficients">GetSupportedDistanceAndSimilarityCoefficients</a>, <a href="#GetSupportedDistanceCoefficients">GetSupportedDistanceCoefficients</a>, <a href="#GetSupportedSimilarityCoefficients">GetSupportedSimilarityCoefficients</a>, <a href="#GetType">GetType</a>, <a href="#GetValue">GetValue</a>, <a href="#GetValueID">GetValueID</a>, <a href="#GetValueIDs">GetValueIDs</a>, <a href="#GetValueIDsString">GetValueIDsString</a>, <a href="#GetValues">GetValues</a>, <a href="#GetValuesAndIDsPairsString">GetValuesAndIDsPairsString</a>, <a href="#GetValuesAndIDsString">GetValuesAndIDsString</a>, <a href="#GetValuesString">GetValuesString</a>, <a href="#GetVectorType">GetVectorType</a>, <a href="#HammingDistanceCoefficient">HammingDistanceCoefficient</a>, <a href="#IsFingerprintsVector">IsFingerprintsVector</a>, <a href="#JaccardSimilarityCoefficient">JaccardSimilarityCoefficient</a>, <a href="#ManhattanDistanceCoefficient">ManhattanDistanceCoefficient</a>, <a href="#NewFromIDsAndValuesPairsString">NewFromIDsAndValuesPairsString</a>, <a href="#NewFromIDsAndValuesString">NewFromIDsAndValuesString</a>, <a href="#NewFromValuesAndIDsPairsString">NewFromValuesAndIDsPairsString</a>, <a href="#NewFromValuesAndIDsString">NewFromValuesAndIDsString</a>, <a href="#NewFromValuesString">NewFromValuesString</a>, <a href="#OchiaiSimilarityCoefficient">OchiaiSimilarityCoefficient</a>, <a href="#SetDescription">SetDescription</a>, <a href="#SetID">SetID</a>, <a href="#SetType">SetType</a>, <a href="#SetValue">SetValue</a>, <a href="#SetValueID">SetValueID</a>, <a href="#SetValueIDs">SetValueIDs</a>, <a href="#SetValues">SetValues</a>, <a href="#SetVectorType">SetVectorType</a>, <a href="#SoergelDistanceCoefficient">SoergelDistanceCoefficient</a>, <a href="#SorensonSimilarityCoefficient">SorensonSimilarityCoefficient</a>, <a href="#StringifyFingerprintsVector">StringifyFingerprintsVector</a>, <a href="#TanimotoSimilarityCoefficient">TanimotoSimilarityCoefficient</a>
+</p><p>The methods available to create fingerprints vector from strings and to calculate similarity and distance coefficients between two vectors can also be invoked as class functions.</p>
+<p><b>FingerprintsVector</b> class provides support to perform comparison between vectors containing three different types of values:</p>
+<p>Type I: OrderedNumericalValues</p>
+<div class="OptionsBox">    o Size of two vectors are same
+<br/>    o Vectors contain real values in a specific order. For example: MACCS keys
+      count, Topological pharmacophore atom pairs and so on.</div>
+<p>Type II: UnorderedNumericalValues</p>
+<div class="OptionsBox">    o Size of two vectors might not be same
+<br/>    o Vectors contain unordered real value identified by value IDs. For example:
+      Topological atom pairs, Topological atom torsions and so on</div>
+<p>Type III: AlphaNumericalValues</p>
+<div class="OptionsBox">    o Size of two vectors might not be same
+<br/>    o Vectors contain unordered alphanumerical values. For example: Extended
+      connectivity fingerprints, atom neighborhood fingerprints.</div>
+<p>Before performing similarity or distance calculations between vectors containing UnorderedNumericalValues or AlphaNumericalValues, the vectors are transformed into vectors containing unique OrderedNumericalValues using value IDs for UnorderedNumericalValues and values itself for AlphaNumericalValues.</p>
+<p>Three forms of similarity and distance calculation between two vectors, specified using <b>CalculationMode</b> option, are supported: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>.</p>
+<p>For <i>BinaryForm</i>, the ordered list of processed final vector values containing the value or count of each unique value type is simply converted into a binary vector containing 1s and 0s corresponding to presence or absence of values before calculating similarity or distance between two vectors.</p>
+<p>For two fingerprint vectors A and B of same size containing OrderedNumericalValues, let:</p>
+<div class="OptionsBox">    N = Number values in A or B
+<br/>
+<br/>    Xa = Values of vector A
+<br/>    Xb = Values of vector B
+<br/>
+<br/>    Xai = Value of ith element in A
+<br/>    Xbi = Value of ith element in B
+<br/>
+   SUM = Sum of i over N values</div>
+<p>For SetTheoreticForm of calculation between two vectors, let:</p>
+<div class="OptionsBox">    SetIntersectionXaXb = SUM ( MIN ( Xai, Xbi ) )
+<br/>    SetDifferenceXaXb = SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) )</div>
+<p>For BinaryForm of calculation between two vectors, let:</p>
+<div class="OptionsBox">    Na = Number of bits set to &quot;1&quot; in A = SUM ( Xai )
+<br/>    Nb = Number of bits set to &quot;1&quot; in B = SUM ( Xbi )
+<br/>    Nc = Number of bits set to &quot;1&quot; in both A and B = SUM ( Xai * Xbi )
+<br/>    Nd = Number of bits set to &quot;0&quot; in both A and B
+       = SUM ( 1 - Xai - Xbi + Xai * Xbi)
+<br/>
+<br/>    N = Number of bits set to &quot;1&quot; or &quot;0&quot; in A or B = Size of A or B = Na + Nb - Nc + Nd</div>
+<p>Additionally, for BinaryForm various values also correspond to:</p>
+<div class="OptionsBox">    Na = | Xa |
+<br/>    Nb = | Xb |
+<br/>    Nc = | SetIntersectionXaXb |
+<br/>    Nd = N - | SetDifferenceXaXb |
+<br/>
+<br/>    | SetDifferenceXaXb | = N - Nd = Na + Nb - Nc + Nd - Nd = Na + Nb - Nc
+                          =  | Xa | + | Xb | - | SetIntersectionXaXb |</div>
+<p>Various similarity and distance coefficients [ Ref 40, Ref 62, Ref 64 ] for a pair of vectors A and B in <i>AlgebraicForm, BinaryForm and SetTheoreticForm</i> are defined as follows:</p>
+<p><b>CityBlockDistance</b>: ( same as HammingDistance and ManhattanDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>CosineSimilarity</b>: ( same as OchiaiSimilarityCoefficient)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / SQRT ( SUM ( Xai ** 2) * SUM ( Xbi ** 2) )</p>
+<p><i>BinaryForm</i>: Nc / SQRT ( Na * Nb)</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / SQRT ( |Xa| * |Xb| ) = SUM ( MIN ( Xai, Xbi ) ) / SQRT ( SUM ( Xai ) * SUM ( Xbi ) )</p>
+<p><b>CzekanowskiSimilarity</b>: ( same as DiceSimilarity and SorensonSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>DiceSimilarity</b>: ( same as CzekanowskiSimilarity and SorensonSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>EuclideanDistance</b>:</p>
+<p><i>AlgebraicForm</i>: SQRT ( SUM ( ( ( Xai - Xbi ) ** 2 ) ) )</p>
+<p><i>BinaryForm</i>: SQRT ( ( Na - Nc ) + ( Nb - Nc ) ) = SQRT ( Na + Nb - 2 * Nc )</p>
+<p><i>SetTheoreticForm</i>: SQRT ( | SetDifferenceXaXb | - | SetIntersectionXaXb | ) = SQRT ( SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) )</p>
+<p><b>HammingDistance</b>: ( same as CityBlockDistance and ManhattanDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>JaccardSimilarity</b>: ( same as TanimotoSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / ( SUM ( Xai ** 2 ) + SUM ( Xbi ** 2 ) - SUM ( Xai * Xbi ) )</p>
+<p><i>BinaryForm</i>: Nc / ( ( Na - Nc ) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / | SetDifferenceXaXb | = SUM ( MIN ( Xai, Xbi ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>ManhattanDistance</b>: ( same as CityBlockDistance and HammingDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>OchiaiSimilarity</b>: ( same as CosineSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / SQRT ( SUM ( Xai ** 2) * SUM ( Xbi ** 2) )</p>
+<p><i>BinaryForm</i>: Nc / SQRT ( Na * Nb)</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / SQRT ( |Xa| * |Xb| ) = SUM ( MIN ( Xai, Xbi ) ) / SQRT ( SUM ( Xai ) * SUM ( Xbi ) )</p>
+<p><b>SorensonSimilarity</b>: ( same as CzekanowskiSimilarity and DiceSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>SoergelDistance</b>:</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) ) / SUM ( MAX ( Xai, Xbi ) )</p>
+<p><i>BinaryForm</i>: 1 - Nc / ( Na + Nb - Nc ) = ( Na + Nb - 2 * Nc ) / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: ( | SetDifferenceXaXb | - | SetIntersectionXaXb | ) / | SetDifferenceXaXb | = ( SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>TanimotoSimilarity</b>: ( same as JaccardSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / ( SUM ( Xai ** 2 ) + SUM ( Xbi ** 2 ) - SUM ( Xai * Xbi ) )</p>
+<p><i>BinaryForm</i>: Nc / ( ( Na - Nc ) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / | SetDifferenceXaXb | = SUM ( MIN ( Xai, Xbi ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $FPVector = new Fingerprints::FingerprintsVector(%NamesAndValues);</div>
+<p>Using specified <i>FingerprintsVector</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>FingerprintsVectorsVector</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Type = &#39;&#39;
+<br/>    @{Values} = ()
+<br/>    @{ValuesIDs} = ()</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $FPVector = new Fingerprints::FingerprintsVector(&#39;Type&#39; =&gt; &#39;OrderedNumericalValues&#39;,
+                                       &#39;Values&#39; =&gt; [1, 2, 3, 4]);
+<br/>    $FPVector = new Fingerprints::FingerprintsVector(&#39;Type&#39; =&gt; &#39;NumericalValues&#39;,
+                                       &#39;Values&#39; =&gt; [10, 22, 33, 44],
+                                       &#39;ValueIDs&#39; =&gt; [&#39;ID1&#39;, &#39;ID2&#39;, &#39;ID3&#39;, &#39;ID4&#39;]);
+<br/>    $FPVector = new Fingerprints::FingerprintsVector(&#39;Type&#39; =&gt; &#39;AlphaNumericalValues&#39;,
+                                       &#39;Values&#39; =&gt; [&#39;a1&#39;, 2, &#39;a3&#39;, 4]);</div>
+</dd>
+<dt id="AddValueIDs"><b>AddValueIDs</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;AddValueIDs($ValueIDsRef);
+<br/>    $FingerprintsVector-&gt;AddValueIDs(@ValueIDs);</div>
+<p>Adds specified <i>ValueIDs</i> to <i>FingerprintsVector</i> and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="AddValues"><b>AddValues</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;AddValues($ValuesRef);
+<br/>    $FingerprintsVector-&gt;AddValues(@Values);
+<br/>    $FingerprintsVector-&gt;AddValues($Vector);</div>
+<p>Adds specified <i>Values</i> to <i>FingerprintsVector</i> and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="CityBlockDistanceCoefficient"><b>CityBlockDistanceCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;CityBlockDistanceCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::CityBlockDistanceCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>CityBlock</i> distance coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="CosineSimilarityCoefficient"><b>CosineSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;CosineSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::CosineSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Cosine</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="CzekanowskiSimilarityCoefficient"><b>CzekanowskiSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;CzekanowskiSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::CzekanowskiSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Czekanowski</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="DiceSimilarityCoefficient"><b>DiceSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;DiceSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::DiceSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Dice</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="EuclideanDistanceCoefficient"><b>EuclideanDistanceCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;EuclideanDistanceCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::EuclideanDistanceCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Euclidean</i> distance coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="GetDescription"><b>GetDescription</b></dt>
+<dd>
+<div class="OptionsBox">    $Description = $FingerprintsVector-&gt;GetDescription();</div>
+<p>Returns a string containing description of fingerprints vector.</p>
+</dd>
+<dt id="GetFingerprintsVectorString"><b>GetFingerprintsVectorString</b></dt>
+<dd>
+<div class="OptionsBox">    $FPString = $FingerprintsVector-&gt;GetFingerprintsVectorString($Format);</div>
+<p>Returns a <b>FingerprintsString</b> containing vector values and/or IDs in <i>FingerprintsVector</i> corresponding to specified <i>Format</i>.</p>
+<p>Possible <i>Format</i> values: <i>IDsAndValuesString, IDsAndValues, IDsAndValuesPairsString, IDsAndValuesPairs, ValuesAndIDsString, ValuesAndIDs, ValuesAndIDsPairsString, ValuesAndIDsPairs, ValueIDsString, ValueIDs, ValuesString, or Values</i>.</p>
+</dd>
+<dt id="GetID"><b>GetID</b></dt>
+<dd>
+<div class="OptionsBox">    $ID = $FingerprintsVector-&gt;GetID();</div>
+<p>Returns <i>ID</i> of <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="GetVectorType"><b>GetVectorType</b></dt>
+<dd>
+<div class="OptionsBox">    $VectorType = $FingerprintsVector-&gt;GetVectorType();</div>
+<p>Returns <i>VectorType</i> of <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="GetIDsAndValuesPairsString"><b>GetIDsAndValuesPairsString</b></dt>
+<dd>
+<div class="OptionsBox">    $IDsValuesPairsString = $FingerprintsVector-&gt;GetIDsAndValuesPairsString();</div>
+<p>Returns <i>FingerprintsVector</i> value IDs and values as space delimited ID/value pair string.</p>
+</dd>
+<dt id="GetIDsAndValuesString"><b>GetIDsAndValuesString</b></dt>
+<dd>
+<div class="OptionsBox">    $IDsValuesString = $FingerprintsVector-&gt;GetIDsAndValuesString();</div>
+<p>Returns <i>FingerprintsVector</i> value IDs and values as string containing space delimited IDs followed by values with semicolon as IDs and values delimiter.</p>
+</dd>
+<dt id="GetNumOfNonZeroValues"><b>GetNumOfNonZeroValues</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNonZeroValues = $FingerprintsVector-&gt;GetNumOfNonZeroValues();</div>
+<p>Returns number of non-zero values in <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="GetNumOfValueIDs"><b>GetNumOfValueIDs</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfValueIDs = $FingerprintsVector-&gt;GetNumOfValueIDs();</div>
+<p>Returns number of value IDs <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="GetNumOfValues"><b>GetNumOfValues</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfValues = $FingerprintsVector-&gt;GetNumOfValues();</div>
+<p>Returns number of values <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="GetSupportedDistanceAndSimilarityCoefficients"><b>GetSupportedDistanceAndSimilarityCoefficients</b></dt>
+<dd>
+<div class="OptionsBox">    @SupportedDistanceAndSimilarityCoefficientsReturn =
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        Fingerprints::FingerprintsVector::GetSupportedDistanceAndSimilarityCoefficients();</div>
+<p>Returns an array containing names of supported distance and similarity coefficients.</p>
+</dd>
+<dt id="GetSupportedDistanceCoefficients"><b>GetSupportedDistanceCoefficients</b></dt>
+<dd>
+<div class="OptionsBox">    @SupportedDistanceCoefficientsReturn =
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        Fingerprints::FingerprintsVector::GetSupportedDistanceCoefficients();</div>
+<p>Returns an array containing names of supported disyance coefficients.</p>
+</dd>
+<dt id="GetSupportedSimilarityCoefficients"><b>GetSupportedSimilarityCoefficients</b></dt>
+<dd>
+<div class="OptionsBox">    @SupportedSimilarityCoefficientsReturn =
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        Fingerprints::FingerprintsVector::GetSupportedSimilarityCoefficients();</div>
+<p>Returns an array containing names of supported similarity coefficients.</p>
+</dd>
+<dt id="GetType"><b>GetType</b></dt>
+<dd>
+<div class="OptionsBox">    $VectorType = $FingerprintsVector-&gt;GetType();</div>
+<p>Returns <i>FingerprintsVector</i> vector type.</p>
+</dd>
+<dt id="GetValue"><b>GetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;GetValue($Index);</div>
+<p>Returns fingerprints vector <b>Value</b> specified using <i>Index</i> starting at 0.</p>
+</dd>
+<dt id="GetValueID"><b>GetValueID</b></dt>
+<dd>
+<div class="OptionsBox">    $ValueID = $FingerprintsVector-&gt;GetValueID();</div>
+<p>Returns fingerprints vector <b>ValueID</b> specified using <i>Index</i> starting at 0.</p>
+</dd>
+<dt id="GetValueIDs"><b>GetValueIDs</b></dt>
+<dd>
+<div class="OptionsBox">    $ValueIDs = $FingerprintsVector-&gt;GetValueIDs();
+<br/>    @ValueIDs = $FingerprintsVector-&gt;GetValueIDs();</div>
+<p>Returns fingerprints vector <b>ValueIDs</b> as an array or reference to an array.</p>
+</dd>
+<dt id="GetValueIDsString"><b>GetValueIDsString</b></dt>
+<dd>
+<div class="OptionsBox">    $ValueIDsString = $FingerprintsVector-&gt;GetValueIDsString();</div>
+<p>Returns fingerprints vector <b>ValueIDsString</b> with value IDs delimited by space.</p>
+</dd>
+<dt id="GetValues"><b>GetValues</b></dt>
+<dd>
+<div class="OptionsBox">    $ValuesRef = $FingerprintsVector-&gt;GetValues();
+<br/>    @Values = $FingerprintsVector-&gt;GetValues();</div>
+<p>Returns fingerprints vector <b>Values</b> as an array or reference to an array.</p>
+</dd>
+<dt id="GetValuesAndIDsPairsString"><b>GetValuesAndIDsPairsString</b></dt>
+<dd>
+<div class="OptionsBox">    $ValuesIDsPairsString = $FingerprintsVector-&gt;GetValuesAndIDsPairsString();</div>
+<p>Returns <i>FingerprintsVector</i> value and value IDs as space delimited ID/value pair string.</p>
+</dd>
+<dt id="GetValuesAndIDsString"><b>GetValuesAndIDsString</b></dt>
+<dd>
+<div class="OptionsBox">    $ValuesIDsString = $FingerprintsVector-&gt;GetValuesAndIDsString();</div>
+<p>Returns <i>FingerprintsVector</i> values and value IDs as string containing space delimited IDs followed by values with semicolon as IDs and values delimiter.</p>
+</dd>
+<dt id="GetValuesString"><b>GetValuesString</b></dt>
+<dd>
+<div class="OptionsBox">    $Return = $FingerprintsVector-&gt;GetValuesString();</div>
+<p>Returns <i>FingerprintsVector</i> values as space delimited string.</p>
+</dd>
+<dt id="HammingDistanceCoefficient"><b>HammingDistanceCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;HammingDistanceCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::HammingDistanceCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Hamming</i> distance coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="IsFingerprintsVector"><b>IsFingerprintsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = Fingerprints::FingerprintsVector::IsFingerprintsVector($Object);</div>
+<p>Returns 1 or 0 based on whether <i>Object</i> is a <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="JaccardSimilarityCoefficient"><b>JaccardSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;JaccardSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::JaccardSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Jaccard</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="ManhattanDistanceCoefficient"><b>ManhattanDistanceCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;ManhattanDistanceCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::ManhattanDistanceCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Manhattan</i> distance coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="NewFromIDsAndValuesPairsString"><b>NewFromIDsAndValuesPairsString</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector = $FingerprintsVector-&gt;NewFromIDsAndValuesPairsString(
+                          $ValuesType, $IDsAndValuesPairsString);
+<br/>    $FingerprintsVector = Fingerprints::FingerprintsVector::NewFromIDsAndValuesPairsString(
+                          $ValuesType, $IDsAndValuesPairsString);</div>
+<p>Creates a new <i>FingerprintsVector</i> of <i>ValuesType</i> using <i>IDsAndValuesPairsString</i> containing space delimited value IDs and values pairs and returns new <b>FingerprintsVector</b> object. Possible <i>ValuesType</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+</dd>
+<dt id="NewFromIDsAndValuesString"><b>NewFromIDsAndValuesString</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector = $FingerprintsVector-&gt;NewFromIDsAndValuesString(
+                          $ValuesType, $IDsAndValuesString);
+<br/>    $FingerprintsVector = Fingerprints::FingerprintsVector::NewFromIDsAndValuesString(
+                          $ValuesType, $IDsAndValuesString);</div>
+<p>Creates a new <i>FingerprintsVector</i> of <i>ValuesType</i> using <i>IDsAndValuesString</i> containing semicolon delimited value IDs string followed by values strings and returns new <b>FingerprintsVector</b> object. The values within value and value IDs tring are delimited by spaces. Possible <i>ValuesType</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+</dd>
+<dt id="NewFromValuesAndIDsPairsString"><b>NewFromValuesAndIDsPairsString</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector = $FingerprintsVector-&gt;NewFromValuesAndIDsPairsString(
+                          $ValuesType, $ValuesAndIDsPairsString);
+<br/>    $FingerprintsVector = Fingerprints::FingerprintsVector::NewFromValuesAndIDsPairsString(
+                          $ValuesType, $ValuesAndIDsPairsString);</div>
+<p>Creates a new <i>FingerprintsVector</i> of <i>ValuesType</i> using <i>ValuesAndIDsPairsString</i> containing space delimited value and value IDs pairs and returns new <b>FingerprintsVector</b> object. Possible <i>ValuesType</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+</dd>
+<dt id="NewFromValuesAndIDsString"><b>NewFromValuesAndIDsString</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector = $FingerprintsVector-&gt;NewFromValuesAndIDsString(
+                          $ValuesType, $IDsAndValuesString);
+<br/>    $FingerprintsVector = Fingerprints::FingerprintsVector::NewFromValuesAndIDsString(
+                          $ValuesType, $IDsAndValuesString);</div>
+<p>Creates a new <i>FingerprintsVector</i> of <i>ValuesType</i> using <i>ValuesAndIDsString</i> containing semicolon delimited values string followed by value IDs strings and returns new <b>FingerprintsVector</b> object. The values within values and value IDs tring are delimited by spaces. Possible <i>ValuesType</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+</dd>
+<dt id="NewFromValuesString"><b>NewFromValuesString</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector = $FingerprintsVector-&gt;NewFromValuesString(
+                          $ValuesType, $ValuesString);
+<br/>    $FingerprintsVector = Fingerprints::FingerprintsVector::NewFromValuesString(
+                          $ValuesType, $ValuesString);</div>
+<p>Creates a new <i>FingerprintsVector</i> of <i>ValuesType</i> using <i>ValuesString</i> containing space delimited values string and returns new <b>FingerprintsVector</b> object. The values within values and value IDs tring are delimited by spaces. Possible <i>ValuesType</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+</dd>
+<dt id="OchiaiSimilarityCoefficient"><b>OchiaiSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;OchiaiSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::OchiaiSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Ochiai</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="SetDescription"><b>SetDescription</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetDescription($Description);</div>
+<p>Sets <i>Description</i> of fingerprints vector and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetID"><b>SetID</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetID($ID);</div>
+<p>Sets <i>ID</i> of fingerprints vector and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetVectorType"><b>SetVectorType</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetVectorType($VectorType);</div>
+<p>Sets <i>VectorType</i> of fingerprints vector and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetType"><b>SetType</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetType($Type);</div>
+<p>Sets <i>FingerprintsVector</i> values <i>Type</i> and returns <i>FingerprintsVector</i>. Possible <i>Type</i> values: <i>OrderedNumericalValues, NumericalValues, or AlphaNumericalValues</i>.</p>
+<p>During calculation of similarity and distance coefficients between two <i>FingerprintsVectors</i>, the following conditions apply to vector type, size, value and value IDs:</p>
+<div class="OptionsBox">    o For OrderedNumericalValues type, both vectors must be of the same size
+      and contain similar types of numerical values in the same order.
+<br/>
+<br/>    o For NumericalValues type, vector value IDs for both vectors must be
+      specified; however, their size and order of IDs and numerical values may
+      be different. For each vector, value IDs must correspond to vector values.
+<br/>
+<br/>    o For AlphaNumericalValues type, vectors may contain both numerical and
+      alphanumerical values and their sizes may be different.</div>
+</dd>
+<dt id="SetValue"><b>SetValue</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetValue($Index, $Value, [$SkipIndexCheck]);</div>
+<p>Sets a <i>FingerprintsVector</i> value specified by <i>Index</i> starting at 0 to <i>Value</i> along with optional index range check and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetValueID"><b>SetValueID</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetValueID($Index, $ValueID, [$SkipIndexCheck]);</div>
+<p>Sets a <i>FingerprintsVector</i> value ID specified by <i>Index</i> starting at 0 to <i>ValueID</i> along with optional index range check and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetValueIDs"><b>SetValueIDs</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetValueIDs($ValueIDsRef);
+<br/>    $FingerprintsVector-&gt;SetValueIDs(@ValueIDs);</div>
+<p>Sets <i>FingerprintsVector</i> value IDs to specified <i>ValueIDs</i> and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SetValues"><b>SetValues</b></dt>
+<dd>
+<div class="OptionsBox">    $FingerprintsVector-&gt;SetValues($ValuesRef);
+<br/>    $FingerprintsVector-&gt;SetValues(@Values);</div>
+<p>Sets <i>FingerprintsVector</i> value to specified <i>Values</i> and returns <i>FingerprintsVector</i>.</p>
+</dd>
+<dt id="SoergelDistanceCoefficient"><b>SoergelDistanceCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;SoergelDistanceCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::SoergelDistanceCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Soergel</i> distance coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="SorensonSimilarityCoefficient"><b>SorensonSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;SorensonSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::SorensonSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Sorenson</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="TanimotoSimilarityCoefficient"><b>TanimotoSimilarityCoefficient</b></dt>
+<dd>
+<div class="OptionsBox">    $Value = $FingerprintsVector-&gt;TanimotoSimilarityCoefficient(
+              $OtherFingerprintVector, [$CalculationMode, $SkipValuesCheck]);
+<br/>    $Value = Fingerprints::FingerprintsVector::TanimotoSimilarityCoefficient(
+              $FingerprintsVectorA, $FingerprintVectorB,
+              [$CalculationMode, $SkipValuesCheck]);</div>
+<p>Returns value of <i>Tanimoto</i> similarity coefficient between two <i>FingerprintsVectors</i> using optionally specified <i>CalculationMode</i> and optional checking of vector values.</p>
+<p>Possible <i>CalculationMode</i> values: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>. Default <i>CalculationMode</i> value: <i>AlgebraicForm</i>. Default <i>SkipValuesCheck</i> value: <i>0</i>.</p>
+</dd>
+<dt id="StringifyFingerprintsVector"><b>StringifyFingerprintsVector</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $FingerprintsVector-&gt;StringifyFingerprintsVector();</div>
+<p>Returns a string containing information about <i>FingerprintsVector</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./BitVector.html">BitVector.pm</a>, <a href="./FingerprintsStringUtil.html">FingerprintsStringUtil.pm</a>, <a href="./FingerprintsBitVector.html">FingerprintsBitVector.pm</a>, <a href="./Vector.html">Vector.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./FingerprintsStringUtil.html" title="FingerprintsStringUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MACCSKeys.html" title="MACCSKeys.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Fingerprints/FingerprintsVector.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

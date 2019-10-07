@@ -1,0 +1,74 @@
+NAME
+    MolecularFormula
+
+SYNOPSIS
+    use MolecularFormula;
+
+    use MolecularFormula qw(:all);
+
+DESCRIPTION
+    MolecularFormula module provides the following functions:
+
+    CalculateElementalComposition, CalculateExactMass,
+    CalculateMolecularWeight, FormatCompositionInfomation,
+    GetElementsAndCount, IsMolecularFormula
+
+FUNCTIONS
+    CalculateMolecularWeight
+            $MolecularWeight = CalculateMolecularWeight($MolecularFormula);
+
+        Calculates and returns the molecular weight for a specified
+        *MolecularFormula*.
+
+    CalculateElementalComposition
+            ($ElementsRef, $ElementCompositionRef) =
+               CalculateElementalComposition($MolecularFormula);
+
+        Calculates the percent composition in a specified *MolecularFormula*
+        and returns references to arrays containing elements and their
+        percent composition.
+
+    CalculateExactMass
+            $ExactMass = CalculateMolecularWeight($MolecularFormula);
+
+        Calculates and returns the exact mass for a specified
+        *MolecularFormula*.
+
+    FormatCompositionInfomation
+            $FormattedString = FormatCompositionInfomation($ElementsRef,
+                               $ElementCompositionRef, [$Precision]);
+
+        Returns a formatted elemental composition string using references to
+        elements and elemental composition arrays. Precision is an optional
+        parameter; its default value is *2*.
+
+    GetElementsAndCount
+            ($ElementsRef, $ElementCountRef) = GetElementsAndCount(
+                                               $MolecularFormula);
+
+        Retrieves elements and their count composition in a specified
+        *MolecularFormula* and returns references to arrays containing
+        elements and their count.
+
+    IsMolecularFormula
+            $Status = IsMolecularFormula($MolecularFormula);
+            ($Status, $ErrorMsg) = IsMolecularFormula($MolecularFormula);
+
+        Returns 1 or 0 a based on whether it's a valid *MolecularFormula*.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    Molecule.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

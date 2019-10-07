@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Fingerprints/EStateIndiciesFingerprints.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomTypesFingerprints.html" title="AtomTypesFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtendedConnectivityFingerprints.html" title="ExtendedConnectivityFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>Fingerprints/EStateIndiciesFingerprints.pm</strong></td><td width="33%" align="right"><a href="././code/EStateIndiciesFingerprints.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/EStateIndiciesFingerprints.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/EStateIndiciesFingerprints.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/EStateIndiciesFingerprints.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/EStateIndiciesFingerprints.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>EStateIndiciesFingerprints</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Fingerprints::EStateIndiciesFingerprints;</p>
+<p>use Fingerprints::EStateIndiciesFingerprints qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>EStateIndiciesFingerprints</b> [ Ref 75-78 ] class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#GenerateFingerprints">GenerateFingerprints</a>, <a href="#GetDescription">GetDescription</a>, <a href="#SetEStateAtomTypesSetToUse">SetEStateAtomTypesSetToUse</a>, <a href="#SetValuesPrecision">SetValuesPrecision</a>, <a href="#StringifyEStateIndiciesFingerprints">StringifyEStateIndiciesFingerprints</a>
+</p><p><b>EStateIndiciesFingerprints</b> is derived from <b>Fingerprints</b> class which in turn is derived from <b>ObjectProperty</b> base class that provides methods not explicitly defined in <b>AtomNeighborhoodsFingerprints</b>, <b>Fingerprints</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<p>E-state atom types are assigned to all non-hydrogen atoms in a molecule using module AtomTypes::EStateAtomTypes.pm and E-state values are calculated using module AtomicDescriptors::EStateValues.pm. Using E-state atom types and E-state values, <b>EStateIndiciesFingerprints</b> constituting sum of E-state values for E-sate atom types are generated.</p>
+<p>Two types of E-state atom types set size are allowed:</p>
+<div class="OptionsBox">    ArbitrarySize - Corresponds to only E-state atom types detected
+                    in molecule
+<br/>    FixedSize - Corresponds to fixed number of E-state atom types previously
+                defined</div>
+<p>Module AtomTypes::EStateAtomTypes.pm, used to assign E-state atom types to non-hydrogen atoms in the molecule, is able to assign atom types to any valid atom group. However, for <i>FixedSize</i> value of <b>EStateAtomTypesSetToUse</b>, only a fixed set of E-state atom types corresponding to specific atom groups [ Appendix III in Ref 77 ] are used for fingerprints.</p>
+<p>The fixed size E-state atom type set size used during generation of fingerprints contains 87 E-state non-hydrogen atom types in EStateAtomTypes.csv data file distributed with MayaChemTools.</p>
+<p>Combination of Type and EStateAtomTypesSetToUse allow generation of 2 different types of E-state indicies fingerprints:</p>
+<div class="OptionsBox">    Type                        EStateAtomTypesSetToUse
+<br/>
+<br/>    EStateIndicies              ArbitrarySize      [ default fingerprints ]
+<br/>    EStateIndicies              FixedSize</div>
+<p>The current release of MayaChemTools generates the following types of E-state fingerprints vector strings:</p>
+<div class="OptionsBox">    FingerprintsVector;EStateIndicies:ArbitrarySize;11;NumericalValues;IDs
+<br/>    AndValuesString;SaaCH SaasC SaasN SdO SdssC SsCH3 SsF SsOH SssCH2 SssN
+<br/>    H SsssCH;24.778 4.387 1.993 25.023 -1.435 3.975 14.006 29.759 -0.073 3
+<br/>    .024 -2.270
+<br/>
+<br/>    FingerprintsVector;EStateIndicies:FixedSize;87;OrderedNumericalValues;
+<br/>    ValuesString;0 0 0 0 0 0 0 3.975 0 -0.073 0 0 24.778 -2.270 0 0 -1.435
+<br/>    4.387 0 0 0 0 0 0 3.024 0 0 0 0 0 0 0 1.993 0 29.759 25.023 0 0 0 0 1
+<br/>    4.006 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>
+<br/>    FingerprintsVector;EStateIndicies:FixedSize;87;OrderedNumericalValues;
+<br/>    IDsAndValuesString;SsLi SssBe SssssBem SsBH2 SssBH SsssB SssssBm SsCH3
+<br/>    SdCH2 SssCH2 StCH SdsCH SaaCH SsssCH SddC StsC SdssC SaasC SaaaC Sssss
+<br/>    C SsNH3p SsNH2 SssNH2p SdNH SssNH SaaNH StN SsssNHp SdsN SaaN SsssN Sd
+<br/>    0 0 0 0 0 0 0 3.975 0 -0.073 0 0 24.778 -2.270 0 0 -1.435 4.387 0 0 0
+<br/>    0 0 0 3.024 0 0 0 0 0 0 0 1.993 0 29.759 25.023 0 0 0 0 14.006 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0...</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $EStateIndiciesFingerprints = new EStateIndiciesFingerprints(%NamesAndValues);</div>
+<p>Using specified <i>EStateIndiciesFingerprints</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>PathLengthFingerprints</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;;
+<br/>    Type = &#39;EStateIndicies&#39;
+<br/>    EStateAtomTypesSetToUse = &#39;ArbitrarySize&#39;
+<br/>    ValuesPrecision = 3</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $EStateIndiciesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;EStateAtomTypesSetToUse&#39; =&gt;
+                                              &#39;ArbitrarySize&#39;);
+<br/>
+<br/>    $EStateIndiciesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;EStateAtomTypesSetToUse&#39; =&gt;
+                                              &#39;FixedSize&#39;);
+<br/>
+<br/>    $EStateIndiciesFingerprints-&gt;GenerateFingerprints();
+<br/>    print &quot;$EStateIndiciesFingerprints\n&quot;;</div>
+</dd>
+<dt id="GenerateFingerprints"><b>GenerateFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $EStateIndiciesFingerprints = $EStateIndiciesFingerprints-&gt;
+                                  GenerateEStateIndiciesFingerprints();</div>
+<p>Generates EState keys fingerprints and returns <i>EStateIndiciesFingerprints</i>.</p>
+</dd>
+<dt id="GetDescription"><b>GetDescription</b></dt>
+<dd>
+<div class="OptionsBox">    $Description = $EStateIndiciesFingerprints-&gt;GetDescription();</div>
+<p>Returns a string containing description of EState keys fingerprints.</p>
+</dd>
+<dt id="SetEStateAtomTypesSetToUse"><b>SetEStateAtomTypesSetToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $EStateIndiciesFingerprints-&gt;SetEStateAtomTypesSetToUse($Value);</div>
+<p>Sets <i>Value</i> of <i>EStateAtomTypesSetToUse</i> and returns <i>EStateIndiciesFingerprints</i>. Possible values: <i>ArbitrarySize or FixedSize</i>. Default value: <i>ArbitrarySize</i>.</p>
+</dd>
+<dt id="SetValuesPrecision"><b>SetValuesPrecision</b></dt>
+<dd>
+<div class="OptionsBox">    $EStateIndiciesFingerprints-&gt;SetValuesPrecision($Precision);</div>
+<p>Sets precesion of E-state values to use during generation of E-state indices fingerprints and returns <i>EStateIndiciesFingerprints</i>. Possible values: <i>Positive integers</i>. Default value: <i>3</i>.</p>
+</dd>
+<dt id="StringifyEStateIndiciesFingerprints"><b>StringifyEStateIndiciesFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $EStateIndiciesFingerprints-&gt;StringifyEStateIndiciesFingerprints();</div>
+<p>Returns a string containing information about <i>EStateIndiciesFingerprints</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Fingerprints.html">Fingerprints.pm</a>, <a href="./FingerprintsStringUtil.html">FingerprintsStringUtil.pm</a>, <a href="./AtomNeighborhoodsFingerprints.html">AtomNeighborhoodsFingerprints.pm</a>, <a href="./AtomTypesFingerprints.html">AtomTypesFingerprints.pm</a>, <a href="./ExtendedConnectivityFingerprints.html">ExtendedConnectivityFingerprints.pm</a>, <a href="./MACCSKeys.html">MACCSKeys.pm</a>, <a href="./PathLengthFingerprints.html">PathLengthFingerprints.pm</a>, <a href="./TopologicalAtomPairsFingerprints.html">TopologicalAtomPairsFingerprints.pm</a>, <a href="./TopologicalAtomTripletsFingerprints.html">TopologicalAtomTripletsFingerprints.pm</a>, <a href="./TopologicalAtomTorsionsFingerprints.html">TopologicalAtomTorsionsFingerprints.pm</a>, <a href="./TopologicalPharmacophoreAtomPairsFingerprints.html">TopologicalPharmacophoreAtomPairsFingerprints.pm</a>, <a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html">TopologicalPharmacophoreAtomTripletsFingerprints.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomTypesFingerprints.html" title="AtomTypesFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtendedConnectivityFingerprints.html" title="ExtendedConnectivityFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Fingerprints/EStateIndiciesFingerprints.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

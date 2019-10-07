@@ -1,0 +1,123 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:DBSQLToTextFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./CalculatePhysicochemicalProperties.html" title="CalculatePhysicochemicalProperties.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./DBSchemaTablesToTextFiles.html" title="DBSchemaTablesToTextFiles.html">Next</a></td><td width="34%" align="middle"><strong>DBSQLToTextFiles.pl</strong></td><td width="33%" align="right"><a href="././code/DBSQLToTextFiles.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/DBSQLToTextFiles.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/DBSQLToTextFiles.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/DBSQLToTextFiles.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/DBSQLToTextFiles.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>DBSQLToTextFiles.pl - Export data from MySQL, Oracle or PostgreSQL database into CSV/TSV text files</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>DBSQLToTextFiles.pl SQLFileName(s) | SQLSelectStatement(s)...</p>
+<p>DBSQLToTextFiles.pl [<b>-d, --dbdriver</b> mysql | Oracle | Postgres or Pg] [<b>--dbhost </b> hostname] [<b>--dbname</b> databasename] [<b>--dbpassword</b> password] [<b>--dbusername</b> username] [<b>--exportdatalabels</b> yes | no] [<b>--exportlobs</b> yes | no] [<b>-h, --help</b>] [<b>-m, --mode</b> SQLStatement | SQLFile] [<b>-o, --overwrite</b>] [<b>--outdelim</b> comma | tab | semicolon] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>--replacenullstr string</b>] [<b>-w --workingdir</b> dirname] SQLFileName(s) | SQLSelectStatement(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Export data from MySQL, Oracle or PostgreSQL database into CSV/TSV text files. Based on <b>-m --mode</b> option value, two methods of data selection are availble: in line SQL select statement(s), or SQL file name(s) containing SQL select statement(s). All command line parameters must correspond to similar mode; mixing of parameters for different modes is not supported.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="d---dbdriver-mysql-Oracle-Postgres-or-Pg"><b>-d, --dbdriver</b> <i>mysql | Oracle | Postgres or Pg</i></dt>
+<dd>
+<p>Database driver name. Possible values: <i>mysql, Oracle, Postgres or Pg</i>. Default: <i>MySQL</i> or value of environment variable DBI_DRIVER. This script has only been tested with MySQL, Oracle and PostgreSQL drivers.</p>
+</dd>
+<dt id="dbhost-hostname"><b>--dbhost </b> <i>hostname</i></dt>
+<dd>
+<p>Database host name. Default: <i>127.0.0.1</i> for both MySQL, Oracle and PostgreSQL. For remote databases, specify complete remote host domain: <i>dbhostname.org</i> or something like it.</p>
+</dd>
+<dt id="dbname-databasename"><b>--dbname</b> <i>databasename</i></dt>
+<dd>
+<p>Database name. Default: mysql for MySQL, postgres for PostgreSQL and none for Oracle. For connecting to local/remote Oracle databases, this value can be left undefined assuming <b>--dbhost</b> is correctly specified.</p>
+</dd>
+<dt id="dbpassword-password"><b>--dbpassword</b> <i>password</i></dt>
+<dd>
+<p>Database user password. Default: <i>none</i> and value of environment variable DBI_PASS is used for connecting to database.</p>
+</dd>
+<dt id="dbusername-username"><b>--dbusername</b> <i>username</i></dt>
+<dd>
+<p>Database user name. Default: <i>none</i> and value of environment variable DBI_USER is used for connecting to database.</p>
+</dd>
+<dt id="exportdatalabels-yes-no"><b>--exportdatalabels</b> <i>yes | no</i></dt>
+<dd>
+<p>This option is mode specific and controls exporting of column data labels during exportdata mode. Possible values: <i>yes or no</i>. Default: <i>yes</i>.</p>
+</dd>
+<dt id="exportlobs-yes-no"><b>--exportlobs</b> <i>yes | no</i></dt>
+<dd>
+<p>This option is mode specific and controls exporting of CLOB/BLOB data columns during exportdata mode. Possible values: <i>yes or no</i>. Default: <i>no</i>.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="m---mode-SQLStatement-SQLFile"><b>-m, --mode</b> <i>SQLStatement | SQLFile</i></dt>
+<dd>
+<p>Data selection criterion from database. Two different command line parameter methods are available: in line SQL statement(s) specification or file name(s) containing SQL select statement(s). This value determines how command line parameters are processed.</p>
+<p>Possible values: <i>SQLStatement or SQLFile</i>. Default value: <i>SQLStatement</i></p>
+<p>In SQLFile mode, SQL file contains select statements delimited by <i>;</i>. And the lines starting with <i>#</i> or <i>-</i> are ignored.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New file name is generated using the root:&lt;Root&gt;&lt;No&gt;.&lt;Ext&gt;. Default new file file names: SQLStatement&lt;No&gt;.&lt;Ext&gt;, or &lt;SQLFileName&gt;&lt;StatementNo&gt;.&lt;Ext&gt;. The csv and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively.This option is ignored for multiple input parameters.</p>
+</dd>
+<dt id="replacenullstr-string"><b>--replacenullstr</b> <i>string</i></dt>
+<dd>
+<p>Replace NULL or undefined row values with specified value. Default: <i>none</i></p>
+<p>For importing output text files into MySQL database using &quot;load data local infile &#39;&lt;tablename&gt;.tsv&#39; into table &lt;tablename&gt;&quot; command, use <i>--raplacenullstr &quot;NULL&quot;</i> in conjunction with <i>--exportdatalabels no</i>, <i>--quote no</i>, and <i>--outdelim tab</i> options: it&#39;ll generate files for direct import into MySQL assuming tables already exists.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To export all data in user_info table from a MySQL server running on a local machine using username/password from DBI_USER and DBI_PASS environmental variables, type:</p>
+<div class="ExampleBox">    % DBSQLToTextFiles.pl -o &quot;select * from user_info&quot;</div>
+<p>To describe user table in a MySQL server running on a remote machine using explicit username/password and capturing the output into a UserTable.csv file, type:</p>
+<div class="ExampleBox">    % DBSQLToTextFiles.pl --dbdriver mysql --dbuser &lt;name&gt; --dbpassword
+      &lt;pasword&gt; --dbname mysql --dbhost &lt;mysqlhostname.org&gt; -r UserTable
+      -m SQLStatement -o &quot;select * from user_info&quot;</div>
+<p>To describe table all_tables in Oracle running on a remote machine using explicit username/password and capturing the output into a AllTable.tsv file, type:</p>
+<div class="ExampleBox">    % DBSQLToTextFiles.pl --dbdriver Oracle --dbuser &lt;name&gt; --dbpassword
+      &lt;pasword&gt; --dbhost &lt;oraclehostname.com&gt; -r AllTable -m SQLStatement
+      --outdelim tab --quote no -o &quot;select * from all_tables&quot;</div>
+<p>To run all SQL statement in a file sample.sql on a local Oracle host and capturing output in a SampleSQL.csv file, type:</p>
+<div class="ExampleBox">    % DBSQLToTextFiles.pl --dbdriver Oracle --dbuser &lt;name&gt; --dbpassword
+      &lt;pasword&gt; -r SampleSQL -m SQLFile -o sample.sql</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./DBSchemaTablesToTextFiles.html">DBSchemaTablesToTextFiles.pl</a>, <a href="./DBTablesToTextFiles.html">DBTablesToTextFiles.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./CalculatePhysicochemicalProperties.html" title="CalculatePhysicochemicalProperties.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./DBSchemaTablesToTextFiles.html" title="DBSchemaTablesToTextFiles.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>DBSQLToTextFiles.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

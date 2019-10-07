@@ -1,0 +1,669 @@
+NAME
+    TopologicalAtomPairsFingerprints.pl - Generate topological atom pairs
+    fingerprints for SD files
+
+SYNOPSIS
+    TopologicalAtomPairsFingerprints.pl SDFile(s)...
+
+    TopologicalAtomPairsFingerprints.pl [--AromaticityModel
+    *AromaticityModelType*] [-a, --AtomIdentifierType
+    *AtomicInvariantsAtomTypes*] [--AtomicInvariantsToUse
+    *"AtomicInvariant,AtomicInvariant..."*] [--FunctionalClassesToUse
+    *"FunctionalClass1,FunctionalClass2..."*] [--CompoundID *DataFieldName
+    or LabelPrefixString*] [--CompoundIDLabel *text*] [--CompoundIDMode]
+    [--DataFields *"FieldLabel1,FieldLabel2,..."*] [-d, --DataFieldsMode
+    *All | Common | Specify | CompoundID*] [-f, --Filter *Yes | No*]
+    [--FingerprintsLabel *text*] [-h, --help] [-k, --KeepLargestComponent
+    *Yes | No*] [--MinDistance *number*] [--MaxDistance *number*]
+    [--OutDelim *comma | tab | semicolon*] [--output *SD | FP | text | all*]
+    [-o, --overwrite] [-q, --quote *Yes | No*] [-r, --root *RootName*] [-v,
+    --VectorStringFormat *ValuesString, IDsAndValuesString |
+    IDsAndValuesPairsString | ValuesAndIDsString | ValuesAndIDsPairsString*]
+    [-w, --WorkingDir dirname] SDFile(s)...
+
+DESCRIPTION
+    Generate topological atom pairs fingerprints [ Ref 57, Ref 59, Ref 72 ]
+    for *SDFile(s)* and create appropriate SD, FP or CSV/TSV text file(s)
+    containing fingerprints vector strings corresponding to molecular
+    fingerprints.
+
+    Multiple SDFile names are separated by spaces. The valid file extensions
+    are *.sdf* and *.sd*. All other file names are ignored. All the SD files
+    in a current directory can be specified either by **.sdf* or the current
+    directory name.
+
+    The current release of MayaChemTools supports generation of topological
+    atom pairs corresponding to following -a, --AtomIdentifierTypes:
+
+        AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes,
+        FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,
+        SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes
+
+    Based on the values specified for -a, --AtomIdentifierType and
+    --AtomicInvariantsToUse, initial atom types are assigned to all
+    non-hydrogen atoms in a molecule. Using the distance matrix for the
+    molecule and initial atom types assigned to non-hydrogen atoms, all
+    unique atom pairs within --MinDistance and --MaxDistance are identified
+    and counted. An atom pair identifier is generated for each unique atom
+    pair; the format of the atom pair identifier is:
+
+        <AtomType1>-D<n>-<AtomType2>
+
+        AtomType1, AtomType2: Atom types assigned to atom1 and atom2
+        D: Distance between atom1 and atom2
+
+        where AtomType1 <= AtomType2
+
+    The atom pair identifiers for all unique atom pairs corresponding to
+    non-hydrogen atoms constitute topological atom pairs fingerprints of the
+    molecule.
+
+    Example of *SD* file containing topological atom pairs fingerprints
+    string data:
+
+        ... ...
+        ... ...
+        $$$$
+        ... ...
+        ... ...
+        ... ...
+        41 44  0  0  0  0  0  0  0  0999 V2000
+         -3.3652    1.4499    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+        ... ...
+        2  3  1  0  0  0  0
+        ... ...
+        M  END
+        >  <CmpdID>
+        Cmpd1
+
+        >  <TopologicalAtomPairsFingerprints>
+        FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinDi
+        stance1:MaxDistance10;223;NumericalValues;IDsAndValuesString;C.X1.BO1.H
+        3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2 C.X2.BO2.H2-D1-C.X3.BO3.H1
+        C.X2.BO2.H2-D1-C.X3.BO4 C.X2.BO2.H2-D1-N.X3.BO3 C.X2.BO3.H1-D1-C.X2...;
+        2 1 4 1 1 10 8 1 2 6 1 2 2 1 2 1 2 2 1 2 1 5 1 10 12 2 2 1 2 1 9 1 3 1
+        1 1 2 2 1 3 6 1 6 14 2 2 2 3 1 3 1 8 2 2 1 3 2 6 1 2 2 5 1 3 1 23 1 ...
+
+        $$$$
+        ... ...
+        ... ...
+
+    Example of *FP* file containing topological atom pairs fingerprints
+    string data:
+
+        #
+        # Package = MayaChemTools 7.4
+        # Release Date = Oct 21, 2010
+        #
+        # TimeStamp = Fri Mar 11 15:04:36 2011
+        #
+        # FingerprintsStringType = FingerprintsVector
+        #
+        # Description = TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinDi...
+        # VectorStringFormat = IDsAndValuesString
+        # VectorValuesType = NumericalValues
+        #
+        Cmpd1 223;C.X1.BO1.H3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2...;1 1...
+        Cmpd2 128;C.X1.BO1.H3-D1-C.X2.BO2.H2 C.X1.BO1.H3-D1-C.X3.BO4...;1 1...
+        ... ...
+        ... ..
+
+    Example of CSV *Text* file containing topological atom pairs
+    fingerprints string data:
+
+        "CompoundID","TopologicalAtomPairsFingerprints"
+        "Cmpd1","FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTy
+        pes:MinDistance1:MaxDistance10;223;NumericalValues;IDsAndValuesString;C
+        .X1.BO1.H3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2 C.X2.BO2.H2-D1-C.X
+        3.BO3.H1C.X2.BO2.H2-D1-C.X3.BO4 C.X2.BO2.H2-D1-N.X3.BO3 C.X2.BO3.H1...;
+        2 1 4 1 1 10 8 1 2 6 1 2 2 1 2 1 2 2 1 2 1 5 1 10 12 2 2 1 2 1 9 1 3 1
+        1 1 2 2 1 3 6 1 6 14 2 2 2 3 1 3 1 8 2 2 1 3 2 6 1 2 2 5 1 3 1 23 1 ...
+        ... ...
+        ... ...
+
+    The current release of MayaChemTools generates the following types of
+    topological atom pairs fingerprints vector strings:
+
+        FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinD
+        istance1:MaxDistance10;223;NumericalValues;IDsAndValuesString;C.X1.BO1
+        .H3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2 C.X2.BO2.H2-D1-C.X3.BO3.
+        H1 C.X2.BO2.H2-D1-C.X3.BO4 C.X2.BO2.H2-D1-N.X3.BO3 C.X2.BO3.H1-D1-...;
+        2 1 4 1 1 10 8 1 2 6 1 2 2 1 2 1 2 2 1 2 1 5 1 10 12 2 2 1 2 1 9 1 3 1
+        1 1 2 2 1 3 6 1 6 14 2 2 2 3 1 3 1 8 2 2 1 3 2 6 1 2 2 5 1 3 1 23 1...
+
+        FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinD
+        istance1:MaxDistance10;223;NumericalValues;IDsAndValuesPairsString;C.X
+        1.BO1.H3-D1-C.X3.BO3.H1 2 C.X2.BO2.H2-D1-C.X2.BO2.H2 1 C.X2.BO2.H2-D1-
+        C.X3.BO3.H1 4 C.X2.BO2.H2-D1-C.X3.BO4 1 C.X2.BO2.H2-D1-N.X3.BO3 1 C.X2
+        .BO3.H1-D1-C.X2.BO3.H1 10 C.X2.BO3.H1-D1-C.X3.BO4 8 C.X3.BO3.H1-D1-C.X
+        3.BO4 1 C.X3.BO3.H1-D1-O.X1.BO1.H1 2 C.X3.BO4-D1-C.X3.BO4 6 C.X3.BO...
+
+        FingerprintsVector;TopologicalAtomPairs:DREIDINGAtomTypes:MinDistance1
+        :MaxDistance10;157;NumericalValues;IDsAndValuesString;C_2-D1-C_3 C_2-D
+        1-C_R C_2-D1-N_3 C_2-D1-O_2 C_2-D1-O_3 C_3-D1-C_3 C_3-D1-C_R C_3-D1-N_
+        R C_3-D1-O_3 C_R-D1-C_R C_R-D1-F_ C_R-D1-N_3 C_R-D1-N_R C_2-D2-C_3 C_2
+        1 1 1 2 1 7 1 1 2 23 1 1 2 1 3 5 5 2 1 5 28 2 3 3 1 1 1 2 4 1 1 4 9 3
+        1 4 24 2 4 3 3 4 5 5 14 1 1 2 3 22 1 3 4 4 1 1 1 1 2 2 5 1 4 21 3 1...
+
+        FingerprintsVector;TopologicalAtomPairs:EStateAtomTypes:MinDistance1:M
+        axDistance10;251;NumericalValues;IDsAndValuesString;aaCH-D1-aaCH aaCH-
+        D1-aasC aasC-D1-aasC aasC-D1-aasN aasC-D1-dssC aasC-D1-sF aasC-D1-ssNH
+        aasC-D1-sssCH aasN-D1-ssCH2 dO-D1-dssC dssC-D1-sOH dssC-D1-ssCH2 d...;
+        10 8 5 2 1 1 1 1 1 2 1 1 1 2 2 1 4 10 12 2 2 6 3 1 3 2 2 1 1 1 1 1 1 1
+        1 1 5 2 1 1 6 12 2 2 2 2 6 1 3 2 2 5 2 2 1 2 1 1 1 1 1 1 3 1 3 19 2...
+
+        FingerprintsVector;TopologicalAtomPairs:FunctionalClassAtomTypes:MinDi
+        stance1:MaxDistance10;144;NumericalValues;IDsAndValuesString;Ar-D1-Ar
+        Ar-D1-Ar.HBA Ar-D1-HBD Ar-D1-Hal Ar-D1-None Ar.HBA-D1-None HBA-D1-NI H
+        BA-D1-None HBA.HBD-D1-NI HBA.HBD-D1-None HBD-D1-None NI-D1-None No...;
+        23 2 1 1 2 1 1 1 1 2 1 1 7 28 3 1 3 2 8 2 1 1 1 5 1 5 24 3 3 4 2 13 4
+        1 1 4 1 5 22 4 4 3 1 19 1 1 1 1 1 2 2 3 1 1 8 25 4 5 2 3 1 26 1 4 1 ...
+
+        FingerprintsVector;TopologicalAtomPairs:MMFF94AtomTypes:MinDistance1:M
+        axDistance10;227;NumericalValues;IDsAndValuesPairsString;C5A-D1-C5B 2 
+        C5A-D1-CB 1 C5A-D1-CR 1 C5A-D1-N5 2 C5B-D1-C5B 1 C5B-D1-C=ON 1 C5B-D1-
+        CB 1 C=ON-D1-NC=O 1 C=ON-D1-O=CN 1 CB-D1-CB 18 CB-D1-F 1 CB-D1-NC=O 1
+        COO-D1-CR 1 COO-D1-O=CO 1 COO-D1-OC=O 1 CR-D1-CR 7 CR-D1-N5 1 CR-D1-OR
+        2 C5A-D2-C5A 1 C5A-D2-C5B 2 C5A-D2-C=ON 1 C5A-D2-CB 3 C5A-D2-CR 4 ...
+
+        FingerprintsVector;TopologicalAtomPairs:SLogPAtomTypes:MinDistance1:Ma
+        xDistance10;329;NumericalValues;IDsAndValuesPairsString;C1-D1-C10 1 C1
+        -D1-C11 2 C1-D1-C5 1 C1-D1-CS 4 C10-D1-N11 1 C11-D1-C21 1 C14-D1-C18 2
+        C14-D1-F 1 C18-D1-C18 10 C18-D1-C20 4 C18-D1-C22 2 C20-D1-C20 3 C20-D
+        1-C21 1 C20-D1-N11 1 C21-D1-C21 1 C21-D1-C5 1 C21-D1-N11 1 C22-D1-N4 1
+        C5-D1-N4 1 C5-D1-O10 1 C5-D1-O2 1 C5-D1-O9 1 CS-D1-O2 2 C1-D2-C1 3...
+
+        FingerprintsVector;TopologicalAtomPairs:SYBYLAtomTypes:MinDistance1:Ma
+        xDistance10;159;NumericalValues;IDsAndValuesPairsString;C.2-D1-C.3 1 C
+        .2-D1-C.ar 1 C.2-D1-N.am 1 C.2-D1-O.2 1 C.2-D1-O.co2 2 C.3-D1-C.3 7 C.
+        3-D1-C.ar 1 C.3-D1-N.ar 1 C.3-D1-O.3 2 C.ar-D1-C.ar 23 C.ar-D1-F 1 C.a
+        r-D1-N.am 1 C.ar-D1-N.ar 2 C.2-D2-C.3 1 C.2-D2-C.ar 3 C.3-D2-C.3 5 C.3
+        -D2-C.ar 5 C.3-D2-N.ar 2 C.3-D2-O.3 4 C.3-D2-O.co2 2 C.ar-D2-C.ar 2...
+
+        FingerprintsVector;TopologicalAtomPairs:TPSAAtomTypes:MinDistance1:Max
+        Distance10;64;NumericalValues;IDsAndValuesPairsString;N21-D1-None 3 N7
+        -D1-None 2 None-D1-None 34 None-D1-O3 2 None-D1-O4 3 N21-D2-None 5 N7-
+        D2-None 3 N7-D2-O3 1 None-D2-None 44 None-D2-O3 2 None-D2-O4 5 O3-D2-O
+        4 1 N21-D3-None 7 N7-D3-None 4 None-D3-None 45 None-D3-O3 4 None-D3-O4
+        5 N21-D4-N7 1 N21-D4-None 5 N21-D4-O3 1 N21-D4-O4 1 N7-D4-None 4 N...
+
+        FingerprintsVector;TopologicalAtomPairs:UFFAtomTypes:MinDistance1:MaxD
+        istance10;157;NumericalValues;IDsAndValuesPairsString;C_2-D1-C_3 1 C_2
+        -D1-C_R 1 C_2-D1-N_3 1 C_2-D1-O_2 2 C_2-D1-O_3 1 C_3-D1-C_3 7 C_3-D1-C
+        _R 1 C_3-D1-N_R 1 C_3-D1-O_3 2 C_R-D1-C_R 23 C_R-D1-F_ 1 C_R-D1-N_3 1 
+        C_R-D1-N_R 2 C_2-D2-C_3 1 C_2-D2-C_R 3 C_3-D2-C_3 5 C_3-D2-C_R 5 C_3-D
+        2-N_R 2 C_3-D2-O_2 1 C_3-D2-O_3 5 C_R-D2-C_R 28 C_R-D2-F_ 2 C_R-D2-...
+
+OPTIONS
+    --AromaticityModel *MDLAromaticityModel | TriposAromaticityModel |
+    MMFFAromaticityModel | ChemAxonBasicAromaticityModel |
+    ChemAxonGeneralAromaticityModel | DaylightAromaticityModel |
+    MayaChemToolsAromaticityModel*
+        Specify aromaticity model to use during detection of aromaticity.
+        Possible values in the current release are: *MDLAromaticityModel,
+        TriposAromaticityModel, MMFFAromaticityModel,
+        ChemAxonBasicAromaticityModel, ChemAxonGeneralAromaticityModel,
+        DaylightAromaticityModel or MayaChemToolsAromaticityModel*. Default
+        value: *MayaChemToolsAromaticityModel*.
+
+        The supported aromaticity model names along with model specific
+        control parameters are defined in AromaticityModelsData.csv, which
+        is distributed with the current release and is available under
+        lib/data directory. Molecule.pm module retrieves data from this file
+        during class instantiation and makes it available to method
+        DetectAromaticity for detecting aromaticity corresponding to a
+        specific model.
+
+    -a, --AtomIdentifierType *AtomicInvariantsAtomTypes | DREIDINGAtomTypes
+    | EStateAtomTypes | FunctionalClassAtomTypes | MMFF94AtomTypes |
+    SLogPAtomTypes | SYBYLAtomTypes | TPSAAtomTypes | UFFAtomTypes*
+        Specify atom identifier type to use for assignment of initial atom
+        identifier to non-hydrogen atoms during calculation of topological
+        atom pairs fingerprints. Possible values in the current release are:
+        *AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes,
+        FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,
+        SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes*. Default value:
+        *AtomicInvariantsAtomTypes*.
+
+    --AtomicInvariantsToUse *"AtomicInvariant,AtomicInvariant..."*
+        This value is used during *AtomicInvariantsAtomTypes* value of a,
+        --AtomIdentifierType option. It's a list of comma separated valid
+        atomic invariant atom types.
+
+        Possible values for atomic invariants are: *AS, X, BO, LBO, SB, DB,
+        TB, H, Ar, RA, FC, MN, SM*. Default value: *AS,X,BO,H,FC*.
+
+        The atomic invariants abbreviations correspond to:
+
+            AS = Atom symbol corresponding to element symbol
+
+            X<n>   = Number of non-hydrogen atom neighbors or heavy atoms
+            BO<n> = Sum of bond orders to non-hydrogen atom neighbors or heavy atoms
+            LBO<n> = Largest bond order of non-hydrogen atom neighbors or heavy atoms
+            SB<n> = Number of single bonds to non-hydrogen atom neighbors or heavy atoms
+            DB<n> = Number of double bonds to non-hydrogen atom neighbors or heavy atoms
+            TB<n> = Number of triple bonds to non-hydrogen atom neighbors or heavy atoms
+            H<n>   = Number of implicit and explicit hydrogens for atom
+            Ar     = Aromatic annotation indicating whether atom is aromatic
+            RA     = Ring atom annotation indicating whether atom is a ring
+            FC<+n/-n> = Formal charge assigned to atom
+            MN<n> = Mass number indicating isotope other than most abundant isotope
+            SM<n> = Spin multiplicity of atom. Possible values: 1 (singlet), 2 (doublet) or
+                    3 (triplet)
+
+        Atom type generated by AtomTypes::AtomicInvariantsAtomTypes class
+        corresponds to:
+
+            AS.X<n>.BO<n>.LBO<n>.<SB><n>.<DB><n>.<TB><n>.H<n>.Ar.RA.FC<+n/-n>.MN<n>.SM<n>
+
+        Except for AS which is a required atomic invariant in atom types,
+        all other atomic invariants are optional. Atom type specification
+        doesn't include atomic invariants with zero or undefined values.
+
+        In addition to usage of abbreviations for specifying atomic
+        invariants, the following descriptive words are also allowed:
+
+            X : NumOfNonHydrogenAtomNeighbors or NumOfHeavyAtomNeighbors
+            BO : SumOfBondOrdersToNonHydrogenAtoms or SumOfBondOrdersToHeavyAtoms
+            LBO : LargestBondOrderToNonHydrogenAtoms or LargestBondOrderToHeavyAtoms
+            SB :  NumOfSingleBondsToNonHydrogenAtoms or NumOfSingleBondsToHeavyAtoms
+            DB : NumOfDoubleBondsToNonHydrogenAtoms or NumOfDoubleBondsToHeavyAtoms
+            TB : NumOfTripleBondsToNonHydrogenAtoms or NumOfTripleBondsToHeavyAtoms
+            H :  NumOfImplicitAndExplicitHydrogens
+            Ar : Aromatic
+            RA : RingAtom
+            FC : FormalCharge
+            MN : MassNumber
+            SM : SpinMultiplicity
+
+        *AtomTypes::AtomicInvariantsAtomTypes* module is used to assign
+        atomic invariant atom types.
+
+    --FunctionalClassesToUse *"FunctionalClass1,FunctionalClass2..."*
+        This value is used during *FunctionalClassAtomTypes* value of a,
+        --AtomIdentifierType option. It's a list of comma separated valid
+        functional classes.
+
+        Possible values for atom functional classes are: *Ar, CA, H, HBA,
+        HBD, Hal, NI, PI, RA*. Default value [ Ref 24 ]:
+        *HBD,HBA,PI,NI,Ar,Hal*.
+
+        The functional class abbreviations correspond to:
+
+            HBD: HydrogenBondDonor
+            HBA: HydrogenBondAcceptor
+            PI :  PositivelyIonizable
+            NI : NegativelyIonizable
+            Ar : Aromatic
+            Hal : Halogen
+            H : Hydrophobic
+            RA : RingAtom
+            CA : ChainAtom
+
+         Functional class atom type specification for an atom corresponds to:
+
+            Ar.CA.H.HBA.HBD.Hal.NI.PI.RA
+
+        *AtomTypes::FunctionalClassAtomTypes* module is used to assign
+        functional class atom types. It uses following definitions [ Ref
+        60-61, Ref 65-66 ]:
+
+            HydrogenBondDonor: NH, NH2, OH
+            HydrogenBondAcceptor: N[!H], O
+            PositivelyIonizable: +, NH2
+            NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH
+
+    --CompoundID *DataFieldName or LabelPrefixString*
+        This value is --CompoundIDMode specific and indicates how compound
+        ID is generated.
+
+        For *DataField* value of --CompoundIDMode option, it corresponds to
+        datafield label name whose value is used as compound ID; otherwise,
+        it's a prefix string used for generating compound IDs like
+        LabelPrefixString<Number>. Default value, *Cmpd*, generates compound
+        IDs which look like Cmpd<Number>.
+
+        Examples for *DataField* value of --CompoundIDMode:
+
+            MolID
+            ExtReg
+
+        Examples for *LabelPrefix* or *MolNameOrLabelPrefix* value of
+        --CompoundIDMode:
+
+            Compound
+
+        The value specified above generates compound IDs which correspond to
+        Compound<Number> instead of default value of Cmpd<Number>.
+
+    --CompoundIDLabel *text*
+        Specify compound ID column label for CSV/TSV text file(s) used
+        during *CompoundID* value of --DataFieldsMode option. Default value:
+        *CompoundID*.
+
+    --CompoundIDMode *DataField | MolName | LabelPrefix |
+    MolNameOrLabelPrefix*
+        Specify how to generate compound IDs and write to FP or CSV/TSV text
+        file(s) along with generated fingerprints for *FP | text | all*
+        values of --output option: use a *SDFile(s)* datafield value; use
+        molname line from *SDFile(s)*; generate a sequential ID with
+        specific prefix; use combination of both MolName and LabelPrefix
+        with usage of LabelPrefix values for empty molname lines.
+
+        Possible values: *DataField | MolName | LabelPrefix |
+        MolNameOrLabelPrefix*. Default value: *LabelPrefix*.
+
+        For *MolNameAndLabelPrefix* value of --CompoundIDMode, molname line
+        in *SDFile(s)* takes precedence over sequential compound IDs
+        generated using *LabelPrefix* and only empty molname values are
+        replaced with sequential compound IDs.
+
+        This is only used for *CompoundID* value of --DataFieldsMode option.
+
+    --DataFields *"FieldLabel1,FieldLabel2,..."*
+        Comma delimited list of *SDFiles(s)* data fields to extract and
+        write to CSV/TSV text file(s) along with generated fingerprints for
+        *text | both* values of --output option.
+
+        This is only used for *Specify* value of --DataFieldsMode option.
+
+        Examples:
+
+            Extreg
+            MolID,CompoundName
+
+    -d, --DataFieldsMode *All | Common | Specify | CompoundID*
+        Specify how data fields in *SDFile(s)* are transferred to output
+        CSV/TSV text file(s) along with generated fingerprints for *text |
+        both* values of --output option: transfer all SD data field;
+        transfer SD data files common to all compounds; extract specified
+        data fields; generate a compound ID using molname line, a compound
+        prefix, or a combination of both. Possible values: *All | Common |
+        specify | CompoundID*. Default value: *CompoundID*.
+
+    -f, --Filter *Yes | No*
+        Specify whether to check and filter compound data in SDFile(s).
+        Possible values: *Yes or No*. Default value: *Yes*.
+
+        By default, compound data is checked before calculating fingerprints
+        and compounds containing atom data corresponding to non-element
+        symbols or no atom data are ignored.
+
+    --FingerprintsLabel *text*
+        SD data label or text file column label to use for fingerprints
+        string in output SD or CSV/TSV text file(s) specified by --output.
+        Default value: *TopologicalAtomPairsFingerprints*.
+
+    -h, --help
+        Print this help message.
+
+    -k, --KeepLargestComponent *Yes | No*
+        Generate fingerprints for only the largest component in molecule.
+        Possible values: *Yes or No*. Default value: *Yes*.
+
+        For molecules containing multiple connected components, fingerprints
+        can be generated in two different ways: use all connected components
+        or just the largest connected component. By default, all atoms
+        except for the largest connected component are deleted before
+        generation of fingerprints.
+
+    --MinDistance *number*
+        Minimum bond distance between atom pairs for generating topological
+        atom pairs. Default value: *1*. Valid values: positive integers and
+        less than --MaxDistance.
+
+    --MaxDistance *number*
+        Maximum bond distance between atom pairs for generating topological
+        atom pairs. Default value: *10*. Valid values: positive integers and
+        greater than --MinDistance.
+
+    --OutDelim *comma | tab | semicolon*
+        Delimiter for output CSV/TSV text file(s). Possible values: *comma,
+        tab, or semicolon* Default value: *comma*
+
+    --output *SD | FP | text | all*
+        Type of output files to generate. Possible values: *SD, FP, text, or
+        all*. Default value: *text*.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    -q, --quote *Yes | No*
+        Put quote around column values in output CSV/TSV text file(s).
+        Possible values: *Yes or No*. Default value: *Yes*.
+
+    -r, --root *RootName*
+        New file name is generated using the root: <Root>.<Ext>. Default for
+        new file names: <SDFileName><TopologicalAtomPairsFP>.<Ext>. The file
+        type determines <Ext> value. The sdf, fpf, csv, and tsv <Ext> values
+        are used for SD, FP, comma/semicolon, and tab delimited text files,
+        respectively.This option is ignored for multiple input files.
+
+    -v, --VectorStringFormat *IDsAndValuesString | IDsAndValuesPairsString |
+    ValuesAndIDsString | ValuesAndIDsPairsString*
+        Format of fingerprints vector string data in output SD, FP or
+        CSV/TSV text file(s) specified by --output option. Possible values:
+        *IDsAndValuesString | IDsAndValuesPairsString | ValuesAndIDsString |
+        ValuesAndIDsPairsString*. Default value: *IDsAndValuesString*.
+
+        Examples:
+
+            FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinD
+            istance1:MaxDistance10;223;NumericalValues;IDsAndValuesString;C.X1.BO1
+            .H3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2 C.X2.BO2.H2-D1-C.X3.BO3.
+            H1 C.X2.BO2.H2-D1-C.X3.BO4 C.X2.BO2.H2-D1-N.X3.BO3 C.X2.BO3.H1-D1-...;
+            2 1 4 1 1 10 8 1 2 6 1 2 2 1 2 1 2 2 1 2 1 5 1 10 12 2 2 1 2 1 9 1 3 1
+            1 1 2 2 1 3 6 1 6 14 2 2 2 3 1 3 1 8 2 2 1 3 2 6 1 2 2 5 1 3 1 23 1...
+
+            FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinD
+            istance1:MaxDistance10;223;NumericalValues;IDsAndValuesPairsString;C.X
+            1.BO1.H3-D1-C.X3.BO3.H1 2 C.X2.BO2.H2-D1-C.X2.BO2.H2 1 C.X2.BO2.H2-D1-
+            C.X3.BO3.H1 4 C.X2.BO2.H2-D1-C.X3.BO4 1 C.X2.BO2.H2-D1-N.X3.BO3 1 C.X2
+            .BO3.H1-D1-C.X2.BO3.H1 10 C.X2.BO3.H1-D1-C.X3.BO4 8 C.X3.BO3.H1-D1-C.X
+            3.BO4 1 C.X3.BO3.H1-D1-O.X1.BO1.H1 2 C.X3.BO4-D1-C.X3.BO4 6 C.X3.BO...
+
+    -w, --WorkingDir *DirName*
+        Location of working directory. Default value: current directory.
+
+EXAMPLES
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create SampleTAPFP.sdf, SampleTAPFP.fpf
+    and SampleTAPFP.csv files containing sequential compound IDs in CSV file
+    along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl --output all -r SampleTAPFP
+          -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using DREIDING atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  DREIDINGAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using E-state types in IDsAndValuesString
+    format and create a SampleTAPFP.csv file containing sequential compound
+    IDs along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  EStateAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using DREIDING atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  DREIDINGAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using functional class atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  FunctionalClassAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using MMFF94 atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  MMFF94AtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using SLogP atom types in IDsAndValuesString
+    format and create a SampleTAPFP.csv file containing sequential compound
+    IDs along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  SLogPAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using SYBYL atom types in IDsAndValuesString
+    format and create a SampleTAPFP.csv file containing sequential compound
+    IDs along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  SYBYLAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using TPSA atom types in IDsAndValuesString
+    format and create a SampleTAPFP.csv file containing sequential compound
+    IDs along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  TPSAAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using UFF atom types in IDsAndValuesString
+    format and create a SampleTAPFP.csv file containing sequential compound
+    IDs along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a  UFFAtomTypes
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesPairsString format and create a SampleTAPFP.csv file
+    containing sequential compound IDs along with fingerprints vector
+    strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl --VectorStringFormat
+          IDsAndValuesPairsString  -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 6 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    sequential compound IDs along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+         --MinDistance 1 --MaxDistance 6 -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using only AS,X atomic invariants atom types
+    in IDsAndValuesString format and create a SampleTAPFP.csv file
+    containing sequential compound IDs along with fingerprints vector
+    strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --AtomicInvariantsToUse "AS,X" --MinDistance 1 --MaxDistance 6
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    compound ID from molecule name line along with fingerprints vector
+    strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode CompoundID -CompoundIDMode MolName
+          -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    compound IDs using specified data field along with fingerprints vector
+    strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode CompoundID -CompoundIDMode DataField --CompoundID
+          Mol_ID -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    compound ID using combination of molecule name line and an explicit
+    compound prefix along with fingerprints vector strings data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode CompoundID -CompoundIDMode MolnameOrLabelPrefix
+          --CompoundID Cmpd --CompoundIDLabel MolID -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    specific data fields columns along with fingerprints vector strings
+    data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode Specify --DataFields Mol_ID -r SampleTAPFP
+          -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create a SampleTAPFP.csv file containing
+    common data fields columns along with fingerprints vector strings data,
+    type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode Common -r SampleTAPFP -o Sample.sdf
+
+    To generate topological atom pairs fingerprints corresponding to bond
+    distances from 1 through 10 using atomic invariants atom types in
+    IDsAndValuesString format and create SampleTAPFP.sdf, SampleTAPFP.fpf
+    and SampleTAPFP.csv files containing all data fields columns in CSV file
+    along with fingerprints data, type:
+
+        % TopologicalAtomPairsFingerprints.pl -a AtomicInvariantsAtomTypes
+          --DataFieldsMode All  --output all -r SampleTAPFP
+          -o Sample.sdf
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    InfoFingerprintsFiles.pl, SimilarityMatricesFingerprints.pl,
+    AtomNeighborhoodsFingerprints.pl, ExtendedConnectivityFingerprints.pl,
+    MACCSKeysFingerprints.pl, PathLengthFingerprints.pl,
+    TopologicalAtomTorsionsFingerprints.pl,
+    TopologicalPharmacophoreAtomPairsFingerprints.pl,
+    TopologicalPharmacophoreAtomTripletsFingerprints.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

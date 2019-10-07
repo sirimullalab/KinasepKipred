@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:AtomicDescriptors/EStateValuesDescriptors.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomicDescriptors.html" title="AtomicDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomicInvariantsAtomTypes.html" title="AtomicInvariantsAtomTypes.html">Next</a></td><td width="34%" align="middle"><strong>AtomicDescriptors/EStateValuesDescriptors.pm</strong></td><td width="33%" align="right"><a href="././code/EStateValuesDescriptors.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/EStateValuesDescriptors.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/EStateValuesDescriptors.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/EStateValuesDescriptors.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/EStateValuesDescriptors.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>EStateValuesDescriptors</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use AtomicDescriptors::EStateValuesDescriptors;</p>
+<p>use AtomicDescriptors::EStateValuesDescriptors qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>EStateValuesDescriptors</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#GenerateDescriptors">GenerateDescriptors</a>, <a href="#StringifyEStateValuesDescriptors">StringifyEStateValuesDescriptors</a>
+</p><p><b>EStateValuesDescriptors</b> is derived from <b>AtomicValues</b> class which in turn is derived from <b>ObjectProperty</b> base class that provides methods not explicitly defined in <b>EStateValuesDescriptors</b>, <b>AtomicValues</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<p>For calculation of electrotopological state (E-state) values for non-hydrogen atoms:</p>
+<p>Let:</p>
+<div class="OptionsBox">    N = Principal quantum number or period number corresponding to
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        element symbol
+<br/>
+<br/>    Sigma = Number of sigma electrons involves in bonds to hydrogen and
+            non-hydrogen atoms attached to atom
+          = Number of sigma bonds to hydrogen and non-hydrogen atoms
+            attached to atom
+<br/>    PI = Number of PI electrons involved in bonds to non-hydrogen atoms
+         attached to atom
+       = Number of PI bonds to non-hydrogen atoms attached to atom
+<br/>
+<br/>    LP = Number of lone pair electrons on atom
+<br/>
+<br/>    Zv = Number of electrons in valence shell of atom
+<br/>
+<br/>    X = Number of non-hydrogen atom neighbors or heavy atoms attached
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        to atom
+<br/>    H = Number of implicit and explicit hydrogens for atom
+<br/>
+<br/>    Delta = Number of sigma electrons involved to bonds to non-hydrogen
+            atoms
+<br/>    DeltaV = ValenceDelta = Number of valence shell electrons not involved
+             in bonding to hydrogen atoms
+<br/>
+<br/>    Ii = Intrinsic state value for atom i
+<br/>
+<br/>    DeltaIi = Sum of perturbations to intrinsic state value Ii of atom i
+              by all other atoms besides atom i
+<br/>
+<br/>    DeltaIij = Perturbation to intrinsic state value Ii of atom i by atom j
+<br/>
+<br/>    Dij = Graph/bond distance between atom i and j
+<br/>    Rij = Dij + 1
+<br/>
+<br/>    Si = E-state value for atom i</div>
+<p>Then:</p>
+<div class="OptionsBox">    Delta = Sigma - H = X
+<br/>
+<br/>    DeltaV = Zv - H
+           = Sigma + PI + LP - H
+<br/>
+<br/>    Ii = ( ( ( 2 / N ) ** 2 ) * DeltaV + 1 ) / Delta
+<br/>
+<br/>    DeltaIi = SUM ( (Ii - Ij) / (Rij ** 2) ) for j = 1 to num of atoms skipping atom i
+<br/>
+<br/>    Si = Ii + DeltaIi</div>
+<p>The current release of MayaChemTools doesn&#39;t support calculation of E-state values [ Ref 75-78 ] for hydrogens.</p>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewEStateValuesDescriptors = new AtomicDescriptors::
+                                  EStateValuesDescriptors(%NamesAndValues);</div>
+<p>Using specified <i>EStateValuesDescriptors</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>EStateValuesDescriptors</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;
+<br/>    Type = &#39;EState&#39;
+<br/>    IgnoreHydrogens = 1</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $EStateValuesDescriptors = new AtomicDescriptors::EStateValuesDescriptors(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;IgnoreHydrogens&#39; =&gt; 1);</div>
+</dd>
+<dt id="GenerateDescriptors"><b>GenerateDescriptors</b></dt>
+<dd>
+<div class="OptionsBox">    $EStateValuesDescriptors-&gt;GenerateDescriptors();</div>
+<p>Calculates E-state atomic descriptors for all the atoms in a molecule and returns <i>EStateValuesDescriptors</i>.</p>
+</dd>
+<dt id="StringifyEStateValuesDescriptors"><b>StringifyEStateValuesDescriptors</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $EStateValuesDescriptors-&gt;StringifyEStateValuesDescriptors();</div>
+<p>Returns a string containing information about <i>EStateValuesDescriptors</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./AtomicDescriptors.html">AtomicDescriptors.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomicDescriptors.html" title="AtomicDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomicInvariantsAtomTypes.html" title="AtomicInvariantsAtomTypes.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>AtomicDescriptors/EStateValuesDescriptors.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

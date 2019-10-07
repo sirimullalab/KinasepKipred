@@ -1,0 +1,246 @@
+<html>
+<head>
+<title>MayaChemTools:Code:TimeUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-TimeUtil-"></a>   1 <span class="k">package </span><span class="i">TimeUtil</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: TimeUtil.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Time::localtime</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  29 
+  30 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  31 
+  32 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  33 <span class="i">@EXPORT</span> = <span class="q">qw(CTimeStamp FPFileTimeStamp ISO8601Date ISO8601Time ISO8601TimeStamp PDBFileTimeStamp SDFileTimeStamp TimeStamp MonthNameToNumber MonthNumberToFullName MonthNumberToAbbreviatedName WeekDayNameToNumber WeekDayNumberToFullName WeekDayNumberToAbbreviatedName)</span><span class="sc">;</span>
+  34 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  35 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  36 
+  37 <span class="c">#</span>
+  38 <span class="c"># Initialize package data...</span>
+  39 <span class="c">#</span>
+  40 <span class="k">my</span><span class="s">(</span><span class="i">%MonthNameToNumber</span><span class="cm">,</span> <span class="i">%MonthNumberToFullNameName</span><span class="cm">,</span> <span class="i">%MonthNumberToAbbreviatedName</span><span class="cm">,</span> <span class="i">%WeekDayNameToNumber</span><span class="cm">,</span> <span class="i">%WeekDayNumberToFullName</span><span class="cm">,</span> <span class="i">%WeekDayNumberToAbbreviatedName</span><span class="s">)</span><span class="sc">;</span>
+  41 <span class="i">_InitializeData</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  42 
+  43 <span class="c"># Return CTime as default time stamp for MayaChemTools...</span>
+  44 <span class="c">#</span>
+<a name="TimeStamp-"></a>  45 <span class="k">sub </span><span class="m">TimeStamp</span> <span class="s">{</span>
+  46   <span class="k">return</span> <span class="i">CTimeStamp</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  47 <span class="s">}</span>
+  48 
+  49 <span class="c"># Generate ctime time stamp...</span>
+  50 <span class="c">#</span>
+  51 <span class="c"># Format: WDay Mon MDay HH:MM:SS YYYY</span>
+  52 <span class="c">#</span>
+<a name="CTimeStamp-"></a>  53 <span class="k">sub </span><span class="m">CTimeStamp</span> <span class="s">{</span>
+  54   <span class="k">my</span><span class="s">(</span><span class="i">$CTimeStamp</span><span class="s">)</span><span class="sc">;</span>
+  55 
+  56   <span class="c"># Take out an extra space inserted between month name and day by ctime...</span>
+  57   <span class="i">$CTimeStamp</span> = <span class="i">Time::localtime::ctime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  58   <span class="i">$CTimeStamp</span> =~ <span class="q">s/[ ]+/ /g</span><span class="sc">;</span>
+  59 
+  60   <span class="k">return</span> <span class="i">$CTimeStamp</span><span class="sc">;</span>
+  61 <span class="s">}</span>
+  62 
+  63 <span class="c"># Generate ISO 8601 timestamp in extended format...</span>
+  64 <span class="c">#</span>
+  65 <span class="c"># Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss]</span>
+  66 <span class="c">#</span>
+<a name="ISO8601TimeStamp-"></a>  67 <span class="k">sub </span><span class="m">ISO8601TimeStamp</span> <span class="s">{</span>
+  68   <span class="k">my</span><span class="s">(</span><span class="i">$TimeStamp</span><span class="cm">,</span> <span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span><span class="sc">;</span>
+  69 
+  70   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span> = <span class="i">_LocalTime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  71 
+  72   <span class="i">$TimeStamp</span> = <span class="k">sprintf</span> <span class="q">&quot;%4i-%02i-%02iT%02i:%02i:%02i&quot;</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Sec</span><span class="sc">;</span>
+  73 
+  74   <span class="k">return</span> <span class="i">$TimeStamp</span><span class="sc">;</span>
+  75 <span class="s">}</span>
+  76 
+  77 <span class="c"># Generate ISO 8601 date...</span>
+  78 <span class="c">#</span>
+  79 <span class="c"># Format: [YYYY]-[MM]-[DD]</span>
+  80 <span class="c">#</span>
+<a name="ISO8601Date-"></a>  81 <span class="k">sub </span><span class="m">ISO8601Date</span> <span class="s">{</span>
+  82   <span class="k">my</span><span class="s">(</span><span class="i">$Date</span><span class="cm">,</span> <span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span><span class="sc">;</span>
+  83 
+  84   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span> = <span class="i">_LocalTime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  85 
+  86   <span class="i">$Date</span> = <span class="k">sprintf</span> <span class="q">&quot;%4i-%02i-%02i&quot;</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$MDay</span><span class="sc">;</span>
+  87 
+  88   <span class="k">return</span> <span class="i">$Date</span><span class="sc">;</span>
+  89 <span class="s">}</span>
+  90 
+  91 <span class="c"># Generate ISO 8601 time in extended format...</span>
+  92 <span class="c">#</span>
+  93 <span class="c"># Format: [hh]:[mm]:[ss]</span>
+  94 <span class="c">#</span>
+<a name="ISO8601Time-"></a>  95 <span class="k">sub </span><span class="m">ISO8601Time</span> <span class="s">{</span>
+  96   <span class="k">my</span><span class="s">(</span><span class="i">$Time</span><span class="cm">,</span> <span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="s">)</span><span class="sc">;</span>
+  97 
+  98   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="s">)</span> = <span class="i">_LocalTime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  99 
+ 100   <span class="i">$Time</span> = <span class="k">sprintf</span> <span class="q">&quot;%02i:%02i:%02i&quot;</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Sec</span><span class="sc">;</span>
+ 101 
+ 102   <span class="k">return</span> <span class="i">$Time</span><span class="sc">;</span>
+ 103 <span class="s">}</span>
+ 104 
+ 105 <span class="c"># Generate MayaChemTools&#39; FP file timestamp...</span>
+ 106 <span class="c">#</span>
+<a name="FPFileTimeStamp-"></a> 107 <span class="k">sub </span><span class="m">FPFileTimeStamp</span> <span class="s">{</span>
+ 108   <span class="k">return</span> <span class="i">CTimeStamp</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 109 <span class="s">}</span>
+ 110 
+ 111 <span class="c"># Generate PDB file timestamp...</span>
+ 112 <span class="c">#</span>
+<a name="PDBFileTimeStamp-"></a> 113 <span class="k">sub </span><span class="m">PDBFileTimeStamp</span> <span class="s">{</span>
+ 114   <span class="k">my</span><span class="s">(</span><span class="i">$TimeStamp</span><span class="cm">,</span> <span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="cm">,</span> <span class="i">$MonthName</span><span class="s">)</span><span class="sc">;</span>
+ 115 
+ 116   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span> = <span class="i">_LocalTime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 117 
+ 118   <span class="i">$MonthName</span> = <span class="k">uc</span> <span class="i">MonthNumberToAbbreviatedName</span><span class="s">(</span><span class="i">$Mon</span><span class="s">)</span><span class="sc">;</span>
+ 119   <span class="i">$Year</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Year</span><span class="cm">,</span> <span class="n">-2</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 120 
+ 121   <span class="i">$TimeStamp</span> = <span class="k">sprintf</span> <span class="q">&quot;%02i-%3s-%2i&quot;</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$MonthName</span><span class="cm">,</span> <span class="i">$Year</span><span class="sc">;</span>
+ 122 
+ 123   <span class="k">return</span> <span class="i">$TimeStamp</span><span class="sc">;</span>
+ 124 <span class="s">}</span>
+ 125 
+ 126 <span class="c"># Generate SD file timestamp...</span>
+ 127 <span class="c">#</span>
+<a name="SDFileTimeStamp-"></a> 128 <span class="k">sub </span><span class="m">SDFileTimeStamp</span> <span class="s">{</span>
+ 129   <span class="k">my</span><span class="s">(</span><span class="i">$TimeStamp</span><span class="cm">,</span> <span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span><span class="sc">;</span>
+ 130 
+ 131   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span> = <span class="i">_LocalTime</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 132 
+ 133   <span class="i">$Year</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$Year</span><span class="cm">,</span> <span class="n">-2</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 134 
+ 135   <span class="i">$TimeStamp</span> = <span class="k">sprintf</span> <span class="q">&quot;%02i%02i%02i%02i%02i&quot;</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$Min</span><span class="sc">;</span>
+ 136 
+ 137   <span class="k">return</span> <span class="i">$TimeStamp</span><span class="sc">;</span>
+ 138 <span class="s">}</span>
+ 139 
+ 140 <span class="c"># Get local time with modifications to data returned by native localtime function...</span>
+ 141 <span class="c">#</span>
+<a name="_LocalTime-"></a> 142 <span class="k">sub </span><span class="m">_LocalTime</span> <span class="s">{</span>
+ 143   <span class="k">my</span><span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span><span class="sc">;</span>
+ 144 
+ 145   <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span> = <span class="k">localtime</span><span class="sc">;</span>
+ 146 
+ 147   <span class="i">$Mon</span> += <span class="n">1</span><span class="sc">;</span>
+ 148   <span class="i">$Year</span> += <span class="n">1900</span><span class="sc">;</span>
+ 149 
+ 150   <span class="k">return</span> <span class="s">(</span><span class="i">$Sec</span><span class="cm">,</span> <span class="i">$Min</span><span class="cm">,</span> <span class="i">$Hour</span><span class="cm">,</span> <span class="i">$MDay</span><span class="cm">,</span> <span class="i">$Mon</span><span class="cm">,</span> <span class="i">$Year</span><span class="cm">,</span> <span class="i">$WDay</span><span class="cm">,</span> <span class="i">$YDay</span><span class="cm">,</span> <span class="i">$IsDst</span><span class="s">)</span><span class="sc">;</span>
+ 151 <span class="s">}</span>
+ 152 
+ 153 <span class="c"># Return month number from full or three letter abbreviated month name...</span>
+<a name="MonthNameToNumber-"></a> 154 <span class="k">sub </span><span class="m">MonthNameToNumber</span> <span class="s">{</span>
+ 155   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 156 
+ 157   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$MonthNameToNumber</span>{<span class="k">lc</span> <span class="i">$Name</span>}<span class="s">)</span> ? <span class="i">$MonthNameToNumber</span>{<span class="k">lc</span> <span class="i">$Name</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 158 <span class="s">}</span>
+ 159 
+ 160 <span class="c"># Return full month name from month number...</span>
+<a name="MonthNumberToFullName-"></a> 161 <span class="k">sub </span><span class="m">MonthNumberToFullName</span> <span class="s">{</span>
+ 162   <span class="k">my</span><span class="s">(</span><span class="i">$Number</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 163 
+ 164   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$MonthNumberToFullNameName</span>{<span class="i">$Number</span>}<span class="s">)</span> ? <span class="i">$MonthNumberToFullNameName</span>{<span class="i">$Number</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 165 <span class="s">}</span>
+ 166 
+ 167 <span class="c"># Return three letter abbreviated month name from month number...</span>
+<a name="MonthNumberToAbbreviatedName-"></a> 168 <span class="k">sub </span><span class="m">MonthNumberToAbbreviatedName</span> <span class="s">{</span>
+ 169   <span class="k">my</span><span class="s">(</span><span class="i">$Number</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 170 
+ 171   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$MonthNumberToAbbreviatedName</span>{<span class="i">$Number</span>}<span class="s">)</span> ? <span class="i">$MonthNumberToAbbreviatedName</span>{<span class="i">$Number</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 172 <span class="s">}</span>
+ 173 
+ 174 <span class="c"># Return week daty number from full or three letter abbreviated week day name...</span>
+<a name="WeekDayNameToNumber-"></a> 175 <span class="k">sub </span><span class="m">WeekDayNameToNumber</span> <span class="s">{</span>
+ 176   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 177 
+ 178   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$WeekDayNameToNumber</span>{<span class="k">lc</span> <span class="i">$Name</span>}<span class="s">)</span> ? <span class="i">$WeekDayNameToNumber</span>{<span class="k">lc</span> <span class="i">$Name</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 179 <span class="s">}</span>
+ 180 
+ 181 <span class="c"># Return full week day name from week day number...</span>
+<a name="WeekDayNumberToFullName-"></a> 182 <span class="k">sub </span><span class="m">WeekDayNumberToFullName</span> <span class="s">{</span>
+ 183   <span class="k">my</span><span class="s">(</span><span class="i">$Number</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 184 
+ 185   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$WeekDayNumberToFullName</span>{<span class="i">$Number</span>}<span class="s">)</span> ? <span class="i">$WeekDayNumberToFullName</span>{<span class="i">$Number</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 186 <span class="s">}</span>
+ 187 
+ 188 <span class="c"># Return three letter abbreviated week day name from week day number...</span>
+<a name="WeekDayNumberToAbbreviatedName-"></a> 189 <span class="k">sub </span><span class="m">WeekDayNumberToAbbreviatedName</span> <span class="s">{</span>
+ 190   <span class="k">my</span><span class="s">(</span><span class="i">$Number</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 191 
+ 192   <span class="k">return</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$WeekDayNumberToAbbreviatedName</span>{<span class="i">$Number</span>}<span class="s">)</span> ? <span class="i">$WeekDayNumberToAbbreviatedName</span>{<span class="i">$Number</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 193 <span class="s">}</span>
+ 194 
+ 195 <span class="c"># Initialize week/month day/name data...</span>
+ 196 <span class="c">#</span>
+<a name="_InitializeData-"></a> 197 <span class="k">sub </span><span class="m">_InitializeData</span> <span class="s">{</span>
+ 198 
+ 199   <span class="i">%MonthNameToNumber</span> = <span class="s">(</span><span class="q">&#39;january&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;february&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="cm">,</span> <span class="q">&#39;march&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;april&#39;</span> <span class="cm">=&gt;</span> <span class="n">4</span><span class="cm">,</span>
+ 200                         <span class="q">&#39;may&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="cm">,</span> <span class="q">&#39;june&#39;</span> <span class="cm">=&gt;</span> <span class="n">6</span><span class="cm">,</span> <span class="q">&#39;july&#39;</span> <span class="cm">=&gt;</span> <span class="n">7</span><span class="cm">,</span> <span class="q">&#39;august&#39;</span> <span class="cm">=&gt;</span> <span class="n">8</span><span class="cm">,</span>
+ 201                         <span class="q">&#39;september&#39;</span> <span class="cm">=&gt;</span> <span class="n">9</span><span class="cm">,</span> <span class="q">&#39;october&#39;</span> <span class="cm">=&gt;</span> <span class="n">10</span><span class="cm">,</span> <span class="q">&#39;november&#39;</span> <span class="cm">=&gt;</span> <span class="n">11</span><span class="cm">,</span> <span class="q">&#39;december&#39;</span> <span class="cm">=&gt;</span> <span class="n">12</span><span class="cm">,</span>
+ 202                         <span class="q">&#39;jan&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;feb&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="cm">,</span> <span class="q">&#39;mar&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;apr&#39;</span> <span class="cm">=&gt;</span> <span class="n">4</span><span class="cm">,</span>
+ 203                         <span class="q">&#39;may&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="cm">,</span> <span class="q">&#39;jun&#39;</span> <span class="cm">=&gt;</span> <span class="n">6</span><span class="cm">,</span> <span class="q">&#39;jul&#39;</span> <span class="cm">=&gt;</span> <span class="n">7</span><span class="cm">,</span> <span class="q">&#39;aug&#39;</span> <span class="cm">=&gt;</span> <span class="n">8</span><span class="cm">,</span>
+ 204                         <span class="q">&#39;sep&#39;</span> <span class="cm">=&gt;</span> <span class="n">9</span><span class="cm">,</span> <span class="q">&#39;oct&#39;</span> <span class="cm">=&gt;</span> <span class="n">10</span><span class="cm">,</span> <span class="q">&#39;nov&#39;</span> <span class="cm">=&gt;</span> <span class="n">11</span><span class="cm">,</span> <span class="q">&#39;dec&#39;</span> <span class="cm">=&gt;</span> <span class="n">12</span><span class="s">)</span><span class="sc">;</span>
+ 205 
+ 206   <span class="i">%MonthNumberToFullNameName</span> = <span class="s">(</span><span class="n">1</span> <span class="cm">=&gt;</span> <span class="q">&#39;January&#39;</span><span class="cm">,</span> <span class="n">2</span> <span class="cm">=&gt;</span> <span class="q">&#39;February&#39;</span><span class="cm">,</span> <span class="n">3</span> <span class="cm">=&gt;</span> <span class="q">&#39;March&#39;</span><span class="cm">,</span> <span class="n">4</span> <span class="cm">=&gt;</span> <span class="q">&#39;April&#39;</span><span class="cm">,</span>
+ 207                                 <span class="n">5</span> <span class="cm">=&gt;</span> <span class="q">&#39;May&#39;</span><span class="cm">,</span> <span class="n">6</span> <span class="cm">=&gt;</span> <span class="q">&#39;June&#39;</span><span class="cm">,</span> <span class="n">7</span> <span class="cm">=&gt;</span> <span class="q">&#39;July&#39;</span><span class="cm">,</span> <span class="n">8</span> <span class="cm">=&gt;</span> <span class="q">&#39;August&#39;</span><span class="cm">,</span>
+ 208                                 <span class="n">9</span> <span class="cm">=&gt;</span> <span class="q">&#39;September&#39;</span><span class="cm">,</span> <span class="n">10</span> <span class="cm">=&gt;</span> <span class="q">&#39;October&#39;</span><span class="cm">,</span> <span class="n">11</span> <span class="cm">=&gt;</span> <span class="q">&#39;November&#39;</span><span class="cm">,</span> <span class="n">12</span> <span class="cm">=&gt;</span> <span class="q">&#39;December&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 209 
+ 210   <span class="i">%MonthNumberToAbbreviatedName</span> = <span class="s">(</span><span class="n">1</span> <span class="cm">=&gt;</span> <span class="q">&#39;Jan&#39;</span><span class="cm">,</span> <span class="n">2</span> <span class="cm">=&gt;</span> <span class="q">&#39;Feb&#39;</span><span class="cm">,</span> <span class="n">3</span> <span class="cm">=&gt;</span> <span class="q">&#39;Mar&#39;</span><span class="cm">,</span> <span class="n">4</span> <span class="cm">=&gt;</span> <span class="q">&#39;Apr&#39;</span><span class="cm">,</span>
+ 211                                    <span class="n">5</span> <span class="cm">=&gt;</span> <span class="q">&#39;May&#39;</span><span class="cm">,</span> <span class="n">6</span> <span class="cm">=&gt;</span> <span class="q">&#39;Jun&#39;</span><span class="cm">,</span> <span class="n">7</span> <span class="cm">=&gt;</span> <span class="q">&#39;Jul&#39;</span><span class="cm">,</span> <span class="n">8</span> <span class="cm">=&gt;</span> <span class="q">&#39;Aug&#39;</span><span class="cm">,</span>
+ 212                                    <span class="n">9</span> <span class="cm">=&gt;</span> <span class="q">&#39;Sep&#39;</span><span class="cm">,</span> <span class="n">10</span> <span class="cm">=&gt;</span> <span class="q">&#39;Oct&#39;</span><span class="cm">,</span> <span class="n">11</span> <span class="cm">=&gt;</span> <span class="q">&#39;Nov&#39;</span><span class="cm">,</span> <span class="n">12</span> <span class="cm">=&gt;</span> <span class="q">&#39;Dec&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 213 
+ 214   <span class="i">%WeekDayNameToNumber</span> = <span class="s">(</span><span class="q">&#39;sunday&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;monday&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="cm">,</span> <span class="q">&#39;tuesday&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;wednesday&#39;</span> <span class="cm">=&gt;</span> <span class="n">4</span><span class="cm">,</span>
+ 215                           <span class="q">&#39;thursday&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="cm">,</span> <span class="q">&#39;friday&#39;</span> <span class="cm">=&gt;</span> <span class="n">6</span><span class="cm">,</span> <span class="q">&#39;saturday&#39;</span> <span class="cm">=&gt;</span> <span class="n">7</span><span class="cm">,</span>
+ 216                           <span class="q">&#39;sun&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;mon&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="cm">,</span> <span class="q">&#39;tue&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;wed&#39;</span> <span class="cm">=&gt;</span> <span class="n">4</span><span class="cm">,</span>
+ 217                           <span class="q">&#39;thu&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="cm">,</span> <span class="q">&#39;fri&#39;</span> <span class="cm">=&gt;</span> <span class="n">6</span><span class="cm">,</span> <span class="q">&#39;sat&#39;</span> <span class="cm">=&gt;</span> <span class="n">7</span><span class="s">)</span><span class="sc">;</span>
+ 218 
+ 219   <span class="i">%WeekDayNumberToFullName</span> = <span class="s">(</span><span class="n">1</span> <span class="cm">=&gt;</span> <span class="q">&#39;Sunday&#39;</span><span class="cm">,</span> <span class="n">2</span> <span class="cm">=&gt;</span> <span class="q">&#39;Monday&#39;</span><span class="cm">,</span> <span class="n">3</span> <span class="cm">=&gt;</span> <span class="q">&#39;Tuesday&#39;</span><span class="cm">,</span>
+ 220                               <span class="n">4</span> <span class="cm">=&gt;</span> <span class="q">&#39;Wednesday&#39;</span><span class="cm">,</span> <span class="n">5</span> <span class="cm">=&gt;</span> <span class="q">&#39;Thursday&#39;</span><span class="cm">,</span> <span class="n">6</span> <span class="cm">=&gt;</span> <span class="q">&#39;Friday&#39;</span><span class="cm">,</span> <span class="n">7</span> <span class="cm">=&gt;</span> <span class="q">&#39;Saturday&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 221 
+ 222   <span class="i">%WeekDayNumberToAbbreviatedName</span> = <span class="s">(</span><span class="n">1</span> <span class="cm">=&gt;</span> <span class="q">&#39;Sun&#39;</span><span class="cm">,</span> <span class="n">2</span> <span class="cm">=&gt;</span> <span class="q">&#39;Mon&#39;</span><span class="cm">,</span> <span class="n">3</span> <span class="cm">=&gt;</span> <span class="q">&#39;Tue&#39;</span><span class="cm">,</span>
+ 223                                      <span class="n">4</span> <span class="cm">=&gt;</span> <span class="q">&#39;Wed&#39;</span><span class="cm">,</span> <span class="n">5</span> <span class="cm">=&gt;</span> <span class="q">&#39;Thu&#39;</span><span class="cm">,</span> <span class="n">6</span> <span class="cm">=&gt;</span> <span class="q">&#39;Fri&#39;</span><span class="cm">,</span> <span class="n">7</span> <span class="cm">=&gt;</span> <span class="q">&#39;Sat&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 224 <span class="s">}</span>
+ 225 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

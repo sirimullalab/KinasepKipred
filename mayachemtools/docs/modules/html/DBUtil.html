@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:DBUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ConversionsUtil.html" title="ConversionsUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./FileIO.html" title="FileIO.html">Next</a></td><td width="34%" align="middle"><strong>DBUtil.pm</strong></td><td width="33%" align="right"><a href="././code/DBUtil.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/DBUtil.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/DBUtil.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/DBUtil.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/DBUtil.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>DBUtil</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use DBUtil;</p>
+<p>use DBUtil qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>DBUtil</b> module provides the following functions:</p>
+<p>
+ <a href="#DBConnect">DBConnect</a>, <a href="#DBDisconnect">DBDisconnect</a>, <a href="#DBFetchSchemaTableNames">DBFetchSchemaTableNames</a>, <a href="#DBSQLToTextFile">DBSQLToTextFile</a>, <a href="#DBSetupDescribeSQL">DBSetupDescribeSQL</a>, <a href="#DBSetupSelectSQL">DBSetupSelectSQL</a>
+</p><p>DBUtil package uses Perl DBI for interacting with MySQL Oracle, and PostgreSQL databases.</p>
+<h1 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="DBConnect"><b>DBConnect</b></dt>
+<dd>
+<div class="OptionsBox">    $DBHandle = DBConnect($DBDriver, $DBName, $DBHost, $DBUser, $DBPassword);</div>
+<p>Connects to a database using specified parameters and returns a <b>DBHandle</b>.</p>
+</dd>
+<dt id="DBDisconnect"><b>DBDisconnect</b></dt>
+<dd>
+<div class="OptionsBox">    DBDisconnect($DBHandle);</div>
+<p>Disconnects from a database specified by <i>DBHandle</i>.</p>
+</dd>
+<dt id="DBFetchSchemaTableNames"><b>DBFetchSchemaTableNames</b></dt>
+<dd>
+<div class="OptionsBox">    @SchemaTableNames = DBFetchSchemaTableNames($DBDriver, $DBHandle,
+                       $SchemaName);</div>
+<p>Returns an array of all the table names in a database <i>SchemaName</i>.</p>
+</dd>
+<dt id="DBSetupDescribeSQL"><b>DBSetupDescribeSQL</b></dt>
+<dd>
+<div class="OptionsBox">    $DescribeSQL = DBSetupDescribeSQL($DBDriver, $TableName, [$SchemaName]);</div>
+<p>Sets up and returns a SQL statement to describe a table for MySQ, Oracle or PostgreSQL.</p>
+</dd>
+<dt id="DBSetupSelectSQL"><b>DBSetupSelectSQL</b></dt>
+<dd>
+<div class="OptionsBox">    $SelectSQL = DBSetupSelectSQL($DBDriver, $TableName, $SchemaName);</div>
+<p>Sets up and returns a SQL statement to retrieve all columns from a table for MySQL, Oracle, or PostgreSQL.</p>
+</dd>
+<dt id="DBSQLToTextFile"><b>DBSQLToTextFile</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = DBSQLToTextFile($DBHandle, $SQL, \*TEXTFILE, $OutDelim,
+              $OutQuote, [$ExportDataLabels, $ExportLOBs,
+              $ReplaceNullStr]);</div>
+<p>Executes a <i>SQL</i> statement and export all data into a text file.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ConversionsUtil.html" title="ConversionsUtil.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./FileIO.html" title="FileIO.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>DBUtil.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

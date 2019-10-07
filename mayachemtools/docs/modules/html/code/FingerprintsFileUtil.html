@@ -1,0 +1,195 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Fingerprints/FingerprintsFileUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-Fingerprints::FingerprintsFileUtil-"></a>   1 <span class="k">package </span><span class="i">Fingerprints::FingerprintsFileUtil</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: FingerprintsFileUtil.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">TextUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">FileUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">FileIO::FingerprintsSDFileIO</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">FileIO::FingerprintsTextFileIO</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">FileIO::FingerprintsFPFileIO</span><span class="sc">;</span>
+  34 
+  35 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  36 
+  37 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  38 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  39 <span class="i">@EXPORT_OK</span> = <span class="q">qw(GetFingerprintsFileType ReadAndProcessFingerpritsData  NewFingerprintsFileIO)</span><span class="sc">;</span>
+  40 
+  41 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  42 
+  43 <span class="c"># Generate new FingerprintsFileIO object for a SD, FP or Text fingerprints file specified using file name</span>
+  44 <span class="c"># along other appropriate parameters...</span>
+  45 <span class="c">#</span>
+<a name="NewFingerprintsFileIO-"></a>  46 <span class="k">sub </span><span class="m">NewFingerprintsFileIO</span> <span class="s">{</span>
+  47   <span class="k">my</span><span class="s">(</span><span class="i">%FingerprintsFileIOParams</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  48   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsFileIO</span><span class="cm">,</span> <span class="i">$FileType</span><span class="s">)</span><span class="sc">;</span>
+  49 
+  50   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$FingerprintsFileIOParams</span>{<span class="w">Name</span>}<span class="s">)</span> &amp;&amp; <span class="i">TextUtil::IsNotEmpty</span><span class="s">(</span><span class="i">$FingerprintsFileIOParams</span>{<span class="w">Name</span>}<span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  51     <span class="w">carp</span> <span class="q">&quot;Warning: Fingerprints::FingerprintsFileUtil::NewFingerprintsFileIO: Can&#39;t create new FingerprintsFileIO object: File name is not specified...\n&quot;</span><span class="sc">;</span>
+  52     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  53   <span class="s">}</span>
+  54 
+  55   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$FingerprintsFileIOParams</span>{<span class="w">Mode</span>}<span class="s">)</span> &amp;&amp; <span class="i">TextUtil::IsNotEmpty</span><span class="s">(</span><span class="i">$FingerprintsFileIOParams</span>{<span class="w">Mode</span>}<span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  56     <span class="w">carp</span> <span class="q">&quot;Warning: Fingerprints::FingerprintsFileUtil::NewFingerprintsFileIO: Can&#39;t create new FingerprintsFileIO object: File mode is not specified...\n&quot;</span><span class="sc">;</span>
+  57     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  58   <span class="s">}</span>
+  59 
+  60   <span class="i">$FileType</span> = <span class="i">GetFingerprintsFileType</span><span class="s">(</span><span class="i">$FingerprintsFileIOParams</span>{<span class="w">Name</span>}<span class="s">)</span><span class="sc">;</span>
+  61   <span class="k">if</span> <span class="s">(</span><span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$FileType</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  62     <span class="w">carp</span> <span class="q">&quot;Warning: Fingerprints::FingerprintsFileUtil::NewFingerprintsFileIO: Can&#39;t create new FingerprintsFileIO object: File type is not specified...\n&quot;</span><span class="sc">;</span>
+  63     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+  64   <span class="s">}</span>
+  65 
+  66   <span class="c"># Generate fingerprints IO object...</span>
+  67   <span class="j">FILETYPE:</span> <span class="s">{</span>
+  68     <span class="k">if</span> <span class="s">(</span><span class="i">$FileType</span> =~ <span class="q">/^SD$/i</span><span class="s">)</span> <span class="s">{</span>
+  69       <span class="i">$FingerprintsFileIO</span> = <span class="w">new</span> <span class="i">FileIO::FingerprintsSDFileIO</span><span class="s">(</span><span class="i">%FingerprintsFileIOParams</span><span class="s">)</span><span class="sc">;</span>
+  70       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+  71     <span class="s">}</span>
+  72     <span class="k">if</span> <span class="s">(</span><span class="i">$FileType</span> =~ <span class="q">/^FP$/i</span><span class="s">)</span> <span class="s">{</span>
+  73       <span class="i">$FingerprintsFileIO</span> = <span class="w">new</span> <span class="i">FileIO::FingerprintsFPFileIO</span><span class="s">(</span><span class="i">%FingerprintsFileIOParams</span><span class="s">)</span><span class="sc">;</span>
+  74       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+  75     <span class="s">}</span>
+  76     <span class="k">if</span> <span class="s">(</span><span class="i">$FileType</span> =~ <span class="q">/^Text$/i</span><span class="s">)</span> <span class="s">{</span>
+  77       <span class="i">$FingerprintsFileIO</span> = <span class="w">new</span> <span class="i">FileIO::FingerprintsTextFileIO</span><span class="s">(</span><span class="i">%FingerprintsFileIOParams</span><span class="s">)</span><span class="sc">;</span>
+  78       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+  79     <span class="s">}</span>
+  80     <span class="i">$FingerprintsFileIO</span> = <span class="k">undef</span><span class="sc">;</span>
+  81     <span class="w">carp</span> <span class="q">&quot;Warning: Fingerprints::FingerprintsFileUtil::NewFingerprintsFileIO: Fingerprints file type, $FileType, is not valid. Supported file types: SD, FP or Text\n&quot;</span><span class="sc">;</span>
+  82   <span class="s">}</span>
+  83 
+  84   <span class="k">return</span> <span class="i">$FingerprintsFileIO</span><span class="sc">;</span>
+  85 <span class="s">}</span>
+  86 
+  87 <span class="c"># Get fingerpritns file type from fingerprints file name...</span>
+  88 <span class="c">#</span>
+<a name="GetFingerprintsFileType-"></a>  89 <span class="k">sub </span><span class="m">GetFingerprintsFileType</span> <span class="s">{</span>
+  90   <span class="k">my</span><span class="s">(</span><span class="i">$FileName</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  91   <span class="k">my</span><span class="s">(</span><span class="i">$FileType</span><span class="s">)</span><span class="sc">;</span>
+  92 
+  93   <span class="i">$FileType</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  94   <span class="j">FILETYPE:</span> <span class="s">{</span>
+  95     <span class="k">if</span> <span class="s">(</span><span class="i">FileUtil::CheckFileType</span><span class="s">(</span><span class="i">$FileName</span><span class="cm">,</span> <span class="q">&quot;sdf sd&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  96       <span class="i">$FileType</span> = <span class="q">&#39;SD&#39;</span><span class="sc">;</span>
+  97       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+  98     <span class="s">}</span>
+  99     <span class="k">if</span> <span class="s">(</span><span class="i">FileUtil::CheckFileType</span><span class="s">(</span><span class="i">$FileName</span><span class="cm">,</span> <span class="q">&quot;fpf fp&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 100       <span class="i">$FileType</span> = <span class="q">&#39;FP&#39;</span><span class="sc">;</span>
+ 101       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+ 102     <span class="s">}</span>
+ 103     <span class="k">if</span> <span class="s">(</span><span class="i">FileUtil::CheckFileType</span><span class="s">(</span><span class="i">$FileName</span><span class="cm">,</span> <span class="q">&quot;csv tsv&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 104       <span class="i">$FileType</span> = <span class="q">&#39;Text&#39;</span><span class="sc">;</span>
+ 105       <span class="k">last</span> <span class="j">FILETYPE</span><span class="sc">;</span>
+ 106     <span class="s">}</span>
+ 107     <span class="i">$FileType</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 108     <span class="w">carp</span> <span class="q">&quot;Warning: Fingerprints::FingerprintsFileUtil::GetFingerprintsFileType: Can&#39;t determine fingerprints file type for $FileName: It&#39;s not a fingerprints file...\n&quot;</span><span class="sc">;</span>
+ 109   <span class="s">}</span>
+ 110 
+ 111   <span class="k">return</span> <span class="i">$FileType</span><span class="sc">;</span>
+ 112 <span class="s">}</span>
+ 113 
+ 114 
+ 115 <span class="c"># Process fingerprints bit-vector and vector string data in a file using FingerprintsFileIO</span>
+ 116 <span class="c"># object and return a references to arrays of CompoundIDs and FingerprintsObjects...</span>
+ 117 <span class="c">#</span>
+ 118 <span class="c"># Note:</span>
+ 119 <span class="c">#  . The file open and close is automatically performed during processing.</span>
+ 120 <span class="c">#</span>
+<a name="ReadAndProcessFingerpritsData-"></a> 121 <span class="k">sub </span><span class="m">ReadAndProcessFingerpritsData</span> <span class="s">{</span>
+ 122   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsFileIO</span><span class="cm">,</span> <span class="i">$CheckCompoundIDs</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 123   <span class="k">my</span><span class="s">(</span><span class="i">$CompoundID</span><span class="cm">,</span> <span class="i">$FingerprintsCount</span><span class="cm">,</span> <span class="i">$IgnoredFingerprintsCount</span><span class="cm">,</span> <span class="i">@CompundIDs</span><span class="cm">,</span> <span class="i">@FingerprintsObjects</span><span class="cm">,</span> <span class="i">%UniqueCompoundIDs</span><span class="s">)</span><span class="sc">;</span>
+ 124 
+ 125   <span class="k">if</span> <span class="s">(</span>!<span class="i">$FingerprintsFileIO</span><span class="s">)</span> <span class="s">{</span>
+ 126     <span class="k">return</span> <span class="s">(</span><span class="k">undef</span><span class="cm">,</span> <span class="k">undef</span><span class="s">)</span><span class="sc">;</span>
+ 127   <span class="s">}</span>
+ 128   <span class="i">$CheckCompoundIDs</span> = <span class="k">defined</span> <span class="i">$CheckCompoundIDs</span> ? <span class="i">$CheckCompoundIDs</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 129 
+ 130   <span class="k">print</span> <span class="q">&quot;\nReading and processing fingerprints data...\n&quot;</span><span class="sc">;</span>
+ 131 
+ 132   <span class="s">(</span><span class="i">$FingerprintsCount</span><span class="cm">,</span> <span class="i">$IgnoredFingerprintsCount</span><span class="s">)</span> = <span class="s">(</span><span class="n">0</span><span class="s">)</span> x <span class="n">3</span><span class="sc">;</span>
+ 133 
+ 134   <span class="i">@CompundIDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 135   <span class="i">@FingerprintsObjects</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 136 
+ 137   <span class="i">%UniqueCompoundIDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 138 
+ 139   <span class="c"># Check and open file for reading...</span>
+ 140   <span class="k">if</span> <span class="s">(</span>!<span class="i">$FingerprintsFileIO</span><span class="i">-&gt;GetStatus</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 141     <span class="i">$FingerprintsFileIO</span><span class="i">-&gt;Open</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 142   <span class="s">}</span>
+ 143 
+ 144   <span class="j">FINGERPRINTS:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$FingerprintsFileIO</span><span class="i">-&gt;Read</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 145     <span class="i">$FingerprintsCount</span>++<span class="sc">;</span>
+ 146 
+ 147     <span class="k">if</span> <span class="s">(</span>!<span class="i">$FingerprintsFileIO</span><span class="i">-&gt;IsFingerprintsDataValid</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 148       <span class="i">$IgnoredFingerprintsCount</span>++<span class="sc">;</span>
+ 149       <span class="k">next</span> <span class="j">FINGERPRINTS</span><span class="sc">;</span>
+ 150     <span class="s">}</span>
+ 151 
+ 152     <span class="k">if</span> <span class="s">(</span><span class="i">$CheckCompoundIDs</span><span class="s">)</span> <span class="s">{</span>
+ 153       <span class="i">$CompoundID</span> = <span class="i">$FingerprintsFileIO</span><span class="i">-&gt;GetCompoundID</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 154       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$UniqueCompoundIDs</span>{<span class="i">$CompoundID</span>}<span class="s">)</span> <span class="s">{</span>
+ 155         <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring fingerprints data for compound ID $CompoundID: Multiple entries for compound ID in fingerprints file.\n&quot;</span><span class="sc">;</span>
+ 156         <span class="i">$IgnoredFingerprintsCount</span>++<span class="sc">;</span>
+ 157         <span class="k">next</span> <span class="j">FINGERPRINTS</span><span class="sc">;</span>
+ 158       <span class="s">}</span>
+ 159       <span class="i">$UniqueCompoundIDs</span>{<span class="i">$CompoundID</span>} = <span class="i">$CompoundID</span><span class="sc">;</span>
+ 160     <span class="s">}</span>
+ 161 
+ 162     <span class="k">push</span> <span class="i">@FingerprintsObjects</span><span class="cm">,</span> <span class="i">$FingerprintsFileIO</span><span class="i">-&gt;GetFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 163     <span class="k">push</span> <span class="i">@CompundIDs</span><span class="cm">,</span> <span class="i">$FingerprintsFileIO</span><span class="i">-&gt;GetCompoundID</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 164   <span class="s">}</span>
+ 165   <span class="i">$FingerprintsFileIO</span><span class="i">-&gt;Close</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 166 
+ 167   <span class="k">print</span> <span class="q">&quot;Number of fingerprints data entries: $FingerprintsCount\n&quot;</span><span class="sc">;</span>
+ 168   <span class="k">print</span> <span class="q">&quot;Number of fingerprints date entries processed successfully: &quot;</span><span class="cm">,</span> <span class="s">(</span><span class="i">$FingerprintsCount</span> - <span class="i">$IgnoredFingerprintsCount</span><span class="s">)</span>  <span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 169   <span class="k">print</span> <span class="q">&quot;Number of fingerprints data entries ignored due to missing/invalid data: $IgnoredFingerprintsCount\n\n&quot;</span><span class="sc">;</span>
+ 170 
+ 171   <span class="k">return</span> <span class="s">(</span>\<span class="i">@CompundIDs</span><span class="cm">,</span> \<span class="i">@FingerprintsObjects</span><span class="s">)</span><span class="sc">;</span>
+ 172 <span class="s">}</span>
+ 173 
+ 174 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

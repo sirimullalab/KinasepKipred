@@ -1,0 +1,777 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:SimilarityMatricesFingerprints.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./SDToMolFiles.html" title="SDToMolFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./SimilaritySearchingFingerprints.html" title="SimilaritySearchingFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>SimilarityMatricesFingerprints.pl</strong></td><td width="33%" align="right"><a href="././code/SimilarityMatricesFingerprints.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/SimilarityMatricesFingerprints.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/SimilarityMatricesFingerprints.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/SimilarityMatricesFingerprints.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/SimilarityMatricesFingerprints.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>SimilarityMatricesFingerprints.pl - Calculate similarity matrices using fingerprints strings data in SD, FP and CSV/TSV text file(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>SimilarityMatricesFingerprints.pl SDFile(s) FPFile(s) TextFile(s)...</p>
+<p>SimilarityMatricesFingerprints.pl [<b>--alpha</b> <i>number</i>] [<b>--beta</b> <i>number</i>] [<b>-b, --BitVectorComparisonMode</b> <i>All | &quot;TanimotoSimilarity,[ TverskySimilarity, ... ]&quot;</i>] [<b>-c, --ColMode</b> <i>ColNum | ColLabel</i>] [<b>--CompoundIDCol</b> <i>col number | col name</i>] [<b>--CompoundIDPrefix</b> <i>text</i>] [<b>--CompoundIDField</b> <i>DataFieldName</i>] [<b>--CompoundIDMode</b> <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i>] [<b>-d, --detail</b> <i>InfoLevel</i>] [<b>-f, --fast</b>] [<b>--FingerprintsCol</b> <i>col number | col name</i>] [<b>--FingerprintsField</b> <i>FieldLabel</i>] [<b>-h, --help</b>] [<b>--InDelim</b> <i>comma | semicolon</i>] [<b>--InputDataMode</b> <i>LoadInMemory | ScanFile</i>] [<b>-m, --mode</b> <i>AutoDetect | FingerprintsBitVectorString | FingerprintsVectorString</i>] [<b>--OutDelim</b> <i>comma | tab | semicolon</i>] [<b>--OutMatrixFormat</b> <i>RowsAndColumns | IDPairsAndValue</i>] [<b>--OutMatrixType</b> <i>FullMatrix | UpperTriangularMatrix | LowerTriangularMatrix</i>] [<b>-o, --overwrite</b>] [<b>-p, --precision</b> <i>number</i>] [<b>-q, --quote</b> <i>Yes | No</i>] [<b>-r, --root</b> <i>RootName</i>] [<b>-v, --VectorComparisonMode</b> <i>All | &quot;TanimotoSimilairy, [ ManhattanDistance, ...]&quot;</i>] [<b>--VectorComparisonFormulism</b> <i>All | &quot;AlgebraicForm, [BinaryForm, SetTheoreticForm]&quot;</i>] [<b>-w, --WorkingDir</b> dirname] SDFile(s) FPFile(s) TextFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Calculate similarity matrices using fingerprint bit-vector or vector strings data in <i>SD, FP and CSV/TSV</i> text file(s) and generate CSV/TSV text file(s) containing values for specified similarity and distance coefficients.</p>
+<p>The scripts SimilarityMatrixSDFiles.pl and SimilarityMatrixTextFiles.pl have been removed from the current release of MayaChemTools and their functionality merged with this script.</p>
+<p>The valid <i>SDFile</i> extensions are <i>.sdf</i> and <i>.sd</i>. All SD files in a current directory can be specified either by <i>*.sdf</i> or the current directory name.</p>
+<p>The valid <i>FPFile</i> extensions are <i>.fpf</i> and <i>.fp</i>. All FP files in a current directory can be specified either by <i>*.fpf</i> or the current directory name.</p>
+<p>The valid <i>TextFile</i> extensions are <i>.csv</i> and <i>.tsv</i> for comma/semicolon and tab delimited text files respectively. All other file names are ignored. All text files in a current directory can be specified by <i>*.csv</i>, <i>*.tsv</i>, or the current directory name. The <b>--indelim</b> option determines the format of <i>TextFile(s)</i>. Any file which doesn&#39;t correspond to the format indicated by <b>--indelim</b> option is ignored.</p>
+<p>Example of <i>FP</i> file containing fingerprints bit-vector string data:</p>
+<div class="OptionsBox">    #
+<br/>    # Package = MayaChemTools 7.4
+<br/>    # ReleaseDate = Oct 21, 2010
+<br/>    #
+<br/>    # TimeStamp =  Mon Mar 7 15:14:01 2011
+<br/>    #
+<br/>    # FingerprintsStringType = FingerprintsBitVector
+<br/>    #
+<br/>    # Description = PathLengthBits:AtomicInvariantsAtomTypes:MinLength1:...
+<br/>    # Size = 1024
+<br/>    # BitStringFormat = HexadecimalString
+<br/>    # BitsOrder = Ascending
+<br/>    #
+<br/>    Cmpd1 9c8460989ec8a49913991a6603130b0a19e8051c89184414953800cc21510...
+<br/>    Cmpd2 000000249400840040100042011001001980410c000000001010088001120...
+<br/>    ... ...
+<br/>    ... ..</div>
+<p>Example of <i>FP</i> file containing fingerprints vector string data:</p>
+<div class="OptionsBox">    #
+<br/>    # Package = MayaChemTools 7.4
+<br/>    # ReleaseDate = Oct 21, 2010
+<br/>    #
+<br/>    # TimeStamp =  Mon Mar 7 15:14:01 2011
+<br/>    #
+<br/>    # FingerprintsStringType = FingerprintsVector
+<br/>    #
+<br/>    # Description = PathLengthBits:AtomicInvariantsAtomTypes:MinLength1:...
+<br/>    # VectorStringFormat = IDsAndValuesString
+<br/>    # VectorValuesType = NumericalValues
+<br/>    #
+<br/>    Cmpd1 338;C F N O C:C C:N C=O CC CF CN CO C:C:C C:C:N C:CC C:CF C:CN C:
+<br/>    N:C C:NC CC:N CC=O CCC CCN CCO CNC NC=O O=CO C:C:C:C C:C:C:N C:C:CC...;
+<br/>    33 1 2 5 21 2 2 12 1 3 3 20 2 10 2 2 1 2 2 2 8 2 5 1 1 1 19 2 8 2 2 2 2
+<br/>    6 2 2 2 2 2 2 2 2 3 2 2 1 4 1 5 1 1 18 6 2 2 1 2 10 2 1 2 1 2 2 2 2 ...
+<br/>    Cmpd2 103;C N O C=N C=O CC CN CO CC=O CCC CCN CCO CNC N=CN NC=O NCN O=C
+<br/>    O C CC=O CCCC CCCN CCCO CCNC CNC=N CNC=O CNCN CCCC=O CCCCC CCCCN CC...;
+<br/>    15 4 4 1 2 13 5 2 2 15 5 3 2 2 1 1 1 2 17 7 6 5 1 1 1 2 15 8 5 7 2 2 2 2
+<br/>    1 2 1 1 3 15 7 6 8 3 4 4 3 2 2 1 2 3 14 2 4 7 4 4 4 4 1 1 1 2 1 1 1 ...
+<br/>    ... ...
+<br/>    ... ...</div>
+<p>Example of <i>SD</i> file containing fingerprints bit-vector string data:</p>
+<div class="OptionsBox">    ... ...
+<br/>    ... ...
+<br/>    $$$$
+<br/>    ... ...
+<br/>    ... ...
+<br/>    ... ...
+<br/>    41 44  0  0  0  0  0  0  0  0999 V2000
+     -3.3652    1.4499    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+<br/>    ... ...
+<br/>    2  3  1  0  0  0  0
+<br/>    ... ...
+<br/>    M  END
+<br/>    &gt;  &lt;CmpdID&gt;
+<br/>    Cmpd1
+<br/>
+<br/>    &gt;  &lt;PathLengthFingerprints&gt;
+<br/>    FingerprintsBitVector;PathLengthBits:AtomicInvariantsAtomTypes:MinLengt
+<br/>    h1:MaxLength8;1024;HexadecimalString;Ascending;9c8460989ec8a49913991a66
+<br/>    03130b0a19e8051c89184414953800cc2151082844a201042800130860308e8204d4028
+<br/>    00831048940e44281c00060449a5000ac80c894114e006321264401600846c050164462
+<br/>    08190410805000304a10205b0100e04c0038ba0fad0209c0ca8b1200012268b61c0026a
+<br/>    aa0660a11014a011d46
+<br/>
+<br/>    $$$$
+<br/>    ... ...
+<br/>    ... ...</div>
+<p>Example of CSV <i>Text</i> file containing fingerprints bit-vector string data:</p>
+<div class="OptionsBox">    &quot;CompoundID&quot;,&quot;PathLengthFingerprints&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;FingerprintsBitVector;PathLengthBits:AtomicInvariantsAtomTypes
+<br/>    :MinLength1:MaxLength8;1024;HexadecimalString;Ascending;9c8460989ec8a4
+<br/>    9913991a6603130b0a19e8051c89184414953800cc2151082844a20104280013086030
+<br/>    8e8204d402800831048940e44281c00060449a5000ac80c894114e006321264401...&quot;
+<br/>    ... ...
+<br/>    ... ...</div>
+<p>The current release of MayaChemTools supports the following types of fingerprint bit-vector and vector strings:</p>
+<div class="OptionsBox">    FingerprintsVector;AtomNeighborhoods:AtomicInvariantsAtomTypes:MinRadi
+<br/>    us0:MaxRadius2;41;AlphaNumericalValues;ValuesString;NR0-C.X1.BO1.H3-AT
+<br/>    C1:NR1-C.X3.BO3.H1-ATC1:NR2-C.X1.BO1.H3-ATC1:NR2-C.X3.BO4-ATC1 NR0-C.X
+<br/>    1.BO1.H3-ATC1:NR1-C.X3.BO3.H1-ATC1:NR2-C.X1.BO1.H3-ATC1:NR2-C.X3.BO4-A
+<br/>    TC1 NR0-C.X2.BO2.H2-ATC1:NR1-C.X2.BO2.H2-ATC1:NR1-C.X3.BO3.H1-ATC1:NR2
+<br/>    -C.X2.BO2.H2-ATC1:NR2-N.X3.BO3-ATC1:NR2-O.X1.BO1.H1-ATC1 NR0-C.X2.B...
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:AtomicInvariantsAtomTypes:ArbitraryS
+<br/>    ize;10;NumericalValues;IDsAndValuesString;C.X1.BO1.H3 C.X2.BO2.H2 C.X2
+<br/>    .BO3.H1 C.X3.BO3.H1 C.X3.BO4 F.X1.BO1 N.X2.BO2.H1 N.X3.BO3 O.X1.BO1.H1
+<br/>    O.X1.BO2;2 4 14 3 10 1 1 1 3 2
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SLogPAtomTypes:ArbitrarySize;16;Nume
+<br/>    ricalValues;IDsAndValuesString;C1 C10 C11 C14 C18 C20 C21 C22 C5 CS F
+<br/>    N11 N4 O10 O2 O9;5 1 1 1 14 4 2 1 2 2 1 1 1 1 3 1
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SLogPAtomTypes:FixedSize;67;OrderedN
+<br/>    umericalValues;IDsAndValuesString;C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C
+<br/>    12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26 C27 CS N1 N
+<br/>    2 N3 N4 N5 N6 N7 N8 N9 N10 N11 N12 N13 N14 NS O1 O2 O3 O4 O5 O6 O7 O8
+<br/>    O9 O10 O11 O12 OS F Cl Br I Hal P S1 S2 S3 Me1 Me2;5 0 0 0 2 0 0 0 0 1
+<br/>    1 0 0 1 0 0 0 14 0 4 2 1 0 0 0 0 0 2 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0...
+<br/>
+<br/>    FingerprintsVector;EStateIndicies:ArbitrarySize;11;NumericalValues;IDs
+<br/>    AndValuesString;SaaCH SaasC SaasN SdO SdssC SsCH3 SsF SsOH SssCH2 SssN
+<br/>    H SsssCH;24.778 4.387 1.993 25.023 -1.435 3.975 14.006 29.759 -0.073 3
+<br/>    .024 -2.270
+<br/>
+<br/>    FingerprintsVector;EStateIndicies:FixedSize;87;OrderedNumericalValues;
+<br/>    ValuesString;0 0 0 0 0 0 0 3.975 0 -0.073 0 0 24.778 -2.270 0 0 -1.435
+<br/>    4.387 0 0 0 0 0 0 3.024 0 0 0 0 0 0 0 1.993 0 29.759 25.023 0 0 0 0 1
+<br/>    4.006 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>
+<br/>    FingerprintsVector;ExtendedConnectivity:AtomicInvariantsAtomTypes:Radi
+<br/>    us2;60;AlphaNumericalValues;ValuesString;73555770 333564680 352413391
+<br/>    666191900 1001270906 1371674323 1481469939 1977749791 2006158649 21414
+<br/>    08799 49532520 64643108 79385615 96062769 273726379 564565671 85514103
+<br/>    5 906706094 988546669 1018231313 1032696425 1197507444 1331250018 1338
+<br/>    532734 1455473691 1607485225 1609687129 1631614296 1670251330 17303...
+<br/>
+<br/>    FingerprintsVector;ExtendedConnectivityCount:AtomicInvariantsAtomTypes
+<br/>    :Radius2;60;NumericalValues;IDsAndValuesString;73555770 333564680 3524
+<br/>    13391 666191900 1001270906 1371674323 1481469939 1977749791 2006158649
+<br/>    2141408799 49532520 64643108 79385615 96062769 273726379 564565671...;
+<br/>    3 2 1 1 14 1 2 10 4 3 1 1 1 1 2 1 2 1 1 1 2 3 1 1 2 1 3 3 8 2 2 2 6 2
+<br/>    1 2 1 1 2 1 1 1 2 1 1 2 1 2 1 1 1 1 1 1 1 1 1 2 1 1
+<br/>
+<br/>    FingerprintsBitVector;ExtendedConnectivityBits:AtomicInvariantsAtomTyp
+<br/>    es:Radius2;1024;BinaryString;Ascending;0000000000000000000000000000100
+<br/>    0000000001010000000110000011000000000000100000000000000000000000100001
+<br/>    1000000110000000000000000000000000010011000000000000000000000000010000
+<br/>    0000000000000000000000000010000000000000000001000000000000000000000000
+<br/>    0000000000010000100001000000000000101000000000000000100000000000000...
+<br/>
+<br/>    FingerprintsVector;ExtendedConnectivity:FunctionalClassAtomTypes:Radiu
+<br/>    s2;57;AlphaNumericalValues;ValuesString;24769214 508787397 850393286 8
+<br/>    62102353 981185303 1231636850 1649386610 1941540674 263599683 32920567
+<br/>    1 571109041 639579325 683993318 723853089 810600886 885767127 90326012
+<br/>    7 958841485 981022393 1126908698 1152248391 1317567065 1421489994 1455
+<br/>    632544 1557272891 1826413669 1983319256 2015750777 2029559552 20404...
+<br/>
+<br/>    FingerprintsVector;ExtendedConnectivity:EStateAtomTypes:Radius2;62;Alp
+<br/>    haNumericalValues;ValuesString;25189973 528584866 662581668 671034184
+<br/>    926543080 1347067490 1738510057 1759600920 2034425745 2097234755 21450
+<br/>    44754 96779665 180364292 341712110 345278822 386540408 387387308 50430
+<br/>    1706 617094135 771528807 957666640 997798220 1158349170 1291258082 134
+<br/>    1138533 1395329837 1420277211 1479584608 1486476397 1487556246 1566...
+<br/>
+<br/>    FingerprintsBitVector;MACCSKeyBits;166;BinaryString;Ascending;00000000
+<br/>    0000000000000000000000000000000001001000010010000000010010000000011100
+<br/>    0100101010111100011011000100110110000011011110100110111111111111011111
+<br/>    11111111111110111000
+<br/>
+<br/>    FingerprintsBitVector;MACCSKeyBits;322;BinaryString;Ascending;11101011
+<br/>    1110011111100101111111000111101100110000000000000011100010000000000000
+<br/>    0000000000000000000000000000000000000000000000101000000000000000000000
+<br/>    0000000000000000000000000000000000000000000000000000000000000000000000
+<br/>    0000000000000000000000000000000000000011000000000000000000000000000000
+<br/>    0000000000000000000000000000000000000000
+<br/>
+<br/>    FingerprintsVector;MACCSKeyCount;166;OrderedNumericalValues;ValuesStri
+<br/>    ng;0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 1 0 0 3 0 0 0 0 4 0 0 2 0 0 0 0 0 0 0 0 2 0 0 2 0 0 0 0
+<br/>    0 0 0 0 1 1 8 0 0 0 1 0 0 1 0 1 0 1 0 3 1 3 1 0 0 0 1 2 0 11 1 0 0 0
+<br/>    5 0 0 1 2 0 1 1 0 0 0 0 0 1 1 0 1 1 1 1 0 4 0 0 1 1 0 4 6 1 1 1 2 1 1
+<br/>    3 5 2 2 0 5 3 5 1 1 2 5 1 2 1 2 4 8 3 5 5 2 2 0 3 5 4 1
+<br/>
+<br/>    FingerprintsVector;MACCSKeyCount;322;OrderedNumericalValues;ValuesStri
+<br/>    ng;14 8 2 0 2 0 4 4 2 1 4 0 0 2 5 10 5 2 1 0 0 2 0 5 13 3 28 5 5 3 0 0
+<br/>    0 4 2 1 1 0 1 1 0 0 2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 22 5 3 0 0 0 1 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 0 2 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+<br/>
+<br/>    FingerprintsBitVector;PathLengthBits:AtomicInvariantsAtomTypes:MinLeng
+<br/>    th1:MaxLength8;1024;BinaryString;Ascending;001000010011010101011000110
+<br/>    0100010101011000101001011100110001000010001001101000001001001001001000
+<br/>    0010110100000111001001000001001010100100100000000011000000101001011100
+<br/>    0010000001000101010100000100111100110111011011011000000010110111001101
+<br/>    0101100011000000010001000011000010100011101100001000001000100000000...
+<br/>
+<br/>    FingerprintsVector;PathLengthCount:AtomicInvariantsAtomTypes:MinLength
+<br/>    1:MaxLength8;432;NumericalValues;IDsAndValuesPairsString;C.X1.BO1.H3 2
+<br/>    C.X2.BO2.H2 4 C.X2.BO3.H1 14 C.X3.BO3.H1 3 C.X3.BO4 10 F.X1.BO1 1 N.X
+<br/>    2.BO2.H1 1 N.X3.BO3 1 O.X1.BO1.H1 3 O.X1.BO2 2 C.X1.BO1.H3C.X3.BO3.H1
+<br/>    2 C.X2.BO2.H2C.X2.BO2.H2 1 C.X2.BO2.H2C.X3.BO3.H1 4 C.X2.BO2.H2C.X3.BO
+<br/>    4 1 C.X2.BO2.H2N.X3.BO3 1 C.X2.BO3.H1:C.X2.BO3.H1 10 C.X2.BO3.H1:C....
+<br/>
+<br/>    FingerprintsVector;PathLengthCount:MMFF94AtomTypes:MinLength1:MaxLengt
+<br/>    h8;463;NumericalValues;IDsAndValuesPairsString;C5A 2 C5B 2 C=ON 1 CB 1
+<br/>    8 COO 1 CR 9 F 1 N5 1 NC=O 1 O=CN 1 O=CO 1 OC=O 1 OR 2 C5A:C5B 2 C5A:N
+<br/>    5 2 C5ACB 1 C5ACR 1 C5B:C5B 1 C5BC=ON 1 C5BCB 1 C=ON=O=CN 1 C=ONNC=O 1
+<br/>    CB:CB 18 CBF 1 CBNC=O 1 COO=O=CO 1 COOCR 1 COOOC=O 1 CRCR 7 CRN5 1 CR
+<br/>    OR 2 C5A:C5B:C5B 2 C5A:C5BC=ON 1 C5A:C5BCB 1 C5A:N5:C5A 1 C5A:N5CR ...
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomPairs:AtomicInvariantsAtomTypes:MinD
+<br/>    istance1:MaxDistance10;223;NumericalValues;IDsAndValuesString;C.X1.BO1
+<br/>    .H3-D1-C.X3.BO3.H1 C.X2.BO2.H2-D1-C.X2.BO2.H2 C.X2.BO2.H2-D1-C.X3.BO3.
+<br/>    H1 C.X2.BO2.H2-D1-C.X3.BO4 C.X2.BO2.H2-D1-N.X3.BO3 C.X2.BO3.H1-D1-...;
+<br/>    2 1 4 1 1 10 8 1 2 6 1 2 2 1 2 1 2 2 1 2 1 5 1 10 12 2 2 1 2 1 9 1 3 1
+<br/>    1 1 2 2 1 3 6 1 6 14 2 2 2 3 1 3 1 8 2 2 1 3 2 6 1 2 2 5 1 3 1 23 1...
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomPairs:FunctionalClassAtomTypes:MinDi
+<br/>    stance1:MaxDistance10;144;NumericalValues;IDsAndValuesString;Ar-D1-Ar
+<br/>    Ar-D1-Ar.HBA Ar-D1-HBD Ar-D1-Hal Ar-D1-None Ar.HBA-D1-None HBA-D1-NI H
+<br/>    BA-D1-None HBA.HBD-D1-NI HBA.HBD-D1-None HBD-D1-None NI-D1-None No...;
+<br/>    23 2 1 1 2 1 1 1 1 2 1 1 7 28 3 1 3 2 8 2 1 1 1 5 1 5 24 3 3 4 2 13 4
+<br/>    1 1 4 1 5 22 4 4 3 1 19 1 1 1 1 1 2 2 3 1 1 8 25 4 5 2 3 1 26 1 4 1 ...
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomTorsions:AtomicInvariantsAtomTypes;3
+<br/>    3;NumericalValues;IDsAndValuesString;C.X1.BO1.H3-C.X3.BO3.H1-C.X3.BO4-
+<br/>    C.X3.BO4 C.X1.BO1.H3-C.X3.BO3.H1-C.X3.BO4-N.X3.BO3 C.X2.BO2.H2-C.X2.BO
+<br/>    2.H2-C.X3.BO3.H1-C.X2.BO2.H2 C.X2.BO2.H2-C.X2.BO2.H2-C.X3.BO3.H1-O...;
+<br/>    2 2 1 1 2 2 1 1 3 4 4 8 4 2 2 6 2 2 1 2 1 1 2 1 1 2 6 2 4 2 1 3 1
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomTorsions:EStateAtomTypes;36;Numerica
+<br/>    lValues;IDsAndValuesString;aaCH-aaCH-aaCH-aaCH aaCH-aaCH-aaCH-aasC aaC
+<br/>    H-aaCH-aasC-aaCH aaCH-aaCH-aasC-aasC aaCH-aaCH-aasC-sF aaCH-aaCH-aasC-
+<br/>    ssNH aaCH-aasC-aasC-aasC aaCH-aasC-aasC-aasN aaCH-aasC-ssNH-dssC a...;
+<br/>    4 4 8 4 2 2 6 2 2 2 4 3 2 1 3 3 2 2 2 1 2 1 1 1 2 1 1 1 1 1 1 1 2 1 1 2
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomTriplets:AtomicInvariantsAtomTypes:M
+<br/>    inDistance1:MaxDistance10;3096;NumericalValues;IDsAndValuesString;C.X1
+<br/>    .BO1.H3-D1-C.X1.BO1.H3-D1-C.X3.BO3.H1-D2 C.X1.BO1.H3-D1-C.X2.BO2.H2-D1
+<br/>    0-C.X3.BO4-D9 C.X1.BO1.H3-D1-C.X2.BO2.H2-D3-N.X3.BO3-D4 C.X1.BO1.H3-D1
+<br/>    -C.X2.BO2.H2-D4-C.X2.BO2.H2-D5 C.X1.BO1.H3-D1-C.X2.BO2.H2-D6-C.X3....;
+<br/>    1 2 2 2 2 2 2 2 8 8 4 8 4 4 2 2 2 2 4 2 2 2 4 2 2 2 2 1 2 2 4 4 4 2 2
+<br/>    2 4 4 4 8 4 4 2 4 4 4 2 4 4 2 2 2 2 2 2 2 2 1 2 2 2 2 2 2 2 2 2 2 8...
+<br/>
+<br/>    FingerprintsVector;TopologicalAtomTriplets:SYBYLAtomTypes:MinDistance1
+<br/>    :MaxDistance10;2332;NumericalValues;IDsAndValuesString;C.2-D1-C.2-D9-C
+<br/>    .3-D10 C.2-D1-C.2-D9-C.ar-D10 C.2-D1-C.3-D1-C.3-D2 C.2-D1-C.3-D10-C.3-
+<br/>    D9 C.2-D1-C.3-D2-C.3-D3 C.2-D1-C.3-D2-C.ar-D3 C.2-D1-C.3-D3-C.3-D4 C.2
+<br/>    -D1-C.3-D3-N.ar-D4 C.2-D1-C.3-D3-O.3-D2 C.2-D1-C.3-D4-C.3-D5 C.2-D1-C.
+<br/>    3-D5-C.3-D6 C.2-D1-C.3-D5-O.3-D4 C.2-D1-C.3-D6-C.3-D7 C.2-D1-C.3-D7...
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomPairs:ArbitrarySize:Min
+<br/>    Distance1:MaxDistance10;54;NumericalValues;IDsAndValuesString;H-D1-H H
+<br/>    -D1-NI HBA-D1-NI HBD-D1-NI H-D2-H H-D2-HBA H-D2-HBD HBA-D2-HBA HBA-D2-
+<br/>    HBD H-D3-H H-D3-HBA H-D3-HBD H-D3-NI HBA-D3-NI HBD-D3-NI H-D4-H H-D4-H
+<br/>    BA H-D4-HBD HBA-D4-HBA HBA-D4-HBD HBD-D4-HBD H-D5-H H-D5-HBA H-D5-...;
+<br/>    18 1 2 1 22 12 8 1 2 18 6 3 1 1 1 22 13 6 5 7 2 28 9 5 1 1 1 36 16 10
+<br/>    3 4 1 37 10 8 1 35 10 9 3 3 1 28 7 7 4 18 16 12 5 1 2 1
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomPairs:FixedSize:MinDist
+<br/>    ance1:MaxDistance10;150;OrderedNumericalValues;ValuesString;18 0 0 1 0
+<br/>    0 0 2 0 0 1 0 0 0 0 22 12 8 0 0 1 2 0 0 0 0 0 0 0 0 18 6 3 1 0 0 0 1
+<br/>    0 0 1 0 0 0 0 22 13 6 0 0 5 7 0 0 2 0 0 0 0 0 28 9 5 1 0 0 0 1 0 0 1 0
+<br/>    0 0 0 36 16 10 0 0 3 4 0 0 1 0 0 0 0 0 37 10 8 0 0 0 0 1 0 0 0 0 0 0
+<br/>    0 35 10 9 0 0 3 3 0 0 1 0 0 0 0 0 28 7 7 4 0 0 0 0 0 0 0 0 0 0 0 18...
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomTriplets:ArbitrarySize:
+<br/>    MinDistance1:MaxDistance10;696;NumericalValues;IDsAndValuesString;Ar1-
+<br/>    Ar1-Ar1 Ar1-Ar1-H1 Ar1-Ar1-HBA1 Ar1-Ar1-HBD1 Ar1-H1-H1 Ar1-H1-HBA1 Ar1
+<br/>    -H1-HBD1 Ar1-HBA1-HBD1 H1-H1-H1 H1-H1-HBA1 H1-H1-HBD1 H1-HBA1-HBA1 H1-
+<br/>    HBA1-HBD1 H1-HBA1-NI1 H1-HBD1-NI1 HBA1-HBA1-NI1 HBA1-HBD1-NI1 Ar1-...;
+<br/>    46 106 8 3 83 11 4 1 21 5 3 1 2 2 1 1 1 100 101 18 11 145 132 26 14 23
+<br/>    28 3 3 5 4 61 45 10 4 16 20 7 5 1 3 4 5 3 1 1 1 1 5 4 2 1 2 2 2 1 1 1
+<br/>    119 123 24 15 185 202 41 25 22 17 3 5 85 95 18 11 23 17 3 1 1 6 4 ...
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomTriplets:FixedSize:MinD
+<br/>    istance1:MaxDistance10;2692;OrderedNumericalValues;ValuesString;46 106
+<br/>    8 3 0 0 83 11 4 0 0 0 1 0 0 0 0 0 0 0 0 21 5 3 0 0 1 2 2 0 0 1 0 0 0
+<br/>    0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100 101 18 11 0 0 145 132 26
+<br/>    14 0 0 23 28 3 3 0 0 5 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 61 45 10 4 0
+<br/>    0 16 20 7 5 1 0 3 4 5 3 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 5 ...</div>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="alpha-number"><b>--alpha</b> <i>number</i></dt>
+<dd>
+<p>Value of alpha parameter for calculating <i>Tversky</i> similarity coefficient specified for <b>-b, --BitVectorComparisonMode</b> option. It corresponds to weights assigned for bits set to &quot;1&quot; in a pair of fingerprint bit-vectors during the calculation of similarity coefficient. Possible values: <i>0 to 1</i>. Default value: &lt;0.5&gt;.</p>
+</dd>
+<dt id="beta-number"><b>--beta</b> <i>number</i></dt>
+<dd>
+<p>Value of beta parameter for calculating <i>WeightedTanimoto</i> and <i>WeightedTversky</i> similarity coefficients specified for <b>-b, --BitVectorComparisonMode</b> option. It is used to weight the contributions of bits set to &quot;0&quot; during the calculation of similarity coefficients. Possible values: <i>0 to 1</i>. Default value of &lt;1&gt; makes <i>WeightedTanimoto</i> and <i>WeightedTversky</i> equivalent to <i>Tanimoto</i> and <i>Tversky</i>.</p>
+</dd>
+<dt id="b---BitVectorComparisonMode-All-TanimotoSimilarity-TverskySimilarity"><b>-b, --BitVectorComparisonMode</b> <i>All | &quot;TanimotoSimilarity,[TverskySimilarity,...]&quot;</i></dt>
+<dd>
+<p>Specify what similarity coefficients to use for calculating similarity matrices for fingerprints bit-vector strings data values in <i>TextFile(s)</i>: calculate similarity matrices for all supported similarity coefficients or specify a comma delimited list of similarity coefficients. Possible values: <i>All | &quot;TanimotoSimilarity,[TverskySimilarity,...]</i>. Default: <i>TanimotoSimilarity</i></p>
+<p><i>All</i> uses complete list of supported similarity coefficients: <i>BaroniUrbaniSimilarity, BuserSimilarity, CosineSimilarity, DiceSimilarity, DennisSimilarity, ForbesSimilarity, FossumSimilarity, HamannSimilarity, JacardSimilarity, Kulczynski1Similarity, Kulczynski2Similarity, MatchingSimilarity, McConnaugheySimilarity, OchiaiSimilarity, PearsonSimilarity, RogersTanimotoSimilarity, RussellRaoSimilarity, SimpsonSimilarity, SkoalSneath1Similarity, SkoalSneath2Similarity, SkoalSneath3Similarity, TanimotoSimilarity, TverskySimilarity, YuleSimilarity, WeightedTanimotoSimilarity, WeightedTverskySimilarity</i>. These similarity coefficients are described below.</p>
+<p>For two fingerprint bit-vectors A and B of same size, let:</p>
+<div class="OptionsBox">    Na = Number of bits set to &quot;1&quot; in A
+<br/>    Nb = Number of bits set to &quot;1&quot; in B
+<br/>    Nc = Number of bits set to &quot;1&quot; in both A and B
+<br/>    Nd = Number of bits set to &quot;0&quot; in both A and B
+<br/>
+<br/>    Nt = Number of bits set to &quot;1&quot; or &quot;0&quot; in A or B (Size of A or B)
+<br/>    Nt = Na + Nb - Nc + Nd
+<br/>
+<br/>    Na - Nc = Number of bits set to &quot;1&quot; in A but not in B
+<br/>    Nb - Nc = Number of bits set to &quot;1&quot; in B but not in A</div>
+<p>Then, various similarity coefficients [ Ref. 40 - 42 ] for a pair of bit-vectors A and B are defined as follows:</p>
+<p><i>BaroniUrbaniSimilarity</i>: ( SQRT( Nc * Nd ) + Nc ) / ( SQRT ( Nc * Nd ) + Nc + ( Na - Nc ) + ( Nb - Nc ) ) ( same as Buser )</p>
+<p><i>BuserSimilarity</i>: ( SQRT ( Nc * Nd ) + Nc ) / ( SQRT ( Nc * Nd ) + Nc + ( Na - Nc ) + ( Nb - Nc ) ) ( same as BaroniUrbani )</p>
+<p><i>CosineSimilarity</i>: Nc / SQRT ( Na * Nb ) (same as Ochiai)</p>
+<p><i>DiceSimilarity</i>: (2 * Nc) / ( Na + Nb )</p>
+<p><i>DennisSimilarity</i>: ( Nc * Nd - ( ( Na - Nc ) * ( Nb - Nc ) ) ) / SQRT ( Nt * Na * Nb)</p>
+<p><i>ForbesSimilarity</i>: ( Nt * Nc ) / ( Na * Nb )</p>
+<p><i>FossumSimilarity</i>: ( Nt * ( ( Nc - 1/2 ) ** 2 ) / ( Na * Nb )</p>
+<p><i>HamannSimilarity</i>: ( ( Nc + Nd ) - ( Na - Nc ) - ( Nb - Nc ) ) / Nt</p>
+<p><i>JaccardSimilarity</i>: Nc / ( ( Na - Nc) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc ) (same as Tanimoto)</p>
+<p><i>Kulczynski1Similarity</i>: Nc / ( ( Na - Nc ) + ( Nb - Nc) ) = Nc / ( Na + Nb - 2Nc )</p>
+<p><i>Kulczynski2Similarity</i>: ( ( Nc / 2 ) * ( 2 * Nc + ( Na - Nc ) + ( Nb - Nc) ) ) / ( ( Nc + ( Na - Nc ) ) * ( Nc + ( Nb - Nc ) ) ) = 0.5 * ( Nc / Na + Nc / Nb )</p>
+<p><i>MatchingSimilarity</i>: ( Nc + Nd ) / Nt</p>
+<p><i>McConnaugheySimilarity</i>: ( Nc ** 2 - ( Na - Nc ) * ( Nb - Nc) ) / ( Na * Nb )</p>
+<p><i>OchiaiSimilarity</i>: Nc / SQRT ( Na * Nb ) (same as Cosine)</p>
+<p><i>PearsonSimilarity</i>: ( ( Nc * Nd ) - ( ( Na - Nc ) * ( Nb - Nc ) ) / SQRT ( Na * Nb * ( Na - Nc + Nd ) * ( Nb - Nc + Nd ) )</p>
+<p><i>RogersTanimotoSimilarity</i>: ( Nc + Nd ) / ( ( Na - Nc) + ( Nb - Nc) + Nt) = ( Nc + Nd ) / ( Na + Nb - 2Nc + Nt)</p>
+<p><i>RussellRaoSimilarity</i>: Nc / Nt</p>
+<p><i>SimpsonSimilarity</i>: Nc / MIN ( Na, Nb)</p>
+<p><i>SkoalSneath1Similarity</i>: Nc / ( Nc + 2 * ( Na - Nc) + 2 * ( Nb - Nc) ) = Nc / ( 2 * Na + 2 * Nb - 3 * Nc )</p>
+<p><i>SkoalSneath2Similarity</i>: ( 2 * Nc + 2 * Nd ) / ( Nc + Nd + Nt )</p>
+<p><i>SkoalSneath3Similarity</i>: ( Nc + Nd ) / ( ( Na - Nc ) + ( Nb - Nc ) ) = ( Nc + Nd ) / ( Na + Nb - 2 * Nc )</p>
+<p><i>TanimotoSimilarity</i>: Nc / ( ( Na - Nc) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc ) (same as Jaccard)</p>
+<p><i>TverskySimilarity</i>: Nc / ( alpha * ( Na - Nc ) + ( 1 - alpha) * ( Nb - Nc) + Nc ) = Nc / ( alpha * ( Na - Nb ) + Nb)</p>
+<p><i>YuleSimilarity</i>: ( ( Nc * Nd ) - ( ( Na - Nc ) * ( Nb - Nc ) ) ) / ( ( Nc * Nd ) + ( ( Na - Nc ) * ( Nb - Nc ) ) )</p>
+<p>Values of Tanimoto/Jaccard and Tversky coefficients are dependent on only those bit which are set to &quot;1&quot; in both A and B. In order to take into account all bit positions, modified versions of Tanimoto [ Ref. 42 ] and Tversky [ Ref. 43 ] have been developed.</p>
+<p>Let:</p>
+<div class="OptionsBox">    Na&#39; = Number of bits set to &quot;0&quot; in A
+<br/>    Nb&#39; = Number of bits set to &quot;0&quot; in B
+<br/>    Nc&#39; = Number of bits set to &quot;0&quot; in both A and B</div>
+<p>Tanimoto&#39;: Nc&#39; / ( ( Na&#39; - Nc&#39;) + ( Nb&#39; - Nc&#39; ) + Nc&#39; ) = Nc&#39; / ( Na&#39; + Nb&#39; - Nc&#39; )</p>
+<p>Tversky&#39;: Nc&#39; / ( alpha * ( Na&#39; - Nc&#39; ) + ( 1 - alpha) * ( Nb&#39; - Nc&#39; ) + Nc&#39; ) = Nc&#39; / ( alpha * ( Na&#39; - Nb&#39; ) + Nb&#39;)</p>
+<p>Then:</p>
+<p><i>WeightedTanimotoSimilarity</i> = beta * Tanimoto + (1 - beta) * Tanimoto&#39;</p>
+<p><i>WeightedTverskySimilarity</i> = beta * Tversky + (1 - beta) * Tversky&#39;</p>
+</dd>
+<dt id="c---ColMode-ColNum-ColLabel"><b>-c, --ColMode</b> <i>ColNum | ColLabel</i></dt>
+<dd>
+<p>Specify how columns are identified in <i>TextFile(s)</i>: using column number or column label. Possible values: <i>ColNum or ColLabel</i>. Default value: <i>ColNum</i>.</p>
+</dd>
+<dt id="CompoundIDCol-col-number-col-name"><b>--CompoundIDCol</b> <i>col number | col name</i></dt>
+<dd>
+<p>This value is <b>-c, --ColMode</b> mode specific. It specifies input <i>TextFile(s)</i> column to use for generating compound ID for similarity matrices in output <i>TextFile(s)</i>. Possible values: <i>col number or col label</i>. Default value: <i>first column containing the word compoundID in its column label or sequentially generated IDs</i>.</p>
+</dd>
+<dt id="CompoundIDPrefix-text"><b>--CompoundIDPrefix</b> <i>text</i></dt>
+<dd>
+<p>Specify compound ID prefix to use during sequential generation of compound IDs for input <i>SDFile(s)</i> and <i>TextFile(s)</i>. Default value: <i>Cmpd</i>. The default value generates compound IDs which look like Cmpd&lt;Number&gt;.</p>
+<p>For input <i>SDFile(s)</i>, this value is only used during <i>LabelPrefix | MolNameOrLabelPrefix</i> values of <b>--CompoundIDMode</b> option; otherwise, it&#39;s ignored.</p>
+<p>Examples for <i>LabelPrefix</i> or <i>MolNameOrLabelPrefix</i> value of <b>--CompoundIDMode</b>:</p>
+<div class="OptionsBox">    Compound</div>
+<p>The values specified above generates compound IDs which correspond to Compound&lt;Number&gt; instead of default value of Cmpd&lt;Number&gt;.</p>
+</dd>
+<dt id="CompoundIDField-DataFieldName"><b>--CompoundIDField</b> <i>DataFieldName</i></dt>
+<dd>
+<p>Specify input <i>SDFile(s)</i> datafield label for generating compound IDs. This value is only used during <i>DataField</i> value of <b>--CompoundIDMode</b> option.</p>
+<p>Examples for <i>DataField</i> value of <b>--CompoundIDMode</b>:</p>
+<div class="OptionsBox">    MolID
+<br/>    ExtReg</div>
+</dd>
+<dt id="CompoundIDMode-DataField-MolName-LabelPrefix-MolNameOrLabelPrefix"><b>--CompoundIDMode</b> <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i></dt>
+<dd>
+<p>Specify how to generate compound IDs from input <i>SDFile(s)</i> for similarity matrix CSV/TSV text file(s): use a <i>SDFile(s)</i> datafield value; use molname line from <i>SDFile(s)</i>; generate a sequential ID with specific prefix; use combination of both MolName and LabelPrefix with usage of LabelPrefix values for empty molname lines.</p>
+<p>Possible values: <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i>. Default: <i>LabelPrefix</i>.</p>
+<p>For <i>MolNameAndLabelPrefix</i> value of <b>--CompoundIDMode</b>, molname line in <i>SDFile(s)</i> takes precedence over sequential compound IDs generated using <i>LabelPrefix</i> and only empty molname values are replaced with sequential compound IDs.</p>
+</dd>
+<dt id="d---detail-InfoLevel"><b>-d, --detail</b> <i>InfoLevel</i></dt>
+<dd>
+<p>Level of information to print about lines being ignored. Default: <i>1</i>. Possible values: <i>1, 2 or 3</i>.</p>
+</dd>
+<dt id="f---fast"><b>-f, --fast</b></dt>
+<dd>
+<p>In this mode, fingerprints columns specified using <b>--FingerprintsCol</b> for <i>TextFile(s)</i> and <b>--FingerprintsField</b> for <i>SDFile(s)</i> are assumed to contain valid fingerprints data and no checking is performed before calculating similarity matrices. By default, fingerprints data is validated before computing pairwise similarity and distance coefficients.</p>
+</dd>
+<dt id="FingerprintsCol-col-number-col-name"><b>--FingerprintsCol</b> <i>col number | col name</i></dt>
+<dd>
+<p>This value is <b>-c, --colmode</b> specific. It specifies fingerprints column to use during calculation similarity matrices for <i>TextFile(s)</i>. Possible values: <i>col number or col label</i>. Default value: <i>first column containing the word Fingerprints in its column label</i>.</p>
+</dd>
+<dt id="FingerprintsField-FieldLabel"><b>--FingerprintsField</b> <i>FieldLabel</i></dt>
+<dd>
+<p>Fingerprints field label to use during calculation similarity matrices for <i>SDFile(s)</i>. Default value: <i>first data field label containing the word Fingerprints in its label</i></p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="InDelim-comma-semicolon"><b>--InDelim</b> <i>comma | semicolon</i></dt>
+<dd>
+<p>Input delimiter for CSV <i>TextFile(s)</i>. Possible values: <i>comma or semicolon</i>. Default value: <i>comma</i>. For TSV files, this option is ignored and <i>tab</i> is used as a delimiter.</p>
+</dd>
+<dt id="InputDataMode-LoadInMemory-ScanFile"><b>--InputDataMode</b> <i>LoadInMemory | ScanFile</i></dt>
+<dd>
+<p>Specify how fingerprints bit-vector or vector strings data from <i>SD, FP and CSV/TSV</i> fingerprint file(s) is processed: Retrieve, process and load all available fingerprints data in memory; Retrieve and process data for fingerprints one at a time. Possible values : <i>LoadInMemory | ScanFile</i>. Default: <i>LoadInMemory</i>.</p>
+<p>During <i>LoadInMemory</i> value of <b>--InputDataMode</b>, fingerprints bit-vector or vector strings data from input file is retrieved, processed, and loaded into memory all at once as fingerprints objects for generation for similarity matrices.</p>
+<p>During <i>ScanFile</i> value of <b>--InputDataMode</b>, multiple passes over the input fingerprints file are performed to retrieve and process fingerprints bit-vector or vector strings data one at a time to generate fingerprints objects used during generation of similarity matrices. A temporary copy of the input fingerprints file is made at the start and deleted after generating the matrices.</p>
+<p><i>ScanFile</i> value of <b>--InputDataMode</b> allows processing of arbitrary large fingerprints files without any additional memory requirement.</p>
+</dd>
+<dt id="m---mode-AutoDetect-FingerprintsBitVectorString-FingerprintsVectorString"><b>-m, --mode</b> <i>AutoDetect | FingerprintsBitVectorString | FingerprintsVectorString</i></dt>
+<dd>
+<p>Format of fingerprint strings data in <i>TextFile(s)</i>: automatically detect format of fingerprints string created by MayaChemTools fingerprints generation scripts or explicitly specify its format. Possible values: <i>AutoDetect | FingerprintsBitVectorString | FingerprintsVectorString</i>. Default value: <i>AutoDetect</i>.</p>
+</dd>
+<dt id="OutDelim-comma-tab-semicolon"><b>--OutDelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Delimiter for output CSV/TSV text file(s). Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="OutMatrixFormat-RowsAndColumns-IDPairsAndValue"><b>--OutMatrixFormat</b> <i>RowsAndColumns | IDPairsAndValue</i></dt>
+<dd>
+<p>Specify how similarity or distance values calculated for fingerprints vector and bit-vector strings are written to the output CSV/TSV text file(s): Generate text files containing rows and columns with their labels corresponding to compound IDs and each matrix element value corresponding to similarity or distance between corresponding compounds; Generate text files containing rows containing compoundIDs for two compounds followed by similarity or distance value between these compounds.</p>
+<p>Possible values: <i>RowsAndColumns, or IDPairsAndValue</i>. Default value: <i>RowsAndColumns</i>.</p>
+<p>The value of <b>--OutMatrixFormat</b> in conjunction with <b>--OutMatrixType</b> determines type of data written to output files and allows generation of up to 6 different output data formats:</p>
+<div class="OptionsBox">    OutMatrixFormat OutMatrixType
+<br/>
+<br/>    RowsAndColumns  FullMatrix   [ DEFAULT ]
+<br/>    RowsAndColumns  UpperTriangularMatrix
+<br/>    RowsAndColumns  LowerTriangularMatrix
+<br/>
+<br/>    IDPairsAndValue FullMatrix
+<br/>    IDPairsAndValue UpperTriangularMatrix
+<br/>    IDPairsAndValue LowerTriangularMatrix</div>
+<p>Example of data in output file for <i>RowsAndColumns</i> <b>--OutMatrixFormat</b> value for <i>FullMatrix</i> valueof <b>--OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;&quot;,&quot;Cmpd1&quot;,&quot;Cmpd2&quot;,&quot;Cmpd3&quot;,&quot;Cmpd4&quot;,&quot;Cmpd5&quot;,&quot;Cmpd6&quot;,... ...
+<br/>    &quot;Cmpd1&quot;,&quot;1&quot;,&quot;0.04&quot;,&quot;0.25&quot;,&quot;0.13&quot;,&quot;0.11&quot;,&quot;0.2&quot;,... ...
+<br/>    &quot;Cmpd2&quot;,&quot;0.04&quot;,&quot;1&quot;,&quot;0.06&quot;,&quot;0.05&quot;,&quot;0.19&quot;,&quot;0.07&quot;,... ...
+<br/>    &quot;Cmpd3&quot;,&quot;0.25&quot;,&quot;0.06&quot;,&quot;1&quot;,&quot;0.12&quot;,&quot;0.22&quot;,&quot;0.25&quot;,... ...
+<br/>    &quot;Cmpd4&quot;,&quot;0.13&quot;,&quot;0.05&quot;,&quot;0.12&quot;,&quot;1&quot;,&quot;0.11&quot;,&quot;0.13&quot;,... ...
+<br/>    &quot;Cmpd5&quot;,&quot;0.11&quot;,&quot;0.19&quot;,&quot;0.22&quot;,&quot;0.11&quot;,&quot;1&quot;,&quot;0.17&quot;,... ...
+<br/>    &quot;Cmpd6&quot;,&quot;0.2&quot;,&quot;0.07&quot;,&quot;0.25&quot;,&quot;0.13&quot;,&quot;0.17&quot;,&quot;1&quot;,... ...
+<br/>    ... ... ..
+<br/>    ... ... ..
+<br/>    ... ... ..</div>
+<p>Example of data in output file for <i>RowsAndColumns</i> <b>--OutMatrixFormat</b> value for <i>UpperTriangularMatrix</i> value of <b>--OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;&quot;,&quot;Cmpd1&quot;,&quot;Cmpd2&quot;,&quot;Cmpd3&quot;,&quot;Cmpd4&quot;,&quot;Cmpd5&quot;,&quot;Cmpd6&quot;,... ...
+<br/>    &quot;Cmpd1&quot;,&quot;1&quot;,&quot;0.04&quot;,&quot;0.25&quot;,&quot;0.13&quot;,&quot;0.11&quot;,&quot;0.2&quot;,... ...
+<br/>    &quot;Cmpd2&quot;,&quot;1&quot;,&quot;0.06&quot;,&quot;0.05&quot;,&quot;0.19&quot;,&quot;0.07&quot;,... ...
+<br/>    &quot;Cmpd3&quot;,&quot;1&quot;,&quot;0.12&quot;,&quot;0.22&quot;,&quot;0.25&quot;,... ...
+<br/>    &quot;Cmpd4&quot;,&quot;1&quot;,&quot;0.11&quot;,&quot;0.13&quot;,... ...
+<br/>    &quot;Cmpd5&quot;,&quot;1&quot;,&quot;0.17&quot;,... ...
+<br/>    &quot;Cmpd6&quot;,&quot;1&quot;,... ...
+<br/>    ... ... ..
+<br/>    ... ... ..
+<br/>    ... ... ..</div>
+<p>Example of data in output file for <i>RowsAndColumns</i> <b>--OutMatrixFormat</b> value for <i>LowerTriangularMatrix</i> value of <b>--OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;&quot;,&quot;Cmpd1&quot;,&quot;Cmpd2&quot;,&quot;Cmpd3&quot;,&quot;Cmpd4&quot;,&quot;Cmpd5&quot;,&quot;Cmpd6&quot;,... ...
+<br/>    &quot;Cmpd1&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;0.04&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;0.25&quot;,&quot;0.06&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd4&quot;,&quot;0.13&quot;,&quot;0.05&quot;,&quot;0.12&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd5&quot;,&quot;0.11&quot;,&quot;0.19&quot;,&quot;0.22&quot;,&quot;0.11&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd6&quot;,&quot;0.2&quot;,&quot;0.07&quot;,&quot;0.25&quot;,&quot;0.13&quot;,&quot;0.17&quot;,&quot;1&quot;
+<br/>    ... ... ..
+<br/>    ... ... ..
+<br/>    ... ... ..</div>
+<p>Example of data in output file for <i>IDPairsAndValue</i> <b>--OutMatrixFormat</b> value for &lt;FullMatrix&gt; value of <b>OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;CmpdID1&quot;,&quot;CmpdID2&quot;,&quot;Coefficient Value&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd1&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd2&quot;,&quot;0.04&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd3&quot;,&quot;0.25&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd4&quot;,&quot;0.13&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd1&quot;,&quot;0.04&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd2&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd3&quot;,&quot;0.06&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd4&quot;,&quot;0.05&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd1&quot;,&quot;0.25&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd2&quot;,&quot;0.06&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd3&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd4&quot;,&quot;0.12&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...</div>
+<p>Example of data in output file for <i>IDPairsAndValue</i> <b>--OutMatrixFormat</b> value for &lt;UpperTriangularMatrix&gt; value of <b>--OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;CmpdID1&quot;,&quot;CmpdID2&quot;,&quot;Coefficient Value&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd1&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd2&quot;,&quot;0.04&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd3&quot;,&quot;0.25&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd4&quot;,&quot;0.13&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd2&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd3&quot;,&quot;0.06&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd4&quot;,&quot;0.05&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd3&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd4&quot;,&quot;0.12&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...</div>
+<p>Example of data in output file for <i>IDPairsAndValue</i> <b>--OutMatrixFormat</b> value for &lt;LowerTriangularMatrix&gt; value of <b>--OutMatrixType</b>:</p>
+<div class="OptionsBox">    &quot;CmpdID1&quot;,&quot;CmpdID2&quot;,&quot;Coefficient Value&quot;
+<br/>    &quot;Cmpd1&quot;,&quot;Cmpd1&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd1&quot;,&quot;0.04&quot;
+<br/>    &quot;Cmpd2&quot;,&quot;Cmpd2&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd1&quot;,&quot;0.25&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd2&quot;,&quot;0.06&quot;
+<br/>    &quot;Cmpd3&quot;,&quot;Cmpd3&quot;,&quot;1&quot;
+<br/>    &quot;Cmpd4&quot;,&quot;Cmpd1&quot;,&quot;0.13&quot;
+<br/>    &quot;Cmpd4&quot;,&quot;Cmpd2&quot;,&quot;0.05&quot;
+<br/>    &quot;Cmpd4&quot;,&quot;Cmpd3&quot;,&quot;0.12&quot;
+<br/>    &quot;Cmpd4&quot;,&quot;Cmpd4&quot;,&quot;1&quot;
+<br/>    ... ... ...
+<br/>    ... ... ...
+<br/>    ... ... ...</div>
+</dd>
+<dt id="OutMatrixType-FullMatrix-UpperTriangularMatrix-LowerTriangularMatrix"><b>--OutMatrixType</b> <i>FullMatrix | UpperTriangularMatrix | LowerTriangularMatrix</i></dt>
+<dd>
+<p>Type of similarity or distance matrix to calculate for fingerprints vector and bit-vector strings: Calculate full matrix; Calculate lower triangular matrix including diagonal; Calculate upper triangular matrix including diagonal.</p>
+<p>Possible values: <i>FullMatrix, UpperTriangularMatrix, or LowerTriangularMatrix</i>. Default value: <i>FullMatrix</i>.</p>
+<p>The value of <b>--OutMatrixType</b> in conjunction with <b>--OutMatrixFormat</b> determines type of data written to output files.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files</p>
+</dd>
+<dt id="p---precision-number"><b>-p, --precision</b> <i>number</i></dt>
+<dd>
+<p>Precision of calculated values in the output file. Default: up to <i>2</i> decimal places. Valid values: positive integers.</p>
+</dd>
+<dt id="q---quote-Yes-No"><b>-q, --quote</b> <i>Yes | No</i></dt>
+<dd>
+<p>Put quote around column values in output CSV/TSV text file(s). Possible values: <i>Yes or No</i>. Default value: <i>Yes</i>.</p>
+</dd>
+<dt id="r---root-RootName"><b>-r, --root</b> <i>RootName</i></dt>
+<dd>
+<p>New file name is generated using the root: &lt;Root&gt;&lt;BitVectorComparisonMode&gt;.&lt;Ext&gt; or &lt;Root&gt;&lt;VectorComparisonMode&gt;&lt;VectorComparisonFormulism&gt;.&lt;Ext&gt;. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively. This option is ignored for multiple input files.</p>
+</dd>
+<dt id="v---VectorComparisonMode-All-TanimotoSimilarity-ManhattanDistance"><b>-v, --VectorComparisonMode</b> <i>All | &quot;TanimotoSimilarity,[ManhattanDistance,...]&quot;</i></dt>
+<dd>
+<p>Specify what similarity or distance coefficients to use for calculating similarity matrices for fingerprint vector strings data values in <i>TextFile(s)</i>: calculate similarity matrices for all supported similarity and distance coefficients or specify a comma delimited list of similarity and distance coefficients. Possible values: <i>All | &quot;TanimotoSimilairy,[ManhattanDistance,..]&quot;</i>. Default: <i>TanimotoSimilarity</i>.</p>
+<p>The value of <b>-v, --VectorComparisonMode</b>, in conjunction with <b>--VectorComparisonFormulism</b>, decides which type of similarity and distance coefficient formulism gets used.</p>
+<p><i>All</i> uses complete list of supported similarity and distance coefficients: <i>CosineSimilarity, CzekanowskiSimilarity, DiceSimilarity, OchiaiSimilarity, JaccardSimilarity, SorensonSimilarity, TanimotoSimilarity, CityBlockDistance, EuclideanDistance, HammingDistance, ManhattanDistance, SoergelDistance</i>. These similarity and distance coefficients are described below.</p>
+<p><b>FingerprintsVector.pm</b> module, used to calculate similarity and distance coefficients, provides support to perform comparison between vectors containing three different types of values:</p>
+<p>Type I: OrderedNumericalValues</p>
+<div class="OptionsBox">    . Size of two vectors are same
+<br/>    . Vectors contain real values in a specific order. For example: MACCS keys
+      count, Topological pharmnacophore atom pairs and so on.</div>
+<p>Type II: UnorderedNumericalValues</p>
+<div class="OptionsBox">    . Size of two vectors might not be same
+<br/>    . Vectors contain unordered real value identified by value IDs. For example:
+      Toplogical atom pairs, Topological atom torsions and so on</div>
+<p>Type III: AlphaNumericalValues</p>
+<div class="OptionsBox">    . Size of two vectors might not be same
+<br/>    . Vectors contain unordered alphanumerical values. For example: Extended
+      connectivity fingerprints, atom neighborhood fingerprints.</div>
+<p>Before performing similarity or distance calculations between vectors containing UnorderedNumericalValues or AlphaNumericalValues, the vectors are transformed into vectors containing unique OrderedNumericalValues using value IDs for UnorderedNumericalValues and values itself for AlphaNumericalValues.</p>
+<p>Three forms of similarity and distance calculation between two vectors, specified using <b>--VectorComparisonFormulism</b> option, are supported: <i>AlgebraicForm, BinaryForm or SetTheoreticForm</i>.</p>
+<p>For <i>BinaryForm</i>, the ordered list of processed final vector values containing the value or count of each unique value type is simply converted into a binary vector containing 1s and 0s corresponding to presence or absence of values before calculating similarity or distance between two vectors.</p>
+<p>For two fingerprint vectors A and B of same size containing OrderedNumericalValues, let:</p>
+<div class="OptionsBox">    N = Number values in A or B
+<br/>
+<br/>    Xa = Values of vector A
+<br/>    Xb = Values of vector B
+<br/>
+<br/>    Xai = Value of ith element in A
+<br/>    Xbi = Value of ith element in B
+<br/>
+   SUM = Sum of i over N values</div>
+<p>For SetTheoreticForm of calculation between two vectors, let:</p>
+<div class="OptionsBox">    SetIntersectionXaXb = SUM ( MIN ( Xai, Xbi ) )
+<br/>    SetDifferenceXaXb = SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) )</div>
+<p>For BinaryForm of calculation between two vectors, let:</p>
+<div class="OptionsBox">    Na = Number of bits set to &quot;1&quot; in A = SUM ( Xai )
+<br/>    Nb = Number of bits set to &quot;1&quot; in B = SUM ( Xbi )
+<br/>    Nc = Number of bits set to &quot;1&quot; in both A and B = SUM ( Xai * Xbi )
+<br/>    Nd = Number of bits set to &quot;0&quot; in both A and B
+       = SUM ( 1 - Xai - Xbi + Xai * Xbi)
+<br/>
+<br/>    N = Number of bits set to &quot;1&quot; or &quot;0&quot; in A or B = Size of A or B = Na + Nb - Nc + Nd</div>
+<p>Additionally, for BinaryForm various values also correspond to:</p>
+<div class="OptionsBox">    Na = | Xa |
+<br/>    Nb = | Xb |
+<br/>    Nc = | SetIntersectionXaXb |
+<br/>    Nd = N - | SetDifferenceXaXb |
+<br/>
+<br/>    | SetDifferenceXaXb | = N - Nd = Na + Nb - Nc + Nd - Nd = Na + Nb - Nc
+                          =  | Xa | + | Xb | - | SetIntersectionXaXb |</div>
+<p>Various similarity and distance coefficients [ Ref 40, Ref 62, Ref 64 ] for a pair of vectors A and B in <i>AlgebraicForm, BinaryForm and SetTheoreticForm</i> are defined as follows:</p>
+<p><b>CityBlockDistance</b>: ( same as HammingDistance and ManhattanDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>CosineSimilarity</b>: ( same as OchiaiSimilarityCoefficient)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / SQRT ( SUM ( Xai ** 2) * SUM ( Xbi ** 2) )</p>
+<p><i>BinaryForm</i>: Nc / SQRT ( Na * Nb)</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / SQRT ( |Xa| * |Xb| ) = SUM ( MIN ( Xai, Xbi ) ) / SQRT ( SUM ( Xai ) * SUM ( Xbi ) )</p>
+<p><b>CzekanowskiSimilarity</b>: ( same as DiceSimilarity and SorensonSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>DiceSimilarity</b>: ( same as CzekanowskiSimilarity and SorensonSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>EuclideanDistance</b>:</p>
+<p><i>AlgebraicForm</i>: SQRT ( SUM ( ( ( Xai - Xbi ) ** 2 ) ) )</p>
+<p><i>BinaryForm</i>: SQRT ( ( Na - Nc ) + ( Nb - Nc ) ) = SQRT ( Na + Nb - 2 * Nc )</p>
+<p><i>SetTheoreticForm</i>: SQRT ( | SetDifferenceXaXb | - | SetIntersectionXaXb | ) = SQRT ( SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) )</p>
+<p><b>HammingDistance</b>: ( same as CityBlockDistance and ManhattanDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>JaccardSimilarity</b>: ( same as TanimotoSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / ( SUM ( Xai ** 2 ) + SUM ( Xbi ** 2 ) - SUM ( Xai * Xbi ) )</p>
+<p><i>BinaryForm</i>: Nc / ( ( Na - Nc ) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / | SetDifferenceXaXb | = SUM ( MIN ( Xai, Xbi ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>ManhattanDistance</b>: ( same as CityBlockDistance and HammingDistance)</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) )</p>
+<p><i>BinaryForm</i>: ( Na - Nc ) + ( Nb - Nc ) = Na + Nb - 2 * Nc</p>
+<p><i>SetTheoreticForm</i>: | SetDifferenceXaXb | - | SetIntersectionXaXb | = SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>OchiaiSimilarity</b>: ( same as CosineSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / SQRT ( SUM ( Xai ** 2) * SUM ( Xbi ** 2) )</p>
+<p><i>BinaryForm</i>: Nc / SQRT ( Na * Nb)</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / SQRT ( |Xa| * |Xb| ) = SUM ( MIN ( Xai, Xbi ) ) / SQRT ( SUM ( Xai ) * SUM ( Xbi ) )</p>
+<p><b>SorensonSimilarity</b>: ( same as CzekanowskiSimilarity and DiceSimilarity)</p>
+<p><i>AlgebraicForm</i>: ( 2 * ( SUM ( Xai * Xbi ) ) ) / ( SUM ( Xai ** 2) + SUM ( Xbi **2 ) )</p>
+<p><i>BinaryForm</i>: 2 * Nc / ( Na + Nb )</p>
+<p><i>SetTheoreticForm</i>: 2 * | SetIntersectionXaXb | / ( |Xa| + |Xb| ) = 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) )</p>
+<p><b>SoergelDistance</b>:</p>
+<p><i>AlgebraicForm</i>: SUM ( ABS ( Xai - Xbi ) ) / SUM ( MAX ( Xai, Xbi ) )</p>
+<p><i>BinaryForm</i>: 1 - Nc / ( Na + Nb - Nc ) = ( Na + Nb - 2 * Nc ) / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: ( | SetDifferenceXaXb | - | SetIntersectionXaXb | ) / | SetDifferenceXaXb | = ( SUM ( Xai ) + SUM ( Xbi ) - 2 * ( SUM ( MIN ( Xai, Xbi ) ) ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+<p><b>TanimotoSimilarity</b>: ( same as JaccardSimilarity)</p>
+<p><i>AlgebraicForm</i>: SUM ( Xai * Xbi ) / ( SUM ( Xai ** 2 ) + SUM ( Xbi ** 2 ) - SUM ( Xai * Xbi ) )</p>
+<p><i>BinaryForm</i>: Nc / ( ( Na - Nc ) + ( Nb - Nc ) + Nc ) = Nc / ( Na + Nb - Nc )</p>
+<p><i>SetTheoreticForm</i>: | SetIntersectionXaXb | / | SetDifferenceXaXb | = SUM ( MIN ( Xai, Xbi ) ) / ( SUM ( Xai ) + SUM ( Xbi ) - SUM ( MIN ( Xai, Xbi ) ) )</p>
+</dd>
+<dt id="VectorComparisonFormulism-All-AlgebraicForm-BinaryForm-SetTheoreticForm"><b>--VectorComparisonFormulism</b> <i>All | &quot;AlgebraicForm,[BinaryForm,SetTheoreticForm]&quot;</i></dt>
+<dd>
+<p>Specify fingerprints vector comparison formulism to use for calculation similarity and distance coefficients during <b>-v, --VectorComparisonMode</b>: use all supported comparison formulisms or specify a comma delimited. Possible values: <i>All | &quot;AlgebraicForm,[BinaryForm,SetTheoreticForm]&quot;</i>. Default value: <i>AlgebraicForm</i>.</p>
+<p><i>All</i> uses all three forms of supported vector comparison formulism for values of <b>-v, --VectorComparisonMode</b> option.</p>
+<p>For fingerprint vector strings containing <b>AlphaNumericalValues</b> data values - <b>ExtendedConnectivityFingerprints</b>, <b>AtomNeighborhoodsFingerprints</b> and so on - all three formulism result in same value during similarity and distance calculations.</p>
+</dd>
+<dt id="w---WorkingDir-DirName"><b>-w, --WorkingDir</b> <i>DirName</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring by loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPHex.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in SD File present in a data field with Fingerprint substring in its label by loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPHex.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in FP file by loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file along with compound IDs retrieved from FP file, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPHex.fpf</div>
+<p>To generate a lower triangular similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring by loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o --InputDataMode LoadInMemory
+      --OutMatrixFormat RowsAndColumns --OutMatrixType LowerTriangularMatrix
+      SampleFPHex.csv</div>
+<p>To generate a upper triangular similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring by loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file in IDPairsAndValue format containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o --InputDataMode LoadInMemory
+      --OutMatrixFormat IDPairsAndValue --OutMatrixType UpperTriangularMatrix
+      SampleFPHex.csv</div>
+<p>To generate a full similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring by scanning file without loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o --InputDataMode ScanFile
+      --OutMatrixFormat RowsAndColumns --OutMatrixType FullMatrix
+      SampleFPHex.csv</div>
+<p>To generate a lower triangular similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring by scanning file without loading all fingerprints data into memory and create a SampleFPHexTanimotoSimilarity.csv file in IDPairsAndValue format containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o --InputDataMode ScanFile
+      --OutMatrixFormat IDPairsAndValue --OutMatrixType LowerTriangularMatrix
+      SampleFPHex.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient using algebraic formulism for fingerprints vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring and create a SampleFPCountTanimotoSimilarityAlgebraicForm.csv file containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPCount.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient using algebraic formulism for fingerprints vector strings data corresponding to supported fingerprints in SD file present in a data field with Fingerprint substring in its label and create a SampleFPCountTanimotoSimilarityAlgebraicForm.csv file containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPCount.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient using algebraic formulism vector strings data corresponding to supported fingerprints in FP file and create a SampleFPCountTanimotoSimilarityAlgebraicForm.csv file along with compound IDs retrieved from FP file, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -o SampleFPCount.fpf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in text file present in a column name containing Fingerprint substring and create a SampleFPHexTanimotoSimilarity.csv file in IDPairsAndValue format containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --OutMatrixFormat IDPairsAndValue -o
+      SampleFPHex.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in SD file present in a data field with Fingerprint substring in its label and create a SampleFPHexTanimotoSimilarity.csv file in IDPairsAndValue format containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --OutMatrixFormat IDPairsAndValue -o
+      SampleFPHex.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in FP file and create a SampleFPHexTanimotoSimilarity.csv file in IDPairsAndValue format along with compound IDs retrieved from FP file, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --OutMatrixFormat IDPairsAndValue -o
+      SampleFPHex.fpf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints in SD file present in a data field with Fingerprint substring in its label and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs from mol name line, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --CompoundIDMode MolName -o
+      SampleFPHex.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs from data field name Mol_ID, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --CompoundIDMode DataField
+      --CompoundIDField Mol_ID -o SampleFPBin.sdf</div>
+<p>To generate similarity matrices corresponding to Buser, Dice and Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPBin[CoefficientName]Similarity.csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -b &quot;BuserSimilarity,DiceSimilarity,
+      TanimotoSimilarity&quot; -o SampleFPBin.csv</div>
+<p>To generate similarity matrices corresponding to Buser, Dice and Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPBin[CoefficientName]Similarity.csv files containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -b &quot;BuserSimilarity,DiceSimilarity,
+      TanimotoSimilarity&quot; -o SampleFPBin.sdf</div>
+<p>To generate similarity matrices corresponding to CityBlock distance and Tanimoto similarity coefficients using algebraic formulism for fingerprints vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPCount[CoefficientName]AlgebraicForm.csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,
+      TanimotoSimilarity&quot; -o SampleFPCount.csv</div>
+<p>To generate similarity matrices corresponding to CityBlock distance and Tanimoto similarity coefficients using algebraic formulism for fingerprints vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPCount[CoefficientName]AlgebraicForm.csv files containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,
+      TanimotoSimilarity&quot; -o SampleFPCount.sdf</div>
+<p>To generate similarity matrices corresponding to CityBlock distance Tanimoto similarity coefficients using binary formulism for fingerprints vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPCount[CoefficientName]Binary.csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,
+      TanimotoSimilarity&quot; --VectorComparisonFormulism BinaryForm -o
+      SampleFPCount.csv</div>
+<p>To generate similarity matrices corresponding to CityBlock distance Tanimoto similarity coefficients using binary formulism for fingerprints vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPCount[CoefficientName]Binary.csv files containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,
+      TanimotoSimilarity&quot; --VectorComparisonFormulism BinaryForm -o
+      SampleFPCount.sdf</div>
+<p>To generate similarity matrices corresponding to CityBlock distance Tanimoto similarity coefficients using all supported comparison formulisms for fingerprints vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPCount[CoefficientName][FormulismName].csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,
+      TanimotoSimilarity&quot; --VectorComparisonFormulism All -o SampleFPCount.csv</div>
+<p>To generate similarity matrices corresponding to CityBlock distance Tanimoto similarity coefficients using all supported comparison formulisms for fingerprints vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPCount[CoefficientName][FormulismName].csv files containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -v &quot;CityBlockDistance,TanimotoSimilarity&quot;
+      --VectorComparisonFormulism All -o SampleFPCount.sdf</div>
+<p>To generate similarity matrices corresponding to all available similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPHex[CoefficientName].csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -m AutoDetect --BitVectorComparisonMode
+      All --alpha 0.5 -beta 0.5 -o SampleFPHex.csv</div>
+<p>To generate similarity matrices corresponding to all available similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPHex[CoefficientName].csv files containing sequentially generated compound IDs with Cmpd prefix, type</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -m AutoDetect --BitVectorComparisonMode
+      All --alpha 0.5 -beta 0.5 -o SampleFPHex.sdf</div>
+<p>To generate similarity matrices corresponding to all available similarity and distance coefficients using all comparison formulism for fingerprints vector strings data corresponding to supported fingerprints present in a column name containing Fingerprint substring and create SampleFPCount[CoefficientName][FormulismName].csv files containing compound IDs retrieved from column name containing CompoundID substring, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -m AutoDetect --VectorComparisonMode
+      All --VectorComparisonFormulism All -o SampleFPCount.csv</div>
+<p>To generate similarity matrices corresponding to all available similarity and distance coefficients using all comparison formulism for fingerprints vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create SampleFPCount[CoefficientName][FormulismName].csv files containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -m AutoDetect --VectorComparisonMode
+      All --VectorComparisonFormulism All -o SampleFPCount.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a column number 2 and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs retrieved column number 1, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --ColMode ColNum --CompoundIDCol 1
+      --FingerprintsCol 2 -o SampleFPHex.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field name Fingerprints and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs present in data field name Mol_ID, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --FingerprintsField Fingerprints
+      --CompoundIDMode DataField --CompoundIDField Mol_ID -o SampleFPHex.sdf</div>
+<p>To generate a similarity matrix corresponding to Tversky similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a column named Fingerprints and create a SampleFPHexTverskySimilarity.tsv file containing compound IDs retrieved column named CompoundID, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --BitVectorComparisonMode
+      TverskySimilarity --alpha 0.5 --ColMode ColLabel --CompoundIDCol
+      CompoundID --FingerprintsCol Fingerprints --OutDelim Tab --quote No
+      -o SampleFPHex.csv</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create a SampleFPHexTanimotoSimilarity.csv file containing compound IDs from molname line or sequentially generated compound IDs with Mol prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl --CompoundIDMode MolnameOrLabelPrefix
+      --CompoundIDPrefix Mol -o SampleFPHex.sdf</div>
+<p>To generate a similarity matrix corresponding to Tanimoto similarity coefficient for fingerprints bit-vector strings data corresponding to supported fingerprints present in a data field with Fingerprint substring in its label and create a SampleFPHexTanimotoSimilarity.tsv file containing sequentially generated compound IDs with Cmpd prefix, type:</p>
+<div class="ExampleBox">    % SimilarityMatricesFingerprints.pl -OutDelim Tab --quote No -o SampleFPHex.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./InfoFingerprintsFiles.html">InfoFingerprintsFiles.pl</a>, <a href="./SimilaritySearchingFingerprints.html">SimilaritySearchingFingerprints.pl</a>, <a href="./AtomNeighborhoodsFingerprints.html">AtomNeighborhoodsFingerprints.pl</a>, <a href="./ExtendedConnectivityFingerprints.html">ExtendedConnectivityFingerprints.pl</a>, <a href="./MACCSKeysFingerprints.html">MACCSKeysFingerprints.pl</a>, <a href="./PathLengthFingerprints.html">PathLengthFingerprints.pl</a>, <a href="./TopologicalAtomPairsFingerprints.html">TopologicalAtomPairsFingerprints.pl</a>, <a href="./TopologicalAtomTorsionsFingerprints.html">TopologicalAtomTorsionsFingerprints.pl</a>, <a href="./TopologicalPharmacophoreAtomPairsFingerprints.html">TopologicalPharmacophoreAtomPairsFingerprints.pl</a>, <a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html">TopologicalPharmacophoreAtomTripletsFingerprints.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./SDToMolFiles.html" title="SDToMolFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./SimilaritySearchingFingerprints.html" title="SimilaritySearchingFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>SimilarityMatricesFingerprints.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

@@ -1,0 +1,20 @@
+!!AA_MULTIPLE_ALIGNMENT 1.0
+PileUp of: @hsp70.list
+
+ Symbol comparison table: GenRunData:blosum62.cmp  CompCheck: 6430
+
+                   GapWeight: 8
+             GapLengthWeight: 2
+
+ hsp70.msf  MSF: 743  Type: P  October 6, 1998 18:23  Check: 7784 ..
+
+ Name: S11448           Len:   743  Check: 3635  Weight:  1.00
+ Name: S06443           Len:   743  Check: 5861  Weight:  1.00
+ Name: S29261           Len:   743  Check: 7748  Weight:  1.00
+
+//
+
+        1                                                   50
+S11448  ~~~~~~~~~~ ~~~~~~~~~~ ~~~~~~MTFD GAIGIDLGTT YSCVGVWQNE
+S06443  ~~~~~~~~~~ ~~~~~~~~~~ ~~~~~~MTFD GAIGIDLGTT YSCVGVWQNE
+S29261  ~~~~~~~~~~ ~~~~~~~~~~ ~~~~~~~~MG KIIGIDLGTT NSCVAIMDGT
