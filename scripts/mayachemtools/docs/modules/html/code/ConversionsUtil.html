@@ -1,0 +1,219 @@
+<html>
+<head>
+<title>MayaChemTools:Code:ConversionsUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-ConversionsUtil-"></a>   1 <span class="k">package </span><span class="i">ConversionsUtil</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: ConversionsUtil.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Constants</span><span class="sc">;</span>
+  29 
+  30 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  31 
+  32 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  33 
+  34 <span class="c"># Groups of conversion functions...</span>
+  35 <span class="k">my</span><span class="s">(</span><span class="i">@MathConversions</span><span class="s">)</span> = <span class="q">qw(DegreesToRadians RadiansToDegrees)</span><span class="sc">;</span>
+  36 <span class="k">my</span><span class="s">(</span><span class="i">@NumericBaseConversions</span><span class="s">)</span> = <span class="q">qw(BinaryToDecimal DecimalToBinary HexadecimalToDecimal DecimalToHexadecimal OctalToDecimal DecimalToOctal BinaryToHexadecimal HexadecimalToBinary HexadecimalToOctal OctalToHexadecimal StringToBinary StringToHexadecimal)</span><span class="sc">;</span>
+  37 
+  38 <span class="c"># Export all conversion functions...</span>
+  39 <span class="i">@EXPORT</span> = <span class="s">(</span><span class="i">@MathConversions</span><span class="cm">,</span> <span class="i">@NumericBaseConversions</span><span class="s">)</span><span class="sc">;</span>
+  40 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  41 
+  42 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span>
+  43                 <span class="w">math</span> <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@MathConversions</span><span class="s">]</span><span class="cm">,</span>
+  44                 <span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span>
+  45                <span class="s">)</span><span class="sc">;</span>
+  46 
+  47 
+  48 <span class="c"># Degrees to radians...</span>
+<a name="DegreesToRadians-"></a>  49 <span class="k">sub </span><span class="m">DegreesToRadians ($;$)</span> <span class="s">{</span>
+  50   <span class="k">my</span><span class="s">(</span><span class="i">$Degrees</span><span class="cm">,</span> <span class="i">$IgnoreWrap</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  51   <span class="k">my</span><span class="s">(</span><span class="i">$Radians</span><span class="cm">,</span> <span class="i">$WrapValue</span><span class="s">)</span><span class="sc">;</span>
+  52 
+  53   <span class="i">$WrapValue</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$IgnoreWrap</span><span class="s">)</span> &amp;&amp; <span class="i">$IgnoreWrap</span><span class="s">)</span> ? <span class="n">0</span> <span class="co">:</span> <span class="n">1</span><span class="sc">;</span>
+  54   <span class="k">if</span> <span class="s">(</span><span class="i">$Degrees</span> &gt; <span class="n">360</span> &amp;&amp; <span class="i">$WrapValue</span><span class="s">)</span> <span class="s">{</span>
+  55     <span class="i">$Degrees</span> = <span class="i">$Degrees</span> % <span class="n">360</span><span class="sc">;</span>
+  56   <span class="s">}</span>
+  57   <span class="i">$Radians</span> = <span class="s">(</span><span class="i">$Degrees</span> * <span class="w">TwoPi</span><span class="s">)</span> / <span class="n">360</span><span class="sc">;</span>
+  58 
+  59   <span class="k">return</span> <span class="i">$Radians</span><span class="sc">;</span>
+  60 <span class="s">}</span>
+  61 
+  62 <span class="c"># Radians to degrees...</span>
+<a name="RadiansToDegrees-"></a>  63 <span class="k">sub </span><span class="m">RadiansToDegrees ($;$)</span> <span class="s">{</span>
+  64   <span class="k">my</span><span class="s">(</span><span class="i">$Radians</span><span class="cm">,</span> <span class="i">$IgnoreWrap</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  65   <span class="k">my</span><span class="s">(</span><span class="i">$Degrees</span><span class="cm">,</span> <span class="i">$WrapValue</span><span class="s">)</span><span class="sc">;</span>
+  66 
+  67   <span class="i">$WrapValue</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$IgnoreWrap</span><span class="s">)</span> &amp;&amp; <span class="i">$IgnoreWrap</span><span class="s">)</span> ? <span class="n">0</span> <span class="co">:</span> <span class="n">1</span><span class="sc">;</span>
+  68   <span class="i">$Degrees</span> = <span class="s">(</span><span class="i">$Radians</span> * <span class="n">360</span><span class="s">)</span> / <span class="w">TwoPi</span><span class="sc">;</span>
+  69   <span class="k">if</span> <span class="s">(</span><span class="i">$Degrees</span> &gt; <span class="n">360</span> &amp;&amp; <span class="i">$WrapValue</span><span class="s">)</span> <span class="s">{</span>
+  70     <span class="i">$Degrees</span> = <span class="i">$Degrees</span> % <span class="n">360</span><span class="sc">;</span>
+  71   <span class="s">}</span>
+  72 
+  73   <span class="k">return</span> <span class="i">$Degrees</span><span class="sc">;</span>
+  74 <span class="s">}</span>
+  75 
+  76 <span class="c"># Convert a binary string to a decimal number...</span>
+<a name="BinaryToDecimal-"></a>  77 <span class="k">sub </span><span class="m">BinaryToDecimal ($)</span> <span class="s">{</span>
+  78   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  79 
+  80   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^0b/</span><span class="s">)</span> <span class="s">{</span>
+  81     <span class="i">$Value</span> = <span class="q">&quot;0b${Value}&quot;</span><span class="sc">;</span>
+  82   <span class="s">}</span>
+  83   <span class="k">return</span> <span class="i">_ConvertToDecimal</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  84 <span class="s">}</span>
+  85 
+  86 <span class="c"># Convert a decimal number into a binary string...</span>
+<a name="DecimalToBinary-"></a>  87 <span class="k">sub </span><span class="m">DecimalToBinary ($)</span> <span class="s">{</span>
+  88   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  89 
+  90   <span class="k">return</span> <span class="k">sprintf</span><span class="s">(</span><span class="q">&quot;%b&quot;</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  91 <span class="s">}</span>
+  92 
+  93 <span class="c"># Convert a hexadecimal string to a decimal number...</span>
+<a name="HexadecimalToDecimal-"></a>  94 <span class="k">sub </span><span class="m">HexadecimalToDecimal ($)</span> <span class="s">{</span>
+  95   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  96 
+  97   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^0x/</span><span class="s">)</span> <span class="s">{</span>
+  98     <span class="i">$Value</span> = <span class="q">&quot;0x${Value}&quot;</span><span class="sc">;</span>
+  99   <span class="s">}</span>
+ 100   <span class="k">return</span> <span class="i">_ConvertToDecimal</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 101 <span class="s">}</span>
+ 102 
+ 103 <span class="c"># Convert a decimal number into a hexadecimal string...</span>
+<a name="DecimalToHexadecimal-"></a> 104 <span class="k">sub </span><span class="m">DecimalToHexadecimal ($)</span> <span class="s">{</span>
+ 105   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 106 
+ 107   <span class="k">return</span> <span class="k">sprintf</span><span class="s">(</span><span class="q">&quot;%x&quot;</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 108 <span class="s">}</span>
+ 109 
+ 110 <span class="c"># Convert an octal string to a decimal number...</span>
+<a name="OctalToDecimal-"></a> 111 <span class="k">sub </span><span class="m">OctalToDecimal ($)</span> <span class="s">{</span>
+ 112   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 113 
+ 114   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^0/</span><span class="s">)</span> <span class="s">{</span>
+ 115     <span class="i">$Value</span> = <span class="q">&quot;0${Value}&quot;</span><span class="sc">;</span>
+ 116   <span class="s">}</span>
+ 117   <span class="k">return</span> <span class="i">_ConvertToDecimal</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 118 <span class="s">}</span>
+ 119 
+ 120 <span class="c"># Convert a decimal number into an octal string...</span>
+<a name="DecimalToOctal-"></a> 121 <span class="k">sub </span><span class="m">DecimalToOctal ($)</span> <span class="s">{</span>
+ 122   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 123 
+ 124   <span class="k">return</span> <span class="k">sprintf</span><span class="s">(</span><span class="q">&quot;%o&quot;</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 125 <span class="s">}</span>
+ 126 
+ 127 <span class="c"># Convert string into a binary string. Going from left to right, two ways of arranging bits</span>
+ 128 <span class="c"># inside each byte are available: Most Significat Bits (MSB) first or Least Significat Bits (LSB)</span>
+ 129 <span class="c"># first. Default is MSB corresponding to  descending bits order (PerlSpeak) inside each</span>
+ 130 <span class="c"># each packed byte (Most singificat bits first).</span>
+ 131 <span class="c">#</span>
+<a name="StringToBinary-"></a> 132 <span class="k">sub </span><span class="m">StringToBinary ($;$)</span> <span class="s">{</span>
+ 133   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">$UseReverseBitOrder</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 134   <span class="k">my</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="s">)</span><span class="sc">;</span>
+ 135 
+ 136   <span class="i">$BinTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;b*&#39;</span> <span class="co">:</span> <span class="q">&#39;B*&#39;</span><span class="sc">;</span>
+ 137   <span class="k">return</span> <span class="k">unpack</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 138 <span class="s">}</span>
+ 139 
+ 140 <span class="c"># Convert string into a hexadecimal string. Two ways of arranging nybbles (pair of 4 bits in each</span>
+ 141 <span class="c"># byte) are available: high nybbles first or low nybbles first. Default is MSB corresponding to high</span>
+ 142 <span class="c"># nybbles (PerlSpeak) first. Low and high nybbles correspond to pair of a low and high four bits in a byte.</span>
+ 143 <span class="c">#</span>
+<a name="StringToHexadecimal-"></a> 144 <span class="k">sub </span><span class="m">StringToHexadecimal ($;$)</span> <span class="s">{</span>
+ 145   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">$UseReverseBitOrder</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 146   <span class="k">my</span><span class="s">(</span><span class="i">$HexTemplate</span><span class="s">)</span><span class="sc">;</span>
+ 147 
+ 148   <span class="i">$HexTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;h*&#39;</span> <span class="co">:</span> <span class="q">&#39;H*&#39;</span><span class="sc">;</span>
+ 149   <span class="k">return</span> <span class="k">unpack</span><span class="s">(</span><span class="i">$HexTemplate</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 150 <span class="s">}</span>
+ 151 
+ 152 <span class="c"># Convert a binary string into a hexadecimal string...</span>
+ 153 <span class="c">#</span>
+<a name="BinaryToHexadecimal-"></a> 154 <span class="k">sub </span><span class="m">BinaryToHexadecimal ($;$)</span> <span class="s">{</span>
+ 155   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">$UseReverseBitOrder</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 156   <span class="k">my</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="cm">,</span> <span class="i">$HexTemplate</span><span class="s">)</span><span class="sc">;</span>
+ 157 
+ 158   <span class="i">$BinTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;b*&#39;</span> <span class="co">:</span> <span class="q">&#39;B*&#39;</span><span class="sc">;</span>
+ 159   <span class="i">$HexTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;h*&#39;</span> <span class="co">:</span> <span class="q">&#39;H*&#39;</span><span class="sc">;</span>
+ 160 
+ 161   <span class="k">return</span> <span class="k">unpack</span><span class="s">(</span><span class="i">$HexTemplate</span><span class="cm">,</span> <span class="k">pack</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 162 <span class="s">}</span>
+ 163 
+ 164 <span class="c"># Convert a hexadecimal string into a binary string...</span>
+ 165 <span class="c">#</span>
+<a name="HexadecimalToBinary-"></a> 166 <span class="k">sub </span><span class="m">HexadecimalToBinary ($;$)</span> <span class="s">{</span>
+ 167   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="cm">,</span> <span class="i">$UseReverseBitOrder</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 168   <span class="k">my</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="cm">,</span> <span class="i">$HexTemplate</span><span class="s">)</span><span class="sc">;</span>
+ 169 
+ 170   <span class="i">$BinTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;b*&#39;</span> <span class="co">:</span> <span class="q">&#39;B*&#39;</span><span class="sc">;</span>
+ 171   <span class="i">$HexTemplate</span> = <span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$UseReverseBitOrder</span><span class="s">)</span> &amp;&amp; <span class="i">$UseReverseBitOrder</span><span class="s">)</span> ? <span class="q">&#39;h*&#39;</span> <span class="co">:</span> <span class="q">&#39;H*&#39;</span><span class="sc">;</span>
+ 172 
+ 173   <span class="k">return</span> <span class="k">unpack</span><span class="s">(</span><span class="i">$BinTemplate</span><span class="cm">,</span> <span class="k">pack</span><span class="s">(</span><span class="i">$HexTemplate</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 174 <span class="s">}</span>
+ 175 
+ 176 <span class="c"># Convert a hexadecimal string into a octal string...</span>
+ 177 <span class="c">#</span>
+<a name="HexadecimalToOctal-"></a> 178 <span class="k">sub </span><span class="m">HexadecimalToOctal</span> <span class="s">{</span>
+ 179   <span class="k">my</span><span class="s">(</span><span class="i">$Hexadecimal</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 180 
+ 181   <span class="k">return</span> <span class="i">DecimalToOctal</span><span class="s">(</span><span class="i">HexadecimalToDecimal</span><span class="s">(</span><span class="i">$Hexadecimal</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 182 <span class="s">}</span>
+ 183 
+ 184 <span class="c"># Convert a octal string into a hexadecimal string...</span>
+ 185 <span class="c">#</span>
+<a name="OctalToHexadecimal-"></a> 186 <span class="k">sub </span><span class="m">OctalToHexadecimal</span> <span class="s">{</span>
+ 187   <span class="k">my</span><span class="s">(</span><span class="i">$Octal</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 188 
+ 189   <span class="k">return</span> <span class="i">DecimalToHexadecimal</span><span class="s">(</span><span class="i">OctalToDecimal</span><span class="s">(</span><span class="i">$Octal</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 190 <span class="s">}</span>
+ 191 
+ 192 <span class="c"># Use Perl oct function to convert binary, octal or hexadecimal strings into decimal numbers.</span>
+<a name="_ConvertToDecimal-"></a> 193 <span class="k">sub </span><span class="m">_ConvertToDecimal ($)</span> <span class="s">{</span>
+ 194   <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 195 
+ 196   <span class="k">return</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/^0/</span><span class="s">)</span> ? <span class="k">oct</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> <span class="co">:</span> <span class="i">$Value</span><span class="sc">;</span>
+ 197 <span class="s">}</span>
+ 198 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

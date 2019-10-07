@@ -1,0 +1,436 @@
+<html>
+<head>
+<title>MayaChemTools:Code:ModifySDFilesDataFields.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 #!/usr/bin/perl -w
+   2 <span class="c">#</span>
+   3 <span class="c"># File: ModifySDFilesDataFields.pl</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">FindBin</span><span class="sc">;</span> <span class="k">use</span> <span class="w">lib</span> <span class="q">&quot;$FindBin::Bin/../lib&quot;</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Getopt::Long</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">File::Basename</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">Text::ParseWords</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">FileUtil</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">SDFileUtil</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">TextUtil</span><span class="sc">;</span>
+  35 
+  36 <span class="k">my</span><span class="s">(</span><span class="i">$ScriptName</span><span class="cm">,</span> <span class="i">%Options</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="cm">,</span> <span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$TotalTime</span><span class="s">)</span><span class="sc">;</span>
+  37 
+  38 <span class="c"># Autoflush STDOUT</span>
+  39 <span class="i">$|</span> = <span class="n">1</span><span class="sc">;</span>
+  40 
+  41 <span class="c"># Starting message...</span>
+  42 <span class="i">$ScriptName</span> = <span class="i">basename</span><span class="s">(</span><span class="i">$0</span><span class="s">)</span><span class="sc">;</span>
+  43 <span class="k">print</span> <span class="q">&quot;\n$ScriptName: Starting...\n\n&quot;</span><span class="sc">;</span>
+  44 <span class="i">$StartTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  45 
+  46 <span class="c"># Get the options and setup script...</span>
+  47 <span class="i">SetupScriptUsage</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  48 <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">help</span>} || <span class="i">@ARGV</span> &lt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  49   <span class="k">die</span> <span class="i">GetUsageFromPod</span><span class="s">(</span><span class="q">&quot;$FindBin::Bin/$ScriptName&quot;</span><span class="s">)</span><span class="sc">;</span>
+  50 <span class="s">}</span>
+  51 
+  52 <span class="k">my</span><span class="s">(</span><span class="i">@SDFilesList</span><span class="s">)</span><span class="sc">;</span>
+  53 <span class="i">@SDFilesList</span> = <span class="i">ExpandFileNames</span><span class="s">(</span>\<span class="i">@ARGV</span><span class="cm">,</span> <span class="q">&quot;sdf sd&quot;</span><span class="s">)</span><span class="sc">;</span>
+  54 
+  55 <span class="c"># Process options...</span>
+  56 <span class="k">print</span> <span class="q">&quot;Processing options...\n&quot;</span><span class="sc">;</span>
+  57 <span class="k">my</span><span class="s">(</span><span class="i">%OptionsInfo</span><span class="s">)</span><span class="sc">;</span>
+  58 <span class="i">ProcessOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  59 
+  60 <span class="k">print</span> <span class="q">&quot;Checking input SD file(s)...\n&quot;</span><span class="sc">;</span>
+  61 <span class="k">my</span><span class="s">(</span><span class="i">%SDFilesInfo</span><span class="s">)</span><span class="sc">;</span>
+  62 <span class="i">RetrieveSDFilesInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  63 
+  64 <span class="c"># Generate output files...</span>
+  65 <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  66 <span class="k">if</span> <span class="s">(</span><span class="i">@SDFilesList</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  67   <span class="k">print</span> <span class="q">&quot;\nProcessing SD files...\n&quot;</span><span class="sc">;</span>
+  68 <span class="s">}</span>
+  69 <span class="k">for</span> <span class="i">$FileIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+  70   <span class="k">if</span> <span class="s">(</span><span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$FileIndex</span>]<span class="s">)</span> <span class="s">{</span>
+  71     <span class="k">print</span> <span class="q">&quot;\nProcessing file $SDFilesList[$FileIndex]...\n&quot;</span><span class="sc">;</span>
+  72     <span class="i">ModifySDFile</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  73   <span class="s">}</span>
+  74 <span class="s">}</span>
+  75 <span class="k">print</span> <span class="q">&quot;\n$ScriptName:Done...\n\n&quot;</span><span class="sc">;</span>
+  76 
+  77 <span class="i">$EndTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  78 <span class="i">$TotalTime</span> = <span class="w">timediff</span> <span class="s">(</span><span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="s">)</span><span class="sc">;</span>
+  79 <span class="k">print</span> <span class="q">&quot;Total time: &quot;</span><span class="cm">,</span> <span class="i">timestr</span><span class="s">(</span><span class="i">$TotalTime</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+  80 
+  81 <span class="c">###############################################################################</span>
+  82 
+  83 <span class="c"># Modify SD file data fields....</span>
+<a name="ModifySDFile-"></a>  84 <span class="k">sub </span><span class="m">ModifySDFile</span> <span class="s">{</span>
+  85   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  86   <span class="k">my</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$NewSDFile</span><span class="s">)</span><span class="sc">;</span>
+  87 
+  88   <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+  89   <span class="i">$NewSDFile</span> = <span class="i">$SDFilesInfo</span>{<span class="w">OutFile</span>}[<span class="i">$Index</span>]<span class="sc">;</span>
+  90 
+  91   <span class="k">print</span> <span class="q">&quot;Generating new SD file $NewSDFile...\n&quot;</span><span class="sc">;</span>
+  92   <span class="k">open</span> <span class="w">NEWSDFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$NewSDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t open $NewSDFile: $! \n&quot;</span><span class="sc">;</span>
+  93   <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $SDFile: $! \n&quot;</span><span class="sc">;</span>
+  94 
+  95   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="cm">,</span> <span class="i">$CmpdData</span><span class="cm">,</span> <span class="i">$MolName</span><span class="cm">,</span> <span class="i">$OldSDField</span><span class="cm">,</span> <span class="i">$NewSDField</span><span class="cm">,</span> <span class="i">$CommonSDField</span><span class="cm">,</span> <span class="i">$Label</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$FieldValues</span><span class="cm">,</span> <span class="i">$MolNameDataField</span><span class="cm">,</span> <span class="i">$URLCmpdIdFieldName</span><span class="cm">,</span> <span class="i">@CmpdLines</span><span class="cm">,</span> <span class="i">%DataFieldAndValues</span><span class="cm">,</span> <span class="i">@DataFieldLabels</span><span class="s">)</span><span class="sc">;</span>
+  96   <span class="i">$CmpdCount</span> = <span class="n">0</span><span class="sc">;</span>
+  97 
+  98   <span class="j">COMPOUND:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$CmpdString</span> = <span class="i">ReadCmpdString</span><span class="s">(</span>\<span class="i">*SDFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+  99       <span class="i">$CmpdCount</span>++<span class="sc">;</span>
+ 100       <span class="i">@CmpdLines</span> = <span class="k">split</span> <span class="q">&quot;\n&quot;</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="sc">;</span>
+ 101       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">UseDataFieldForMolName</span>} || <span class="i">$OptionsInfo</span>{<span class="w">ModifyDataFields</span>}<span class="s">)</span> <span class="s">{</span>
+ 102         <span class="i">%DataFieldAndValues</span> = <span class="i">GetCmpdDataHeaderLabelsAndValues</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 103       <span class="s">}</span>
+ 104       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ModifyMolName</span>}<span class="s">)</span> <span class="s">{</span>
+ 105         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">AlwaysReplaceMolName</span>} || !<span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$CmpdLines</span>[<span class="n">0</span>]<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 106           <span class="i">$MolNameDataField</span> = <span class="i">$OptionsInfo</span>{<span class="w">MolNameDataField</span>}<span class="sc">;</span>
+ 107           <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">UseDataFieldForMolName</span>} &amp;&amp; <span class="k">exists</span><span class="s">(</span><span class="i">$DataFieldAndValues</span>{<span class="i">$MolNameDataField</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 108             <span class="i">$MolName</span> = <span class="i">$DataFieldAndValues</span>{<span class="i">$MolNameDataField</span>}<span class="sc">;</span>
+ 109             <span class="k">if</span> <span class="s">(</span><span class="k">length</span><span class="s">(</span><span class="i">$MolName</span><span class="s">)</span> &gt; <span class="n">80</span><span class="s">)</span> <span class="s">{</span>
+ 110               <span class="i">$MolName</span> = <span class="k">substr</span><span class="s">(</span><span class="i">$MolName</span><span class="cm">,</span> <span class="n">0</span><span class="cm">,</span> <span class="n">80</span><span class="s">)</span><span class="sc">;</span>
+ 111             <span class="s">}</span>
+ 112           <span class="s">}</span>
+ 113           <span class="k">else</span> <span class="s">{</span>
+ 114             <span class="i">$MolName</span> = <span class="q">&quot;$OptionsInfo{MolNamePrefix}${CmpdCount}&quot;</span><span class="sc">;</span>
+ 115           <span class="s">}</span>
+ 116           <span class="i">$CmpdLines</span>[<span class="n">0</span>] = <span class="i">$MolName</span><span class="sc">;</span>
+ 117           <span class="i">$CmpdString</span> = <span class="k">join</span> <span class="q">&quot;\n&quot;</span><span class="cm">,</span> <span class="i">@CmpdLines</span><span class="sc">;</span>
+ 118         <span class="s">}</span>
+ 119       <span class="s">}</span>
+ 120       <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">ModifyDataFields</span>}<span class="s">)</span> <span class="s">{</span>
+ 121         <span class="c"># Just write the data and get the next compound...</span>
+ 122         <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;$CmpdString\n&quot;</span><span class="sc">;</span>
+ 123         <span class="k">next</span> <span class="j">COMPOUND</span><span class="sc">;</span>
+ 124       <span class="s">}</span>
+ 125       <span class="c"># Write out the structure data now and handle the old data fields later...</span>
+ 126       <span class="s">(</span><span class="i">$CmpdData</span><span class="s">)</span> = <span class="k">split</span> <span class="q">/\n&gt;/</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="sc">;</span>
+ 127       <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;$CmpdData\n&quot;</span><span class="sc">;</span>
+ 128 
+ 129       <span class="c"># Modify specified data fields...</span>
+ 130       <span class="k">for</span> <span class="i">$NewSDField</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 131         <span class="i">$FieldValues</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 132         <span class="k">for</span> <span class="i">$OldSDField</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}{<span class="i">$NewSDField</span>}}<span class="s">)</span> <span class="s">{</span>
+ 133           <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$DataFieldAndValues</span>{<span class="i">$OldSDField</span>}<span class="s">)</span> &amp;&amp; <span class="k">length</span><span class="s">(</span><span class="i">$DataFieldAndValues</span>{<span class="i">$OldSDField</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 134             <span class="i">$Value</span> = <span class="i">$DataFieldAndValues</span>{<span class="i">$OldSDField</span>}<span class="sc">;</span>
+ 135             <span class="i">$FieldValues</span> .= <span class="s">(</span><span class="i">$FieldValues</span><span class="s">)</span> ? <span class="q">&quot;\n$Value&quot;</span> <span class="co">:</span> <span class="i">$Value</span><span class="sc">;</span>
+ 136           <span class="s">}</span>
+ 137         <span class="s">}</span>
+ 138         <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;&gt; &lt;$NewSDField&gt;\n$FieldValues\n\n&quot;</span><span class="sc">;</span>
+ 139       <span class="s">}</span>
+ 140       <span class="c"># Add specified common fields...</span>
+ 141       <span class="k">for</span> <span class="i">$CommonSDField</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedCommonFieldMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 142         <span class="i">$Value</span> = <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedCommonFieldMap</span>}{<span class="i">$CommonSDField</span>}<span class="sc">;</span>
+ 143         <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;&gt; &lt;$CommonSDField&gt;\n$Value\n\n&quot;</span><span class="sc">;</span>
+ 144       <span class="s">}</span>
+ 145       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CreateDataFieldURL</span>}<span class="s">)</span> <span class="s">{</span>
+ 146         <span class="i">$Value</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 147         <span class="i">$URLCmpdIdFieldName</span> = <span class="i">$OptionsInfo</span>{<span class="w">URLCmpdIdFieldName</span>}<span class="sc">;</span>
+ 148         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$DataFieldAndValues</span>{<span class="i">$URLCmpdIdFieldName</span>}<span class="s">)</span> &amp;&amp; <span class="k">length</span><span class="s">(</span><span class="i">$DataFieldAndValues</span>{<span class="i">$URLCmpdIdFieldName</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 149           <span class="i">$Value</span> = <span class="i">$DataFieldAndValues</span>{<span class="i">$URLCmpdIdFieldName</span>}<span class="sc">;</span>
+ 150           <span class="i">$Value</span> = <span class="q">&quot;$OptionsInfo{URLCGIScriptName}?$OptionsInfo{URLParamName}=${Value}&quot;</span><span class="sc">;</span>
+ 151         <span class="s">}</span>
+ 152         <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;&gt; &lt;$OptionsInfo{URLDataFieldLabel}&gt;\n$Value\n\n&quot;</span><span class="sc">;</span>
+ 153       <span class="s">}</span>
+ 154 
+ 155       <span class="c"># Handle old data fields and write &#39;em in the same order as they appear in the input</span>
+ 156       <span class="c"># files...</span>
+ 157       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">KeepAllOldDataFields</span>} || <span class="i">$OptionsInfo</span>{<span class="w">KeepUnMappedOldDataFields</span>}<span class="s">)</span> <span class="s">{</span>
+ 158         <span class="k">my</span><span class="s">(</span><span class="i">$KeepLabel</span><span class="s">)</span><span class="sc">;</span>
+ 159         <span class="i">@DataFieldLabels</span> = <span class="i">GetCmpdDataHeaderLabels</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 160         <span class="j">LABEL:</span> <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@DataFieldLabels</span><span class="s">)</span> <span class="s">{</span>
+ 161           <span class="i">$KeepLabel</span> = <span class="i">$OptionsInfo</span>{<span class="w">KeepAllOldDataFields</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="s">(</span> <span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedOldToNewSDFieldMap</span>}{<span class="i">$Label</span>}<span class="s">)</span> ? <span class="n">0</span> <span class="co">:</span> <span class="n">1</span>  <span class="s">)</span><span class="sc">;</span>
+ 162           <span class="k">if</span> <span class="s">(</span>!<span class="i">$KeepLabel</span><span class="s">)</span> <span class="s">{</span>
+ 163             <span class="k">next</span> <span class="j">LABEL</span><span class="sc">;</span>
+ 164           <span class="s">}</span>
+ 165           <span class="i">$Value</span> = <span class="i">$DataFieldAndValues</span>{<span class="i">$Label</span>}<span class="sc">;</span>
+ 166           <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;&gt; &lt;$Label&gt;\n$Value\n\n&quot;</span><span class="sc">;</span>
+ 167         <span class="s">}</span>
+ 168       <span class="s">}</span>
+ 169 
+ 170       <span class="k">print</span> <span class="i">NEWSDFILE</span> <span class="q">&quot;\$\$\$\$\n&quot;</span><span class="sc">;</span>
+ 171   <span class="s">}</span>
+ 172   <span class="k">close</span> <span class="w">NEWSDFILE</span><span class="sc">;</span>
+ 173   <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 174 <span class="s">}</span>
+ 175 
+ 176 <span class="c"># Process option values...</span>
+<a name="ProcessOptions-"></a> 177 <span class="k">sub </span><span class="m">ProcessOptions</span> <span class="s">{</span>
+ 178   <span class="i">%OptionsInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 179 
+ 180   <span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} = <span class="i">$Options</span>{<span class="w">mode</span>}<span class="sc">;</span>
+ 181 
+ 182   <span class="i">$OptionsInfo</span>{<span class="w">ModifyMolName</span>} = <span class="n">1</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">ModifyDataFields</span>} = <span class="n">0</span><span class="sc">;</span>
+ 183   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^both$/i</span><span class="s">)</span> <span class="s">{</span>
+ 184     <span class="i">$OptionsInfo</span>{<span class="w">ModifyMolName</span>} = <span class="n">1</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">ModifyDataFields</span>} = <span class="n">1</span><span class="sc">;</span>
+ 185   <span class="s">}</span>
+ 186   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^datafields$/i</span><span class="s">)</span> <span class="s">{</span>
+ 187     <span class="i">$OptionsInfo</span>{<span class="w">ModifyMolName</span>} = <span class="n">0</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">ModifyDataFields</span>} = <span class="n">1</span><span class="sc">;</span>
+ 188   <span class="s">}</span>
+ 189 
+ 190   <span class="i">$OptionsInfo</span>{<span class="w">KeepOldDataFields</span>} = <span class="i">$Options</span>{<span class="w">keepolddatafields</span>}<span class="sc">;</span>
+ 191   <span class="i">$OptionsInfo</span>{<span class="w">KeepAllOldDataFields</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">keepolddatafields</span>} =~ <span class="q">/^all$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 192   <span class="i">$OptionsInfo</span>{<span class="w">KeepUnMappedOldDataFields</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">keepolddatafields</span>} =~ <span class="q">/^unmappedonly$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 193 
+ 194   <span class="i">$OptionsInfo</span>{<span class="w">MolNameMode</span>} = <span class="i">$Options</span>{<span class="w">molnamemode</span>}<span class="sc">;</span>
+ 195   <span class="i">$OptionsInfo</span>{<span class="w">UseDataFieldForMolName</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">molnamemode</span>} =~ <span class="q">/^datafield$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 196 
+ 197   <span class="i">$OptionsInfo</span>{<span class="w">MolName</span>} = <span class="i">$Options</span>{<span class="w">molname</span>}<span class="sc">;</span>
+ 198   <span class="i">$OptionsInfo</span>{<span class="w">MolNameDataField</span>} = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">MolNamePrefix</span>} = <span class="q">&quot;Cmpd&quot;</span><span class="sc">;</span>
+ 199   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">molname</span>}<span class="s">)</span> <span class="s">{</span>
+ 200     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">UseDataFieldForMolName</span>}<span class="s">)</span> <span class="s">{</span>
+ 201       <span class="i">$OptionsInfo</span>{<span class="w">MolNameDataField</span>} = <span class="i">$Options</span>{<span class="w">molname</span>}<span class="sc">;</span>
+ 202     <span class="s">}</span>
+ 203     <span class="k">else</span> <span class="s">{</span>
+ 204       <span class="i">$OptionsInfo</span>{<span class="w">MolNamePrefix</span>} = <span class="i">$Options</span>{<span class="w">molname</span>}<span class="sc">;</span>
+ 205     <span class="s">}</span>
+ 206   <span class="s">}</span>
+ 207 
+ 208   <span class="i">$OptionsInfo</span>{<span class="w">MolNameReplace</span>} = <span class="i">$Options</span>{<span class="w">molnamereplace</span>}<span class="sc">;</span>
+ 209   <span class="i">$OptionsInfo</span>{<span class="w">AlwaysReplaceMolName</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">molnamereplace</span>} =~ <span class="q">/^always$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 210 
+ 211   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmap</span>} &amp;&amp; <span class="i">$Options</span>{<span class="w">datafieldsmapfile</span>}<span class="s">)</span> <span class="s">{</span>
+ 212     <span class="k">die</span> <span class="q">&quot;Error: Both \&quot;--datafieldsmap\&quot; and  \&quot;--datafieldsmapfile\&quot; options specified: only one is allowed at a time\n&quot;</span><span class="sc">;</span>
+ 213   <span class="s">}</span>
+ 214 
+ 215   <span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMap</span>} = <span class="i">$Options</span>{<span class="w">datafieldsmap</span>} ? <span class="i">$Options</span>{<span class="w">datafieldsmap</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 216   <span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMapFile</span>} = <span class="i">$Options</span>{<span class="w">datafieldsmapfile</span>} ? <span class="i">$Options</span>{<span class="w">datafieldsmapfile</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 217 
+ 218   <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedDataFieldMap</span><span class="s">)</span><span class="sc">;</span>
+ 219 
+ 220   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 221   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedOldToNewSDFieldMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 222 
+ 223   <span class="i">$SpecifiedDataFieldMap</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 224   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmap</span>}<span class="s">)</span> <span class="s">{</span>
+ 225     <span class="i">$SpecifiedDataFieldMap</span> = <span class="i">$Options</span>{<span class="w">datafieldsmap</span>}<span class="sc">;</span>
+ 226   <span class="s">}</span>
+ 227   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmapfile</span>}<span class="s">)</span> <span class="s">{</span>
+ 228     <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">@LineWords</span><span class="s">)</span><span class="sc">;</span>
+ 229     <span class="k">open</span> <span class="w">DATAFIELDSFILE</span><span class="cm">,</span> <span class="q">&quot;$Options{datafieldsmapfile}&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t  open $Options{datafieldsmapfile}: $! \n&quot;</span><span class="sc">;</span>
+ 230     <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">GetTextLine</span><span class="s">(</span>\<span class="i">*DATAFIELDSFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 231       <span class="i">@LineWords</span> = <span class="i">quotewords</span><span class="s">(</span><span class="q">&quot;;&quot;</span><span class="cm">,</span> <span class="n">0</span><span class="cm">,</span> <span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 232       <span class="i">$SpecifiedDataFieldMap</span> .= <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@LineWords</span><span class="cm">,</span> <span class="q">&quot;;&quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+ 233     <span class="s">}</span>
+ 234     <span class="k">close</span> <span class="w">DATAFIELDSFILE</span><span class="sc">;</span>
+ 235   <span class="s">}</span>
+ 236 
+ 237   <span class="k">if</span> <span class="s">(</span><span class="i">$SpecifiedDataFieldMap</span><span class="s">)</span> <span class="s">{</span>
+ 238     <span class="k">my</span><span class="s">(</span><span class="i">$DataFieldMap</span><span class="cm">,</span> <span class="i">$DataField</span><span class="cm">,</span> <span class="i">$NewSDField</span><span class="cm">,</span> <span class="i">@OldSDFields</span><span class="cm">,</span> <span class="i">@DataFieldMapSplit</span><span class="cm">,</span> <span class="i">@DataFieldsSplit</span><span class="cm">,</span> <span class="i">$FirstField</span><span class="s">)</span><span class="sc">;</span>
+ 239     <span class="i">@DataFieldMapSplit</span> = <span class="k">split</span> <span class="q">&quot;;&quot;</span><span class="cm">,</span> <span class="i">$SpecifiedDataFieldMap</span><span class="sc">;</span>
+ 240     <span class="k">for</span> <span class="i">$DataFieldMap</span> <span class="s">(</span><span class="i">@DataFieldMapSplit</span><span class="s">)</span> <span class="s">{</span>
+ 241       <span class="i">@DataFieldsSplit</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$DataFieldMap</span><span class="sc">;</span>
+ 242       <span class="k">if</span> <span class="s">(</span><span class="i">@DataFieldsSplit</span> == <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 243         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of comma delimited values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@DataFieldsSplit</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;, specified,  @DataFieldsSplit, using \&quot;--datafieldsmap or --datafieldsmapfile\&quot; option: it must contain more than one value.\n&quot;</span><span class="sc">;</span>
+ 244       <span class="s">}</span>
+ 245       <span class="i">$FirstField</span> = <span class="n">1</span><span class="sc">;</span>
+ 246       <span class="i">@OldSDFields</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 247       <span class="k">for</span> <span class="i">$DataField</span> <span class="s">(</span><span class="i">@DataFieldsSplit</span><span class="s">)</span> <span class="s">{</span>
+ 248         <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$DataField</span><span class="s">)</span> &amp;&amp; <span class="k">length</span><span class="s">(</span><span class="i">$DataField</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 249           <span class="k">die</span> <span class="q">&quot;Error: One of the comma delimited values, \&quot;&quot;</span><span class="cm">,</span> <span class="k">join</span><span class="s">(</span><span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">@DataFieldsSplit</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\&quot;, specified using \&quot;--datafieldsmap or --datafieldsmapfile\&quot; option is empty.\n&quot;</span><span class="sc">;</span>
+ 250         <span class="s">}</span>
+ 251         <span class="k">if</span> <span class="s">(</span><span class="i">$FirstField</span><span class="s">)</span> <span class="s">{</span>
+ 252           <span class="i">$FirstField</span> = <span class="n">0</span><span class="sc">;</span>
+ 253           <span class="i">$NewSDField</span> = <span class="i">$DataField</span><span class="sc">;</span>
+ 254         <span class="s">}</span>
+ 255         <span class="k">else</span> <span class="s">{</span>
+ 256           <span class="k">push</span> <span class="i">@OldSDFields</span><span class="cm">,</span> <span class="i">$DataField</span><span class="sc">;</span>
+ 257         <span class="s">}</span>
+ 258       <span class="s">}</span>
+ 259       <span class="c"># Make sure a datafield is only specified once...</span>
+ 260       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}{<span class="i">$NewSDField</span>}<span class="s">)</span> <span class="s">{</span>
+ 261         <span class="k">die</span> <span class="q">&quot;Error: New data field, $NewSDField, specified more than once using \&quot;--datafieldsmap or --datafieldsmapfile\&quot; option.\n&quot;</span><span class="sc">;</span>
+ 262       <span class="s">}</span>
+ 263       <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}{<span class="i">$NewSDField</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 264       <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}{<span class="i">$NewSDField</span>}}<span class="cm">,</span> <span class="i">@OldSDFields</span><span class="sc">;</span>
+ 265       <span class="k">for</span> <span class="i">$DataField</span> <span class="s">(</span><span class="i">@OldSDFields</span><span class="s">)</span> <span class="s">{</span>
+ 266         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedOldToNewSDFieldMap</span>}{<span class="i">$DataField</span>} <span class="s">)</span> <span class="s">{</span>
+ 267           <span class="k">die</span> <span class="q">&quot;Error: SD field, $DataField, specified more than once using \&quot;--datafieldsmap or --datafieldsmapfile\&quot; option.\n&quot;</span><span class="sc">;</span>
+ 268         <span class="s">}</span>
+ 269         <span class="k">else</span> <span class="s">{</span>
+ 270           <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedOldToNewSDFieldMap</span>}{<span class="i">$DataField</span>} = <span class="i">$NewSDField</span><span class="sc">;</span>
+ 271         <span class="s">}</span>
+ 272       <span class="s">}</span>
+ 273 
+ 274     <span class="s">}</span>
+ 275   <span class="s">}</span>
+ 276 
+ 277   <span class="i">$OptionsInfo</span>{<span class="w">DataFieldsCommon</span>} = <span class="i">$Options</span>{<span class="w">datafieldscommon</span>} ? <span class="i">$Options</span>{<span class="w">datafieldscommon</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 278   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedCommonFieldMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 279 
+ 280   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldscommon</span>}<span class="s">)</span> <span class="s">{</span>
+ 281     <span class="k">my</span><span class="s">(</span><span class="i">$DataFieldName</span><span class="cm">,</span> <span class="i">$DataFieldValue</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">@CommonDataFieldsSplit</span><span class="s">)</span><span class="sc">;</span>
+ 282     <span class="i">@CommonDataFieldsSplit</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">datafieldscommon</span>}<span class="sc">;</span>
+ 283     <span class="k">if</span> <span class="s">(</span><span class="i">@CommonDataFieldsSplit</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 284         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of comma delimited values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@CommonDataFieldsSplit</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;, specified \&quot;&quot;</span><span class="cm">,</span>  <span class="k">join</span><span class="s">(</span><span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">@CommonDataFieldsSplit</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\&quot; using \&quot;--datafieldscommon\&quot; option: it must contain even number of values.\n&quot;</span><span class="sc">;</span>
+ 285     <span class="s">}</span>
+ 286     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index</span> &lt; <span class="i">@CommonDataFieldsSplit</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 287       <span class="i">$DataFieldName</span> = <span class="i">$CommonDataFieldsSplit</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 288       <span class="i">$DataFieldValue</span> = <span class="i">$CommonDataFieldsSplit</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 289       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedCommonFieldMap</span>}{<span class="i">$DataFieldName</span>}<span class="s">)</span> <span class="s">{</span>
+ 290         <span class="k">die</span> <span class="q">&quot;Error: Common data field, $DataFieldName, specified more than once using \&quot;--datafieldscommon\&quot; option.\n&quot;</span><span class="sc">;</span>
+ 291       <span class="s">}</span>
+ 292       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedNewToOldSDFieldMap</span>}{<span class="i">$DataFieldName</span>}<span class="s">)</span> || <span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedOldToNewSDFieldMap</span>}{<span class="i">$DataFieldName</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 293         <span class="k">die</span> <span class="q">&quot;Error: Common data field, $DataFieldName, specified using \&quot;--datafieldscommon\&quot; option cannot be specified in \&quot;--datafieldsmap or --datafieldsmapfile\&quot; option.\n&quot;</span><span class="sc">;</span>
+ 294       <span class="s">}</span>
+ 295       <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedCommonFieldMap</span>}{<span class="i">$DataFieldName</span>} = <span class="i">$DataFieldValue</span><span class="sc">;</span>
+ 296     <span class="s">}</span>
+ 297   <span class="s">}</span>
+ 298 
+ 299   <span class="i">$OptionsInfo</span>{<span class="w">DataFieldURL</span>} = <span class="i">$Options</span>{<span class="w">datafieldurl</span>} ? <span class="i">$Options</span>{<span class="w">datafieldurl</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 300   <span class="i">$OptionsInfo</span>{<span class="w">CreateDataFieldURL</span>} = <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldurl</span>}<span class="s">)</span> &amp;&amp; <span class="k">length</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldurl</span>}<span class="s">)</span> <span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 301 
+ 302   <span class="i">$OptionsInfo</span>{<span class="w">URLDataFieldLabel</span>} = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">URLCGIScriptName</span>} = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 303   <span class="i">$OptionsInfo</span>{<span class="w">URLParamName</span>} = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$OptionsInfo</span>{<span class="w">URLCmpdIdFieldName</span>} = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 304 
+ 305   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CreateDataFieldURL</span>}<span class="s">)</span> <span class="s">{</span>
+ 306     <span class="k">my</span><span class="s">(</span><span class="i">@DataFieldURLSplit</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 307     <span class="i">@DataFieldURLSplit</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">datafieldurl</span>}<span class="sc">;</span>
+ 308     <span class="k">if</span> <span class="s">(</span><span class="i">@DataFieldURLSplit</span> != <span class="n">4</span><span class="s">)</span> <span class="s">{</span>
+ 309       <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@DataFieldURLSplit</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;, specified using \&quot;--datafieldURL\&quot; option: it must contain 4 values.\n&quot;</span><span class="sc">;</span>
+ 310     <span class="s">}</span>
+ 311     <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@DataFieldURLSplit</span><span class="s">)</span> <span class="s">{</span>
+ 312       <span class="k">if</span> <span class="s">(</span>!<span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 313         <span class="k">die</span> <span class="q">&quot;Error: One of the values, $Options{datafieldurl}, specified using \&quot;--datafieldURL\&quot; option is empty.\n&quot;</span><span class="sc">;</span>
+ 314       <span class="s">}</span>
+ 315     <span class="s">}</span>
+ 316     <span class="i">$OptionsInfo</span>{<span class="w">URLDataFieldLabel</span>} = <span class="i">$DataFieldURLSplit</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 317     <span class="i">$OptionsInfo</span>{<span class="w">URLCGIScriptName</span>} = <span class="i">$DataFieldURLSplit</span>[<span class="n">1</span>]<span class="sc">;</span>
+ 318     <span class="i">$OptionsInfo</span>{<span class="w">URLParamName</span>}  = <span class="i">$DataFieldURLSplit</span>[<span class="n">2</span>]<span class="sc">;</span>
+ 319     <span class="i">$OptionsInfo</span>{<span class="w">URLCmpdIdFieldName</span>} = <span class="i">$DataFieldURLSplit</span>[<span class="n">3</span>]<span class="sc">;</span>
+ 320   <span class="s">}</span>
+ 321 
+ 322 <span class="s">}</span>
+ 323 
+ 324 <span class="c"># Retrieve information about input SD files...</span>
+<a name="RetrieveSDFilesInfo-"></a> 325 <span class="k">sub </span><span class="m">RetrieveSDFilesInfo</span> <span class="s">{</span>
+ 326   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="cm">,</span> <span class="i">$OutFileRoot</span><span class="cm">,</span>  <span class="i">$OutFile</span><span class="cm">,</span> <span class="i">$DataFieldName</span><span class="s">)</span><span class="sc">;</span>
+ 327 
+ 328   <span class="i">%SDFilesInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 329   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 330   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">OutFile</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 331 
+ 332    <span class="j">FILELIST:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+ 333     <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 334 
+ 335     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">0</span><span class="sc">;</span>
+ 336     <span class="i">$SDFilesInfo</span>{<span class="w">OutFile</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 337 
+ 338     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">-e</span> <span class="i">$SDFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 339       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It doesn&#39;t exist\n&quot;</span><span class="sc">;</span>
+ 340       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 341     <span class="s">}</span>
+ 342     <span class="k">if</span> <span class="s">(</span>!<span class="i">CheckFileType</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="q">&quot;sd sdf&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 343       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It&#39;s not a SD file\n&quot;</span><span class="sc">;</span>
+ 344       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 345     <span class="s">}</span>
+ 346     <span class="i">$FileDir</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileName</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileExt</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 347     <span class="s">(</span><span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+ 348     <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">root</span>} &amp;&amp; <span class="s">(</span><span class="i">@SDFilesList</span> == <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 349       <span class="k">my</span> <span class="s">(</span><span class="i">$RootFileDir</span><span class="cm">,</span> <span class="i">$RootFileName</span><span class="cm">,</span> <span class="i">$RootFileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">root</span>}<span class="s">)</span><span class="sc">;</span>
+ 350       <span class="k">if</span> <span class="s">(</span><span class="i">$RootFileName</span> &amp;&amp; <span class="i">$RootFileExt</span><span class="s">)</span> <span class="s">{</span>
+ 351         <span class="i">$FileName</span> = <span class="i">$RootFileName</span><span class="sc">;</span>
+ 352       <span class="s">}</span>
+ 353       <span class="k">else</span> <span class="s">{</span>
+ 354         <span class="i">$FileName</span> = <span class="i">$Options</span>{<span class="w">root</span>}<span class="sc">;</span>
+ 355       <span class="s">}</span>
+ 356       <span class="i">$OutFileRoot</span> = <span class="i">$FileName</span><span class="sc">;</span>
+ 357     <span class="s">}</span>
+ 358     <span class="k">else</span> <span class="s">{</span>
+ 359       <span class="i">$OutFileRoot</span> = <span class="i">$FileName</span> . <span class="q">&quot;ModifiedDataFields&quot;</span><span class="sc">;</span>
+ 360     <span class="s">}</span>
+ 361 
+ 362     <span class="i">$OutFile</span> = <span class="i">$OutFileRoot</span> . <span class="q">&quot;.$FileExt&quot;</span><span class="sc">;</span>
+ 363     <span class="k">if</span> <span class="s">(</span><span class="k">lc</span><span class="s">(</span><span class="i">$OutFile</span><span class="s">)</span> <span class="k">eq</span> <span class="k">lc</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 364       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile:Output file name, $OutFile, is same as input SD file name, $SDFile\n&quot;</span><span class="sc">;</span>
+ 365       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 366     <span class="s">}</span>
+ 367     <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">overwrite</span>}<span class="s">)</span> <span class="s">{</span>
+ 368       <span class="k">if</span> <span class="s">(</span><span class="k">-e</span> <span class="i">$OutFile</span><span class="s">)</span> <span class="s">{</span>
+ 369         <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: The file $OutFile already exists\n&quot;</span><span class="sc">;</span>
+ 370         <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 371       <span class="s">}</span>
+ 372     <span class="s">}</span>
+ 373 
+ 374     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">1</span><span class="sc">;</span>
+ 375     <span class="i">$SDFilesInfo</span>{<span class="w">OutFile</span>}[<span class="i">$Index</span>] = <span class="i">$OutFile</span><span class="sc">;</span>
+ 376   <span class="s">}</span>
+ 377 <span class="s">}</span>
+ 378 
+ 379 <span class="c"># Setup script usage  and retrieve command line arguments specified using various options...</span>
+<a name="SetupScriptUsage-"></a> 380 <span class="k">sub </span><span class="m">SetupScriptUsage</span> <span class="s">{</span>
+ 381 
+ 382   <span class="c"># Retrieve all the options...</span>
+ 383   <span class="i">%Options</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 384   <span class="i">$Options</span>{<span class="w">detail</span>} = <span class="n">1</span><span class="sc">;</span>
+ 385   <span class="i">$Options</span>{<span class="w">keepolddatafields</span>} = <span class="q">&quot;none&quot;</span><span class="sc">;</span>
+ 386   <span class="i">$Options</span>{<span class="w">mode</span>} = <span class="q">&quot;molname&quot;</span><span class="sc">;</span>
+ 387   <span class="i">$Options</span>{<span class="w">molnamemode</span>} = <span class="q">&quot;labelprefix&quot;</span><span class="sc">;</span>
+ 388   <span class="i">$Options</span>{<span class="w">molnamereplace</span>} = <span class="q">&quot;empty&quot;</span><span class="sc">;</span>
+ 389 
+ 390   <span class="k">if</span> <span class="s">(</span>!<span class="i">GetOptions</span><span class="s">(</span>\<span class="i">%Options</span><span class="cm">,</span> <span class="q">&quot;detail|d=i&quot;</span><span class="cm">,</span> <span class="q">&quot;datafieldscommon=s&quot;</span><span class="cm">,</span> <span class="q">&quot;datafieldsmap=s&quot;</span><span class="cm">,</span> <span class="q">&quot;datafieldsmapfile=s&quot;</span><span class="cm">,</span> <span class="q">&quot;datafieldurl=s&quot;</span><span class="cm">,</span> <span class="q">&quot;help|h&quot;</span><span class="cm">,</span> <span class="q">&quot;keepolddatafields|k=s&quot;</span><span class="cm">,</span> <span class="q">&quot;mode|m=s&quot;</span><span class="cm">,</span> <span class="q">&quot;molname=s&quot;</span><span class="cm">,</span> <span class="q">&quot;molnamemode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;molnamereplace=s&quot;</span><span class="cm">,</span> <span class="q">&quot;overwrite|o&quot;</span><span class="cm">,</span> <span class="q">&quot;root|r=s&quot;</span><span class="cm">,</span> <span class="q">&quot;workingdir|w=s&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 391     <span class="k">die</span> <span class="q">&quot;\nTo get a list of valid options and their values, use \&quot;$ScriptName -h\&quot; or\n\&quot;perl -S $ScriptName -h\&quot; command and try again...\n&quot;</span><span class="sc">;</span>
+ 392   <span class="s">}</span>
+ 393   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+ 394     <span class="k">if</span> <span class="s">(</span>! <span class="k">-d</span> <span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+ 395       <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{workingdir}, for option \&quot;-w --workingdir\&quot; is not a directory name.\n&quot;</span><span class="sc">;</span>
+ 396     <span class="s">}</span>
+ 397     <span class="k">chdir</span> <span class="i">$Options</span>{<span class="w">workingdir</span>} <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t chdir $Options{workingdir}: $! \n&quot;</span><span class="sc">;</span>
+ 398   <span class="s">}</span>
+ 399   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">keepolddatafields</span>} !~ <span class="q">/^(all|unmappedonly|none)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 400     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{keepolddatafields}, for option \&quot;-k --keepolddatafields\&quot; is not valid. Allowed values: all, unmappedonly, or none\n&quot;</span><span class="sc">;</span>
+ 401   <span class="s">}</span>
+ 402   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} !~ <span class="q">/^(molname|datafields|both)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 403     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{mode}, for option \&quot;-m --mode\&quot; is not valid. Allowed values: molname, datafields, or both\n&quot;</span><span class="sc">;</span>
+ 404   <span class="s">}</span>
+ 405   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">molnamemode</span>} !~ <span class="q">/^(datafield|labelprefix)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 406     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{molnamemode}, for option \&quot;--molnamemode\&quot; is not valid. Allowed values: datafield or labelprefix\n&quot;</span><span class="sc">;</span>
+ 407   <span class="s">}</span>
+ 408   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">molnamereplace</span>} !~ <span class="q">/^(always|empty)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 409     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{molnamereplace}, for option \&quot;--molnamereplace\&quot; is not valid. Allowed values: always or empty\n&quot;</span><span class="sc">;</span>
+ 410   <span class="s">}</span>
+ 411   <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">detail</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 412     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{detail}, for option \&quot;-d --detail\&quot; is not valid. Allowed values: &gt; 0\n&quot;</span><span class="sc">;</span>
+ 413   <span class="s">}</span>
+ 414 <span class="s">}</span>
+ 415 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

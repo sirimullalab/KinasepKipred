@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:ModifyTextFilesFormat.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ModifySDFilesDataFields.html" title="ModifySDFilesDataFields.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MolFilesToSD.html" title="MolFilesToSD.html">Next</a></td><td width="34%" align="middle"><strong>ModifyTextFilesFormat.pl</strong></td><td width="33%" align="right"><a href="././code/ModifyTextFilesFormat.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/ModifyTextFilesFormat.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/ModifyTextFilesFormat.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/ModifyTextFilesFormat.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/ModifyTextFilesFormat.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>ModifyTextFilesFormat.pl - Change CSV Textfile(s) into TSV Textfile(s) and vice versa</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>ModifyTextFilesFormat.pl TextFile(s)...</p>
+<p>ModifyTextFilesFormat.pl [<b>-h, --help</b>] [<b>--indelim</b> comma | semicolon] [<b>--outdelim</b> comma | tab | semicolon] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>-w, --workingdir</b> dirname] TextFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Interchange CSV and TSV <i>TextFile(s)</i> format. Mutiple file names are separated by spaces. The valid file extensions are <i>.csv</i> and <i>.tsv</i> for comma/semicolon and tab delimited text files respectively. All other file names are ignored. All the text files in a current directory can be specified by <i>*.csv</i>, <i>*.tsv</i>, or the current directory name. The <b>--indelim</b> option determines the format of <i>TextFile(s)</i>. Any file which doesn&#39;t correspond to the format indicated by <b>--indelim</b> option is ignored.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="indelim-comma-semicolon"><b>--indelim</b> <i>comma | semicolon</i></dt>
+<dd>
+<p>Input delimiter for CSV <i>TextFile(s)</i>. Possible values: <i>comma or semicolon</i>. Default value: <i>comma</i>. For TSV files, this option is ignored and <i>tab</i> is used as a delimiter.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New text file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default new file name: &lt;InitialTextFileName&gt;FormatModified.&lt;Ext&gt;. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively. This option is ignored for multiple input files.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w, --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To convert Sample*.csv into TSV files, type:</p>
+<div class="ExampleBox">    % ModifyTextFilesFormat.pl --outdelim tab -q no -o Sample*.csv</div>
+<p>To convert Sample1.tsv into NewSample1.csv without any quotes around column data values, type:</p>
+<div class="ExampleBox">    % ModifyTextFilesFormat.pl --outdelim comma - q no
+      -r NewSample1 -o Sample1.tsv</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./ModifyNewLineChar.html">ModifyNewLineChar.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ModifySDFilesDataFields.html" title="ModifySDFilesDataFields.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MolFilesToSD.html" title="MolFilesToSD.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>ModifyTextFilesFormat.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

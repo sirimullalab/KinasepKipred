@@ -1,0 +1,1327 @@
+<html>
+<head>
+<title>MayaChemTools:Code:CalculatePhysicochemicalProperties.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 #!/usr/bin/perl -w
+   2 <span class="c">#</span>
+   3 <span class="c"># File: CalculatePhysicochemicalProperties.pl</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">FindBin</span><span class="sc">;</span> <span class="k">use</span> <span class="w">lib</span> <span class="q">&quot;$FindBin::Bin/../lib&quot;</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Getopt::Long</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">File::Basename</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">Text::ParseWords</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">FileUtil</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">TextUtil</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">SDFileUtil</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">MoleculeFileIO</span><span class="sc">;</span>
+  36 <span class="k">use</span> <span class="w">Molecule</span><span class="sc">;</span>
+  37 <span class="k">use</span> <span class="w">AtomTypes::AtomicInvariantsAtomTypes</span><span class="sc">;</span>
+  38 <span class="k">use</span> <span class="w">AtomTypes::FunctionalClassAtomTypes</span><span class="sc">;</span>
+  39 <span class="k">use</span> <span class="w">MolecularDescriptors::MolecularDescriptorsGenerator</span><span class="sc">;</span>
+  40 
+  41 <span class="k">my</span><span class="s">(</span><span class="i">$ScriptName</span><span class="cm">,</span> <span class="i">%Options</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="cm">,</span> <span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$TotalTime</span><span class="s">)</span><span class="sc">;</span>
+  42 
+  43 <span class="c"># Autoflush STDOUT</span>
+  44 <span class="i">$|</span> = <span class="n">1</span><span class="sc">;</span>
+  45 
+  46 <span class="c"># Starting message...</span>
+  47 <span class="i">$ScriptName</span> = <span class="i">basename</span><span class="s">(</span><span class="i">$0</span><span class="s">)</span><span class="sc">;</span>
+  48 <span class="k">print</span> <span class="q">&quot;\n$ScriptName: Starting...\n\n&quot;</span><span class="sc">;</span>
+  49 <span class="i">$StartTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  50 
+  51 <span class="c"># Get the options and setup script...</span>
+  52 <span class="i">SetupScriptUsage</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  53 <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">help</span>} || <span class="i">@ARGV</span> &lt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  54   <span class="k">die</span> <span class="i">GetUsageFromPod</span><span class="s">(</span><span class="q">&quot;$FindBin::Bin/$ScriptName&quot;</span><span class="s">)</span><span class="sc">;</span>
+  55 <span class="s">}</span>
+  56 
+  57 <span class="k">my</span><span class="s">(</span><span class="i">@SDFilesList</span><span class="s">)</span><span class="sc">;</span>
+  58 <span class="i">@SDFilesList</span> = <span class="i">ExpandFileNames</span><span class="s">(</span>\<span class="i">@ARGV</span><span class="cm">,</span> <span class="q">&quot;sdf sd&quot;</span><span class="s">)</span><span class="sc">;</span>
+  59 
+  60 <span class="c"># Process options...</span>
+  61 <span class="k">print</span> <span class="q">&quot;Processing options...\n&quot;</span><span class="sc">;</span>
+  62 <span class="k">my</span><span class="s">(</span><span class="i">%OptionsInfo</span><span class="s">)</span><span class="sc">;</span>
+  63 <span class="i">ProcessOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  64 
+  65 <span class="c"># Setup information about input files...</span>
+  66 <span class="k">print</span> <span class="q">&quot;Checking input SD file(s)...\n&quot;</span><span class="sc">;</span>
+  67 <span class="k">my</span><span class="s">(</span><span class="i">%SDFilesInfo</span><span class="s">)</span><span class="sc">;</span>
+  68 <span class="i">RetrieveSDFilesInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  69 
+  70 <span class="c"># Process input files..</span>
+  71 <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  72 <span class="k">if</span> <span class="s">(</span><span class="i">@SDFilesList</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  73   <span class="k">print</span> <span class="q">&quot;\nProcessing SD files...\n&quot;</span><span class="sc">;</span>
+  74 <span class="s">}</span>
+  75 <span class="k">for</span> <span class="i">$FileIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+  76   <span class="k">if</span> <span class="s">(</span><span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$FileIndex</span>]<span class="s">)</span> <span class="s">{</span>
+  77     <span class="k">print</span> <span class="q">&quot;\nProcessing file $SDFilesList[$FileIndex]...\n&quot;</span><span class="sc">;</span>
+  78     <span class="i">CalculatePhysicochemicalProperties</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  79   <span class="s">}</span>
+  80 <span class="s">}</span>
+  81 <span class="k">print</span> <span class="q">&quot;\n$ScriptName:Done...\n\n&quot;</span><span class="sc">;</span>
+  82 
+  83 <span class="i">$EndTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  84 <span class="i">$TotalTime</span> = <span class="w">timediff</span> <span class="s">(</span><span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="s">)</span><span class="sc">;</span>
+  85 <span class="k">print</span> <span class="q">&quot;Total time: &quot;</span><span class="cm">,</span> <span class="i">timestr</span><span class="s">(</span><span class="i">$TotalTime</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+  86 
+  87 <span class="c">###############################################################################</span>
+  88 
+  89 <span class="c"># Calculate physicochemical properties for a SD file...</span>
+  90 <span class="c">#</span>
+<a name="CalculatePhysicochemicalProperties-"></a>  91 <span class="k">sub </span><span class="m">CalculatePhysicochemicalProperties</span> <span class="s">{</span>
+  92   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  93   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$IgnoredCmpdCount</span><span class="cm">,</span> <span class="i">$RuleOf5ViolationsCount</span><span class="cm">,</span> <span class="i">$RuleOf3ViolationsCount</span><span class="cm">,</span> <span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$MoleculeFileIO</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$MolecularDescriptorsGenerator</span><span class="cm">,</span> <span class="i">$PhysicochemicalPropertiesDataRef</span><span class="cm">,</span> <span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span><span class="sc">;</span>
+  94 
+  95   <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$FileIndex</span>]<span class="sc">;</span>
+  96 
+  97   <span class="c"># Setup output files...</span>
+  98   <span class="i">$NewSDFileRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span> <span class="i">$NewTextFileRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  99   <span class="s">(</span><span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span> = <span class="i">SetupAndOpenOutputFiles</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+ 100 
+ 101   <span class="c"># Setup molecular descriptor generator to calculate property values for specifed</span>
+ 102   <span class="c"># property names...</span>
+ 103   <span class="i">$MolecularDescriptorsGenerator</span> = <span class="i">SetupMolecularDescriptorsGenerator</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 104 
+ 105   <span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$IgnoredCmpdCount</span><span class="cm">,</span> <span class="i">$RuleOf5ViolationsCount</span><span class="cm">,</span> <span class="i">$RuleOf3ViolationsCount</span><span class="s">)</span> = <span class="s">(</span><span class="q">&#39;0&#39;</span><span class="s">)</span> x <span class="n">4</span><span class="sc">;</span>
+ 106 
+ 107   <span class="i">$MoleculeFileIO</span> = <span class="w">new</span> <span class="i">MoleculeFileIO</span><span class="s">(</span><span class="q">&#39;Name&#39;</span> <span class="cm">=&gt;</span> <span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+ 108   <span class="i">$MoleculeFileIO</span><span class="i">-&gt;Open</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 109 
+ 110   <span class="j">COMPOUND:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Molecule</span> = <span class="i">$MoleculeFileIO</span><span class="i">-&gt;ReadMolecule</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 111     <span class="i">$CmpdCount</span>++<span class="sc">;</span>
+ 112 
+ 113     <span class="c"># Filter compound data before calculating physiochemical properties...</span>
+ 114     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Filter</span>}<span class="s">)</span> <span class="s">{</span>
+ 115       <span class="k">if</span> <span class="s">(</span><span class="i">CheckAndFilterCompound</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 116         <span class="i">$IgnoredCmpdCount</span>++<span class="sc">;</span>
+ 117         <span class="k">next</span> <span class="j">COMPOUND</span><span class="sc">;</span>
+ 118       <span class="s">}</span>
+ 119     <span class="s">}</span>
+ 120 
+ 121     <span class="c"># Calculate properties...</span>
+ 122     <span class="i">$PhysicochemicalPropertiesDataRef</span> = <span class="i">CalculateMoleculeProperties</span><span class="s">(</span><span class="i">$MolecularDescriptorsGenerator</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 123 
+ 124     <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span><span class="s">(</span><span class="i">$PhysicochemicalPropertiesDataRef</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 125       <span class="i">$IgnoredCmpdCount</span>++<span class="sc">;</span>
+ 126       <span class="i">ProcessIgnoredCompound</span><span class="s">(</span><span class="q">&#39;PropertiesCalculationFailed&#39;</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 127       <span class="k">next</span> <span class="j">COMPOUND</span><span class="sc">;</span>
+ 128     <span class="s">}</span>
+ 129 
+ 130     <span class="c"># Calculate any rule violations...</span>
+ 131     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>} &amp;&amp; <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 132       <span class="i">$RuleOf5ViolationsCount</span>++<span class="sc">;</span>
+ 133     <span class="s">}</span>
+ 134 
+ 135     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>} &amp;&amp; <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 136       <span class="i">$RuleOf3ViolationsCount</span>++<span class="sc">;</span>
+ 137     <span class="s">}</span>
+ 138 
+ 139     <span class="c"># Write out calculate properties...</span>
+ 140     <span class="i">WriteDataToOutputFiles</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$PhysicochemicalPropertiesDataRef</span><span class="cm">,</span> <span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span><span class="sc">;</span>
+ 141   <span class="s">}</span>
+ 142   <span class="i">$MoleculeFileIO</span><span class="i">-&gt;Close</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 143 
+ 144   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>} &amp;&amp; <span class="i">$NewSDFileRef</span><span class="s">)</span> <span class="s">{</span>
+ 145     <span class="k">close</span> <span class="i">$NewSDFileRef</span><span class="sc">;</span>
+ 146   <span class="s">}</span>
+ 147   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>} &amp;&amp; <span class="i">$NewTextFileRef</span><span class="s">)</span> <span class="s">{</span>
+ 148     <span class="k">close</span> <span class="i">$NewTextFileRef</span><span class="sc">;</span>
+ 149   <span class="s">}</span>
+ 150 
+ 151   <span class="i">WriteCalculationSummaryStatistics</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$IgnoredCmpdCount</span><span class="cm">,</span> <span class="i">$RuleOf5ViolationsCount</span><span class="cm">,</span> <span class="i">$RuleOf3ViolationsCount</span><span class="s">)</span><span class="sc">;</span>
+ 152 <span class="s">}</span>
+ 153 
+ 154 <span class="c"># Process compound being ignored due to problems in physicochemical properties calculation...</span>
+ 155 <span class="c">#</span>
+<a name="ProcessIgnoredCompound-"></a> 156 <span class="k">sub </span><span class="m">ProcessIgnoredCompound</span> <span class="s">{</span>
+ 157   <span class="k">my</span><span class="s">(</span><span class="i">$Mode</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 158   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdID</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="s">)</span><span class="sc">;</span>
+ 159 
+ 160   <span class="i">$DataFieldLabelAndValuesRef</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetDataFieldLabelAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 161   <span class="i">$CmpdID</span> = <span class="i">SetupCmpdIDForTextFiles</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="s">)</span><span class="sc">;</span>
+ 162 
+ 163   <span class="j">MODE:</span> <span class="s">{</span>
+ 164     <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^ContainsNonElementalData$/i</span><span class="s">)</span> <span class="s">{</span>
+ 165       <span class="k">warn</span> <span class="q">&quot;\nWarning: Ignoring compound record number $CmpdCount with ID $CmpdID: Compound contains atom data corresponding to non-elemental atom symbol(s)...\n\n&quot;</span><span class="sc">;</span>
+ 166       <span class="k">next</span> <span class="j">MODE</span><span class="sc">;</span>
+ 167     <span class="s">}</span>
+ 168 
+ 169     <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^ContainsNoElementalData$/i</span><span class="s">)</span> <span class="s">{</span>
+ 170       <span class="k">warn</span> <span class="q">&quot;\nWarning: Ignoring compound record number $CmpdCount with ID $CmpdID: Compound contains no atom data...\n\n&quot;</span><span class="sc">;</span>
+ 171       <span class="k">next</span> <span class="j">MODE</span><span class="sc">;</span>
+ 172     <span class="s">}</span>
+ 173 
+ 174     <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^PropertiesCalculationFailed$/i</span><span class="s">)</span> <span class="s">{</span>
+ 175       <span class="k">warn</span> <span class="q">&quot;\nWarning: Ignoring compound record number $CmpdCount with ID $CmpdID: Physicochemical properties calculation didn&#39;t succeed...\n\n&quot;</span><span class="sc">;</span>
+ 176       <span class="k">next</span> <span class="j">MODE</span><span class="sc">;</span>
+ 177     <span class="s">}</span>
+ 178     <span class="k">warn</span> <span class="q">&quot;\nWarning: Ignoring compound record number $CmpdCount with ID $CmpdID: Physicochemical properties calculation didn&#39;t succeed...\n\n&quot;</span><span class="sc">;</span>
+ 179   <span class="s">}</span>
+ 180 <span class="s">}</span>
+ 181 
+ 182 <span class="c"># Check and filter compounds....</span>
+ 183 <span class="c">#</span>
+<a name="CheckAndFilterCompound-"></a> 184 <span class="k">sub </span><span class="m">CheckAndFilterCompound</span> <span class="s">{</span>
+ 185   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 186   <span class="k">my</span><span class="s">(</span><span class="i">$ElementCount</span><span class="cm">,</span> <span class="i">$NonElementCount</span><span class="s">)</span><span class="sc">;</span>
+ 187 
+ 188   <span class="s">(</span><span class="i">$ElementCount</span><span class="cm">,</span> <span class="i">$NonElementCount</span><span class="s">)</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetNumOfElementsAndNonElements</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 189 
+ 190   <span class="k">if</span> <span class="s">(</span><span class="i">$NonElementCount</span><span class="s">)</span> <span class="s">{</span>
+ 191     <span class="i">ProcessIgnoredCompound</span><span class="s">(</span><span class="q">&#39;ContainsNonElementalData&#39;</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 192     <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 193   <span class="s">}</span>
+ 194 
+ 195   <span class="k">if</span> <span class="s">(</span>!<span class="i">$ElementCount</span><span class="s">)</span> <span class="s">{</span>
+ 196     <span class="i">ProcessIgnoredCompound</span><span class="s">(</span><span class="q">&#39;ContainsNoElementalData&#39;</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 197     <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 198   <span class="s">}</span>
+ 199 
+ 200   <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 201 <span class="s">}</span>
+ 202 
+ 203 <span class="c"># Write out compounds physicochemical properties calculation summary statistics...</span>
+ 204 <span class="c">#</span>
+<a name="WriteCalculationSummaryStatistics-"></a> 205 <span class="k">sub </span><span class="m">WriteCalculationSummaryStatistics</span> <span class="s">{</span>
+ 206   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$IgnoredCmpdCount</span><span class="cm">,</span> <span class="i">$RuleOf5ViolationsCount</span><span class="cm">,</span> <span class="i">$RuleOf3ViolationsCount</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 207   <span class="k">my</span><span class="s">(</span><span class="i">$ProcessedCmpdCount</span><span class="s">)</span><span class="sc">;</span>
+ 208 
+ 209   <span class="i">$ProcessedCmpdCount</span> = <span class="i">$CmpdCount</span> - <span class="i">$IgnoredCmpdCount</span><span class="sc">;</span>
+ 210 
+ 211   <span class="k">print</span> <span class="q">&quot;\nNumber of compounds: $CmpdCount\n&quot;</span><span class="sc">;</span>
+ 212   <span class="k">print</span> <span class="q">&quot;Number of compounds processed successfully during physicochemical properties calculation: $ProcessedCmpdCount\n&quot;</span><span class="sc">;</span>
+ 213   <span class="k">print</span> <span class="q">&quot;Number of compounds ignored during physicochemical properties calculation: $IgnoredCmpdCount\n&quot;</span><span class="sc">;</span>
+ 214 
+ 215   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 216     <span class="k">print</span> <span class="q">&quot;Number of compounds with one or more RuleOf5 violations: $RuleOf5ViolationsCount\n&quot;</span><span class="sc">;</span>
+ 217   <span class="s">}</span>
+ 218 
+ 219   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 220     <span class="k">print</span> <span class="q">&quot;Number of compounds with one or more RuleOf3 violations: $RuleOf3ViolationsCount\n&quot;</span><span class="sc">;</span>
+ 221   <span class="s">}</span>
+ 222 
+ 223 <span class="s">}</span>
+ 224 
+ 225 <span class="c"># Open output files...</span>
+ 226 <span class="c">#</span>
+<a name="SetupAndOpenOutputFiles-"></a> 227 <span class="k">sub </span><span class="m">SetupAndOpenOutputFiles</span> <span class="s">{</span>
+ 228   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 229   <span class="k">my</span><span class="s">(</span><span class="i">$NewSDFile</span><span class="cm">,</span> <span class="i">$NewTextFile</span><span class="cm">,</span> <span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span><span class="sc">;</span>
+ 230 
+ 231   <span class="i">$NewSDFileRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 232   <span class="i">$NewTextFileRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 233 
+ 234   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 235     <span class="i">$NewSDFile</span> = <span class="i">$SDFilesInfo</span>{<span class="w">SDOutFileNames</span>}[<span class="i">$FileIndex</span>]<span class="sc">;</span>
+ 236     <span class="k">print</span> <span class="q">&quot;Generating SD file $NewSDFile...\n&quot;</span><span class="sc">;</span>
+ 237     <span class="k">open</span> <span class="w">NEWSDFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$NewSDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t open $NewSDFile: $! \n&quot;</span><span class="sc">;</span>
+ 238     <span class="i">$NewSDFileRef</span> = \<span class="i">*NEWSDFILE</span><span class="sc">;</span>
+ 239   <span class="s">}</span>
+ 240   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 241     <span class="i">$NewTextFile</span> = <span class="i">$SDFilesInfo</span>{<span class="w">TextOutFileNames</span>}[<span class="i">$FileIndex</span>]<span class="sc">;</span>
+ 242     <span class="k">print</span> <span class="q">&quot;Generating text file $NewTextFile...\n&quot;</span><span class="sc">;</span>
+ 243     <span class="k">open</span> <span class="w">NEWTEXTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$NewTextFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t open $NewTextFile: $! \n&quot;</span><span class="sc">;</span>
+ 244     <span class="i">WriteTextFileCoulmnLabels</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> \<span class="i">*NEWTEXTFILE</span><span class="s">)</span><span class="sc">;</span>
+ 245     <span class="i">$NewTextFileRef</span> = \<span class="i">*NEWTEXTFILE</span><span class="sc">;</span>
+ 246   <span class="s">}</span>
+ 247   <span class="k">return</span> <span class="s">(</span><span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span><span class="sc">;</span>
+ 248 <span class="s">}</span>
+ 249 
+ 250 <span class="c"># Write calculated physicochemical properties and other data to appropriate output files...</span>
+ 251 <span class="c">#</span>
+<a name="WriteDataToOutputFiles-"></a> 252 <span class="k">sub </span><span class="m">WriteDataToOutputFiles</span> <span class="s">{</span>
+ 253   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$PhysicochemicalPropertiesDataRef</span><span class="cm">,</span> <span class="i">$NewSDFileRef</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 254   <span class="k">my</span><span class="s">(</span><span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="s">)</span><span class="sc">;</span>
+ 255 
+ 256   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 257     <span class="c"># Retrieve input compound string used to create molecule and write it out</span>
+ 258     <span class="c"># without last line containing a delimiter...</span>
+ 259     <span class="k">my</span><span class="s">(</span><span class="i">$CmpdString</span><span class="s">)</span><span class="sc">;</span>
+ 260     <span class="i">$CmpdString</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetInputMoleculeString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 261     <span class="i">$CmpdString</span> =~ <span class="q">s/\$\$\$\$$//</span><span class="sc">;</span>
+ 262     <span class="k">print</span> <span class="i">$NewSDFileRef</span> <span class="q">&quot;$CmpdString&quot;</span><span class="sc">;</span>
+ 263 
+ 264     <span class="c"># Write out calculated physicochemical properties data...</span>
+ 265     <span class="k">for</span> <span class="i">$PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 266       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="i">$PropertyName</span>}<span class="sc">;</span>
+ 267       <span class="k">print</span> <span class="i">$NewSDFileRef</span>  <span class="q">&quot;&gt;  &lt;$PropertyName&gt;\n$PropertyValue\n\n&quot;</span><span class="sc">;</span>
+ 268     <span class="s">}</span>
+ 269 
+ 270     <span class="c"># Write out RuleOf5 violations for molecule....</span>
+ 271     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 272       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf5Violations</span>}<span class="sc">;</span>
+ 273       <span class="k">print</span> <span class="i">$NewSDFileRef</span>  <span class="q">&quot;&gt;  &lt;RuleOf5Violations&gt;\n$PropertyValue\n\n&quot;</span><span class="sc">;</span>
+ 274     <span class="s">}</span>
+ 275 
+ 276     <span class="c"># Write out RuleOf3 violations for molecule....</span>
+ 277     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 278       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf3Violations</span>}<span class="sc">;</span>
+ 279       <span class="k">print</span> <span class="i">$NewSDFileRef</span>  <span class="q">&quot;&gt;  &lt;RuleOf3Violations&gt;\n$PropertyValue\n\n&quot;</span><span class="sc">;</span>
+ 280     <span class="s">}</span>
+ 281 
+ 282     <span class="c"># Write out delimiter...</span>
+ 283     <span class="k">print</span> <span class="i">$NewSDFileRef</span> <span class="q">&quot;\$\$\$\$\n&quot;</span><span class="sc">;</span>
+ 284   <span class="s">}</span>
+ 285 
+ 286   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 287     <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="cm">,</span> <span class="i">$DataFieldLabel</span><span class="cm">,</span> <span class="i">$DataFieldValue</span><span class="cm">,</span> <span class="i">@LineWords</span><span class="cm">,</span><span class="s">)</span><span class="sc">;</span>
+ 288 
+ 289     <span class="i">$DataFieldLabelAndValuesRef</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetDataFieldLabelAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 290     <span class="i">@LineWords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 291     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^CompoundID$/i</span><span class="s">)</span> <span class="s">{</span>
+ 292       <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">SetupCmpdIDForTextFiles</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="s">)</span><span class="sc">;</span>
+ 293     <span class="s">}</span>
+ 294     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^All$/i</span><span class="s">)</span> <span class="s">{</span>
+ 295       <span class="i">@LineWords</span> = <span class="k">map</span> <span class="s">{</span> <span class="k">exists</span> <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} ? <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="s">}</span> <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">AllDataFieldsRef</span>}[<span class="i">$FileIndex</span>]}<span class="sc">;</span>
+ 296     <span class="s">}</span>
+ 297     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^Common$/i</span><span class="s">)</span> <span class="s">{</span>
+ 298       <span class="i">@LineWords</span> = <span class="k">map</span> <span class="s">{</span> <span class="k">exists</span> <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} ? <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="s">}</span> <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">CommonDataFieldsRef</span>}[<span class="i">$FileIndex</span>]}<span class="sc">;</span>
+ 299     <span class="s">}</span>
+ 300     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^Specify$/i</span><span class="s">)</span> <span class="s">{</span>
+ 301       <span class="i">@LineWords</span> = <span class="k">map</span> <span class="s">{</span> <span class="k">exists</span> <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} ? <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$_</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="s">}</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedDataFields</span>}}<span class="sc">;</span>
+ 302     <span class="s">}</span>
+ 303 
+ 304     <span class="c"># Append calculated physicochemical properties data...</span>
+ 305     <span class="k">for</span> <span class="i">$PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 306       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="i">$PropertyName</span>}<span class="sc">;</span>
+ 307       <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="sc">;</span>
+ 308     <span class="s">}</span>
+ 309 
+ 310     <span class="c"># Write out RuleOf5 violations for molecule....</span>
+ 311     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 312       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf5Violations</span>}<span class="sc">;</span>
+ 313       <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="sc">;</span>
+ 314     <span class="s">}</span>
+ 315 
+ 316     <span class="c"># Write out RuleOf3 violations for molecule....</span>
+ 317     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 318       <span class="i">$PropertyValue</span> = <span class="i">$PhysicochemicalPropertiesDataRef</span>-&gt;{<span class="w">RuleOf3Violations</span>}<span class="sc">;</span>
+ 319       <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="sc">;</span>
+ 320     <span class="s">}</span>
+ 321 
+ 322     <span class="i">$Line</span> = <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">OutDelim</span>}<span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">OutQuote</span>}<span class="s">)</span><span class="sc">;</span>
+ 323     <span class="k">print</span> <span class="i">$NewTextFileRef</span> <span class="q">&quot;$Line\n&quot;</span><span class="sc">;</span>
+ 324   <span class="s">}</span>
+ 325 <span class="s">}</span>
+ 326 
+ 327 <span class="c"># Write out approriate column labels to text file...</span>
+<a name="WriteTextFileCoulmnLabels-"></a> 328 <span class="k">sub </span><span class="m">WriteTextFileCoulmnLabels</span> <span class="s">{</span>
+ 329   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$NewTextFileRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 330   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">@LineWords</span><span class="s">)</span><span class="sc">;</span>
+ 331 
+ 332   <span class="i">@LineWords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 333   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^All$/i</span><span class="s">)</span> <span class="s">{</span>
+ 334     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">AllDataFieldsRef</span>}[<span class="i">$FileIndex</span>]}<span class="sc">;</span>
+ 335   <span class="s">}</span>
+ 336   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^Common$/i</span><span class="s">)</span> <span class="s">{</span>
+ 337     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">CommonDataFieldsRef</span>}[<span class="i">$FileIndex</span>]}<span class="sc">;</span>
+ 338   <span class="s">}</span>
+ 339   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^Specify$/i</span><span class="s">)</span> <span class="s">{</span>
+ 340     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedDataFields</span>}}<span class="sc">;</span>
+ 341   <span class="s">}</span>
+ 342   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^CompoundID$/i</span><span class="s">)</span> <span class="s">{</span>
+ 343     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">CompoundIDLabel</span>}<span class="sc">;</span>
+ 344   <span class="s">}</span>
+ 345   <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 346 
+ 347   <span class="c"># Append physicochemical properties column labels...</span>
+ 348   <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span>  <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}}<span class="sc">;</span>
+ 349 
+ 350   <span class="c"># Write out RuleOf5 violations label...</span>
+ 351   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 352     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="q">&#39;RuleOf5Violations&#39;</span><span class="sc">;</span>
+ 353   <span class="s">}</span>
+ 354 
+ 355   <span class="c"># Write out RuleOf3 violations label...</span>
+ 356   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 357     <span class="k">push</span> <span class="i">@LineWords</span><span class="cm">,</span> <span class="q">&#39;RuleOf3Violations&#39;</span><span class="sc">;</span>
+ 358   <span class="s">}</span>
+ 359 
+ 360   <span class="i">$Line</span> = <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@LineWords</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">OutDelim</span>}<span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">OutQuote</span>}<span class="s">)</span><span class="sc">;</span>
+ 361   <span class="k">print</span> <span class="i">$NewTextFileRef</span> <span class="q">&quot;$Line\n&quot;</span><span class="sc">;</span>
+ 362 <span class="s">}</span>
+ 363 
+ 364 <span class="c"># Generate compound ID for text files..</span>
+ 365 <span class="c">#</span>
+<a name="SetupCmpdIDForTextFiles-"></a> 366 <span class="k">sub </span><span class="m">SetupCmpdIDForTextFiles</span> <span class="s">{</span>
+ 367   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 368   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdID</span><span class="s">)</span><span class="sc">;</span>
+ 369 
+ 370   <span class="i">$CmpdID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 371   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} =~ <span class="q">/^MolNameOrLabelPrefix$/i</span><span class="s">)</span> <span class="s">{</span>
+ 372     <span class="k">my</span><span class="s">(</span><span class="i">$MolName</span><span class="s">)</span><span class="sc">;</span>
+ 373     <span class="i">$MolName</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetName</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 374     <span class="i">$CmpdID</span> = <span class="i">$MolName</span> ? <span class="i">$MolName</span> <span class="co">:</span> <span class="q">&quot;$OptionsInfo{CompoundID}${CmpdCount}&quot;</span><span class="sc">;</span>
+ 375   <span class="s">}</span>
+ 376   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} =~ <span class="q">/^LabelPrefix$/i</span><span class="s">)</span> <span class="s">{</span>
+ 377     <span class="i">$CmpdID</span> = <span class="q">&quot;$OptionsInfo{CompoundID}${CmpdCount}&quot;</span><span class="sc">;</span>
+ 378   <span class="s">}</span>
+ 379   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} =~ <span class="q">/^DataField$/i</span><span class="s">)</span> <span class="s">{</span>
+ 380     <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedDataField</span><span class="s">)</span><span class="sc">;</span>
+ 381     <span class="i">$SpecifiedDataField</span> = <span class="i">$OptionsInfo</span>{<span class="w">CompoundID</span>}<span class="sc">;</span>
+ 382     <span class="i">$CmpdID</span> = <span class="k">exists</span> <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$SpecifiedDataField</span>} ? <span class="i">$DataFieldLabelAndValuesRef</span>-&gt;{<span class="i">$SpecifiedDataField</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 383   <span class="s">}</span>
+ 384   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} =~ <span class="q">/^MolName$/i</span><span class="s">)</span> <span class="s">{</span>
+ 385     <span class="i">$CmpdID</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetName</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 386   <span class="s">}</span>
+ 387   <span class="k">return</span> <span class="i">$CmpdID</span><span class="sc">;</span>
+ 388 <span class="s">}</span>
+ 389 
+ 390 <span class="c"># Calculate physicochemical properties for molecule...</span>
+ 391 <span class="c">#</span>
+<a name="CalculateMoleculeProperties-"></a> 392 <span class="k">sub </span><span class="m">CalculateMoleculeProperties</span> <span class="s">{</span>
+ 393   <span class="k">my</span><span class="s">(</span><span class="i">$MolecularDescriptorsGenerator</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 394   <span class="k">my</span><span class="s">(</span><span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">$PropertyValue</span><span class="cm">,</span> <span class="i">$MolecularDescriptorsObject</span><span class="cm">,</span> <span class="i">%CalculatedPhysicochemicalProperties</span><span class="s">)</span><span class="sc">;</span>
+ 395 
+ 396   <span class="i">%CalculatedPhysicochemicalProperties</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 397 
+ 398   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">KeepLargestComponent</span>}<span class="s">)</span> <span class="s">{</span>
+ 399     <span class="i">$Molecule</span><span class="i">-&gt;KeepLargestComponent</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 400   <span class="s">}</span>
+ 401 
+ 402   <span class="k">if</span> <span class="s">(</span>!<span class="i">$Molecule</span><span class="i">-&gt;DetectRings</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 403     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 404   <span class="s">}</span>
+ 405   <span class="i">$Molecule</span><span class="i">-&gt;SetAromaticityModel</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">AromaticityModel</span>}<span class="s">)</span><span class="sc">;</span>
+ 406   <span class="i">$Molecule</span><span class="i">-&gt;DetectAromaticity</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 407 
+ 408   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">AddHydrogens</span>}<span class="s">)</span> <span class="s">{</span>
+ 409     <span class="i">$Molecule</span><span class="i">-&gt;AddHydrogens</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 410   <span class="s">}</span>
+ 411 
+ 412   <span class="c"># Calculate physicochemical properties...</span>
+ 413   <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetMolecule</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 414   <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;GenerateDescriptors</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 415 
+ 416   <span class="k">if</span> <span class="s">(</span>!<span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;IsDescriptorsGenerationSuccessful</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 417     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 418   <span class="s">}</span>
+ 419 
+ 420   <span class="i">%CalculatedPhysicochemicalProperties</span> = <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;GetDescriptorNamesAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 421 
+ 422   <span class="c"># Count RuleOf3 violations...</span>
+ 423   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 424     <span class="i">CalculateRuleViolationsCount</span><span class="s">(</span><span class="q">&#39;RuleOf3Violations&#39;</span><span class="cm">,</span> \<span class="i">%CalculatedPhysicochemicalProperties</span><span class="s">)</span><span class="sc">;</span>
+ 425   <span class="s">}</span>
+ 426 
+ 427   <span class="c"># Count RuleOf5 violations...</span>
+ 428   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>}<span class="s">)</span> <span class="s">{</span>
+ 429     <span class="i">CalculateRuleViolationsCount</span><span class="s">(</span><span class="q">&#39;RuleOf5Violations&#39;</span><span class="cm">,</span> \<span class="i">%CalculatedPhysicochemicalProperties</span><span class="s">)</span><span class="sc">;</span>
+ 430   <span class="s">}</span>
+ 431 
+ 432   <span class="k">return</span> \<span class="i">%CalculatedPhysicochemicalProperties</span><span class="sc">;</span>
+ 433 <span class="s">}</span>
+ 434 
+ 435 <span class="c"># Setup molecular descriptor generator to calculate property values for specifed</span>
+ 436 <span class="c"># property names...</span>
+ 437 <span class="c">#</span>
+<a name="SetupMolecularDescriptorsGenerator-"></a> 438 <span class="k">sub </span><span class="m">SetupMolecularDescriptorsGenerator</span> <span class="s">{</span>
+ 439   <span class="k">my</span><span class="s">(</span><span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">$MolecularDescriptorsGenerator</span><span class="s">)</span><span class="sc">;</span>
+ 440 
+ 441   <span class="i">$MolecularDescriptorsGenerator</span> = <span class="w">new</span> <span class="i">MolecularDescriptors::MolecularDescriptorsGenerator</span><span class="s">(</span><span class="q">&#39;Mode&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;Specify&#39;</span><span class="cm">,</span> <span class="q">&#39;DescriptorNames&#39;</span> <span class="cm">=&gt;</span> \<span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}}<span class="s">)</span><span class="sc">;</span>
+ 442 
+ 443   <span class="c"># Setup molecular desciptor calculation parameters...</span>
+ 444   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;MolecularWeight&#39;</span><span class="s">)</span>}<span class="s">)</span> || <span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;ExactMass&#39;</span><span class="s">)</span>}<span class="s">)</span> <span class="s">)</span> <span class="s">{</span>
+ 445     <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetDescriptorClassParameters</span><span class="s">(</span><span class="q">&#39;DescriptorClassName&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;WeightAndMassDescriptors&#39;</span><span class="cm">,</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">PrecisionParametersMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 446   <span class="s">}</span>
+ 447 
+ 448   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;RotatableBonds&#39;</span><span class="s">)</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 449     <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetDescriptorClassParameters</span><span class="s">(</span><span class="q">&#39;DescriptorClassName&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;RotatableBondsDescriptors&#39;</span><span class="cm">,</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RotatableBondsParametersMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 450   <span class="s">}</span>
+ 451 
+ 452   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;HydrogenBondDonors&#39;</span><span class="s">)</span>}<span class="s">)</span> || <span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;HydrogenBondAcceptors&#39;</span><span class="s">)</span>}<span class="s">)</span> <span class="s">)</span> <span class="s">{</span>
+ 453     <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetDescriptorClassParameters</span><span class="s">(</span><span class="q">&#39;DescriptorClassName&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;HydrogenBondsDescriptors&#39;</span><span class="cm">,</span> <span class="q">&#39;HydrogenBondsType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$OptionsInfo</span>{<span class="w">HydrogenBonds</span>}<span class="s">)</span><span class="sc">;</span>
+ 454   <span class="s">}</span>
+ 455 
+ 456   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;TPSA&#39;</span><span class="s">)</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 457     <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetDescriptorClassParameters</span><span class="s">(</span><span class="q">&#39;DescriptorClassName&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TPSADescriptors&#39;</span><span class="cm">,</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">TPSAParametersMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 458   <span class="s">}</span>
+ 459 
+ 460   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;MolecularComplexity&#39;</span><span class="s">)</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 461     <span class="i">$MolecularDescriptorsGenerator</span><span class="i">-&gt;SetDescriptorClassParameters</span><span class="s">(</span><span class="q">&#39;DescriptorClassName&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;MolecularComplexityDescriptors&#39;</span><span class="cm">,</span> <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">MolecularComplexityParametersMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 462   <span class="s">}</span>
+ 463 
+ 464   <span class="k">return</span> <span class="i">$MolecularDescriptorsGenerator</span><span class="sc">;</span>
+ 465 <span class="s">}</span>
+ 466 
+ 467 <span class="c"># Calculate RuleOf3 or RuleOf5 violations count...</span>
+ 468 <span class="c">#</span>
+<a name="CalculateRuleViolationsCount-"></a> 469 <span class="k">sub </span><span class="m">CalculateRuleViolationsCount</span> <span class="s">{</span>
+ 470   <span class="k">my</span><span class="s">(</span><span class="i">$RuleViolationsType</span><span class="cm">,</span> <span class="i">$CalculatedPropertiesMapRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 471   <span class="k">my</span><span class="s">(</span><span class="i">$RuleViolationsCount</span><span class="cm">,</span> <span class="i">$PropertyName</span><span class="s">)</span><span class="sc">;</span>
+ 472 
+ 473   <span class="i">$RuleViolationsCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 474 
+ 475   <span class="j">RULEVIOLATIONSTYPE:</span> <span class="s">{</span>
+ 476     <span class="k">if</span> <span class="s">(</span><span class="i">$RuleViolationsType</span> =~ <span class="q">/^RuleOf3Violations$/i</span><span class="s">)</span> <span class="s">{</span>
+ 477       <span class="k">for</span> <span class="i">$PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3PropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 478         <span class="k">if</span> <span class="s">(</span><span class="i">$CalculatedPropertiesMapRef</span>-&gt;{<span class="i">$PropertyName</span>} &gt; <span class="i">$OptionsInfo</span>{<span class="w">RuleOf3MaxPropertyValuesMap</span>}{<span class="i">$PropertyName</span>}<span class="s">)</span> <span class="s">{</span>
+ 479           <span class="i">$RuleViolationsCount</span>++<span class="sc">;</span>
+ 480         <span class="s">}</span>
+ 481       <span class="s">}</span>
+ 482       <span class="k">last</span> <span class="j">RULEVIOLATIONSTYPE</span><span class="sc">;</span>
+ 483     <span class="s">}</span>
+ 484 
+ 485     <span class="k">if</span> <span class="s">(</span><span class="i">$RuleViolationsType</span> =~ <span class="q">/^RuleOf5Violations$/i</span><span class="s">)</span> <span class="s">{</span>
+ 486       <span class="k">for</span> <span class="i">$PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5PropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 487         <span class="k">if</span> <span class="s">(</span><span class="i">$CalculatedPropertiesMapRef</span>-&gt;{<span class="i">$PropertyName</span>} &gt; <span class="i">$OptionsInfo</span>{<span class="w">RuleOf5MaxPropertyValuesMap</span>}{<span class="i">$PropertyName</span>}<span class="s">)</span> <span class="s">{</span>
+ 488           <span class="i">$RuleViolationsCount</span>++<span class="sc">;</span>
+ 489         <span class="s">}</span>
+ 490       <span class="s">}</span>
+ 491       <span class="k">last</span> <span class="j">RULEVIOLATIONSTYPE</span><span class="sc">;</span>
+ 492     <span class="s">}</span>
+ 493 
+ 494     <span class="k">die</span> <span class="q">&quot;Warning: Unknown rule violation type: $RuleViolationsType...&quot;</span><span class="sc">;</span>
+ 495   <span class="s">}</span>
+ 496 
+ 497   <span class="c"># Set rule violation count...</span>
+ 498   <span class="i">$CalculatedPropertiesMapRef</span>-&gt;{<span class="i">$RuleViolationsType</span>} = <span class="i">$RuleViolationsCount</span><span class="sc">;</span>
+ 499 
+ 500 <span class="s">}</span>
+ 501 
+ 502 <span class="c"># Retrieve information about SD files...</span>
+ 503 <span class="c">#</span>
+<a name="RetrieveSDFilesInfo-"></a> 504 <span class="k">sub </span><span class="m">RetrieveSDFilesInfo</span> <span class="s">{</span>
+ 505   <span class="k">my</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$OutFileRoot</span><span class="cm">,</span> <span class="i">$TextOutFileExt</span><span class="cm">,</span> <span class="i">$SDOutFileExt</span><span class="cm">,</span> <span class="i">$NewSDFileName</span><span class="cm">,</span> <span class="i">$NewTextFileName</span><span class="cm">,</span> <span class="i">$CheckDataField</span><span class="cm">,</span> <span class="i">$CollectDataFields</span><span class="cm">,</span> <span class="i">$AllDataFieldsRef</span><span class="cm">,</span> <span class="i">$CommonDataFieldsRef</span><span class="s">)</span><span class="sc">;</span>
+ 506 
+ 507   <span class="i">%SDFilesInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 508   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 509   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">OutFileRoot</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 510   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">SDOutFileNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 511   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">TextOutFileNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 512   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">AllDataFieldsRef</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 513   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">CommonDataFieldsRef</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 514 
+ 515   <span class="i">$CheckDataField</span> = <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>} &amp;&amp; <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^CompoundID$/i</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} =~ <span class="q">/^DataField$/i</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 516   <span class="i">$CollectDataFields</span> = <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>} &amp;&amp; <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} =~ <span class="q">/^(All|Common)$/i</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 517 
+ 518   <span class="j">FILELIST:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+ 519     <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 520 
+ 521     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">0</span><span class="sc">;</span>
+ 522     <span class="i">$SDFilesInfo</span>{<span class="w">OutFileRoot</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 523     <span class="i">$SDFilesInfo</span>{<span class="w">SDOutFileNames</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 524     <span class="i">$SDFilesInfo</span>{<span class="w">TextOutFileNames</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 525 
+ 526     <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 527     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">-e</span> <span class="i">$SDFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 528       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It doesn&#39;t exist\n&quot;</span><span class="sc">;</span>
+ 529       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 530     <span class="s">}</span>
+ 531     <span class="k">if</span> <span class="s">(</span>!<span class="i">CheckFileType</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="q">&quot;sd sdf&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 532       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It&#39;s not a SD file\n&quot;</span><span class="sc">;</span>
+ 533       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 534     <span class="s">}</span>
+ 535 
+ 536     <span class="k">if</span> <span class="s">(</span><span class="i">$CheckDataField</span><span class="s">)</span> <span class="s">{</span>
+ 537       <span class="c"># Make sure data field exists in SD file..</span>
+ 538       <span class="k">my</span><span class="s">(</span><span class="i">$CmpdString</span><span class="cm">,</span> <span class="i">$SpecifiedDataField</span><span class="cm">,</span> <span class="i">@CmpdLines</span><span class="cm">,</span> <span class="i">%DataFieldValues</span><span class="s">)</span><span class="sc">;</span>
+ 539 
+ 540       <span class="i">@CmpdLines</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 541       <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t open $SDFile: $! \n&quot;</span><span class="sc">;</span>
+ 542       <span class="i">$CmpdString</span> = <span class="i">ReadCmpdString</span><span class="s">(</span>\<span class="i">*SDFILE</span><span class="s">)</span><span class="sc">;</span>
+ 543       <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 544       <span class="i">@CmpdLines</span> = <span class="k">split</span> <span class="q">&quot;\n&quot;</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="sc">;</span>
+ 545       <span class="i">%DataFieldValues</span> = <span class="i">GetCmpdDataHeaderLabelsAndValues</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 546       <span class="i">$SpecifiedDataField</span> = <span class="i">$OptionsInfo</span>{<span class="w">CompoundID</span>}<span class="sc">;</span>
+ 547       <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$DataFieldValues</span>{<span class="i">$SpecifiedDataField</span>}<span class="s">)</span> <span class="s">{</span>
+ 548         <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: Data field value, $SpecifiedDataField, using  \&quot;--CompoundID\&quot; option in \&quot;DataField\&quot; \&quot;--CompoundIDMode\&quot; doesn&#39;t exist\n&quot;</span><span class="sc">;</span>
+ 549         <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 550       <span class="s">}</span>
+ 551     <span class="s">}</span>
+ 552 
+ 553     <span class="i">$AllDataFieldsRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 554     <span class="i">$CommonDataFieldsRef</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 555     <span class="k">if</span> <span class="s">(</span><span class="i">$CollectDataFields</span><span class="s">)</span> <span class="s">{</span>
+ 556       <span class="k">my</span><span class="s">(</span><span class="i">$CmpdCount</span><span class="s">)</span><span class="sc">;</span>
+ 557       <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t open $SDFile: $! \n&quot;</span><span class="sc">;</span>
+ 558       <span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$AllDataFieldsRef</span><span class="cm">,</span> <span class="i">$CommonDataFieldsRef</span><span class="s">)</span> = <span class="i">GetAllAndCommonCmpdDataHeaderLabels</span><span class="s">(</span>\<span class="i">*SDFILE</span><span class="s">)</span><span class="sc">;</span>
+ 559       <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 560     <span class="s">}</span>
+ 561 
+ 562     <span class="c"># Setup output file names...</span>
+ 563     <span class="i">$FileDir</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileName</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileExt</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 564     <span class="s">(</span><span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+ 565 
+ 566     <span class="i">$TextOutFileExt</span> = <span class="q">&quot;csv&quot;</span><span class="sc">;</span>
+ 567     <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">outdelim</span>} =~ <span class="q">/^tab$/i</span><span class="s">)</span> <span class="s">{</span>
+ 568       <span class="i">$TextOutFileExt</span> = <span class="q">&quot;tsv&quot;</span><span class="sc">;</span>
+ 569     <span class="s">}</span>
+ 570     <span class="i">$SDOutFileExt</span> = <span class="i">$FileExt</span><span class="sc">;</span>
+ 571 
+ 572     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>} &amp;&amp; <span class="s">(</span><span class="i">@SDFilesList</span> == <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 573       <span class="k">my</span> <span class="s">(</span><span class="i">$RootFileDir</span><span class="cm">,</span> <span class="i">$RootFileName</span><span class="cm">,</span> <span class="i">$RootFileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>}<span class="s">)</span><span class="sc">;</span>
+ 574       <span class="k">if</span> <span class="s">(</span><span class="i">$RootFileName</span> &amp;&amp; <span class="i">$RootFileExt</span><span class="s">)</span> <span class="s">{</span>
+ 575         <span class="i">$FileName</span> = <span class="i">$RootFileName</span><span class="sc">;</span>
+ 576       <span class="s">}</span>
+ 577       <span class="k">else</span> <span class="s">{</span>
+ 578         <span class="i">$FileName</span> = <span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>}<span class="sc">;</span>
+ 579       <span class="s">}</span>
+ 580       <span class="i">$OutFileRoot</span> = <span class="i">$FileName</span><span class="sc">;</span>
+ 581     <span class="s">}</span>
+ 582     <span class="k">else</span> <span class="s">{</span>
+ 583       <span class="i">$OutFileRoot</span> = <span class="q">&quot;${FileName}PhysicochemicalProperties&quot;</span><span class="sc">;</span>
+ 584     <span class="s">}</span>
+ 585 
+ 586     <span class="i">$NewSDFileName</span> = <span class="q">&quot;${OutFileRoot}.${SDOutFileExt}&quot;</span><span class="sc">;</span>
+ 587     <span class="i">$NewTextFileName</span> = <span class="q">&quot;${OutFileRoot}.${TextOutFileExt}&quot;</span><span class="sc">;</span>
+ 588 
+ 589     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 590       <span class="k">if</span> <span class="s">(</span><span class="i">$SDFile</span> =~ <span class="q">/$NewSDFileName/i</span><span class="s">)</span> <span class="s">{</span>
+ 591         <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring input file $SDFile: Same output, $NewSDFileName, and input file names.\n&quot;</span><span class="sc">;</span>
+ 592         <span class="k">print</span> <span class="q">&quot;Specify a different name using \&quot;-r --root\&quot; option or use default name.\n&quot;</span><span class="sc">;</span>
+ 593         <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 594       <span class="s">}</span>
+ 595     <span class="s">}</span>
+ 596 
+ 597     <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>}<span class="s">)</span> <span class="s">{</span>
+ 598       <span class="c"># Check SD and text outout files...</span>
+ 599       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 600         <span class="k">if</span> <span class="s">(</span><span class="k">-e</span> <span class="i">$NewSDFileName</span><span class="s">)</span> <span class="s">{</span>
+ 601           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: The file $NewSDFileName already exists\n&quot;</span><span class="sc">;</span>
+ 602           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 603         <span class="s">}</span>
+ 604       <span class="s">}</span>
+ 605       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>}<span class="s">)</span> <span class="s">{</span>
+ 606         <span class="k">if</span> <span class="s">(</span><span class="k">-e</span> <span class="i">$NewTextFileName</span><span class="s">)</span> <span class="s">{</span>
+ 607           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: The file $NewTextFileName already exists\n&quot;</span><span class="sc">;</span>
+ 608           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 609         <span class="s">}</span>
+ 610       <span class="s">}</span>
+ 611     <span class="s">}</span>
+ 612 
+ 613     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">1</span><span class="sc">;</span>
+ 614 
+ 615     <span class="i">$SDFilesInfo</span>{<span class="w">OutFileRoot</span>}[<span class="i">$Index</span>] = <span class="i">$OutFileRoot</span><span class="sc">;</span>
+ 616     <span class="i">$SDFilesInfo</span>{<span class="w">SDOutFileNames</span>}[<span class="i">$Index</span>] = <span class="i">$NewSDFileName</span><span class="sc">;</span>
+ 617     <span class="i">$SDFilesInfo</span>{<span class="w">TextOutFileNames</span>}[<span class="i">$Index</span>] = <span class="i">$NewTextFileName</span><span class="sc">;</span>
+ 618 
+ 619     <span class="i">$SDFilesInfo</span>{<span class="w">AllDataFieldsRef</span>}[<span class="i">$Index</span>] = <span class="i">$AllDataFieldsRef</span><span class="sc">;</span>
+ 620     <span class="i">$SDFilesInfo</span>{<span class="w">CommonDataFieldsRef</span>}[<span class="i">$Index</span>] = <span class="i">$CommonDataFieldsRef</span><span class="sc">;</span>
+ 621   <span class="s">}</span>
+ 622 <span class="s">}</span>
+ 623 
+ 624 <span class="c"># Process option values...</span>
+<a name="ProcessOptions-"></a> 625 <span class="k">sub </span><span class="m">ProcessOptions</span> <span class="s">{</span>
+ 626   <span class="i">%OptionsInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 627 
+ 628   <span class="i">$OptionsInfo</span>{<span class="w">AromaticityModel</span>} = <span class="i">$Options</span>{<span class="w">aromaticitymodel</span>}<span class="sc">;</span>
+ 629 
+ 630   <span class="c"># Process property name related options...</span>
+ 631   <span class="i">ProcessPropertyNamesOption</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 632 
+ 633   <span class="c"># Setup RuleOf3 and RuleOf5 violation calculations...</span>
+ 634   <span class="i">$OptionsInfo</span>{<span class="w">RuleOf3Violations</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof3violations</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 635   <span class="i">$OptionsInfo</span>{<span class="w">RuleOf5Violations</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof5violations</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 636 
+ 637   <span class="i">$OptionsInfo</span>{<span class="w">CompoundIDMode</span>} = <span class="i">$Options</span>{<span class="w">compoundidmode</span>}<span class="sc">;</span>
+ 638   <span class="i">$OptionsInfo</span>{<span class="w">CompoundIDLabel</span>} = <span class="i">$Options</span>{<span class="w">compoundidlabel</span>}<span class="sc">;</span>
+ 639   <span class="i">$OptionsInfo</span>{<span class="w">DataFieldsMode</span>} = <span class="i">$Options</span>{<span class="w">datafieldsmode</span>}<span class="sc">;</span>
+ 640 
+ 641   <span class="k">my</span><span class="s">(</span><span class="i">@SpecifiedDataFields</span><span class="s">)</span><span class="sc">;</span>
+ 642   <span class="i">@SpecifiedDataFields</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 643 
+ 644   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedDataFields</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 645   <span class="i">$OptionsInfo</span>{<span class="w">CompoundID</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 646 
+ 647   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmode</span>} =~ <span class="q">/^CompoundID$/i</span><span class="s">)</span> <span class="s">{</span>
+ 648     <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">compoundidmode</span>} =~ <span class="q">/^DataField$/i</span><span class="s">)</span> <span class="s">{</span>
+ 649       <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">compoundid</span>}<span class="s">)</span> <span class="s">{</span>
+ 650         <span class="k">die</span> <span class="q">&quot;Error: You must specify a value for \&quot;--CompoundID\&quot; option in \&quot;DataField\&quot; \&quot;--CompoundIDMode\&quot;. \n&quot;</span><span class="sc">;</span>
+ 651       <span class="s">}</span>
+ 652       <span class="i">$OptionsInfo</span>{<span class="w">CompoundID</span>} = <span class="i">$Options</span>{<span class="w">compoundid</span>}<span class="sc">;</span>
+ 653     <span class="s">}</span>
+ 654     <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">compoundidmode</span>} =~ <span class="q">/^(LabelPrefix|MolNameOrLabelPrefix)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 655       <span class="i">$OptionsInfo</span>{<span class="w">CompoundID</span>} = <span class="i">$Options</span>{<span class="w">compoundid</span>} ? <span class="i">$Options</span>{<span class="w">compoundid</span>} <span class="co">:</span> <span class="q">&#39;Cmpd&#39;</span><span class="sc">;</span>
+ 656     <span class="s">}</span>
+ 657   <span class="s">}</span>
+ 658   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmode</span>} =~ <span class="q">/^Specify$/i</span><span class="s">)</span> <span class="s">{</span>
+ 659     <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">datafields</span>}<span class="s">)</span> <span class="s">{</span>
+ 660       <span class="k">die</span> <span class="q">&quot;Error: You must specify a value for \&quot;--DataFields\&quot; option in \&quot;Specify\&quot; \&quot;-d, --DataFieldsMode\&quot;. \n&quot;</span><span class="sc">;</span>
+ 661     <span class="s">}</span>
+ 662     <span class="i">@SpecifiedDataFields</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">datafields</span>}<span class="sc">;</span>
+ 663     <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedDataFields</span>}}<span class="cm">,</span> <span class="i">@SpecifiedDataFields</span><span class="sc">;</span>
+ 664   <span class="s">}</span>
+ 665 
+ 666   <span class="c"># Types of hydrogen bonds...</span>
+ 667   <span class="i">$OptionsInfo</span>{<span class="w">HydrogenBonds</span>} = <span class="i">$Options</span>{<span class="w">hydrogenbonds</span>}<span class="sc">;</span>
+ 668 
+ 669   <span class="c"># Process precision value parameters...</span>
+ 670   <span class="i">ProcessPrecisionOption</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 671 
+ 672   <span class="c"># Process rotatable bonds parameters...</span>
+ 673   <span class="i">ProcessRotatableBondsOption</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 674 
+ 675   <span class="c"># Process TPSA parameters...</span>
+ 676   <span class="i">ProcessTPSAOption</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 677 
+ 678   <span class="c"># Process molecular complexity parameters...</span>
+ 679   <span class="i">ProcessMolecularComplexityOption</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 680 
+ 681   <span class="i">$OptionsInfo</span>{<span class="w">Filter</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">filter</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 682 
+ 683   <span class="i">$OptionsInfo</span>{<span class="w">KeepLargestComponent</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">keeplargestcomponent</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 684 
+ 685   <span class="i">$OptionsInfo</span>{<span class="w">Output</span>} = <span class="i">$Options</span>{<span class="w">output</span>}<span class="sc">;</span>
+ 686   <span class="i">$OptionsInfo</span>{<span class="w">SDOutput</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">output</span>} =~ <span class="q">/^(SD|Both)$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 687   <span class="i">$OptionsInfo</span>{<span class="w">TextOutput</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">output</span>} =~ <span class="q">/^(Text|Both)$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 688 
+ 689   <span class="i">$OptionsInfo</span>{<span class="w">OutDelim</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">outdelim</span>} =~ <span class="q">/tab/i</span> <span class="s">)</span> ? <span class="q">&quot;\t&quot;</span> <span class="co">:</span> <span class="s">(</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">outdelim</span>} =~ <span class="q">/semicolon/i</span><span class="s">)</span> ? <span class="q">&quot;\;&quot;</span> <span class="co">:</span> <span class="q">&quot;\,&quot;</span><span class="s">)</span><span class="sc">;</span>
+ 690   <span class="i">$OptionsInfo</span>{<span class="w">OutQuote</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">quote</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 691 
+ 692   <span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>} = <span class="i">$Options</span>{<span class="w">overwrite</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 693   <span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>} = <span class="i">$Options</span>{<span class="w">root</span>} ? <span class="i">$Options</span>{<span class="w">root</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 694 <span class="s">}</span>
+ 695 
+ 696 <span class="c"># Process property name related options...</span>
+ 697 <span class="c">#</span>
+<a name="ProcessPropertyNamesOption-"></a> 698 <span class="k">sub </span><span class="m">ProcessPropertyNamesOption</span> <span class="s">{</span>
+ 699 
+ 700   <span class="c"># Setup supported physicochemical properties...</span>
+ 701   <span class="k">my</span><span class="s">(</span><span class="i">$SupportedProperty</span><span class="s">)</span><span class="sc">;</span>
+ 702 
+ 703   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 704   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 705 
+ 706   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5PropertyNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 707   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5MaxPropertyValuesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 708 
+ 709   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3PropertyNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 710   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3MaxPropertyValuesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 711 
+ 712   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">DefaultPropertyNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 713 
+ 714   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNames</span>}} = <span class="q">qw(MolecularWeight ExactMass HeavyAtoms Rings AromaticRings MolecularVolume RotatableBonds HydrogenBondDonors HydrogenBondAcceptors SLogP SMR TPSA Fsp3Carbons Sp3Carbons MolecularComplexity)</span><span class="sc">;</span>
+ 715 
+ 716   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5PropertyNames</span>}} = <span class="q">qw(MolecularWeight HydrogenBondDonors HydrogenBondAcceptors SLogP)</span><span class="sc">;</span>
+ 717   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5MaxPropertyValuesMap</span>}} = <span class="s">(</span><span class="q">&#39;MolecularWeight&#39;</span> <span class="cm">=&gt;</span> <span class="n">500</span><span class="cm">,</span> <span class="q">&#39;HydrogenBondDonors&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="cm">,</span> <span class="q">&#39;HydrogenBondAcceptors&#39;</span> <span class="cm">=&gt;</span> <span class="n">10</span><span class="cm">,</span>  <span class="q">&#39;SLogP&#39;</span> <span class="cm">=&gt;</span> <span class="n">5</span><span class="s">)</span><span class="sc">;</span>
+ 718 
+ 719   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3PropertyNames</span>}} = <span class="q">qw(MolecularWeight RotatableBonds HydrogenBondDonors HydrogenBondAcceptors SLogP TPSA)</span><span class="sc">;</span>
+ 720   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3MaxPropertyValuesMap</span>}} = <span class="s">(</span><span class="q">&#39;MolecularWeight&#39;</span> <span class="cm">=&gt;</span> <span class="n">300</span><span class="cm">,</span> <span class="q">&#39;RotatableBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;HydrogenBondDonors&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;HydrogenBondAcceptors&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;SLogP&#39;</span> <span class="cm">=&gt;</span> <span class="n">3</span><span class="cm">,</span> <span class="q">&#39;TPSA&#39;</span> <span class="cm">=&gt;</span> <span class="n">60</span><span class="s">)</span><span class="sc">;</span>
+ 721 
+ 722   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">DefaultPropertyNames</span>}} = <span class="q">qw(MolecularWeight HeavyAtoms MolecularVolume RotatableBonds HydrogenBondDonors HydrogenBondAcceptors SLogP TPSA)</span><span class="sc">;</span>
+ 723 
+ 724   <span class="k">for</span> <span class="i">$SupportedProperty</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 725     <span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$SupportedProperty</span><span class="s">)</span>} = <span class="i">$SupportedProperty</span><span class="sc">;</span>
+ 726   <span class="s">}</span>
+ 727 
+ 728   <span class="c"># Process specified properties....</span>
+ 729   <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="cm">,</span> <span class="i">@SpecifiedPropertyNames</span><span class="cm">,</span> <span class="i">%SpecifiedPropertyNamesMap</span><span class="s">)</span><span class="sc">;</span>
+ 730 
+ 731   <span class="i">@SpecifiedPropertyNames</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 732   <span class="i">%SpecifiedPropertyNamesMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 733 
+ 734   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 735   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 736 
+ 737   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^All$/i</span><span class="s">)</span> <span class="s">{</span>
+ 738     <span class="i">@SpecifiedPropertyNames</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNames</span>}}<span class="sc">;</span>
+ 739   <span class="s">}</span>
+ 740   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^RuleOf5$/i</span><span class="s">)</span> <span class="s">{</span>
+ 741     <span class="i">@SpecifiedPropertyNames</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5PropertyNames</span>}}<span class="sc">;</span>
+ 742   <span class="s">}</span>
+ 743   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^RuleOf3$/i</span><span class="s">)</span> <span class="s">{</span>
+ 744     <span class="i">@SpecifiedPropertyNames</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3PropertyNames</span>}}<span class="sc">;</span>
+ 745   <span class="s">}</span>
+ 746   <span class="k">elsif</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 747     <span class="i">@SpecifiedPropertyNames</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">DefaultPropertyNames</span>}}<span class="sc">;</span>
+ 748   <span class="s">}</span>
+ 749   <span class="k">else</span> <span class="s">{</span>
+ 750     <span class="c"># Comma delimited lisr of specified property names...</span>
+ 751     <span class="k">my</span><span class="s">(</span><span class="i">$Mode</span><span class="cm">,</span> <span class="i">$PropertyName</span><span class="cm">,</span> <span class="i">@PropertyNames</span><span class="cm">,</span> <span class="i">@UnsupportedPropertyNames</span><span class="s">)</span><span class="sc">;</span>
+ 752 
+ 753     <span class="i">$Mode</span> = <span class="i">$Options</span>{<span class="w">mode</span>}<span class="sc">;</span>
+ 754     <span class="i">$Mode</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 755 
+ 756     <span class="i">@PropertyNames</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$Mode</span><span class="sc">;</span>
+ 757     <span class="i">@UnsupportedPropertyNames</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 758 
+ 759     <span class="k">for</span> <span class="i">$PropertyName</span> <span class="s">(</span><span class="i">@PropertyNames</span><span class="s">)</span> <span class="s">{</span>
+ 760       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$PropertyName</span><span class="s">)</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 761         <span class="k">push</span> <span class="i">@SpecifiedPropertyNames</span><span class="cm">,</span> <span class="i">$PropertyName</span><span class="sc">;</span>
+ 762       <span class="s">}</span>
+ 763       <span class="k">else</span> <span class="s">{</span>
+ 764         <span class="k">push</span> <span class="i">@UnsupportedPropertyNames</span><span class="cm">,</span> <span class="i">$PropertyName</span><span class="sc">;</span>
+ 765       <span class="s">}</span>
+ 766     <span class="s">}</span>
+ 767     <span class="k">if</span> <span class="s">(</span><span class="i">@UnsupportedPropertyNames</span><span class="s">)</span> <span class="s">{</span>
+ 768       <span class="k">if</span> <span class="s">(</span><span class="i">@UnsupportedPropertyNames</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 769         <span class="k">warn</span> <span class="q">&quot;Error: The physicochemical property names specified - &quot;</span><span class="cm">,</span> <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@UnsupportedPropertyNames</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="cm">,</span><span class="q">&quot; - for option \&quot;-m --mode\&quot; are not valid.\n&quot;</span><span class="sc">;</span>
+ 770       <span class="s">}</span>
+ 771       <span class="k">else</span> <span class="s">{</span>
+ 772         <span class="k">warn</span> <span class="q">&quot;Error: The physicochemical property name specified, @UnsupportedPropertyNames , for option \&quot;-m --mode\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+ 773       <span class="s">}</span>
+ 774       <span class="k">die</span> <span class="q">&quot;Allowed values:&quot;</span><span class="cm">,</span> <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNames</span>}}<span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 775     <span class="s">}</span>
+ 776     <span class="k">if</span> <span class="s">(</span>!<span class="i">@SpecifiedPropertyNames</span><span class="s">)</span> <span class="s">{</span>
+ 777       <span class="k">die</span> <span class="q">&quot;Error: No valid physicochemical property names specified for option \&quot;-m --mode\&quot;.\n&quot;</span><span class="sc">;</span>
+ 778     <span class="s">}</span>
+ 779   <span class="s">}</span>
+ 780 
+ 781   <span class="c"># Set up specified property names map...</span>
+ 782   <span class="j">PROPERTY:</span> <span class="k">for</span> <span class="i">$SpecifiedPropertyName</span> <span class="s">(</span><span class="i">@SpecifiedPropertyNames</span><span class="s">)</span> <span class="s">{</span>
+ 783     <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 784       <span class="k">warn</span> <span class="q">&quot;Warning: The physicochemical property name, $SpecifiedPropertyName, is specified multiple times as value of option \&quot;-m --mode\&quot; .\n&quot;</span><span class="sc">;</span>
+ 785       <span class="k">next</span> <span class="j">PROPERTY</span><span class="sc">;</span>
+ 786     <span class="s">}</span>
+ 787     <span class="c"># Canonical specified property name...</span>
+ 788     <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="s">)</span>} = <span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="s">)</span>}<span class="sc">;</span>
+ 789   <span class="s">}</span>
+ 790 
+ 791   <span class="c"># Make sure for calculation of  RuleOf3Violations, all appropriate property names are specified...</span>
+ 792   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof3violations</span>} =~ <span class="q">/^Yes$/i</span> &amp;&amp; <span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^RuleOf5$/i</span><span class="s">)</span> <span class="s">{</span>
+ 793     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{ruleof3violations}, for  \&quot;--RuleOf3Violations\&quot; option in \&quot;RuleOf5\&quot; \&quot;-m --Mode\&quot; is not valid. You must specify RuleOf3 value for \&quot;-m --Mode\&quot; to calculate RuleOf3 violations.\n&quot;</span><span class="sc">;</span>
+ 794   <span class="s">}</span>
+ 795 
+ 796   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof3violations</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 797     <span class="k">my</span><span class="s">(</span><span class="i">$RuleOf3PropertyName</span><span class="cm">,</span> <span class="i">@MissingRuleOf3Names</span><span class="s">)</span><span class="sc">;</span>
+ 798 
+ 799     <span class="i">@MissingRuleOf3Names</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 800     <span class="j">PROPERTY:</span> <span class="k">for</span> <span class="i">$RuleOf3PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf3PropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 801       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf3PropertyName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 802         <span class="k">next</span> <span class="j">PROPERTY</span><span class="sc">;</span>
+ 803       <span class="s">}</span>
+ 804       <span class="k">push</span> <span class="i">@MissingRuleOf3Names</span><span class="cm">,</span> <span class="i">$RuleOf3PropertyName</span><span class="sc">;</span>
+ 805 
+ 806       <span class="c"># Add property name to specified properties names list and map...</span>
+ 807       <span class="k">push</span> <span class="i">@SpecifiedPropertyNames</span><span class="cm">,</span> <span class="i">$RuleOf3PropertyName</span><span class="sc">;</span>
+ 808       <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf3PropertyName</span><span class="s">)</span>} = <span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf3PropertyName</span><span class="s">)</span>}<span class="sc">;</span>
+ 809     <span class="s">}</span>
+ 810     <span class="k">if</span> <span class="s">(</span><span class="i">@MissingRuleOf3Names</span><span class="s">)</span> <span class="s">{</span>
+ 811       <span class="k">warn</span> <span class="q">&quot;Warning: The following physicochemical property names not specified in \&quot;-m --Mode\&quot; option are required for calculating RuleOf3Violations and have been added to the list of property names: @MissingRuleOf3Names\n&quot;</span><span class="sc">;</span>
+ 812     <span class="s">}</span>
+ 813   <span class="s">}</span>
+ 814 
+ 815   <span class="c"># Make sure for calculation of  RuleOf5Violations, all appropriate property names are specified...</span>
+ 816   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof5violations</span>} =~ <span class="q">/^Yes$/i</span> &amp;&amp; <span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^RuleOf3$/i</span><span class="s">)</span> <span class="s">{</span>
+ 817     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{ruleof5violations}, for  \&quot;--RuleOf5Violations\&quot; option in \&quot;RuleOf3\&quot; \&quot;-m --Mode\&quot; is not valid. You must specify RuleOf5 value for \&quot;-m --Mode\&quot; to calculate RuleOf5 violations.\n&quot;</span><span class="sc">;</span>
+ 818   <span class="s">}</span>
+ 819 
+ 820   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof5violations</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 821     <span class="k">my</span><span class="s">(</span><span class="i">$RuleOf5PropertyName</span><span class="cm">,</span> <span class="i">@MissingRuleOf5Names</span><span class="s">)</span><span class="sc">;</span>
+ 822 
+ 823     <span class="i">@MissingRuleOf5Names</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 824     <span class="j">PROPERTY:</span> <span class="k">for</span> <span class="i">$RuleOf5PropertyName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">RuleOf5PropertyNames</span>}}<span class="s">)</span> <span class="s">{</span>
+ 825       <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf5PropertyName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 826         <span class="k">next</span> <span class="j">PROPERTY</span><span class="sc">;</span>
+ 827       <span class="s">}</span>
+ 828       <span class="k">push</span> <span class="i">@MissingRuleOf5Names</span><span class="cm">,</span> <span class="i">$RuleOf5PropertyName</span><span class="sc">;</span>
+ 829 
+ 830       <span class="c"># Add property name to specified properties names list and map...</span>
+ 831       <span class="k">push</span> <span class="i">@SpecifiedPropertyNames</span><span class="cm">,</span> <span class="i">$RuleOf5PropertyName</span><span class="sc">;</span>
+ 832       <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf5PropertyName</span><span class="s">)</span>} = <span class="i">$OptionsInfo</span>{<span class="w">SupportedPropertyNamesMap</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$RuleOf5PropertyName</span><span class="s">)</span>}<span class="sc">;</span>
+ 833     <span class="s">}</span>
+ 834     <span class="k">if</span> <span class="s">(</span><span class="i">@MissingRuleOf5Names</span><span class="s">)</span> <span class="s">{</span>
+ 835       <span class="k">warn</span> <span class="q">&quot;Warning: The following physicochemical property names not specified in \&quot;-m --Mode\&quot; option are required for calculating RuleOf5Violations and have been added to the list of property names: @MissingRuleOf5Names\n&quot;</span><span class="sc">;</span>
+ 836     <span class="s">}</span>
+ 837   <span class="s">}</span>
+ 838   <span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} = <span class="i">$Options</span>{<span class="w">mode</span>}<span class="sc">;</span>
+ 839 
+ 840   <span class="c"># Setup canonical specified property names corresponding to supported names in mixed case...</span>
+ 841   <span class="k">my</span><span class="s">(</span><span class="i">@SpecifiedCanonicalPropertyNames</span><span class="s">)</span><span class="sc">;</span>
+ 842 
+ 843   <span class="i">@SpecifiedCanonicalPropertyNames</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 844   <span class="k">for</span> <span class="i">$SpecifiedPropertyName</span> <span class="s">(</span><span class="i">@SpecifiedPropertyNames</span><span class="s">)</span> <span class="s">{</span>
+ 845     <span class="k">push</span> <span class="i">@SpecifiedCanonicalPropertyNames</span><span class="cm">,</span> <span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$SpecifiedPropertyName</span><span class="s">)</span>}<span class="sc">;</span>
+ 846   <span class="s">}</span>
+ 847   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNames</span>}} = <span class="i">@SpecifiedCanonicalPropertyNames</span><span class="sc">;</span>
+ 848   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedPropertyNamesMap</span>}} = <span class="i">%SpecifiedPropertyNamesMap</span><span class="sc">;</span>
+ 849 
+ 850   <span class="c"># Based on specified property names, figure out whether hydrogens need to be added before</span>
+ 851   <span class="c"># calculation of properties...</span>
+ 852   <span class="c">#</span>
+ 853   <span class="i">$OptionsInfo</span>{<span class="w">AddHydrogens</span>} = <span class="n">0</span><span class="sc">;</span>
+ 854   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;MolecularVolume&#39;</span><span class="s">)</span>}<span class="s">)</span> || <span class="k">exists</span><span class="s">(</span><span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;SLogP&#39;</span><span class="s">)</span>}<span class="s">)</span> || <span class="k">exists</span><span class="s">(</span><span class="i">$SpecifiedPropertyNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="q">&#39;SMR&#39;</span><span class="s">)</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 855     <span class="i">$OptionsInfo</span>{<span class="w">AddHydrogens</span>} = <span class="n">1</span><span class="sc">;</span>
+ 856   <span class="s">}</span>
+ 857 <span class="s">}</span>
+ 858 
+ 859 <span class="c"># Process precision option...</span>
+ 860 <span class="c">#</span>
+<a name="ProcessPrecisionOption-"></a> 861 <span class="k">sub </span><span class="m">ProcessPrecisionOption</span> <span class="s">{</span>
+ 862   <span class="k">my</span><span class="s">(</span><span class="i">$ParameterName</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="cm">,</span> <span class="i">%PrecisionParametersMap</span><span class="cm">,</span> <span class="i">%PrecisionParameterNamesMap</span><span class="s">)</span><span class="sc">;</span>
+ 863 
+ 864   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">PrecisionParametersMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 865 
+ 866   <span class="i">%PrecisionParametersMap</span> = <span class="s">(</span><span class="q">&#39;WeightPrecision&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="cm">,</span> <span class="q">&#39;MassPrecision&#39;</span> <span class="cm">=&gt;</span> <span class="n">4</span><span class="s">)</span><span class="sc">;</span>
+ 867   <span class="i">%PrecisionParameterNamesMap</span> = <span class="s">(</span><span class="q">&#39;molecularweight&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;WeightPrecision&#39;</span><span class="cm">,</span> <span class="q">&#39;exactmass&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;MassPrecision&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 868 
+ 869   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">precision</span>}<span class="s">)</span> <span class="s">{</span>
+ 870     <span class="c"># Process specified values...</span>
+ 871     <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SpecifiedPrecision</span><span class="cm">,</span> <span class="i">@SpecifiedPrecisionValuePairs</span><span class="s">)</span><span class="sc">;</span>
+ 872 
+ 873     <span class="i">$SpecifiedPrecision</span> = <span class="i">$Options</span>{<span class="w">precision</span>}<span class="sc">;</span>
+ 874     <span class="i">$SpecifiedPrecision</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 875     <span class="i">@SpecifiedPrecisionValuePairs</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$SpecifiedPrecision</span><span class="sc">;</span>
+ 876     <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedPrecisionValuePairs</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 877       <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values specified using \&quot;--Precision\&quot; option: It must contain even number of values.\n&quot;</span><span class="sc">;</span>
+ 878     <span class="s">}</span>
+ 879     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="s">(</span><span class="s">(</span><span class="i">$Index</span> + <span class="n">1</span><span class="s">)</span> &lt; <span class="i">@SpecifiedPrecisionValuePairs</span><span class="s">)</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span> <span class="s">)</span> <span class="s">{</span>
+ 880       <span class="i">$ParameterName</span> = <span class="i">$SpecifiedPrecisionValuePairs</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 881       <span class="i">$ParameterValue</span> = <span class="i">$SpecifiedPrecisionValuePairs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 882       <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$PrecisionParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 883         <span class="k">die</span> <span class="q">&quot;Error: The precision parameter name specified, $ParameterName, for option \&quot;--Precision\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+ 884       <span class="s">}</span>
+ 885       <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 886         <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--Precision\&quot; is not valid. Allowed values: positive integer. \n&quot;</span><span class="sc">;</span>
+ 887       <span class="s">}</span>
+ 888       <span class="i">$ParameterName</span> = <span class="i">$PrecisionParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="sc">;</span>
+ 889       <span class="i">$PrecisionParametersMap</span>{<span class="i">$ParameterName</span>} = <span class="i">$ParameterValue</span><span class="sc">;</span>
+ 890     <span class="s">}</span>
+ 891   <span class="s">}</span>
+ 892   <span class="i">$OptionsInfo</span>{<span class="w">Precision</span>} = <span class="i">$Options</span>{<span class="w">precision</span>}<span class="sc">;</span>
+ 893   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">PrecisionParametersMap</span>}} = <span class="i">%PrecisionParametersMap</span><span class="sc">;</span>
+ 894 <span class="s">}</span>
+ 895 
+ 896 <span class="c"># Process rotatable bonds option...</span>
+<a name="ProcessRotatableBondsOption-"></a> 897 <span class="k">sub </span><span class="m">ProcessRotatableBondsOption</span> <span class="s">{</span>
+ 898   <span class="k">my</span><span class="s">(</span><span class="i">$ParameterName</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="cm">,</span> <span class="i">%RotatableBondsParametersMap</span><span class="cm">,</span> <span class="i">%RotatableBondsParameterNamesMap</span><span class="s">)</span><span class="sc">;</span>
+ 899 
+ 900   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RotatableBondsParametersMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 901   <span class="i">%RotatableBondsParametersMap</span> = <span class="s">(</span><span class="q">&#39;IgnoreTerminalBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;IgnoreBondsToTripleBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;IgnoreAmideBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;IgnoreThioamideBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;IgnoreSulfonamideBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 902 
+ 903   <span class="k">for</span> <span class="i">$ParameterName</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%RotatableBondsParametersMap</span><span class="s">)</span> <span class="s">{</span>
+ 904     <span class="i">$RotatableBondsParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>} = <span class="i">$ParameterName</span><span class="sc">;</span>
+ 905   <span class="s">}</span>
+ 906 
+ 907   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">rotatablebonds</span>}<span class="s">)</span> <span class="s">{</span>
+ 908     <span class="c"># Process specified values...</span>
+ 909     <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SpecifiedRotatableBonds</span><span class="cm">,</span> <span class="i">@SpecifiedRotatableBondsValuePairs</span><span class="s">)</span><span class="sc">;</span>
+ 910 
+ 911     <span class="i">$SpecifiedRotatableBonds</span> = <span class="i">$Options</span>{<span class="w">rotatablebonds</span>}<span class="sc">;</span>
+ 912     <span class="i">$SpecifiedRotatableBonds</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 913     <span class="i">@SpecifiedRotatableBondsValuePairs</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$SpecifiedRotatableBonds</span><span class="sc">;</span>
+ 914     <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedRotatableBondsValuePairs</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 915       <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values specified using \&quot;--RotatableBonds\&quot; option: It must contain even number of values.\n&quot;</span><span class="sc">;</span>
+ 916     <span class="s">}</span>
+ 917     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="s">(</span><span class="s">(</span><span class="i">$Index</span> + <span class="n">1</span><span class="s">)</span> &lt; <span class="i">@SpecifiedRotatableBondsValuePairs</span><span class="s">)</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span> <span class="s">)</span> <span class="s">{</span>
+ 918       <span class="i">$ParameterName</span> = <span class="i">$SpecifiedRotatableBondsValuePairs</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 919       <span class="i">$ParameterValue</span> = <span class="i">$SpecifiedRotatableBondsValuePairs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 920       <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$RotatableBondsParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 921         <span class="k">die</span> <span class="q">&quot;Error: The rotatable bonds parameter name specified, $ParameterName, for option \&quot;--RotatableBonds\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+ 922       <span class="s">}</span>
+ 923       <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 924         <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--RotatableBonds\&quot; is not valid. Allowed values: Yes or No. \n&quot;</span><span class="sc">;</span>
+ 925       <span class="s">}</span>
+ 926       <span class="i">$ParameterName</span> = <span class="i">$RotatableBondsParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="sc">;</span>
+ 927       <span class="i">$ParameterValue</span> = <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 928       <span class="i">$RotatableBondsParametersMap</span>{<span class="i">$ParameterName</span>} = <span class="i">$ParameterValue</span><span class="sc">;</span>
+ 929     <span class="s">}</span>
+ 930   <span class="s">}</span>
+ 931   <span class="i">$OptionsInfo</span>{<span class="w">RotatableBonds</span>} = <span class="i">$Options</span>{<span class="w">rotatablebonds</span>}<span class="sc">;</span>
+ 932   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">RotatableBondsParametersMap</span>}} = <span class="i">%RotatableBondsParametersMap</span><span class="sc">;</span>
+ 933 <span class="s">}</span>
+ 934 
+ 935 <span class="c"># Process TPSA option...</span>
+ 936 <span class="c">#</span>
+<a name="ProcessTPSAOption-"></a> 937 <span class="k">sub </span><span class="m">ProcessTPSAOption</span> <span class="s">{</span>
+ 938   <span class="k">my</span><span class="s">(</span><span class="i">$ParameterName</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="cm">,</span> <span class="i">%TPSAParametersMap</span><span class="cm">,</span> <span class="i">%TPSAParameterNamesMap</span><span class="s">)</span><span class="sc">;</span>
+ 939 
+ 940   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">TPSAParametersMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 941 
+ 942   <span class="i">%TPSAParametersMap</span> = <span class="s">(</span><span class="q">&#39;IgnorePhosphorus&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;IgnoreSulfur&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 943   <span class="k">for</span> <span class="i">$ParameterName</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%TPSAParametersMap</span><span class="s">)</span> <span class="s">{</span>
+ 944     <span class="i">$TPSAParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>} = <span class="i">$ParameterName</span><span class="sc">;</span>
+ 945   <span class="s">}</span>
+ 946 
+ 947   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">tpsa</span>}<span class="s">)</span> <span class="s">{</span>
+ 948     <span class="c"># Process specified values...</span>
+ 949     <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SpecifiedTPSA</span><span class="cm">,</span> <span class="i">@SpecifiedTPSAValuePairs</span><span class="s">)</span><span class="sc">;</span>
+ 950 
+ 951     <span class="i">$SpecifiedTPSA</span> = <span class="i">$Options</span>{<span class="w">tpsa</span>}<span class="sc">;</span>
+ 952     <span class="i">$SpecifiedTPSA</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 953     <span class="i">@SpecifiedTPSAValuePairs</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$SpecifiedTPSA</span><span class="sc">;</span>
+ 954     <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedTPSAValuePairs</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 955       <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values specified using \&quot;--TPSA\&quot; option: It must contain even number of values.\n&quot;</span><span class="sc">;</span>
+ 956     <span class="s">}</span>
+ 957     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="s">(</span><span class="s">(</span><span class="i">$Index</span> + <span class="n">1</span><span class="s">)</span> &lt; <span class="i">@SpecifiedTPSAValuePairs</span><span class="s">)</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span> <span class="s">)</span> <span class="s">{</span>
+ 958       <span class="i">$ParameterName</span> = <span class="i">$SpecifiedTPSAValuePairs</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 959       <span class="i">$ParameterValue</span> = <span class="i">$SpecifiedTPSAValuePairs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 960       <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$TPSAParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 961         <span class="k">die</span> <span class="q">&quot;Error: The TPSA parameter name specified, $ParameterName, for option \&quot;--TPSA\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+ 962       <span class="s">}</span>
+ 963       <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 964         <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--TPSA\&quot; is not valid. Allowed values: Yes or No. \n&quot;</span><span class="sc">;</span>
+ 965       <span class="s">}</span>
+ 966       <span class="i">$ParameterName</span> = <span class="i">$TPSAParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="sc">;</span>
+ 967       <span class="i">$ParameterValue</span> = <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 968       <span class="i">$TPSAParametersMap</span>{<span class="i">$ParameterName</span>} = <span class="i">$ParameterValue</span><span class="sc">;</span>
+ 969     <span class="s">}</span>
+ 970   <span class="s">}</span>
+ 971   <span class="i">$OptionsInfo</span>{<span class="w">TPSA</span>} = <span class="i">$Options</span>{<span class="w">tpsa</span>}<span class="sc">;</span>
+ 972   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">TPSAParametersMap</span>}} = <span class="i">%TPSAParametersMap</span><span class="sc">;</span>
+ 973 <span class="s">}</span>
+ 974 
+ 975 <span class="c"># Process molecular complexity parameters...</span>
+ 976 <span class="c">#</span>
+<a name="ProcessMolecularComplexityOption-"></a> 977 <span class="k">sub </span><span class="m">ProcessMolecularComplexityOption</span> <span class="s">{</span>
+ 978   <span class="k">my</span><span class="s">(</span><span class="i">$MolecularComplexityType</span><span class="cm">,</span> <span class="i">$ParameterName</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="cm">,</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@ParameterValues</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="cm">,</span> <span class="i">%ComplexityParametersMap</span><span class="cm">,</span> <span class="i">%ComplexityParameterNamesMap</span><span class="s">)</span><span class="sc">;</span>
+ 979 
+ 980   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">MolecularComplexityParametersMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 981 
+ 982   <span class="i">%ComplexityParametersMap</span> = <span class="s">(</span><span class="q">&#39;MolecularComplexityType&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;&#39;</span><span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;&#39;</span><span class="cm">,</span>
+ 983                               <span class="q">&#39;AtomicInvariantsToUse&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;&#39;</span><span class="cm">,</span> <span class="q">&#39;FunctionalClassesToUse&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;&#39;</span><span class="cm">,</span>
+ 984                               <span class="q">&#39;MACCSKeysSize&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;166&#39;</span><span class="cm">,</span> <span class="q">&#39;NeighborhoodRadius&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;2&#39;</span><span class="cm">,</span>
+ 985                               <span class="q">&#39;MinPathLength&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;1&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxPathLength&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;8&#39;</span><span class="cm">,</span> <span class="q">&#39;UseBondSymbols&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;1&#39;</span><span class="cm">,</span>
+ 986                               <span class="q">&#39;MinDistance&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;1&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;10&#39;</span><span class="cm">,</span> <span class="q">&#39;UseTriangleInequality&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;&#39;</span><span class="cm">,</span>
+ 987                               <span class="q">&#39;DistanceBinSize&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;2&#39;</span><span class="cm">,</span> <span class="q">&#39;NormalizationMethodology&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;None&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 988 
+ 989   <span class="i">%ComplexityParameterNamesMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 990   <span class="k">for</span> <span class="i">$ParameterName</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%ComplexityParametersMap</span><span class="s">)</span> <span class="s">{</span>
+ 991     <span class="i">$ComplexityParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>} = <span class="i">$ParameterName</span><span class="sc">;</span>
+ 992   <span class="s">}</span>
+ 993 
+ 994   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">molecularcomplexity</span>}<span class="s">)</span> <span class="s">{</span>
+ 995     <span class="c"># Process specified values...</span>
+ 996     <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SpecifiedComplexity</span><span class="cm">,</span> <span class="i">@SpecifiedComplexityValuePairs</span><span class="s">)</span><span class="sc">;</span>
+ 997 
+ 998     <span class="i">$SpecifiedComplexity</span> = <span class="i">$Options</span>{<span class="w">molecularcomplexity</span>}<span class="sc">;</span>
+ 999 
+1000     <span class="i">@SpecifiedComplexityValuePairs</span> = <span class="k">split</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="i">$SpecifiedComplexity</span><span class="sc">;</span>
+1001     <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedComplexityValuePairs</span> % <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+1002       <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values specified using \&quot;--MolecularComplexity\&quot; option: It must contain even number of values.\n&quot;</span><span class="sc">;</span>
+1003     <span class="s">}</span>
+1004 
+1005     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="s">(</span><span class="s">(</span><span class="i">$Index</span> + <span class="n">1</span><span class="s">)</span> &lt; <span class="i">@SpecifiedComplexityValuePairs</span><span class="s">)</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span> <span class="s">)</span> <span class="s">{</span>
+1006       <span class="i">$ParameterName</span> = <span class="i">$SpecifiedComplexityValuePairs</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+1007       <span class="i">$ParameterValue</span> = <span class="i">$SpecifiedComplexityValuePairs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+1008 
+1009       <span class="i">$ParameterName</span> = <span class="i">RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span><span class="sc">;</span>
+1010       <span class="i">$ParameterValue</span> = <span class="i">RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span><span class="sc">;</span>
+1011 
+1012       <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$ComplexityParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+1013         <span class="k">die</span> <span class="q">&quot;Error: The molecular complexity parameter name specified, $ParameterName, for option \&quot;--MolecularComplexity\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+1014       <span class="s">}</span>
+1015       <span class="i">$ParameterName</span> = <span class="i">$ComplexityParameterNamesMap</span>{<span class="k">lc</span><span class="s">(</span><span class="i">$ParameterName</span><span class="s">)</span>}<span class="sc">;</span>
+1016 
+1017       <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^AtomicInvariantsToUse$/i</span><span class="s">)</span> <span class="s">{</span>
+1018         <span class="k">my</span><span class="s">(</span><span class="i">$AtomSymbolFound</span><span class="s">)</span><span class="sc">;</span>
+1019 
+1020         <span class="i">$AtomSymbolFound</span> = <span class="n">0</span><span class="sc">;</span>
+1021         <span class="i">@ParameterValues</span> = <span class="k">split</span><span class="s">(</span><span class="q">&#39; &#39;</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="s">)</span><span class="sc">;</span>
+1022         <span class="k">for</span> <span class="i">$ParameterValue</span> <span class="s">(</span><span class="i">@ParameterValues</span><span class="s">)</span> <span class="s">{</span>
+1023           <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::AtomicInvariantsAtomTypes::IsAtomicInvariantAvailable</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1024             <span class="k">die</span> <span class="q">&quot;Error: The atomic invariant specified, $ParameterValue, for  AtomicInvariantsToUse in option \&quot;--MolecularComplexity\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+1025           <span class="s">}</span>
+1026           <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/^(AS|AtomSymbol)$/i</span><span class="s">)</span> <span class="s">{</span>
+1027             <span class="i">$AtomSymbolFound</span> = <span class="n">1</span><span class="sc">;</span>
+1028           <span class="s">}</span>
+1029         <span class="s">}</span>
+1030         <span class="k">if</span> <span class="s">(</span>!<span class="i">$AtomSymbolFound</span><span class="s">)</span> <span class="s">{</span>
+1031           <span class="k">die</span> <span class="q">&quot;Error: The atomic invariants specified using AtomicInvariantsToUse in option \&quot;--MolecularComplexity\&quot; is not valid: AtomicInvariant atom symbol, AS or AtomSymbol, must be specified.\n&quot;</span><span class="sc">;</span>
+1032         <span class="s">}</span>
+1033         <span class="i">$ParameterValue</span> = <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@ParameterValues</span><span class="cm">,</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+1034       <span class="s">}</span>
+1035       <span class="k">elsif</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^FunctionalClassesToUse$/i</span><span class="s">)</span> <span class="s">{</span>
+1036         <span class="i">@ParameterValues</span> = <span class="k">split</span><span class="s">(</span><span class="q">&#39; &#39;</span><span class="cm">,</span> <span class="i">$ParameterValue</span><span class="s">)</span><span class="sc">;</span>
+1037         <span class="k">for</span> <span class="i">$ParameterValue</span> <span class="s">(</span><span class="i">@ParameterValues</span><span class="s">)</span> <span class="s">{</span>
+1038           <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::FunctionalClassAtomTypes::IsFunctionalClassAvailable</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1039             <span class="k">die</span> <span class="q">&quot;Error: The functional class specified, $ParameterValue, for  FunctionalClassesToUse in option \&quot;--MolecularComplexity\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+1040           <span class="s">}</span>
+1041         <span class="s">}</span>
+1042         <span class="i">$ParameterValue</span> = <span class="i">JoinWords</span><span class="s">(</span>\<span class="i">@ParameterValues</span><span class="cm">,</span> <span class="q">&quot;,&quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+1043       <span class="s">}</span>
+1044       <span class="k">else</span> <span class="s">{</span>
+1045         <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/ /</span><span class="s">)</span> <span class="s">{</span>
+1046           <span class="i">$ParameterValue</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+1047         <span class="s">}</span>
+1048         <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1049           <span class="i">$ParameterValue</span> = <span class="s">(</span><span class="i">$ParameterValue</span> =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+1050         <span class="s">}</span>
+1051       <span class="s">}</span>
+1052 
+1053       <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^MolecularComplexityType$/i</span><span class="s">)</span> <span class="s">{</span>
+1054         <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> !~ <span class="q">/^(AtomTypesFingerprints|ExtendedConnectivityFingerprints|MACCSKeys|PathLengthFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints|TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+1055           <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--MolecularComplexity\&quot; is not valid. Allowed values: AtomTypesFingerprints, ExtendedConnectivityFingerprints, MACCSKeys, PathLengthFingerprints, TopologicalAtomPairsFingerprints, TopologicalAtomTripletsFingerprints, TopologicalAtomTorsionsFingerprints, TopologicalPharmacophoreAtomPairsFingerprints, or TopologicalPharmacophoreAtomTripletsFingerprints..\n&quot;</span><span class="sc">;</span>
+1056         <span class="s">}</span>
+1057       <span class="s">}</span>
+1058       <span class="k">elsif</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^AtomIdentifierType$/i</span><span class="s">)</span> <span class="s">{</span>
+1059         <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> !~ <span class="q">/^(AtomicInvariantsAtomTypes|FunctionalClassAtomTypes|DREIDINGAtomTypes|EStateAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+1060           <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--MolecularComplexity\&quot; is not valid. Supported atom identifier types in current release of MayaChemTools: AtomicInvariantsAtomTypes, FunctionalClassAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes and UFFAtomTypes.\n&quot;</span><span class="sc">;</span>
+1061         <span class="s">}</span>
+1062       <span class="s">}</span>
+1063       <span class="k">elsif</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^(MACCSKeysSize|MinPathLength|MaxPathLength|MinDistance|MaxDistance|DistanceBinSize)$/i</span><span class="s">)</span> <span class="s">{</span>
+1064         <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1065           <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--MolecularComplexity\&quot; is not valid. Allowed values: positive integer. \n&quot;</span><span class="sc">;</span>
+1066         <span class="s">}</span>
+1067       <span class="s">}</span>
+1068       <span class="k">elsif</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^NeighborhoodRadius$/i</span><span class="s">)</span> <span class="s">{</span>
+1069         <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">IsInteger</span><span class="s">(</span><span class="i">$ParameterValue</span><span class="s">)</span> &amp;&amp; <span class="i">$ParameterValue</span> &gt;=<span class="n">0</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1070           <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--MolecularComplexity\&quot; is not valid. Allowed values: 0 or positive integer. \n&quot;</span><span class="sc">;</span>
+1071         <span class="s">}</span>
+1072       <span class="s">}</span>
+1073       <span class="k">elsif</span> <span class="s">(</span><span class="i">$ParameterName</span> =~ <span class="q">/^NormalizationMethodology$/i</span><span class="s">)</span> <span class="s">{</span>
+1074         <span class="k">if</span> <span class="s">(</span><span class="i">$ParameterValue</span> !~ <span class="q">/^(None|ByHeavyAtomsCount|ByPossibleKeysCount)$/i</span><span class="s">)</span> <span class="s">{</span>
+1075           <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name, $ParameterName in option \&quot;--MolecularComplexity\&quot; is not valid. Allowed values: None, ByHeavyAtomsCount, or ByPossibleKeysCount\n&quot;</span><span class="sc">;</span>
+1076         <span class="s">}</span>
+1077       <span class="s">}</span>
+1078       <span class="i">$ComplexityParametersMap</span>{<span class="i">$ParameterName</span>} = <span class="i">$ParameterValue</span><span class="sc">;</span>
+1079     <span class="s">}</span>
+1080 
+1081     <span class="k">if</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">MACCSKeysSize</span>} !~ <span class="q">/^(166|322)$/i</span><span class="s">)</span> <span class="s">{</span>
+1082       <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ComplexityParametersMap{MACCSKeysSize}, for parameter name, MACCSKeysSize in option \&quot;--MolecularComplexity\&quot; is not valid. Allowed values: 166 or 322\n&quot;</span><span class="sc">;</span>
+1083     <span class="s">}</span>
+1084     <span class="k">if</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">MinPathLength</span>} &gt; <span class="i">$ComplexityParametersMap</span>{<span class="w">MaxPathLength</span>}<span class="s">)</span> <span class="s">{</span>
+1085       <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified for MinPathLength, $ComplexityParametersMap{MinPathLength}, must be &lt;= MaxPathLength, $ComplexityParametersMap{MaxPathLength} ...\n&quot;</span><span class="sc">;</span>
+1086     <span class="s">}</span>
+1087     <span class="k">if</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">MinDistance</span>} &gt; <span class="i">$ComplexityParametersMap</span>{<span class="w">MaxDistance</span>}<span class="s">)</span> <span class="s">{</span>
+1088       <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified for MinDistance, $ComplexityParametersMap{MinDistance}, must be &lt;= MaxDistance, $ComplexityParametersMap{MaxDistance} ...\n&quot;</span><span class="sc">;</span>
+1089     <span class="s">}</span>
+1090   <span class="s">}</span>
+1091 
+1092   <span class="c"># Set default parameter values...</span>
+1093 
+1094   <span class="k">if</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">MolecularComplexityType</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1095     <span class="i">$ComplexityParametersMap</span>{<span class="w">MolecularComplexityType</span>} = <span class="q">&#39;MACCSKeys&#39;</span><span class="sc">;</span>
+1096   <span class="s">}</span>
+1097   <span class="i">$MolecularComplexityType</span> = <span class="i">$ComplexityParametersMap</span>{<span class="w">MolecularComplexityType</span>}<span class="sc">;</span>
+1098 
+1099 
+1100   <span class="k">if</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">AtomIdentifierType</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1101     <span class="i">$ComplexityParametersMap</span>{<span class="w">AtomIdentifierType</span>} = <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> ? <span class="q">&quot;FunctionalClassAtomTypes&quot;</span> <span class="co">:</span> <span class="q">&quot;AtomicInvariantsAtomTypes&quot;</span><span class="sc">;</span>
+1102   <span class="s">}</span>
+1103 
+1104   <span class="k">if</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">AtomicInvariantsToUse</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1105     <span class="k">my</span><span class="s">(</span><span class="i">$AtomicInvariantsToUse</span><span class="s">)</span><span class="sc">;</span>
+1106 
+1107     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^(AtomTypesFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+1108       <span class="i">$AtomicInvariantsToUse</span> = <span class="q">&quot;AS,X,BO,H,FC&quot;</span><span class="sc">;</span>
+1109     <span class="s">}</span>
+1110     <span class="k">elsif</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1111       <span class="i">$AtomicInvariantsToUse</span> = <span class="q">&quot;AS,X,BO,H,FC,MN&quot;</span><span class="sc">;</span>
+1112     <span class="s">}</span>
+1113     <span class="k">else</span> <span class="s">{</span>
+1114       <span class="i">$AtomicInvariantsToUse</span> = <span class="q">&quot;AS&quot;</span><span class="sc">;</span>
+1115     <span class="s">}</span>
+1116     <span class="i">$ComplexityParametersMap</span>{<span class="w">AtomicInvariantsToUse</span>} = <span class="i">$AtomicInvariantsToUse</span><span class="sc">;</span>
+1117   <span class="s">}</span>
+1118 
+1119   <span class="k">if</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">FunctionalClassesToUse</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1120     <span class="k">my</span><span class="s">(</span><span class="i">$FunctionalClassesToUse</span><span class="s">)</span><span class="sc">;</span>
+1121 
+1122     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalPharmacophoreAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1123       <span class="i">$FunctionalClassesToUse</span> = <span class="q">&quot;HBD,HBA,PI,NI,H&quot;</span><span class="sc">;</span>
+1124     <span class="s">}</span>
+1125     <span class="k">elsif</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1126       <span class="i">$FunctionalClassesToUse</span> = <span class="q">&quot;HBD,HBA,PI,NI,H,Ar&quot;</span><span class="sc">;</span>
+1127     <span class="s">}</span>
+1128     <span class="k">else</span> <span class="s">{</span>
+1129       <span class="i">$FunctionalClassesToUse</span> = <span class="q">&quot;HBD,HBA,PI,NI,H,Ar,Hal&quot;</span><span class="sc">;</span>
+1130     <span class="s">}</span>
+1131     <span class="i">$ComplexityParametersMap</span>{<span class="w">FunctionalClassesToUse</span>} = <span class="i">$FunctionalClassesToUse</span><span class="sc">;</span>
+1132   <span class="s">}</span>
+1133 
+1134   <span class="k">my</span><span class="s">(</span><span class="i">@AtomicInvariantsToUse</span><span class="s">)</span><span class="sc">;</span>
+1135   <span class="i">@AtomicInvariantsToUse</span> = <span class="k">split</span> <span class="q">&#39;,&#39;</span><span class="cm">,</span> <span class="i">$ComplexityParametersMap</span>{<span class="w">AtomicInvariantsToUse</span>}<span class="sc">;</span>
+1136   <span class="i">$ComplexityParametersMap</span>{<span class="w">AtomicInvariantsToUse</span>} = \<span class="i">@AtomicInvariantsToUse</span><span class="sc">;</span>
+1137 
+1138   <span class="k">my</span><span class="s">(</span><span class="i">@FunctionalClassesToUse</span><span class="s">)</span><span class="sc">;</span>
+1139   <span class="i">@FunctionalClassesToUse</span> = <span class="k">split</span> <span class="q">&#39;,&#39;</span><span class="cm">,</span> <span class="i">$ComplexityParametersMap</span>{<span class="w">FunctionalClassesToUse</span>}<span class="sc">;</span>
+1140   <span class="i">$ComplexityParametersMap</span>{<span class="w">FunctionalClassesToUse</span>} = \<span class="i">@FunctionalClassesToUse</span><span class="sc">;</span>
+1141 
+1142   <span class="k">if</span> <span class="s">(</span><span class="i">IsEmpty</span><span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">UseTriangleInequality</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1143     <span class="i">$ComplexityParametersMap</span>{<span class="w">UseTriangleInequality</span>} = <span class="n">0</span><span class="sc">;</span>
+1144     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1145       <span class="i">$ComplexityParametersMap</span>{<span class="w">UseTriangleInequality</span>} = <span class="n">1</span><span class="sc">;</span>
+1146     <span class="s">}</span>
+1147   <span class="s">}</span>
+1148 
+1149   <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+1150     <span class="k">if</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">AtomIdentifierType</span>} !~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+1151       <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified for AtomIdentifierType, $ComplexityParametersMap{AtomIdentifierType}, in option \&quot;--MolecularComplexity\&quot; is not valid for MolecularComplexityType, $MolecularComplexityType: Allowed value: FunctionalClassAtomTypes...\n&quot;</span><span class="sc">;</span>
+1152     <span class="s">}</span>
+1153   <span class="s">}</span>
+1154 
+1155   <span class="c"># Set up approprate paremeter names for specified molecular complexity...</span>
+1156 
+1157   <span class="i">@ParameterNames</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1158   <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="q">&#39;MolecularComplexityType&#39;</span><span class="sc">;</span>
+1159 
+1160   <span class="i">@AtomIdentifierTypeParameters</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1161   <span class="k">push</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span><span class="sc">;</span>
+1162   <span class="k">if</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+1163     <span class="k">push</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="cm">,</span> <span class="q">&#39;AtomicInvariantsToUse&#39;</span><span class="sc">;</span>
+1164   <span class="s">}</span>
+1165   <span class="k">elsif</span> <span class="s">(</span><span class="i">$ComplexityParametersMap</span>{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+1166     <span class="k">push</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="cm">,</span> <span class="q">&#39;FunctionalClassesToUse&#39;</span><span class="sc">;</span>
+1167   <span class="s">}</span>
+1168 
+1169   <span class="j">COMPLEXITYTYPE:</span> <span class="s">{</span>
+1170     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^AtomTypesFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1171       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1172       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1173     <span class="s">}</span>
+1174     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1175       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1176       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;NeighborhoodRadius&#39;</span><span class="cm">,</span> <span class="q">&#39;NormalizationMethodology&#39;</span><span class="s">)</span><span class="sc">;</span>
+1177       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1178     <span class="s">}</span>
+1179     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^MACCSKeys$/i</span><span class="s">)</span> <span class="s">{</span>
+1180       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="q">&#39;MACCSKeysSize&#39;</span><span class="sc">;</span>
+1181       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1182     <span class="s">}</span>
+1183     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^PathLengthFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1184       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1185       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;MinPathLength&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxPathLength&#39;</span><span class="cm">,</span> <span class="q">&#39;UseBondSymbols&#39;</span><span class="s">)</span><span class="sc">;</span>
+1186       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1187     <span class="s">}</span>
+1188     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1189       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1190       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;MinDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span><span class="s">)</span><span class="sc">;</span>
+1191       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1192     <span class="s">}</span>
+1193     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1194       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1195       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;MinDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;UseTriangleInequality&#39;</span><span class="s">)</span><span class="sc">;</span>
+1196       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1197     <span class="s">}</span>
+1198     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalAtomTorsionsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1199       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="i">@AtomIdentifierTypeParameters</span><span class="sc">;</span>
+1200       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1201     <span class="s">}</span>
+1202     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalPharmacophoreAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1203       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;AtomIdentifierType&#39;</span><span class="cm">,</span> <span class="q">&#39;FunctionalClassesToUse&#39;</span><span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;NormalizationMethodology&#39;</span><span class="s">)</span><span class="sc">;</span>
+1204       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1205     <span class="s">}</span>
+1206     <span class="k">if</span> <span class="s">(</span><span class="i">$MolecularComplexityType</span> =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1207       <span class="k">push</span> <span class="i">@ParameterNames</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;AtomIdentifierType&#39;</span><span class="cm">,</span> <span class="q">&#39;FunctionalClassesToUse&#39;</span><span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span><span class="cm">,</span> <span class="q">&#39;UseTriangleInequality&#39;</span><span class="cm">,</span> <span class="q">&#39;NormalizationMethodology&#39;</span><span class="cm">,</span> <span class="q">&#39;DistanceBinSize&#39;</span><span class="s">)</span><span class="sc">;</span>
+1208       <span class="k">last</span> <span class="j">COMPLEXITYTYPE</span><span class="sc">;</span>
+1209     <span class="s">}</span>
+1210     <span class="k">die</span> <span class="q">&quot;Error: The parameter value specified, $ParameterValue, for parameter name MolecularComplexityType using \&quot;--MolecularComplexity\&quot; is not valid.\n&quot;</span><span class="sc">;</span>
+1211   <span class="s">}</span>
+1212 
+1213   <span class="i">$OptionsInfo</span>{<span class="w">MolecularComplexity</span>} = <span class="i">$Options</span>{<span class="w">molecularcomplexity</span>}<span class="sc">;</span>
+1214 
+1215   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">MolecularComplexityParametersMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1216   <span class="k">for</span> <span class="i">$ParameterName</span> <span class="s">(</span><span class="i">@ParameterNames</span><span class="s">)</span> <span class="s">{</span>
+1217     <span class="i">$ParameterValue</span> = <span class="i">$ComplexityParametersMap</span>{<span class="i">$ParameterName</span>}<span class="sc">;</span>
+1218     <span class="i">$OptionsInfo</span>{<span class="w">MolecularComplexityParametersMap</span>}{<span class="i">$ParameterName</span>} = <span class="i">$ParameterValue</span><span class="sc">;</span>
+1219   <span class="s">}</span>
+1220 <span class="s">}</span>
+1221 
+1222 <span class="c"># Setup script usage  and retrieve command line arguments specified using various options...</span>
+<a name="SetupScriptUsage-"></a>1223 <span class="k">sub </span><span class="m">SetupScriptUsage</span> <span class="s">{</span>
+1224 
+1225   <span class="c"># Retrieve all the options...</span>
+1226   <span class="i">%Options</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1227 
+1228   <span class="i">$Options</span>{<span class="w">aromaticitymodel</span>} = <span class="q">&#39;MayaChemToolsAromaticityModel&#39;</span><span class="sc">;</span>
+1229 
+1230   <span class="i">$Options</span>{<span class="w">compoundidmode</span>} = <span class="q">&#39;LabelPrefix&#39;</span><span class="sc">;</span>
+1231   <span class="i">$Options</span>{<span class="w">compoundidlabel</span>} = <span class="q">&#39;CompoundID&#39;</span><span class="sc">;</span>
+1232   <span class="i">$Options</span>{<span class="w">datafieldsmode</span>} = <span class="q">&#39;CompoundID&#39;</span><span class="sc">;</span>
+1233 
+1234   <span class="i">$Options</span>{<span class="w">filter</span>} = <span class="q">&#39;Yes&#39;</span><span class="sc">;</span>
+1235 
+1236   <span class="i">$Options</span>{<span class="w">hydrogenbonds</span>} = <span class="q">&#39;HBondsType2&#39;</span><span class="sc">;</span>
+1237 
+1238   <span class="i">$Options</span>{<span class="w">keeplargestcomponent</span>} = <span class="q">&#39;Yes&#39;</span><span class="sc">;</span>
+1239 
+1240   <span class="c"># Default mode values are set later...</span>
+1241   <span class="i">$Options</span>{<span class="w">mode</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1242 
+1243   <span class="c"># Default moelcular complexity values are set later...</span>
+1244   <span class="i">$Options</span>{<span class="w">molecularcomplexity</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1245 
+1246   <span class="c"># Default precision values are set later...</span>
+1247   <span class="i">$Options</span>{<span class="w">precision</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1248 
+1249   <span class="i">$Options</span>{<span class="w">output</span>} = <span class="q">&#39;text&#39;</span><span class="sc">;</span>
+1250   <span class="i">$Options</span>{<span class="w">outdelim</span>} = <span class="q">&#39;comma&#39;</span><span class="sc">;</span>
+1251   <span class="i">$Options</span>{<span class="w">quote</span>} = <span class="q">&#39;yes&#39;</span><span class="sc">;</span>
+1252 
+1253   <span class="c"># Default rotatable bond parameter values are set later...</span>
+1254   <span class="i">$Options</span>{<span class="w">rotatablebonds</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1255 
+1256   <span class="i">$Options</span>{<span class="w">ruleof3violations</span>} = <span class="q">&#39;No&#39;</span><span class="sc">;</span>
+1257   <span class="i">$Options</span>{<span class="w">ruleof5violations</span>} = <span class="q">&#39;No&#39;</span><span class="sc">;</span>
+1258 
+1259   <span class="c"># Default TPSA paramater values are set later...</span>
+1260   <span class="i">$Options</span>{<span class="w">tpsa</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1261 
+1262   <span class="k">if</span> <span class="s">(</span>!<span class="i">GetOptions</span><span class="s">(</span>\<span class="i">%Options</span><span class="cm">,</span> <span class="q">&quot;aromaticitymodel=s&quot;</span><span class="cm">,</span> <span class="q">&quot;compoundid=s&quot;</span><span class="cm">,</span> <span class="q">&quot;compoundidlabel=s&quot;</span><span class="cm">,</span> <span class="q">&quot;compoundidmode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;datafields=s&quot;</span><span class="cm">,</span> <span class="q">&quot;datafieldsmode|d=s&quot;</span><span class="cm">,</span> <span class="q">&quot;filter|f=s&quot;</span><span class="cm">,</span> <span class="q">&quot;help|h&quot;</span><span class="cm">,</span> <span class="q">&quot;hydrogenbonds=s&quot;</span><span class="cm">,</span> <span class="q">&quot;keeplargestcomponent|k=s&quot;</span><span class="cm">,</span> <span class="q">&quot;mode|m=s&quot;</span><span class="cm">,</span> <span class="q">&quot;molecularcomplexity=s&quot;</span><span class="cm">,</span> <span class="q">&quot;outdelim=s&quot;</span><span class="cm">,</span> <span class="q">&quot;output=s&quot;</span><span class="cm">,</span> <span class="q">&quot;overwrite|o&quot;</span><span class="cm">,</span> <span class="q">&quot;precision=s&quot;</span><span class="cm">,</span> <span class="q">&quot;rotatablebonds=s&quot;</span><span class="cm">,</span> <span class="q">&quot;ruleof3violations=s&quot;</span><span class="cm">,</span> <span class="q">&quot;ruleof5violations=s&quot;</span><span class="cm">,</span> <span class="q">&quot;quote|q=s&quot;</span><span class="cm">,</span> <span class="q">&quot;root|r=s&quot;</span><span class="cm">,</span> <span class="q">&quot;tpsa=s&quot;</span><span class="cm">,</span> <span class="q">&quot;workingdir|w=s&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1263     <span class="k">die</span> <span class="q">&quot;\nTo get a list of valid options and their values, use \&quot;$ScriptName -h\&quot; or\n\&quot;perl -S $ScriptName -h\&quot; command and try again...\n&quot;</span><span class="sc">;</span>
+1264   <span class="s">}</span>
+1265   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+1266     <span class="k">if</span> <span class="s">(</span>! <span class="k">-d</span> <span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+1267       <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{workingdir}, for option \&quot;-w --workingdir\&quot; is not a directory name.\n&quot;</span><span class="sc">;</span>
+1268     <span class="s">}</span>
+1269     <span class="k">chdir</span> <span class="i">$Options</span>{<span class="w">workingdir</span>} <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t chdir $Options{workingdir}: $! \n&quot;</span><span class="sc">;</span>
+1270   <span class="s">}</span>
+1271   <span class="k">if</span> <span class="s">(</span>!<span class="i">Molecule::IsSupportedAromaticityModel</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">aromaticitymodel</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1272     <span class="k">my</span><span class="s">(</span><span class="i">@SupportedModels</span><span class="s">)</span> = <span class="i">Molecule::GetSupportedAromaticityModels</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1273     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{aromaticitymodel}, for option \&quot;--AromaticityModel\&quot; is not valid. Supported aromaticity models in current release of MayaChemTools: @SupportedModels\n&quot;</span><span class="sc">;</span>
+1274   <span class="s">}</span>
+1275   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">compoundidmode</span>} !~ <span class="q">/^(DataField|MolName|LabelPrefix|MolNameOrLabelPrefix)$/i</span><span class="s">)</span> <span class="s">{</span>
+1276     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{compoundidmode}, for option \&quot;--CompoundIDMode\&quot; is not valid. Allowed values: DataField, MolName, LabelPrefix or MolNameOrLabelPrefix\n&quot;</span><span class="sc">;</span>
+1277   <span class="s">}</span>
+1278   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">datafieldsmode</span>} !~ <span class="q">/^(All|Common|Specify|CompoundID)$/i</span><span class="s">)</span> <span class="s">{</span>
+1279     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{datafieldsmode}, for option \&quot;-d, --DataFieldsMode\&quot; is not valid. Allowed values: All, Common, Specify or CompoundID\n&quot;</span><span class="sc">;</span>
+1280   <span class="s">}</span>
+1281   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">filter</span>} !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1282     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{filter}, for option \&quot;-f, --Filter\&quot; is not valid. Allowed values: Yes or No\n&quot;</span><span class="sc">;</span>
+1283   <span class="s">}</span>
+1284   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">hydrogenbonds</span>} !~ <span class="q">/^(HBondsType1|HydrogenBondsType1|HBondsType2|HydrogenBondsType2)$/i</span><span class="s">)</span> <span class="s">{</span>
+1285     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{hydrogenbonds}, for option \&quot;--HydrogenBonds\&quot; is not valid. Allowed values: HBondsType1, HydrogenBondsType1, HBondsType2, HydrogenBondsType2\n&quot;</span><span class="sc">;</span>
+1286   <span class="s">}</span>
+1287   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">keeplargestcomponent</span>} !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1288     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{keeplargestcomponent}, for option \&quot;-k, --KeepLargestComponent\&quot; is not valid. Allowed values: Yes or No\n&quot;</span><span class="sc">;</span>
+1289   <span class="s">}</span>
+1290   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">output</span>} !~ <span class="q">/^(SD|text|both)$/i</span><span class="s">)</span> <span class="s">{</span>
+1291     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{output}, for option \&quot;--output\&quot; is not valid. Allowed values: SD, text, or both\n&quot;</span><span class="sc">;</span>
+1292   <span class="s">}</span>
+1293   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">outdelim</span>} !~ <span class="q">/^(comma|semicolon|tab)$/i</span><span class="s">)</span> <span class="s">{</span>
+1294     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{outdelim}, for option \&quot;--outdelim\&quot; is not valid. Allowed values: comma, tab, or semicolon\n&quot;</span><span class="sc">;</span>
+1295   <span class="s">}</span>
+1296   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">quote</span>} !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1297     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{quote}, for option \&quot;-q --quote\&quot; is not valid. Allowed values: Yes or No\n&quot;</span><span class="sc">;</span>
+1298   <span class="s">}</span>
+1299   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof3violations</span>} !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1300     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{ruleof3violations}, for option \&quot;--RuleOf3Violations\&quot; is not valid. Allowed values: Yes or No\n&quot;</span><span class="sc">;</span>
+1301   <span class="s">}</span>
+1302   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">ruleof5violations</span>} !~ <span class="q">/^(Yes|No)$/i</span><span class="s">)</span> <span class="s">{</span>
+1303     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{ruleof5violations}, for option \&quot;--RuleOf5Violations\&quot; is not valid. Allowed values: Yes or No\n&quot;</span><span class="sc">;</span>
+1304   <span class="s">}</span>
+1305 <span class="s">}</span>
+1306 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

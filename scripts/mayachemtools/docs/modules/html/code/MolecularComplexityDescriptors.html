@@ -1,0 +1,1105 @@
+<html>
+<head>
+<title>MayaChemTools:Code:MolecularDescriptors/MolecularComplexityDescriptors.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-MolecularDescriptors::MolecularComplexityDescriptors-"></a>   1 <span class="k">package </span><span class="i">MolecularDescriptors::MolecularComplexityDescriptors</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: MolecularComplexityDescriptors.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Scalar::Util</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">TextUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">MathUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">Atom</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">Molecule</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">MolecularDescriptors::MolecularDescriptors</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">AtomTypes::AtomicInvariantsAtomTypes</span><span class="sc">;</span>
+  36 <span class="k">use</span> <span class="w">AtomTypes::FunctionalClassAtomTypes</span><span class="sc">;</span>
+  37 <span class="k">use</span> <span class="w">Fingerprints::AtomTypesFingerprints</span><span class="sc">;</span>
+  38 <span class="k">use</span> <span class="w">Fingerprints::ExtendedConnectivityFingerprints</span><span class="sc">;</span>
+  39 <span class="k">use</span> <span class="w">Fingerprints::MACCSKeys</span><span class="sc">;</span>
+  40 <span class="k">use</span> <span class="w">Fingerprints::PathLengthFingerprints</span><span class="sc">;</span>
+  41 <span class="k">use</span> <span class="w">Fingerprints::TopologicalAtomPairsFingerprints</span><span class="sc">;</span>
+  42 <span class="k">use</span> <span class="w">Fingerprints::TopologicalAtomTripletsFingerprints</span><span class="sc">;</span>
+  43 <span class="k">use</span> <span class="w">Fingerprints::TopologicalAtomTorsionsFingerprints</span><span class="sc">;</span>
+  44 <span class="k">use</span> <span class="w">Fingerprints::TopologicalPharmacophoreAtomPairsFingerprints</span><span class="sc">;</span>
+  45 <span class="k">use</span> <span class="w">Fingerprints::TopologicalPharmacophoreAtomTripletsFingerprints</span><span class="sc">;</span>
+  46 
+  47 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  48 
+  49 <span class="i">@ISA</span> = <span class="q">qw(MolecularDescriptors::MolecularDescriptors Exporter)</span><span class="sc">;</span>
+  50 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  51 <span class="i">@EXPORT_OK</span> = <span class="q">qw(GetDescriptorNames GetMolecularComplexityTypeAbbreviation)</span><span class="sc">;</span>
+  52 
+  53 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  54 
+  55 <span class="c"># Setup class variables...</span>
+  56 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="cm">,</span> <span class="i">@DescriptorNames</span><span class="s">)</span><span class="sc">;</span>
+  57 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  58 
+  59 <span class="c"># Overload Perl functions...</span>
+  60 <span class="k">use</span> <span class="w">overload</span> <span class="q">&#39;&quot;&quot;&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;StringifyMolecularComplexityDescriptors&#39;</span><span class="sc">;</span>
+  61 
+  62 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  63 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  64   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  65 
+  66   <span class="c"># Initialize object...</span>
+  67   <span class="k">my</span> <span class="i">$This</span> = <span class="i">$Class</span><span class="i">-&gt;SUPER::new</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  68   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  69   <span class="i">$This</span><span class="i">-&gt;_InitializeMolecularComplexityDescriptors</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  70 
+  71   <span class="i">$This</span><span class="i">-&gt;_InitializeMolecularComplexityDescriptorsProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+  72 
+  73   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  74 <span class="s">}</span>
+  75 
+  76 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a>  77 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+  78   <span class="c">#Class name...</span>
+  79   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+  80 
+  81   <span class="c"># Descriptor names...</span>
+  82   <span class="i">@DescriptorNames</span> = <span class="s">(</span><span class="q">&#39;MolecularComplexity&#39;</span><span class="s">)</span><span class="sc">;</span>
+  83 
+  84 <span class="s">}</span>
+  85 
+  86 <span class="c"># Get descriptor names as an array.</span>
+  87 <span class="c">#</span>
+  88 <span class="c"># This functionality can be either invoked as a class function or an</span>
+  89 <span class="c"># object method.</span>
+  90 <span class="c">#</span>
+<a name="GetDescriptorNames-"></a>  91 <span class="k">sub </span><span class="m">GetDescriptorNames</span> <span class="s">{</span>
+  92   <span class="k">return</span> <span class="i">@DescriptorNames</span><span class="sc">;</span>
+  93 <span class="s">}</span>
+  94 
+  95 <span class="c"># Initialize object data...</span>
+  96 <span class="c">#</span>
+<a name="_InitializeMolecularComplexityDescriptors-"></a>  97 <span class="k">sub </span><span class="m">_InitializeMolecularComplexityDescriptors</span> <span class="s">{</span>
+  98   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  99 
+ 100   <span class="c"># Type of MolecularDescriptor...</span>
+ 101   <span class="i">$This</span>-&gt;{<span class="w">Type</span>} = <span class="q">&#39;MolecularComplexity&#39;</span><span class="sc">;</span>
+ 102 
+ 103   <span class="c">#</span>
+ 104   <span class="c"># The current release of MayaChemTools supports calculation of molecular complexity</span>
+ 105   <span class="c"># corresponding to number of bits-set or unique keys [ Ref 117-119 ] in molecular</span>
+ 106   <span class="c"># fingerprints. The following types of fingerprints based molecular complexity measures</span>
+ 107   <span class="c"># are supported:</span>
+ 108   <span class="c">#</span>
+ 109   <span class="c"># AtomTypesFingerprints</span>
+ 110   <span class="c"># ExtendedConnectivityFingerprints</span>
+ 111   <span class="c"># MACCSKeys</span>
+ 112   <span class="c"># PathLengthFingerprints</span>
+ 113   <span class="c"># TopologicalAtomPairsFingerprints</span>
+ 114   <span class="c"># TopologicalAtomTripletsFingerprints</span>
+ 115   <span class="c"># TopologicalAtomTorsionsFingerprints</span>
+ 116   <span class="c"># TopologicalPharmacophoreAtomPairsFingerprints</span>
+ 117   <span class="c"># TopologicalPharmacophoreAtomTripletsFingerprints</span>
+ 118   <span class="c">#</span>
+ 119   <span class="c"># Default: MACCSKeys</span>
+ 120   <span class="c">#</span>
+ 121   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 122 
+ 123   <span class="c"># Atom types to use for generating fingerprints...</span>
+ 124   <span class="c">#</span>
+ 125   <span class="c"># Currently supported values are: AtomicInvariantsAtomTypes, DREIDINGAtomTypes,</span>
+ 126   <span class="c"># EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,</span>
+ 127   <span class="c"># SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</span>
+ 128   <span class="c">#</span>
+ 129   <span class="c"># Notes:</span>
+ 130   <span class="c">#   . AtomicInvariantsAtomTypes for all supported MolecularComplexityType except for</span>
+ 131   <span class="c">#     TopologicalPharmacophoreAtomPairsFingerprints and TopologicalPharmacophoreAtomTripletsFingerprints</span>
+ 132   <span class="c">#   . This value is not used for MACCSKeys</span>
+ 133   <span class="c">#   . FunctionalClassAtomTypes is the only valid value during topological pharmacophore fingerprints.</span>
+ 134   <span class="c">#</span>
+ 135   <span class="c">#   . Default values for AtomicInvariantsToUse and FunctionalClassesToUse are set appropriately</span>
+ 136   <span class="c">#     for different types of fingerprints as shown below.</span>
+ 137   <span class="c">#</span>
+ 138   <span class="c">#     MolecularComplexityType              AtomicInvariantsToUse</span>
+ 139   <span class="c">#</span>
+ 140   <span class="c">#     AtomTypesFingerprints                AS, X, BO, H, FC</span>
+ 141   <span class="c">#     TopologicalAtomPairsFingerprints     AS, X, BO, H, FC</span>
+ 142   <span class="c">#     TopologicalAtomTripletsFingerprints  AS, X, BO, H, FC</span>
+ 143   <span class="c">#     TopologicalAtomTorsionsFingerprints  AS, X, BO, H, FC</span>
+ 144   <span class="c">#</span>
+ 145   <span class="c">#     ExtendedConnectivityFingerprints     AS, X, BO, H, FC, MN</span>
+ 146   <span class="c">#     PathLengthFingerprints               AS</span>
+ 147   <span class="c">#</span>
+ 148   <span class="c">#     Default for FunctionalClassesToUse for all fingerprints is set to:</span>
+ 149   <span class="c">#</span>
+ 150   <span class="c">#     HBD, HBA, PI, NI, Ar, Hal</span>
+ 151   <span class="c">#</span>
+ 152   <span class="c">#     except for the following two MolecularComplexityType fingerprints:</span>
+ 153   <span class="c">#</span>
+ 154   <span class="c">#     TopologicalPharmacophoreAtomPairsFingerprints     HBD, HBA, PI, NI, H</span>
+ 155   <span class="c">#     TopologicalPharmacophoreAtomTripletsFingerprints  HBD, HBA, PI, NI, H, Ar</span>
+ 156   <span class="c">#</span>
+ 157   <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 158 
+ 159   <span class="c"># Size of MACCS key set: 166 or 322...</span>
+ 160   <span class="c">#</span>
+ 161   <span class="i">$This</span>-&gt;{<span class="w">MACCSKeysSize</span>} = <span class="n">166</span><span class="sc">;</span>
+ 162 
+ 163   <span class="c"># Atomic neighborhoods radius for extended connectivity fingerprints...</span>
+ 164   <span class="i">$This</span>-&gt;{<span class="w">NeighborhoodRadius</span>} = <span class="n">2</span><span class="sc">;</span>
+ 165 
+ 166   <span class="c"># Minimum and maximum path lengths to use for path length fingerprints...</span>
+ 167   <span class="i">$This</span>-&gt;{<span class="w">MinPathLength</span>} = <span class="n">1</span><span class="sc">;</span>
+ 168   <span class="i">$This</span>-&gt;{<span class="w">MaxPathLength</span>} = <span class="n">8</span><span class="sc">;</span>
+ 169 
+ 170   <span class="c"># By default bond symbols are included in atom path strings used to generate path length</span>
+ 171   <span class="c"># fingerprints... ...</span>
+ 172   <span class="i">$This</span>-&gt;{<span class="w">UseBondSymbols</span>} = <span class="n">1</span><span class="sc">;</span>
+ 173 
+ 174   <span class="c"># Minimum and maximum bond distance between atom pairs during topological</span>
+ 175   <span class="c"># atom pairs/triplets fingerprints...</span>
+ 176   <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>} = <span class="n">1</span><span class="sc">;</span>
+ 177   <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>} = <span class="n">10</span><span class="sc">;</span>
+ 178 
+ 179   <span class="c"># Determines whether to apply triangle inequality to distance triplets...</span>
+ 180   <span class="c">#</span>
+ 181   <span class="c"># Default for TopologicalAtomTripletsFingerprints: 0</span>
+ 182   <span class="c"># Default for TopologicalPharmacophoreAtomTripletsFingerprints: 1</span>
+ 183   <span class="c">#</span>
+ 184   <span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 185 
+ 186   <span class="c"># Distance bin size used for binning distances during generation of</span>
+ 187   <span class="c"># topological pharmacophore atom triplets fingerprints...</span>
+ 188   <span class="c">#</span>
+ 189   <span class="i">$This</span>-&gt;{<span class="w">DistanceBinSize</span>} = <span class="n">2</span><span class="sc">;</span>
+ 190 
+ 191   <span class="c"># Normalization methodology to use for scaling the number of bits-set or unique keys</span>
+ 192   <span class="c"># for:</span>
+ 193   <span class="c">#</span>
+ 194   <span class="c"># ExtendedConnectivityFingerprints</span>
+ 195   <span class="c"># TopologicalPharmacophoreAtomPairsFingerprints</span>
+ 196   <span class="c"># TopologicalPharmacophoreAtomTripletsFingerprints</span>
+ 197   <span class="c">#</span>
+ 198   <span class="c"># This option is gnored for all other types of fingerprints.</span>
+ 199   <span class="c">#</span>
+ 200   <span class="c"># Possible values during extended connectivity fingerprints: None or ByHeavyAtomsCount. Default:</span>
+ 201   <span class="c"># None.</span>
+ 202   <span class="c">#</span>
+ 203   <span class="c"># Possible values during topological pharmacophore atom pairs and tripletes fingerprints: None,</span>
+ 204   <span class="c"># or ByPossibleKeysCount. Default: None. ByPossibleKeysCount corresponds to total number of</span>
+ 205   <span class="c"># possible topological pharmacophore atom pairs or triplets in a molecule.</span>
+ 206   <span class="c">#</span>
+ 207   <span class="c">#</span>
+ 208   <span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} = <span class="q">&#39;None&#39;</span><span class="sc">;</span>
+ 209 
+ 210   <span class="c"># Intialize descriptor names and values...</span>
+ 211   <span class="i">$This</span><span class="i">-&gt;_InitializeDescriptorNamesAndValues</span><span class="s">(</span><span class="i">@DescriptorNames</span><span class="s">)</span><span class="sc">;</span>
+ 212 
+ 213   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 214 <span class="s">}</span>
+ 215 
+ 216 <span class="c"># Initialize object properties...</span>
+ 217 <span class="c">#</span>
+<a name="_InitializeMolecularComplexityDescriptorsProperties-"></a> 218 <span class="k">sub </span><span class="m">_InitializeMolecularComplexityDescriptorsProperties</span> <span class="s">{</span>
+ 219   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 220 
+ 221   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span><span class="sc">;</span>
+ 222   <span class="k">while</span> <span class="s">(</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">each</span>  <span class="i">%NamesAndValues</span><span class="s">)</span> <span class="s">{</span>
+ 223     <span class="i">$MethodName</span> = <span class="q">&quot;Set${Name}&quot;</span><span class="sc">;</span>
+ 224     <span class="i">$This</span><span class="i">-&gt;$MethodName</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 225   <span class="s">}</span>
+ 226 
+ 227   <span class="c"># Make sure MolecularComplexityType is set...</span>
+ 228   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">MolecularComplexityType</span>}<span class="s">)</span> <span class="s">{</span>
+ 229     <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} = <span class="q">&#39;MACCSKeys&#39;</span><span class="sc">;</span>
+ 230   <span class="s">}</span>
+ 231 
+ 232   <span class="c"># Make sure AtomIdentifierType is set...</span>
+ 233   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} !~ <span class="q">/^MACCSKeys$/i</span><span class="s">)</span> <span class="s">{</span>
+ 234     <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">AtomIdentifierType</span>}<span class="s">)</span> <span class="s">{</span>
+ 235       <span class="i">$This</span><span class="i">-&gt;_InitializeAtomIdentifierType</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 236     <span class="s">}</span>
+ 237   <span class="s">}</span>
+ 238 
+ 239   <span class="c"># Make sure UseTriangleInequality is set...</span>
+ 240   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(TopologicalAtomTripletsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 241     <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">UseTriangleInequality</span>}<span class="s">)</span> <span class="s">{</span>
+ 242       <span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>} =  <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 243     <span class="s">}</span>
+ 244   <span class="s">}</span>
+ 245 
+ 246   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 247 <span class="s">}</span>
+ 248 
+ 249 <span class="c"># Initialize atom identifer type...</span>
+ 250 <span class="c">#</span>
+<a name="_InitializeAtomIdentifierType-"></a> 251 <span class="k">sub </span><span class="m">_InitializeAtomIdentifierType</span> <span class="s">{</span>
+ 252   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 253   <span class="k">my</span><span class="s">(</span><span class="i">$AtomIdentifierType</span><span class="s">)</span><span class="sc">;</span>
+ 254 
+ 255   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^MACCSKeys$/i</span><span class="s">)</span> <span class="s">{</span>
+ 256     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 257   <span class="s">}</span>
+ 258 
+ 259   <span class="i">$AtomIdentifierType</span> = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> ? <span class="q">&#39;FunctionalClassAtomTypes&#39;</span> <span class="co">:</span> <span class="q">&#39;AtomicInvariantsAtomTypes&#39;</span><span class="sc">;</span>
+ 260 
+ 261   <span class="i">$This</span><span class="i">-&gt;SetAtomIdentifierType</span><span class="s">(</span><span class="i">$AtomIdentifierType</span><span class="s">)</span><span class="sc">;</span>
+ 262 
+ 263   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 264 <span class="s">}</span>
+ 265 
+ 266 <span class="c"># Get abbreviation for specified molecular complexity type or using descriptors object...</span>
+ 267 <span class="c">#</span>
+ 268 <span class="c"># This functionality can be either invoked as a class function or an</span>
+ 269 <span class="c"># object method.</span>
+ 270 <span class="c">#</span>
+<a name="GetMolecularComplexityTypeAbbreviation-"></a> 271 <span class="k">sub </span><span class="m">GetMolecularComplexityTypeAbbreviation</span> <span class="s">{</span>
+ 272   <span class="k">my</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 273   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$ComplexityType</span><span class="cm">,</span> <span class="i">%ComplexityTypeToAbbrev</span><span class="s">)</span><span class="sc">;</span>
+ 274 
+ 275   <span class="k">if</span> <span class="s">(</span><span class="i">_IsMolecularComplexityDescriptors</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 276     <span class="i">$This</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+ 277     <span class="i">$ComplexityType</span> = <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>}<span class="sc">;</span>
+ 278   <span class="s">}</span>
+ 279   <span class="k">else</span> <span class="s">{</span>
+ 280     <span class="i">$ComplexityType</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+ 281   <span class="s">}</span>
+ 282 
+ 283   <span class="i">%ComplexityTypeToAbbrev</span> = <span class="s">(</span><span class="k">lc</span> <span class="q">&#39;AtomTypesFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;ATFP&#39;</span><span class="cm">,</span> <span class="k">lc</span> <span class="q">&#39;ExtendedConnectivityFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;ECFP&#39;</span><span class="cm">,</span>
+ 284                              <span class="k">lc</span> <span class="q">&#39;MACCSKeys&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;MACCSKeys&#39;</span><span class="cm">,</span> <span class="k">lc</span> <span class="q">&#39;PathLengthFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;PLFP&#39;</span><span class="cm">,</span>
+ 285                              <span class="k">lc</span> <span class="q">&#39;TopologicalAtomPairsFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TAPFP&#39;</span><span class="cm">,</span> <span class="k">lc</span> <span class="q">&#39;TopologicalAtomTripletsFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TATFP&#39;</span><span class="cm">,</span>
+ 286                              <span class="k">lc</span> <span class="q">&#39;TopologicalAtomTorsionsFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TATFP&#39;</span><span class="cm">,</span>
+ 287                              <span class="k">lc</span> <span class="q">&#39;TopologicalPharmacophoreAtomPairsFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TPAPFP&#39;</span><span class="cm">,</span>
+ 288                              <span class="k">lc</span> <span class="q">&#39;TopologicalPharmacophoreAtomTripletsFingerprints&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;TPATFP&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 289 
+ 290   <span class="k">return</span> <span class="k">exists</span> <span class="i">$ComplexityTypeToAbbrev</span>{<span class="k">lc</span> <span class="i">$ComplexityType</span>} ? <span class="i">$ComplexityTypeToAbbrev</span>{<span class="k">lc</span> <span class="i">$ComplexityType</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 291 <span class="s">}</span>
+ 292 
+ 293 <span class="c"># Set MACCS key set size...</span>
+ 294 <span class="c">#</span>
+<a name="SetMACCSKeysSize-"></a> 295 <span class="k">sub </span><span class="m">SetMACCSKeysSize</span> <span class="s">{</span>
+ 296   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 297 
+ 298   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 299     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMACCSKeysSize: Size value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 300   <span class="s">}</span>
+ 301   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(166|322)/i</span><span class="s">)</span> <span class="s">{</span>
+ 302     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMACCSKeysSize: The current release of MayaChemTools doesn&#39;t support MDL MACCS $Value keys...&quot;</span><span class="sc">;</span>
+ 303   <span class="s">}</span>
+ 304   <span class="i">$This</span>-&gt;{<span class="w">MACCSKeysSize</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 305 
+ 306   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 307 <span class="s">}</span>
+ 308 
+ 309 <span class="c"># Set minimum path length...</span>
+ 310 <span class="c">#</span>
+<a name="SetMinPathLength-"></a> 311 <span class="k">sub </span><span class="m">SetMinPathLength</span> <span class="s">{</span>
+ 312   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 313 
+ 314   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 315     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMinPathLength: MinPathLength value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 316   <span class="s">}</span>
+ 317   <span class="i">$This</span>-&gt;{<span class="w">MinPathLength</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 318 
+ 319   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 320 <span class="s">}</span>
+ 321 
+ 322 <span class="c"># Set maximum path length...</span>
+ 323 <span class="c">#</span>
+<a name="SetMaxPathLength-"></a> 324 <span class="k">sub </span><span class="m">SetMaxPathLength</span> <span class="s">{</span>
+ 325   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 326 
+ 327   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 328     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMaxPathLength: MaxPathLength value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 329   <span class="s">}</span>
+ 330   <span class="i">$This</span>-&gt;{<span class="w">MaxPathLength</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 331 
+ 332   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 333 <span class="s">}</span>
+ 334 
+ 335 <span class="c"># Set minimum  bond distance between atom pairs during topological and topological</span>
+ 336 <span class="c"># pharmacophore atom pairs/triplets fingerprints...</span>
+ 337 <span class="c">#</span>
+<a name="SetMinDistance-"></a> 338 <span class="k">sub </span><span class="m">SetMinDistance</span> <span class="s">{</span>
+ 339   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 340 
+ 341   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 342     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMinDistance: MinDistance value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 343   <span class="s">}</span>
+ 344   <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 345 
+ 346   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 347 <span class="s">}</span>
+ 348 
+ 349 <span class="c"># Set maximum  bond distance between atom pairs during topological and topological</span>
+ 350 <span class="c"># pharmacophore atom pairs/triplets fingerprints...</span>
+ 351 <span class="c">#</span>
+<a name="SetMaxDistance-"></a> 352 <span class="k">sub </span><span class="m">SetMaxDistance</span> <span class="s">{</span>
+ 353   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 354 
+ 355   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 356     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMaxDistance: MaxDistance value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 357   <span class="s">}</span>
+ 358   <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 359 
+ 360   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 361 <span class="s">}</span>
+ 362 
+ 363 <span class="c"># Set atom neighborhood radius...</span>
+ 364 <span class="c">#</span>
+<a name="SetNeighborhoodRadius-"></a> 365 <span class="k">sub </span><span class="m">SetNeighborhoodRadius</span> <span class="s">{</span>
+ 366   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 367 
+ 368   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 369     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNeighborhoodRadius: NeighborhoodRadius value, $Value, is not valid:  It must be an  integer...&quot;</span><span class="sc">;</span>
+ 370   <span class="s">}</span>
+ 371 
+ 372   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> &lt; <span class="n">0</span> <span class="s">)</span> <span class="s">{</span>
+ 373     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNeighborhoodRadius: NeighborhoodRadius value, $Value, is not valid:  It must be &gt;= 0...&quot;</span><span class="sc">;</span>
+ 374   <span class="s">}</span>
+ 375   <span class="i">$This</span>-&gt;{<span class="w">NeighborhoodRadius</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 376 
+ 377   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 378 <span class="s">}</span>
+ 379 
+ 380 <span class="c"># Set molecular complexity type...</span>
+ 381 <span class="c">#</span>
+<a name="SetMolecularComplexityType-"></a> 382 <span class="k">sub </span><span class="m">SetMolecularComplexityType</span> <span class="s">{</span>
+ 383   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 384 
+ 385   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(AtomTypesFingerprints|ExtendedConnectivityFingerprints|MACCSKeys|PathLengthFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints|TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 386     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetMolecularComplexityType: MolecularComplexityType value, $Value, is not valid. Supported values: AtomTypesFingerprints, ExtendedConnectivityFingerprints, MACCSKeys, PathLengthFingerprints, TopologicalAtomPairsFingerprints, TopologicalAtomTripletsFingerprints, TopologicalAtomTorsionsFingerprints, TopologicalPharmacophoreAtomPairsFingerprints, or TopologicalPharmacophoreAtomTripletsFingerprints...&quot;</span><span class="sc">;</span>
+ 387   <span class="s">}</span>
+ 388 
+ 389   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 390 
+ 391   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 392 <span class="s">}</span>
+ 393 
+ 394 <span class="c"># Set distance bin size for binning pharmacophore atom pair distances in atom triplets...</span>
+ 395 <span class="c">#</span>
+<a name="SetDistanceBinSize-"></a> 396 <span class="k">sub </span><span class="m">SetDistanceBinSize</span> <span class="s">{</span>
+ 397   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 398 
+ 399   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 400     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetDistanceBinSize: DistanceBinSize value, $Value, is not valid:  It must be a positive integer...&quot;</span><span class="sc">;</span>
+ 401   <span class="s">}</span>
+ 402   <span class="i">$This</span>-&gt;{<span class="w">DistanceBinSize</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 403 
+ 404   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 405 <span class="s">}</span>
+ 406 
+ 407 <span class="c"># Set normalization methodology to use for scaling the number of bits-set or unique keys</span>
+ 408 <span class="c"># in fingerprints...</span>
+ 409 <span class="c">#</span>
+<a name="SetNormalizationMethodology-"></a> 410 <span class="k">sub </span><span class="m">SetNormalizationMethodology</span> <span class="s">{</span>
+ 411   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 412 
+ 413   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(ByHeavyAtomsCount|ByPossibleKeysCount|None)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 414     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNormalizationMethodology: NormalizationMethodology value, $Value, is not valid. Supported values: None, ByHeavyAtomsCount or ByPossibleKeysCount...&quot;</span><span class="sc">;</span>
+ 415   <span class="s">}</span>
+ 416 
+ 417   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>}<span class="s">)</span> <span class="s">{</span>
+ 418     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} !~ <span class="q">/^(ExtendedConnectivityFingerprints|TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 419       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNormalizationMethodology: Normalization is not supported for MolecularComplexityType: $This-&gt;{MolecularComplexityType}. Valid MolecularComplexityType values: ExtendedConnectivityFingerprints, TopologicalPharmacophoreAtomPairsFingerprints, or TopologicalPharmacophoreAtomTripletsFingerprints...\n&quot;</span><span class="sc">;</span>
+ 420     <span class="s">}</span>
+ 421 
+ 422     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span> &amp;&amp; <span class="i">$Value</span> !~ <span class="q">/^(ByHeavyAtomsCount|None)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 423       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNormalizationMethodology: NormalizationMethodology value, $Value, is not valid for MolecularComplexityType: $This-&gt;{MolecularComplexityType}. Supported values: None or ByHeavyAtomsCount...&quot;</span><span class="sc">;</span>
+ 424     <span class="s">}</span>
+ 425 
+ 426     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span> &amp;&amp; <span class="i">$Value</span> !~ <span class="q">/^(ByPossibleKeysCount|None)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 427       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetNormalizationMethodology: NormalizationMethodology value, $Value, is not valid for MolecularComplexityType: $This-&gt;{MolecularComplexityType}. Supported values: None or ByPossibleKeysCount...&quot;</span><span class="sc">;</span>
+ 428     <span class="s">}</span>
+ 429   <span class="s">}</span>
+ 430 
+ 431   <span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 432 
+ 433   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 434 <span class="s">}</span>
+ 435 
+ 436 <span class="c"># Set intial atom identifier type..</span>
+ 437 <span class="c">#</span>
+<a name="SetAtomIdentifierType-"></a> 438 <span class="k">sub </span><span class="m">SetAtomIdentifierType</span> <span class="s">{</span>
+ 439   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$IdentifierType</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 440 
+ 441   <span class="k">if</span> <span class="s">(</span><span class="i">$IdentifierType</span> !~ <span class="q">/^(AtomicInvariantsAtomTypes|FunctionalClassAtomTypes|DREIDINGAtomTypes|EStateAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 442     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Specified value, $IdentifierType, for AtomIdentifierType is not vaild. Supported types in current release of MayaChemTools: AtomicInvariantsAtomTypes, FunctionalClassAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes and UFFAtomTypes.&quot;</span><span class="sc">;</span>
+ 443   <span class="s">}</span>
+ 444 
+ 445   <span class="c"># FunctionalClassAtomTypes is the only valid atom identifier type for pharmacophore fingerprints...</span>
+ 446   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 447     <span class="k">if</span> <span class="s">(</span><span class="i">$IdentifierType</span> !~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 448       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Specified value, $IdentifierType, for AtomIdentifierType is not vaild. Supported type for $This-&gt;{MolecularComplexityType} complexity type: FunctionalClassAtomTypes.&quot;</span><span class="sc">;</span>
+ 449     <span class="s">}</span>
+ 450   <span class="s">}</span>
+ 451 
+ 452   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span> <span class="s">{</span>
+ 453     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Can&#39;t change intial atom identifier type:  It&#39;s already set...&quot;</span><span class="sc">;</span>
+ 454   <span class="s">}</span>
+ 455 
+ 456   <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} = <span class="i">$IdentifierType</span><span class="sc">;</span>
+ 457 
+ 458   <span class="c"># Initialize identifier type information...</span>
+ 459   <span class="i">$This</span><span class="i">-&gt;_InitializeAtomIdentifierTypeInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 460 
+ 461   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 462 <span class="s">}</span>
+ 463 
+ 464 <span class="c"># Calculate molecular complexity [ Ref 117-119 ] of a molecule using its fingerprints.</span>
+ 465 <span class="c">#</span>
+ 466 <span class="c"># The current release of MayaChemTools supports calculation of molecular complexity</span>
+ 467 <span class="c"># corresponding to the number of bits-set or unique keys in molecular fingerprints. The</span>
+ 468 <span class="c"># following types of fingerprints based molecular complexity measures are supported:</span>
+ 469 <span class="c">#</span>
+ 470 <span class="c"># AtomTypesFingerprints</span>
+ 471 <span class="c"># ExtendedConnectivityFingerprints</span>
+ 472 <span class="c"># MACCSKeys</span>
+ 473 <span class="c"># PathLengthFingerprints</span>
+ 474 <span class="c"># TopologicalAtomPairsFingerprints</span>
+ 475 <span class="c"># TopologicalAtomTripletsFingerprints</span>
+ 476 <span class="c"># TopologicalAtomTorsionsFingerprints</span>
+ 477 <span class="c"># TopologicalPharmacophoreAtomPairsFingerprints</span>
+ 478 <span class="c"># TopologicalPharmacophoreAtomTripletsFingerprints</span>
+ 479 <span class="c">#</span>
+ 480 <span class="c"># After the molecular complexity value has been calculated, it can also be normalized by</span>
+ 481 <span class="c"># by scaling the number of bits-set or unique keys for following types of fingerprints:</span>
+ 482 <span class="c">#</span>
+ 483 <span class="c"># ExtendedConnectivityFingerprints</span>
+ 484 <span class="c"># TopologicalPharmacophoreAtomPairsFingerprints</span>
+ 485 <span class="c"># TopologicalPharmacophoreAtomTripletsFingerprints</span>
+ 486 <span class="c">#</span>
+ 487 <span class="c"># Two types of normalization methodologies are supported: by heavy atoms count for</span>
+ 488 <span class="c"># extended connectivity fingerprints; by possible keys count for topological pharmacophore</span>
+ 489 <span class="c"># atom pairs and triplets fingerprints.</span>
+ 490 <span class="c">#</span>
+<a name="GenerateDescriptors-"></a> 491 <span class="k">sub </span><span class="m">GenerateDescriptors</span> <span class="s">{</span>
+ 492   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 493 
+ 494   <span class="c"># Initialize descriptor values...</span>
+ 495   <span class="i">$This</span><span class="i">-&gt;_InitializeDescriptorValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 496 
+ 497   <span class="c"># Check availability of molecule...</span>
+ 498   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="s">)</span> <span class="s">{</span>
+ 499     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;GenerateDescriptors: $This-&gt;{Type} molecular descriptors generation didn&#39;t succeed: Molecule data is not available: Molecule object hasn&#39;t been set...&quot;</span><span class="sc">;</span>
+ 500     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 501   <span class="s">}</span>
+ 502 
+ 503   <span class="c"># Calculate descriptor values...</span>
+ 504   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_CalculateDescriptorValues</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 505     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;GenerateDescriptors: $This-&gt;{Type} molecular descriptors generation didn&#39;t succeed: Couldn&#39;t calculate MolecularComplexity values corresponding to assigned MolecularComplexity atom types...&quot;</span><span class="sc">;</span>
+ 506     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 507   <span class="s">}</span>
+ 508 
+ 509   <span class="c"># Set final descriptor values...</span>
+ 510   <span class="i">$This</span><span class="i">-&gt;_SetFinalDescriptorValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 511 
+ 512   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 513 <span class="s">}</span>
+ 514 
+ 515 <span class="c"># Calculate molecular complexity value...</span>
+ 516 <span class="c">#</span>
+<a name="_CalculateDescriptorValues-"></a> 517 <span class="k">sub </span><span class="m">_CalculateDescriptorValues</span> <span class="s">{</span>
+ 518   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 519   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span><span class="sc">;</span>
+ 520 
+ 521   <span class="c"># Setup fingerprints object and generate fingerprints...</span>
+ 522   <span class="i">$MethodName</span> = <span class="q">&quot;_Setup&quot;</span> . <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>}<span class="sc">;</span>
+ 523   <span class="i">$FingerprintsObject</span> = <span class="i">$This</span><span class="i">-&gt;$MethodName</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 524 
+ 525   <span class="i">$FingerprintsObject</span><span class="i">-&gt;GenerateFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 526 
+ 527   <span class="c"># Make sure atom types fingerprints generation is successful...</span>
+ 528   <span class="k">if</span> <span class="s">(</span>!<span class="i">$FingerprintsObject</span><span class="i">-&gt;IsFingerprintsGenerationSuccessful</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 529     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 530   <span class="s">}</span>
+ 531 
+ 532   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_CalculateMolecularComplexity</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 533     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 534   <span class="s">}</span>
+ 535 
+ 536   <span class="c"># Normalize molecular complexity...</span>
+ 537   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} !~ <span class="q">/^None$/i</span><span class="s">)</span> <span class="s">{</span>
+ 538     <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_NormalizeMolecularComplexity</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 539       <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 540     <span class="s">}</span>
+ 541   <span class="s">}</span>
+ 542 
+ 543   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 544 <span class="s">}</span>
+ 545 
+ 546 <span class="c"># Setup atom types fingerprints...</span>
+ 547 <span class="c">#</span>
+<a name="_SetupAtomTypesFingerprints-"></a> 548 <span class="k">sub </span><span class="m">_SetupAtomTypesFingerprints</span> <span class="s">{</span>
+ 549   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 550   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 551 
+ 552   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::AtomTypesFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;Type&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;AtomTypesCount&#39;</span><span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="cm">,</span>  <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 553   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 554 
+ 555   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 556 <span class="s">}</span>
+ 557 
+ 558 <span class="c"># Setup extended connectivity fingerprints...</span>
+ 559 <span class="c">#</span>
+<a name="_SetupExtendedConnectivityFingerprints-"></a> 560 <span class="k">sub </span><span class="m">_SetupExtendedConnectivityFingerprints</span> <span class="s">{</span>
+ 561   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 562   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 563 
+ 564   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::ExtendedConnectivityFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;Type&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;ExtendedConnectivity&#39;</span><span class="cm">,</span> <span class="q">&#39;NeighborhoodRadius&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">NeighborhoodRadius</span>}<span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span><span class="sc">;</span>
+ 565   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 566 
+ 567   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 568 <span class="s">}</span>
+ 569 
+ 570 <span class="c"># Setup MACCS keys...</span>
+ 571 <span class="c">#</span>
+<a name="_SetupMACCSKeys-"></a> 572 <span class="k">sub </span><span class="m">_SetupMACCSKeys</span> <span class="s">{</span>
+ 573   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 574   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 575 
+ 576   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::MACCSKeys</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;Type&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;MACCSKeyBits&#39;</span><span class="cm">,</span> <span class="q">&#39;Size&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MACCSKeysSize</span>}<span class="s">)</span><span class="sc">;</span>
+ 577 
+ 578   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 579 <span class="s">}</span>
+ 580 
+ 581 <span class="c"># Set up path length fingerprints...</span>
+ 582 <span class="c">#</span>
+<a name="_SetupPathLengthFingerprints-"></a> 583 <span class="k">sub </span><span class="m">_SetupPathLengthFingerprints</span> <span class="s">{</span>
+ 584   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 585   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 586 
+ 587   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::PathLengthFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;Type&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;PathLengthCount&#39;</span><span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="cm">,</span> <span class="q">&#39;MinLength&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MinPathLength</span>}<span class="cm">,</span> <span class="q">&#39;MaxLength&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MaxPathLength</span>}<span class="cm">,</span> <span class="q">&#39;AllowRings&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;AllowSharedBonds&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="cm">,</span> <span class="q">&#39;UseBondSymbols&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">UseBondSymbols</span>}<span class="cm">,</span> <span class="q">&#39;UseUniquePaths&#39;</span> <span class="cm">=&gt;</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 588   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 589 
+ 590   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 591 <span class="s">}</span>
+ 592 
+ 593 <span class="c"># Setup topological atom pairs fingerprints...</span>
+ 594 <span class="c">#</span>
+<a name="_SetupTopologicalAtomPairsFingerprints-"></a> 595 <span class="k">sub </span><span class="m">_SetupTopologicalAtomPairsFingerprints</span> <span class="s">{</span>
+ 596   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 597   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 598 
+ 599   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::TopologicalAtomPairsFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>}<span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>}<span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span><span class="sc">;</span>
+ 600   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 601 
+ 602   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 603 <span class="s">}</span>
+ 604 
+ 605 <span class="c"># Setup topological atom triplets fingerprints...</span>
+ 606 <span class="c">#</span>
+<a name="_SetupTopologicalAtomTripletsFingerprints-"></a> 607 <span class="k">sub </span><span class="m">_SetupTopologicalAtomTripletsFingerprints</span> <span class="s">{</span>
+ 608   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 609   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 610 
+ 611   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::TopologicalAtomTripletsFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>}<span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>}<span class="cm">,</span> <span class="q">&#39;UseTriangleInequality&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>}<span class="cm">,</span> <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span><span class="sc">;</span>
+ 612   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 613 
+ 614   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 615 <span class="s">}</span>
+ 616 
+ 617 <span class="c"># Setup topological atom torsions fingerprints...</span>
+ 618 <span class="c">#</span>
+<a name="_SetupTopologicalAtomTorsionsFingerprints-"></a> 619 <span class="k">sub </span><span class="m">_SetupTopologicalAtomTorsionsFingerprints</span> <span class="s">{</span>
+ 620   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 621   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 622 
+ 623   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::TopologicalAtomTorsionsFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span>  <span class="q">&#39;AtomIdentifierType&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span><span class="sc">;</span>
+ 624 
+ 625   <span class="i">$This</span><span class="i">-&gt;_SetAtomIdentifierTypeValuesToUse</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 626 
+ 627   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 628 <span class="s">}</span>
+ 629 
+ 630 <span class="c"># Setup TopologicalPharmacophoreAtomPairsFingerprints...</span>
+ 631 <span class="c">#</span>
+<a name="_SetupTopologicalPharmacophoreAtomPairsFingerprints-"></a> 632 <span class="k">sub </span><span class="m">_SetupTopologicalPharmacophoreAtomPairsFingerprints</span> <span class="s">{</span>
+ 633   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 634   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="cm">,</span> <span class="i">$AtomPairsSetSizeToUse</span><span class="s">)</span><span class="sc">;</span>
+ 635 
+ 636   <span class="c"># Use fixed size to get total number of possible keys for normalization...</span>
+ 637   <span class="i">$AtomPairsSetSizeToUse</span> = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} =~ <span class="q">/^ByPossibleKeysCount$/i</span><span class="s">)</span> ? <span class="q">&#39;FixedSize&#39;</span> <span class="co">:</span> <span class="q">&#39;ArbitrarySize&#39;</span><span class="sc">;</span>
+ 638 
+ 639   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::TopologicalPharmacophoreAtomPairsFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;AtomPairsSetSizeToUse&#39;</span> <span class="cm">=&gt;</span> <span class="i">$AtomPairsSetSizeToUse</span><span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>}<span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>}<span class="cm">,</span> <span class="q">&#39;AtomTypesToUse&#39;</span> <span class="cm">=&gt;</span> \<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="cm">,</span> <span class="q">&#39;NormalizationMethodology&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;None&#39;</span><span class="cm">,</span> <span class="q">&#39;ValuesPrecision&#39;</span> <span class="cm">=&gt;</span> <span class="n">2</span><span class="s">)</span><span class="sc">;</span>
+ 640 
+ 641   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 642 <span class="s">}</span>
+ 643 
+ 644 <span class="c"># Setup TopologicalPharmacophoreAtomTripletsFingerprints...</span>
+ 645 <span class="c">#</span>
+<a name="_SetupTopologicalPharmacophoreAtomTripletsFingerprints-"></a> 646 <span class="k">sub </span><span class="m">_SetupTopologicalPharmacophoreAtomTripletsFingerprints</span> <span class="s">{</span>
+ 647   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 648   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="cm">,</span> <span class="i">$AtomTripletsSetSizeToUse</span><span class="s">)</span><span class="sc">;</span>
+ 649 
+ 650   <span class="c"># Use fixed size to get total number of possible keys for normalization...</span>
+ 651   <span class="i">$AtomTripletsSetSizeToUse</span> = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} =~ <span class="q">/^ByPossibleKeysCount$/i</span><span class="s">)</span> ? <span class="q">&#39;FixedSize&#39;</span> <span class="co">:</span> <span class="q">&#39;ArbitrarySize&#39;</span><span class="sc">;</span>
+ 652 
+ 653   <span class="i">$FingerprintsObject</span> = <span class="i">new</span> <span class="i">Fingerprints::TopologicalPharmacophoreAtomTripletsFingerprints</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;AtomTripletsSetSizeToUse&#39;</span> <span class="cm">=&gt;</span> <span class="i">$AtomTripletsSetSizeToUse</span><span class="cm">,</span> <span class="q">&#39;MinDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MinDistance</span>}<span class="cm">,</span> <span class="q">&#39;MaxDistance&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">MaxDistance</span>}<span class="cm">,</span> <span class="q">&#39;DistanceBinSize&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">DistanceBinSize</span>}<span class="cm">,</span> <span class="q">&#39;UseTriangleInequality&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>}<span class="cm">,</span> <span class="q">&#39;AtomTypesToUse&#39;</span> <span class="cm">=&gt;</span> \<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="s">)</span><span class="sc">;</span>
+ 654 
+ 655   <span class="k">return</span> <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 656 <span class="s">}</span>
+ 657 
+ 658 <span class="c"># Normalize molecular complexity value...</span>
+ 659 <span class="c">#</span>
+<a name="_NormalizeMolecularComplexity-"></a> 660 <span class="k">sub </span><span class="m">_NormalizeMolecularComplexity</span> <span class="s">{</span>
+ 661   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 662 
+ 663   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} =~ <span class="q">/^ByHeavyAtomsCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 664     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_NormalizeMolecularComplexityByHeavyAtomsCount</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 665   <span class="s">}</span>
+ 666   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">NormalizationMethodology</span>} =~ <span class="q">/^ByPossibleKeysCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 667     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_NormalizeMolecularComplexityByPossibleKeysCount</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="s">)</span><span class="sc">;</span>
+ 668   <span class="s">}</span>
+ 669   <span class="k">else</span> <span class="s">{</span>
+ 670     <span class="k">warn</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_NormalizeMolecularComplexity: NormalizationMethodology value, $This-&gt;{NormalizationMethodology}, is not valid. Supported values: ByHeavyAtomsCount or ByPossibleKeysCount...&quot;</span><span class="sc">;</span>
+ 671   <span class="s">}</span>
+ 672   <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 673 <span class="s">}</span>
+ 674 
+ 675 <span class="c"># Normalize molecular complexity value by heavy atom count...</span>
+ 676 <span class="c">#</span>
+<a name="_NormalizeMolecularComplexityByHeavyAtomsCount-"></a> 677 <span class="k">sub </span><span class="m">_NormalizeMolecularComplexityByHeavyAtomsCount</span> <span class="s">{</span>
+ 678   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 679   <span class="k">my</span><span class="s">(</span><span class="i">$NumOfHeavyAtoms</span><span class="cm">,</span> <span class="i">$NormalizedComplexity</span><span class="s">)</span><span class="sc">;</span>
+ 680 
+ 681   <span class="i">$NumOfHeavyAtoms</span> = <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="i">-&gt;GetNumOfHeavyAtoms</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 682   <span class="k">if</span> <span class="s">(</span>!<span class="i">$NumOfHeavyAtoms</span><span class="s">)</span> <span class="s">{</span>
+ 683     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 684   <span class="s">}</span>
+ 685 
+ 686   <span class="i">$NormalizedComplexity</span> = <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} / <span class="i">$NumOfHeavyAtoms</span><span class="sc">;</span>
+ 687   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} = <span class="i">MathUtil::round</span><span class="s">(</span><span class="i">$NormalizedComplexity</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span> + <span class="n">0</span><span class="sc">;</span>
+ 688 
+ 689   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 690 <span class="s">}</span>
+ 691 
+ 692 <span class="c"># Normalize molecular complexity value by possible keys count...</span>
+ 693 <span class="c">#</span>
+<a name="_NormalizeMolecularComplexityByPossibleKeysCount-"></a> 694 <span class="k">sub </span><span class="m">_NormalizeMolecularComplexityByPossibleKeysCount</span> <span class="s">{</span>
+ 695   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 696   <span class="k">my</span><span class="s">(</span><span class="i">$NumOfPossibleKeys</span><span class="cm">,</span> <span class="i">$NormalizedComplexity</span><span class="s">)</span><span class="sc">;</span>
+ 697 
+ 698   <span class="i">$NumOfPossibleKeys</span> = <span class="i">$FingerprintsObject</span><span class="i">-&gt;GetFingerprintsVector</span><span class="s">(</span><span class="s">)</span><span class="i">-&gt;GetNumOfValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 699   <span class="k">if</span> <span class="s">(</span>!<span class="i">$NumOfPossibleKeys</span><span class="s">)</span> <span class="s">{</span>
+ 700     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 701   <span class="s">}</span>
+ 702 
+ 703   <span class="i">$NormalizedComplexity</span> = <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} / <span class="i">$NumOfPossibleKeys</span><span class="sc">;</span>
+ 704   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} = <span class="i">MathUtil::round</span><span class="s">(</span><span class="i">$NormalizedComplexity</span><span class="cm">,</span> <span class="n">2</span><span class="s">)</span> + <span class="n">0</span><span class="sc">;</span>
+ 705 
+ 706   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 707 <span class="s">}</span>
+ 708 
+ 709 <span class="c"># Calculate molecular complexity value using fingerprints objects...</span>
+ 710 <span class="c">#</span>
+<a name="_CalculateMolecularComplexity-"></a> 711 <span class="k">sub </span><span class="m">_CalculateMolecularComplexity</span> <span class="s">{</span>
+ 712   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 713 
+ 714   <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsObject</span><span class="i">-&gt;GetVectorType</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^FingerprintsBitVector$/i</span><span class="s">)</span> <span class="s">{</span>
+ 715     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_CalculateMolecularComplexityUsingFingerprintsBitVector</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="i">-&gt;GetFingerprintsBitVector</span><span class="s">(</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 716   <span class="s">}</span>
+ 717   <span class="k">elsif</span> <span class="s">(</span><span class="i">$FingerprintsObject</span><span class="i">-&gt;GetVectorType</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^FingerprintsVector$/i</span><span class="s">)</span> <span class="s">{</span>
+ 718     <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;_CalculateMolecularComplexityUsingFingerprintsVector</span><span class="s">(</span><span class="i">$FingerprintsObject</span><span class="i">-&gt;GetFingerprintsVector</span><span class="s">(</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 719   <span class="s">}</span>
+ 720   <span class="k">else</span> <span class="s">{</span>
+ 721     <span class="k">warn</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_CalculateMolecularComplexity: Fingerprints vector type  is not valid. Supported values: FingerprintsBitVector or FingerprintsVector...&quot;</span><span class="sc">;</span>
+ 722   <span class="s">}</span>
+ 723 
+ 724   <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 725 <span class="s">}</span>
+ 726 
+ 727 <span class="c"># Calculate molecular complexity value using fingerprints vector...</span>
+ 728 <span class="c">#</span>
+<a name="_CalculateMolecularComplexityUsingFingerprintsVector-"></a> 729 <span class="k">sub </span><span class="m">_CalculateMolecularComplexityUsingFingerprintsVector</span> <span class="s">{</span>
+ 730   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsVector</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 731 
+ 732   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} = <span class="s">(</span><span class="i">$FingerprintsVector</span><span class="i">-&gt;GetType</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^(OrderedNumericalValues|NumericalValues)$/i</span><span class="s">)</span> ? <span class="i">$FingerprintsVector</span><span class="i">-&gt;GetNumOfNonZeroValues</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">$FingerprintsVector</span><span class="i">-&gt;GetNumOfValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 733 
+ 734   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 735 <span class="s">}</span>
+ 736 
+ 737 <span class="c"># Calculate molecular complexity value using fingerprints vector...</span>
+ 738 <span class="c">#</span>
+<a name="_CalculateMolecularComplexityUsingFingerprintsBitVector-"></a> 739 <span class="k">sub </span><span class="m">_CalculateMolecularComplexityUsingFingerprintsBitVector</span> <span class="s">{</span>
+ 740   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsBitVector</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 741 
+ 742   <span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>} = <span class="i">$FingerprintsBitVector</span><span class="i">-&gt;GetNumOfSetBits</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 743 
+ 744   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 745 <span class="s">}</span>
+ 746 
+ 747 <span class="c"># Setup final descriptor values...</span>
+ 748 <span class="c">#</span>
+<a name="_SetFinalDescriptorValues-"></a> 749 <span class="k">sub </span><span class="m">_SetFinalDescriptorValues</span> <span class="s">{</span>
+ 750   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 751 
+ 752   <span class="i">$This</span>-&gt;{<span class="w">DescriptorsGenerated</span>} = <span class="n">1</span><span class="sc">;</span>
+ 753 
+ 754   <span class="i">$This</span><span class="i">-&gt;SetDescriptorValues</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexity</span>}<span class="s">)</span><span class="sc">;</span>
+ 755 
+ 756   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 757 <span class="s">}</span>
+ 758 
+ 759 <span class="c"># Set atom identifier type to use for generating fingerprints...</span>
+ 760 <span class="c">#</span>
+<a name="_SetAtomIdentifierTypeValuesToUse-"></a> 761 <span class="k">sub </span><span class="m">_SetAtomIdentifierTypeValuesToUse</span> <span class="s">{</span>
+ 762   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 763 
+ 764   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 765     <span class="i">$FingerprintsObject</span><span class="i">-&gt;SetAtomicInvariantsToUse</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}}<span class="s">)</span><span class="sc">;</span>
+ 766   <span class="s">}</span>
+ 767   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 768     <span class="i">$FingerprintsObject</span><span class="i">-&gt;SetFunctionalClassesToUse</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="s">)</span><span class="sc">;</span>
+ 769   <span class="s">}</span>
+ 770   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^(DREIDINGAtomTypes|EStateAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 771     <span class="c"># Nothing to do for now...</span>
+ 772   <span class="s">}</span>
+ 773   <span class="k">else</span> <span class="s">{</span>
+ 774     <span class="w">croak</span> <span class="q">&quot;Error: The value specified, $This-&gt;{AtomIdentifierType}, for option \&quot;-a, --AtomIdentifierType\&quot; is not valid. Supported atom identifier types in current release of MayaChemTools: AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes\n&quot;</span><span class="sc">;</span>
+ 775   <span class="s">}</span>
+ 776 <span class="s">}</span>
+ 777 
+ 778 <span class="c"># Initialize atom indentifier type information...</span>
+ 779 <span class="c">#</span>
+ 780 <span class="c"># Current supported values:</span>
+ 781 <span class="c">#</span>
+ 782 <span class="c"># AtomicInvariantsAtomTypes, FunctionalClassAtomTypes, DREIDINGAtomTypes, EStateAtomTypes,</span>
+ 783 <span class="c"># MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</span>
+ 784 <span class="c">#</span>
+<a name="_InitializeAtomIdentifierTypeInformation-"></a> 785 <span class="k">sub </span><span class="m">_InitializeAtomIdentifierTypeInformation</span> <span class="s">{</span>
+ 786   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 787 
+ 788   <span class="j">IDENTIFIERTYPE:</span> <span class="s">{</span>
+ 789     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 790       <span class="i">$This</span><span class="i">-&gt;_InitializeAtomicInvariantsAtomTypesInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 791       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 792     <span class="s">}</span>
+ 793     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 794       <span class="i">$This</span><span class="i">-&gt;_InitializeFunctionalClassAtomTypesInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 795       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 796     <span class="s">}</span>
+ 797     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^(DREIDINGAtomTypes|EStateAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 798       <span class="c"># Nothing to do for now...</span>
+ 799       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 800     <span class="s">}</span>
+ 801     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_InitializeAtomIdentifierTypeInformation: Unknown atom indentifier type $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 802   <span class="s">}</span>
+ 803   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 804 <span class="s">}</span>
+ 805 
+ 806 <span class="c"># Initialize atomic invariants atom types, generated by AtomTypes::AtomicInvariantsAtomTypes</span>
+ 807 <span class="c"># class, to use for generating initial atom identifiers...</span>
+ 808 <span class="c">#</span>
+ 809 <span class="c"># Let:</span>
+ 810 <span class="c">#   AS = Atom symbol corresponding to element symbol</span>
+ 811 <span class="c">#</span>
+ 812 <span class="c">#   X&lt;n&gt;   = Number of non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 813 <span class="c">#   BO&lt;n&gt; = Sum of bond orders to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 814 <span class="c">#   LBO&lt;n&gt; = Largest bond order of non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 815 <span class="c">#   SB&lt;n&gt; = Number of single bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 816 <span class="c">#   DB&lt;n&gt; = Number of double bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 817 <span class="c">#   TB&lt;n&gt; = Number of triple bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 818 <span class="c">#   H&lt;n&gt;   = Number of implicit and explicit hydrogens for atom</span>
+ 819 <span class="c">#   Ar     = Aromatic annotation indicating whether atom is aromatic</span>
+ 820 <span class="c">#   RA     = Ring atom annotation indicating whether atom is a ring</span>
+ 821 <span class="c">#   FC&lt;+n/-n&gt; = Formal charge assigned to atom</span>
+ 822 <span class="c">#   MN&lt;n&gt; = Mass number indicating isotope other than most abundant isotope</span>
+ 823 <span class="c">#   SM&lt;n&gt; = Spin multiplicity of atom. Possible values: 1 (singlet), 2 (doublet) or 3 (triplet)</span>
+ 824 <span class="c">#</span>
+ 825 <span class="c"># Then:</span>
+ 826 <span class="c">#</span>
+ 827 <span class="c">#   Atom type generated by AtomTypes::AtomicInvariantsAtomTypes class corresponds to:</span>
+ 828 <span class="c">#</span>
+ 829 <span class="c">#     AS.X&lt;n&gt;.BO&lt;n&gt;.LBO&lt;n&gt;.&lt;SB&gt;&lt;n&gt;.&lt;DB&gt;&lt;n&gt;.&lt;TB&gt;&lt;n&gt;.H&lt;n&gt;.Ar.RA.FC&lt;+n/-n&gt;.MN&lt;n&gt;.SM&lt;n&gt;</span>
+ 830 <span class="c">#</span>
+ 831 <span class="c"># Except for AS which is a required atomic invariant in atom types, all other atomic invariants are</span>
+ 832 <span class="c"># optional.</span>
+ 833 <span class="c">#</span>
+ 834 <span class="c"># Default atomic invariants used for generating inital atom identifiers are [ Ref 24 ]:</span>
+ 835 <span class="c">#</span>
+ 836 <span class="c">#   AS, X&lt;n&gt;, BO&lt;n&gt;, H&lt;n&gt;, FC&lt;+n/-n&gt;, MN&lt;n&gt;</span>
+ 837 <span class="c">#</span>
+ 838 <span class="c"># In addition to usage of abbreviations for specifying atomic invariants, the following descriptive words</span>
+ 839 <span class="c"># are also allowed:</span>
+ 840 <span class="c">#</span>
+ 841 <span class="c"># X : NumOfNonHydrogenAtomNeighbors or NumOfHeavyAtomNeighbors</span>
+ 842 <span class="c"># BO : SumOfBondOrdersToNonHydrogenAtoms or SumOfBondOrdersToHeavyAtoms</span>
+ 843 <span class="c"># LBO : LargestBondOrderToNonHydrogenAtoms or LargestBondOrderToHeavyAtoms</span>
+ 844 <span class="c"># SB :  NumOfSingleBondsToNonHydrogenAtoms or NumOfSingleBondsToHeavyAtoms</span>
+ 845 <span class="c"># DB : NumOfDoubleBondsToNonHydrogenAtoms or NumOfDoubleBondsToHeavyAtoms</span>
+ 846 <span class="c"># TB : NumOfTripleBondsToNonHydrogenAtoms or NumOfTripleBondsToHeavyAtoms</span>
+ 847 <span class="c"># H :  NumOfImplicitAndExplicitHydrogens</span>
+ 848 <span class="c"># Ar : Aromatic</span>
+ 849 <span class="c"># RA : RingAtom</span>
+ 850 <span class="c"># FC : FormalCharge</span>
+ 851 <span class="c"># MN : MassNumber</span>
+ 852 <span class="c"># SM : SpinMultiplicity</span>
+ 853 <span class="c">#</span>
+<a name="_InitializeAtomicInvariantsAtomTypesInformation-"></a> 854 <span class="k">sub </span><span class="m">_InitializeAtomicInvariantsAtomTypesInformation</span> <span class="s">{</span>
+ 855   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 856 
+ 857   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 858 
+ 859   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(AtomTypesFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 860     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="q">&#39;AS&#39;</span><span class="cm">,</span> <span class="q">&#39;X&#39;</span><span class="cm">,</span> <span class="q">&#39;BO&#39;</span><span class="cm">,</span> <span class="q">&#39;H&#39;</span><span class="cm">,</span> <span class="q">&#39;FC&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 861   <span class="s">}</span>
+ 862   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+ 863     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="q">&#39;AS&#39;</span><span class="cm">,</span> <span class="q">&#39;X&#39;</span><span class="cm">,</span> <span class="q">&#39;BO&#39;</span><span class="cm">,</span> <span class="q">&#39;H&#39;</span><span class="cm">,</span> <span class="q">&#39;FC&#39;</span><span class="cm">,</span> <span class="q">&#39;MN&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 864   <span class="s">}</span>
+ 865   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^PathLengthFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+ 866     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="q">&#39;AS&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 867   <span class="s">}</span>
+ 868 
+ 869   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 870 <span class="s">}</span>
+ 871 
+ 872 <span class="c"># Initialize functional class atom types, generated by AtomTypes::FunctionalClassAtomTypes</span>
+ 873 <span class="c"># class, to use for generating initial atom identifiers...</span>
+ 874 <span class="c">#</span>
+ 875 <span class="c"># Let:</span>
+ 876 <span class="c">#   HBD: HydrogenBondDonor</span>
+ 877 <span class="c">#   HBA: HydrogenBondAcceptor</span>
+ 878 <span class="c">#   PI :  PositivelyIonizable</span>
+ 879 <span class="c">#   NI : NegativelyIonizable</span>
+ 880 <span class="c">#   Ar : Aromatic</span>
+ 881 <span class="c">#   Hal : Halogen</span>
+ 882 <span class="c">#   H : Hydrophobic</span>
+ 883 <span class="c">#   RA : RingAtom</span>
+ 884 <span class="c">#   CA : ChainAtom</span>
+ 885 <span class="c">#</span>
+ 886 <span class="c"># Then:</span>
+ 887 <span class="c">#</span>
+ 888 <span class="c">#   Functiononal class atom type specification for an atom corresponds to:</span>
+ 889 <span class="c">#</span>
+ 890 <span class="c">#     Ar.CA.H.HBA.HBD.Hal.NI.PI.RA</span>
+ 891 <span class="c">#</span>
+ 892 <span class="c">#   Default functional classes used are: HBD, HBA, PI, NI, Ar, Hal</span>
+ 893 <span class="c">#</span>
+ 894 <span class="c">#   FunctionalAtomTypes are assigned using the following definitions [ Ref 60-61, Ref 65-66 ]:</span>
+ 895 <span class="c">#</span>
+ 896 <span class="c">#     HydrogenBondDonor: NH, NH2, OH</span>
+ 897 <span class="c">#     HydrogenBondAcceptor: N[!H], O</span>
+ 898 <span class="c">#     PositivelyIonizable: +, NH2</span>
+ 899 <span class="c">#     NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</span>
+ 900 <span class="c">#</span>
+<a name="_InitializeFunctionalClassAtomTypesInformation-"></a> 901 <span class="k">sub </span><span class="m">_InitializeFunctionalClassAtomTypesInformation</span> <span class="s">{</span>
+ 902   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 903 
+ 904   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 905 
+ 906   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(AtomTypesFingerprints|ExtendedConnectivityFingerprints|PathLengthFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 907     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="q">&#39;HBD&#39;</span><span class="cm">,</span> <span class="q">&#39;HBA&#39;</span><span class="cm">,</span> <span class="q">&#39;PI&#39;</span><span class="cm">,</span> <span class="q">&#39;NI&#39;</span><span class="cm">,</span> <span class="q">&#39;Ar&#39;</span><span class="cm">,</span> <span class="q">&#39;Hal&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 908   <span class="s">}</span>
+ 909   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalPharmacophoreAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+ 910     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="q">&#39;HBD&#39;</span><span class="cm">,</span> <span class="q">&#39;HBA&#39;</span><span class="cm">,</span> <span class="q">&#39;PI&#39;</span><span class="cm">,</span> <span class="q">&#39;NI&#39;</span><span class="cm">,</span> <span class="q">&#39;H&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 911   <span class="s">}</span>
+ 912   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+ 913     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="q">&#39;HBD&#39;</span><span class="cm">,</span> <span class="q">&#39;HBA&#39;</span><span class="cm">,</span> <span class="q">&#39;PI&#39;</span><span class="cm">,</span> <span class="q">&#39;NI&#39;</span><span class="cm">,</span> <span class="q">&#39;H&#39;</span><span class="cm">,</span> <span class="q">&#39;Ar&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 914   <span class="s">}</span>
+ 915 
+ 916   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 917 <span class="s">}</span>
+ 918 
+ 919 <span class="c"># Set atomic invariants to use for generation of intial atom indentifiers...</span>
+ 920 <span class="c">#</span>
+<a name="SetAtomicInvariantsToUse-"></a> 921 <span class="k">sub </span><span class="m">SetAtomicInvariantsToUse</span> <span class="s">{</span>
+ 922   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 923   <span class="k">my</span><span class="s">(</span><span class="i">$FirstValue</span><span class="cm">,</span> <span class="i">$TypeOfFirstValue</span><span class="cm">,</span> <span class="i">$AtomicInvariant</span><span class="cm">,</span> <span class="i">$SpecifiedAtomicInvariant</span><span class="cm">,</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@AtomicInvariantsToUse</span><span class="s">)</span><span class="sc">;</span>
+ 924 
+ 925   <span class="k">if</span> <span class="s">(</span>!<span class="i">@Values</span><span class="s">)</span> <span class="s">{</span>
+ 926     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetAtomicInvariantsToUse: No values specified...&quot;</span><span class="sc">;</span>
+ 927     <span class="k">return</span><span class="sc">;</span>
+ 928   <span class="s">}</span>
+ 929 
+ 930   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} !~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 931     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetAtomicInvariantsToUse: AtomicInvariantsToUse can&#39;t be set for InitialAtomIdentifierType of $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 932     <span class="k">return</span><span class="sc">;</span>
+ 933   <span class="s">}</span>
+ 934 
+ 935   <span class="i">$FirstValue</span> = <span class="i">$Values</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 936   <span class="i">$TypeOfFirstValue</span> = <span class="k">ref</span> <span class="i">$FirstValue</span><span class="sc">;</span>
+ 937 
+ 938   <span class="i">@SpecifiedAtomicInvariants</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 939   <span class="i">@AtomicInvariantsToUse</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 940 
+ 941   <span class="k">if</span> <span class="s">(</span><span class="i">$TypeOfFirstValue</span> =~ <span class="q">/^ARRAY/</span><span class="s">)</span> <span class="s">{</span>
+ 942     <span class="k">push</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$FirstValue</span>}<span class="sc">;</span>
+ 943   <span class="s">}</span>
+ 944   <span class="k">else</span> <span class="s">{</span>
+ 945     <span class="k">push</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@Values</span><span class="sc">;</span>
+ 946   <span class="s">}</span>
+ 947 
+ 948   <span class="c"># Make sure specified AtomicInvariants are valid...</span>
+ 949   <span class="k">for</span> <span class="i">$SpecifiedAtomicInvariant</span> <span class="s">(</span><span class="i">@SpecifiedAtomicInvariants</span><span class="s">)</span> <span class="s">{</span>
+ 950     <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::AtomicInvariantsAtomTypes::IsAtomicInvariantAvailable</span><span class="s">(</span><span class="i">$SpecifiedAtomicInvariant</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 951       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomicInvariantsToUse: Specified atomic invariant, $SpecifiedAtomicInvariant, is not supported...\n &quot;</span><span class="sc">;</span>
+ 952     <span class="s">}</span>
+ 953     <span class="i">$AtomicInvariant</span> = <span class="i">$SpecifiedAtomicInvariant</span><span class="sc">;</span>
+ 954     <span class="k">push</span> <span class="i">@AtomicInvariantsToUse</span><span class="cm">,</span> <span class="i">$AtomicInvariant</span><span class="sc">;</span>
+ 955   <span class="s">}</span>
+ 956 
+ 957   <span class="c"># Set atomic invariants to use...</span>
+ 958   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 959   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}}<span class="cm">,</span> <span class="i">@AtomicInvariantsToUse</span><span class="sc">;</span>
+ 960 
+ 961   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 962 <span class="s">}</span>
+ 963 
+ 964 <span class="c"># Set functional classes to use for generation of intial atom indentifiers...</span>
+ 965 <span class="c">#</span>
+<a name="SetFunctionalClassesToUse-"></a> 966 <span class="k">sub </span><span class="m">SetFunctionalClassesToUse</span> <span class="s">{</span>
+ 967   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 968   <span class="k">my</span><span class="s">(</span><span class="i">$FirstValue</span><span class="cm">,</span> <span class="i">$TypeOfFirstValue</span><span class="cm">,</span> <span class="i">$FunctionalClass</span><span class="cm">,</span> <span class="i">$SpecifiedFunctionalClass</span><span class="cm">,</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@FunctionalClassesToUse</span><span class="s">)</span><span class="sc">;</span>
+ 969 
+ 970   <span class="k">if</span> <span class="s">(</span>!<span class="i">@Values</span><span class="s">)</span> <span class="s">{</span>
+ 971     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetFunctionalClassesToUse: No values specified...&quot;</span><span class="sc">;</span>
+ 972     <span class="k">return</span><span class="sc">;</span>
+ 973   <span class="s">}</span>
+ 974 
+ 975   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} !~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 976     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetFunctionalClassesToUse: FunctionalClassesToUse can&#39;t be set for InitialAtomIdentifierType of $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 977     <span class="k">return</span><span class="sc">;</span>
+ 978   <span class="s">}</span>
+ 979 
+ 980   <span class="i">$FirstValue</span> = <span class="i">$Values</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 981   <span class="i">$TypeOfFirstValue</span> = <span class="k">ref</span> <span class="i">$FirstValue</span><span class="sc">;</span>
+ 982 
+ 983   <span class="i">@SpecifiedFunctionalClasses</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 984   <span class="i">@FunctionalClassesToUse</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 985 
+ 986   <span class="k">if</span> <span class="s">(</span><span class="i">$TypeOfFirstValue</span> =~ <span class="q">/^ARRAY/</span><span class="s">)</span> <span class="s">{</span>
+ 987     <span class="k">push</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$FirstValue</span>}<span class="sc">;</span>
+ 988   <span class="s">}</span>
+ 989   <span class="k">else</span> <span class="s">{</span>
+ 990     <span class="k">push</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@Values</span><span class="sc">;</span>
+ 991   <span class="s">}</span>
+ 992 
+ 993   <span class="c"># Make sure specified FunctionalClasses are valid...</span>
+ 994   <span class="k">for</span> <span class="i">$SpecifiedFunctionalClass</span> <span class="s">(</span><span class="i">@SpecifiedFunctionalClasses</span><span class="s">)</span> <span class="s">{</span>
+ 995     <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::FunctionalClassAtomTypes::IsFunctionalClassAvailable</span><span class="s">(</span><span class="i">$SpecifiedFunctionalClass</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 996       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetFunctionalClassesToUse: Specified functional class, $SpecifiedFunctionalClass, is not supported...\n &quot;</span><span class="sc">;</span>
+ 997     <span class="s">}</span>
+ 998     <span class="k">push</span> <span class="i">@FunctionalClassesToUse</span><span class="cm">,</span> <span class="i">$SpecifiedFunctionalClass</span><span class="sc">;</span>
+ 999   <span class="s">}</span>
+1000 
+1001   <span class="c"># Set functional classes to use...</span>
+1002   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1003   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="cm">,</span> <span class="i">@FunctionalClassesToUse</span><span class="sc">;</span>
+1004 
+1005   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1006 <span class="s">}</span>
+1007 
+1008 <span class="c"># Return a string containg data for MolecularComplexityDescriptors object...</span>
+1009 <span class="c">#</span>
+<a name="StringifyMolecularComplexityDescriptors-"></a>1010 <span class="k">sub </span><span class="m">StringifyMolecularComplexityDescriptors</span> <span class="s">{</span>
+1011   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1012   <span class="k">my</span><span class="s">(</span><span class="i">$ComplexityDescriptorsString</span><span class="cm">,</span> <span class="i">$Nothing</span><span class="s">)</span><span class="sc">;</span>
+1013 
+1014   <span class="i">$ComplexityDescriptorsString</span> = <span class="q">&quot;MolecularDescriptorType: $This-&gt;{Type}; MolecularComplexityType: $This-&gt;{MolecularComplexityType}; &quot;</span> . <span class="i">$This</span><span class="i">-&gt;_StringifyDescriptorNamesAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1015 
+1016   <span class="c"># Setup fingerprints specific information...</span>
+1017   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^MACCSKeys$/i</span><span class="s">)</span> <span class="s">{</span>
+1018     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MACCSKeysSize = $This-&gt;{MACCSKeysSize}&quot;</span><span class="sc">;</span>
+1019   <span class="s">}</span>
+1020   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^ExtendedConnectivityFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1021     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; NeighborhoodRadius = $This-&gt;{NeighborhoodRadius}; NormalizationMethodology = $This-&gt;{NormalizationMethodology}&quot;</span><span class="sc">;</span>
+1022   <span class="s">}</span>
+1023   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^PathLengthFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1024     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinPathLength = $This-&gt;{MinPathLength}; MaxPathLength = $This-&gt;{MaxPathLength}; UseBondSymbols: &quot;</span> . <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">UseBondSymbols</span>} ? <span class="q">&quot;Yes&quot;</span> <span class="co">:</span> <span class="q">&quot;No&quot;</span><span class="s">)</span><span class="sc">;</span>
+1025   <span class="s">}</span>
+1026   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1027     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinDistance = $This-&gt;{MinDistance}; MaxDistance = $This-&gt;{MaxDistance}&quot;</span><span class="sc">;</span>
+1028   <span class="s">}</span>
+1029   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1030     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinDistance = $This-&gt;{MinDistance}; MaxDistance = $This-&gt;{MaxDistance}; UseTriangleInequality: &quot;</span> . <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>} ? <span class="q">&quot;Yes&quot;</span> <span class="co">:</span> <span class="q">&quot;No&quot;</span><span class="s">)</span><span class="sc">;</span>
+1031   <span class="s">}</span>
+1032   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalAtomTorsionsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1033     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinDistance = $This-&gt;{MinDistance}; MaxDistance = $This-&gt;{MaxDistance}&quot;</span><span class="sc">;</span>
+1034   <span class="s">}</span>
+1035   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalPharmacophoreAtomPairsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1036     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinDistance = $This-&gt;{MinDistance}; MaxDistance = $This-&gt;{MaxDistance}; NormalizationMethodology = $This-&gt;{NormalizationMethodology}&quot;</span><span class="sc">;</span>
+1037   <span class="s">}</span>
+1038   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^TopologicalPharmacophoreAtomTripletsFingerprints$/i</span><span class="s">)</span> <span class="s">{</span>
+1039     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; MinDistance = $This-&gt;{MinDistance}; MaxDistance = $This-&gt;{MaxDistance}; NormalizationMethodology = $This-&gt;{NormalizationMethodology};  DistanceBinSize: $This-&gt;{DistanceBinSize}; UseTriangleInequality: &quot;</span> . <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">UseTriangleInequality</span>} ? <span class="q">&quot;Yes&quot;</span> <span class="co">:</span> <span class="q">&quot;No&quot;</span><span class="s">)</span><span class="sc">;</span>
+1040   <span class="s">}</span>
+1041 
+1042   <span class="c"># Setup atom identifier information...</span>
+1043   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">MolecularComplexityType</span>} =~ <span class="q">/^(AtomTypesFingerprints|ExtendedConnectivityFingerprints|PathLengthFingerprints|TopologicalAtomPairsFingerprints|TopologicalAtomTripletsFingerprints|TopologicalAtomTorsionsFingerprints|TopologicalPharmacophoreAtomPairsFingerprints|TopologicalPharmacophoreAtomTripletsFingerprints)$/i</span><span class="s">)</span> <span class="s">{</span>
+1044     <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; AtomIdentifierType = $This-&gt;{AtomIdentifierType}&quot;</span><span class="sc">;</span>
+1045 
+1046     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+1047       <span class="k">my</span><span class="s">(</span><span class="i">$AtomicInvariant</span><span class="cm">,</span> <span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="i">@AtomicInvariantsOrder</span><span class="cm">,</span> <span class="i">%AvailableAtomicInvariants</span><span class="s">)</span><span class="sc">;</span>
+1048 
+1049       <span class="i">@AtomicInvariantsOrder</span> = <span class="i">AtomTypes::AtomicInvariantsAtomTypes::GetAtomicInvariantsOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1050       <span class="i">%AvailableAtomicInvariants</span> = <span class="i">AtomTypes::AtomicInvariantsAtomTypes::GetAvailableAtomicInvariants</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1051 
+1052       <span class="k">for</span> <span class="i">$AtomicInvariant</span> <span class="s">(</span><span class="i">@AtomicInvariantsOrder</span><span class="s">)</span> <span class="s">{</span>
+1053         <span class="k">push</span> <span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="q">&quot;$AtomicInvariant: $AvailableAtomicInvariants{$AtomicInvariant}&quot;</span><span class="sc">;</span>
+1054       <span class="s">}</span>
+1055 
+1056       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; AtomicInvariantsToUse: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}}<span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1057       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; AtomicInvariantsOrder: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@AtomicInvariantsOrder</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1058       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; AvailableAtomicInvariants: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1059     <span class="s">}</span>
+1060     <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+1061       <span class="k">my</span><span class="s">(</span><span class="i">$FunctionalClass</span><span class="cm">,</span> <span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="i">@FunctionalClassesOrder</span><span class="cm">,</span> <span class="i">%AvailableFunctionalClasses</span><span class="s">)</span><span class="sc">;</span>
+1062 
+1063       <span class="i">@FunctionalClassesOrder</span> = <span class="i">AtomTypes::FunctionalClassAtomTypes::GetFunctionalClassesOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1064       <span class="i">%AvailableFunctionalClasses</span> = <span class="i">AtomTypes::FunctionalClassAtomTypes::GetAvailableFunctionalClasses</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1065 
+1066       <span class="k">for</span> <span class="i">$FunctionalClass</span> <span class="s">(</span><span class="i">@FunctionalClassesOrder</span><span class="s">)</span> <span class="s">{</span>
+1067         <span class="k">push</span> <span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="q">&quot;$FunctionalClass: $AvailableFunctionalClasses{$FunctionalClass}&quot;</span><span class="sc">;</span>
+1068       <span class="s">}</span>
+1069 
+1070       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; FunctionalClassesToUse: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1071       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; FunctionalClassesOrder: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@FunctionalClassesOrder</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1072       <span class="i">$ComplexityDescriptorsString</span> .= <span class="q">&quot;; AvailableFunctionalClasses: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+1073     <span class="s">}</span>
+1074   <span class="s">}</span>
+1075   <span class="k">return</span> <span class="i">$ComplexityDescriptorsString</span><span class="sc">;</span>
+1076 <span class="s">}</span>
+1077 
+1078 <span class="c"># Is it a MolecularComplexityDescriptors object?</span>
+<a name="_IsMolecularComplexityDescriptors-"></a>1079 <span class="k">sub </span><span class="m">_IsMolecularComplexityDescriptors</span> <span class="s">{</span>
+1080   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1081 
+1082   <span class="k">return</span> <span class="s">(</span><span class="i">Scalar::Util::blessed</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> &amp;&amp; <span class="i">$Object</span><span class="i">-&gt;isa</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+1083 <span class="s">}</span>
+1084 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

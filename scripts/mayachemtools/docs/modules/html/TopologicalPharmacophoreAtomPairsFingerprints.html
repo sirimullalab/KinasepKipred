@@ -1,0 +1,286 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Fingerprints/TopologicalPharmacophoreAtomPairsFingerprints.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./TopologicalAtomTripletsFingerprints.html" title="TopologicalAtomTripletsFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html" title="TopologicalPharmacophoreAtomTripletsFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>Fingerprints/TopologicalPharmacophoreAtomPairsFingerprints.pm</strong></td><td width="33%" align="right"><a href="././code/TopologicalPharmacophoreAtomPairsFingerprints.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/TopologicalPharmacophoreAtomPairsFingerprints.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/TopologicalPharmacophoreAtomPairsFingerprints.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/TopologicalPharmacophoreAtomPairsFingerprints.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/TopologicalPharmacophoreAtomPairsFingerprints.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>TopologicalPharmacophoreAtomPairsFingerprints</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Fingerprints::TopologicalPharmacophoreAtomPairsFingerprints;</p>
+<p>use Fingerprints::TopologicalPharmacophoreAtomPairsFingerprints qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>TopologicalPharmacophoreAtomPairsFingerprints</b> [ Ref 60-62, Ref 65, Ref 68 ] class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#GenerateFingerprints">GenerateFingerprints</a>, <a href="#GetDescription">GetDescription</a>, <a href="#GetAtomPairIDs">GetAtomPairIDs</a>, <a href="#SetAtomTypesToUse">SetAtomTypesToUse</a>, <a href="#SetAtomTypesWeight">SetAtomTypesWeight</a>, <a href="#SetFuzzFactor">SetFuzzFactor</a>, <a href="#SetFuzzificationMethodology">SetFuzzificationMethodology</a>, <a href="#SetFuzzificationMode">SetFuzzificationMode</a>, <a href="#SetMaxDistance">SetMaxDistance</a>, <a href="#SetMinDistance">SetMinDistance</a>, <a href="#SetNormalizationMethodology">SetNormalizationMethodology</a>, <a href="#SetValuesPrecision">SetValuesPrecision</a>, <a href="#StringifyTopologicalPharmacophoreAtomPairsFingerprints">StringifyTopologicalPharmacophoreAtomPairsFingerprints</a>
+</p><p><b>TopologicalPharmacophoreAtomPairsFingerprints</b> is derived from <b>Fingerprints</b> class which in turn is derived from <b>ObjectProperty</b> base class that provides methods not explicitly defined in <b>TopologicalPharmacophoreAtomPairsFingerprints</b>, <b>Fingerprints</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<p>Based on the values specified for <b>AtomTypesToUse</b>, pharmacophore atom types are assigned to all non-hydrogen atoms in a molecule and a distance matrix is generated. A pharmacophore atom pairs basis set is initialized for all unique possible pairs within <b>MinDistance</b> and <b>MaxDistance</b> range.</p>
+<div class="OptionsBox">    Let:
+<br/>
+<br/>    P = Valid pharmacophore atom type
+<br/>
+<br/>    Px = Pharmacophore atom type x
+<br/>    Py = Pharmacophore atom type y
+<br/>
+<br/>    Dmin = Minimum distance corresponding to number of bonds between two atoms
+<br/>    Dmax = Maximum distance corresponding to number of bonds between two atoms
+<br/>    D = Distance corresponding to number of bonds between two atoms
+<br/>
+<br/>    Px-Dn-Py = Pharmacophore atom pair ID for atom types Px and Py at distance Dn
+<br/>
+<br/>    P = Number of pharmacophore atom types to consider
+<br/>    PPDn = Number of possible unique pharmacophore atom pairs at a distance Dn
+<br/>
+<br/>    PPT = Total number of possible pharmacophore atom pairs at all distances between Dmin and Dmax
+<br/>
+<br/>    Then:
+<br/>
+<br/>    PPD =  (P * (P - 1))/2 + P
+<br/>
+<br/>    PPT = ((Dmax - Dmin) + 1) * ((P * (P - 1))/2 + P)
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        = ((Dmax - Dmin) + 1) * PPD
+<br/>
+<br/>    So for default values of Dmin = 1, Dmax = 10 and P = 5,
+<br/>
+<br/>    PPD =  (5 * (5 - 1))/2 + 5 = 15
+<br/>    PPT = ((10 - 1) + 1) * 15 = 150
+<br/>
+<br/>    The pharmacophore atom pairs bais set includes 150 values.
+<br/>
+<br/>    The atom pair IDs correspond to:
+<br/>
+<br/>    Px-Dn-Py = Pharmacophore atom pair ID for atom types Px and Py at distance Dn
+<br/>
+<br/>    For example: H-D1-H, H-D2-HBA, PI-D5-PI and so on</div>
+<p>Using distance matrix and pharmacohore atom types, occurrence of unique pharmacohore atom pairs is counted. The contribution of each atom type to atom pair interaction is optionally weighted by specified <b>AtomTypesWeight</b> before assigning its count to appropriate distance bin. Based on <b>NormalizationMethodology</b> option, pharmacophore atom pairs count is optionally normalized. Additionally, pharmacohore atom pairs count is optionally fuzzified before or after the normalization controlled by values of <b>FuzzifyAtomPairsCount</b>, <b>FuzzificationMode</b>, <b>FuzzificationMethodology</b> and <b>FuzzFactor</b>.</p>
+<p>The final pharmacophore atom pairs count along with atom pair identifiers involving all non-hydrogen atoms, with optional normalization and fuzzification, constitute pharmacophore topological atom pairs fingerprints of the molecule.</p>
+<p>For <i>ArbitrarySize</i> value of <b>AtomPairsSetSizeToUse</b>, the fingerprint vector correspond to only those topological pharmacophore atom pairs which are present and have non-zero count. However, for <i>FixedSize</i> value of <b>AtomPairsSetSizeToUse</b>, the fingerprint vector contains all possible valid topological pharmacophore atom pairs with both zero and non-zero count values.</p>
+<p>The current release of MayaChemTools generates the following types of topological pharmacophore atom pairs fingerprints vector strings:</p>
+<div class="OptionsBox">    FingerprintsVector;TopologicalPharmacophoreAtomPairs:ArbitrarySize:Min
+<br/>    Distance1:MaxDistance10;54;NumericalValues;IDsAndValuesString;H-D1-H H
+<br/>    -D1-NI HBA-D1-NI HBD-D1-NI H-D2-H H-D2-HBA H-D2-HBD HBA-D2-HBA HBA-D2-
+<br/>    HBD H-D3-H H-D3-HBA H-D3-HBD H-D3-NI HBA-D3-NI HBD-D3-NI H-D4-H H-D4-H
+<br/>    BA H-D4-HBD HBA-D4-HBA HBA-D4-HBD HBD-D4-HBD H-D5-H H-D5-HBA H-D5-...;
+<br/>    18 1 2 1 22 12 8 1 2 18 6 3 1 1 1 22 13 6 5 7 2 28 9 5 1 1 1 36 16 10
+<br/>    3 4 1 37 10 8 1 35 10 9 3 3 1 28 7 7 4 18 16 12 5 1 2 1
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomPairs:FixedSize:MinDist
+<br/>    ance1:MaxDistance10;150;OrderedNumericalValues;ValuesString;18 0 0 1 0
+<br/>    0 0 2 0 0 1 0 0 0 0 22 12 8 0 0 1 2 0 0 0 0 0 0 0 0 18 6 3 1 0 0 0 1
+<br/>    0 0 1 0 0 0 0 22 13 6 0 0 5 7 0 0 2 0 0 0 0 0 28 9 5 1 0 0 0 1 0 0 1 0
+<br/>    0 0 0 36 16 10 0 0 3 4 0 0 1 0 0 0 0 0 37 10 8 0 0 0 0 1 0 0 0 0 0 0
+<br/>    0 35 10 9 0 0 3 3 0 0 1 0 0 0 0 0 28 7 7 4 0 0 0 0 0 0 0 0 0 0 0 18...
+<br/>
+<br/>    FingerprintsVector;TopologicalPharmacophoreAtomPairs:FixedSize:MinDist
+<br/>    ance1:MaxDistance10;150;OrderedNumericalValues;IDsAndValuesString;H-D1
+<br/>    -H H-D1-HBA H-D1-HBD H-D1-NI H-D1-PI HBA-D1-HBA HBA-D1-HBD HBA-D1-NI H
+<br/>    BA-D1-PI HBD-D1-HBD HBD-D1-NI HBD-D1-PI NI-D1-NI NI-D1-PI PI-D1-PI H-D
+<br/>    2-H H-D2-HBA H-D2-HBD H-D2-NI H-D2-PI HBA-D2-HBA HBA-D2-HBD HBA-D2...;
+<br/>    18 0 0 1 0 0 0 2 0 0 1 0 0 0 0 22 12 8 0 0 1 2 0 0 0 0 0 0 0 0 18 6 3
+<br/>    1 0 0 0 1 0 0 1 0 0 0 0 22 13 6 0 0 5 7 0 0 2 0 0 0 0 0 28 9 5 1 0 0 0
+<br/>    1 0 0 1 0 0 0 0 36 16 10 0 0 3 4 0 0 1 0 0 0 0</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $TPAPFP = new TopologicalPharmacophoreAtomPairsFingerprints(
+                                                   %NamesAndValues);</div>
+<p>Using specified <i>TopologicalPharmacophoreAtomPairsFingerprints</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>TopologicalPharmacophoreAtomPairsFingerprints</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;
+<br/>    Type = &#39;TopologicalPharmacophoreAtomPairs&#39;
+<br/>    MinDistance = 1
+<br/>    MaxDistance = 10
+<br/>    NormalizationMethodology = &#39;None&#39;
+<br/>    AtomTypesToUse = [&#39;HBD&#39;, &#39;HBA&#39;, &#39;PI&#39;, &#39;NI&#39;, &#39;H&#39;]
+<br/>
+<br/>    FuzzifyAtomPairsCount = 0
+<br/>    FuzzificationMode = &#39;AfterNormalization&#39;
+<br/>    FuzzificationMethodology =  &#39;FuzzyBinning&#39;
+<br/>    FuzzFactor = 0.15
+<br/>
+<br/>    ValuesPrecision = 2</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $TPAPFP = new TopologicalPharmacophoreAtomPairsFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule);
+<br/>
+<br/>    $TPAPFP = new TopologicalPharmacophoreAtomPairsFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;AtomPairsSetSizeToUse&#39; =&gt; &#39;ArbitrarySize&#39;,
+                              &#39;MinDistance&#39; =&gt; 1,
+                              &#39;MaxDistance&#39; =&gt; 10,
+                              &#39;NormalizationMethodology&#39; =&gt; &#39;None&#39;,
+                              &#39;AtomTypesToUse&#39; =&gt; [&#39;HBD&#39;, &#39;HBA&#39;, &#39;PI&#39;, &#39;NI&#39;, &#39;H&#39;],
+                              &#39;FuzzifyAtomPairsCount&#39; =&gt; 0);
+<br/>
+<br/>    $TPAPFP = new TopologicalPharmacophoreAtomPairsFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;AtomPairsSetSizeToUse&#39; =&gt; &#39;FizedSize&#39;,
+                              &#39;MinDistance&#39; =&gt; 1,
+                              &#39;MaxDistance&#39; =&gt; 10,
+                              &#39;NormalizationMethodology&#39; =&gt; &#39;None&#39;,
+                              &#39;AtomTypesToUse&#39; =&gt; [&#39;HBD&#39;, &#39;HBA&#39;, &#39;PI&#39;, &#39;NI&#39;, &#39;H&#39;],
+                              &#39;FuzzifyAtomPairsCount&#39; =&gt; 1,
+                              &#39;FuzzificationMethodology&#39; =&gt; &#39;FuzzyBinning&#39;,
+                              &#39;FuzzFactor&#39; =&gt; 0.15,
+                              &#39;ValuesPrecision&#39; =&gt; 2);
+<br/>
+<br/>    $TPAPFP-&gt;GenerateFingerprints();
+<br/>    print &quot;$TPAPFP\n&quot;;</div>
+</dd>
+<dt id="GetDescription"><b>GetDescription</b></dt>
+<dd>
+<div class="OptionsBox">    $Description = $TopologicalPharmacophoreAtomPairsFP-&gt;GetDescription();</div>
+<p>Returns a string containing description of topological pharmacophore atom pairs fingerprints.</p>
+</dd>
+<dt id="GenerateFingerprints"><b>GenerateFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;GenerateFingerprints();</div>
+<p>Generates topological pharmacophore atom pairs fingerprints and returns <i>TopologicalPharmacophoreAtomPairsFP</i>.</p>
+</dd>
+<dt id="GetAtomPairIDs"><b>GetAtomPairIDs</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPairIDsRef = $TopologicalPharmacophoreAtomPairsFP-&gt;GetAtomPairIDs();
+<br/>    @AtomPairIDs = $TopologicalPharmacophoreAtomPairsFP-&gt;GetAtomPairIDs();</div>
+<p>Returns atom pair IDs corresponding to atom pairs count values in topological pharmacophore atom pairs fingerprints vector as an array or reference to an array.</p>
+</dd>
+<dt id="SetAtomPairsSetSizeToUse"><b>SetAtomPairsSetSizeToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetAtomPairsSetSizeToUse($Values);</div>
+<p>Sets pharmacophore atom pairs set size to use for topological pharmacophore fingerprints generation and returns <i>TopologicalPharmacophoreAtomPairsFingerprints</i>.</p>
+<p>Possible values for pharmacophore atom pairs set size are: <i>ArbitrarySize, FizedSize</i>. Default value: <i>ArbitrarySize</i>.</p>
+<p>For <i>ArbitrarySize</i> value of <b>AtomPairsSetSizeToUse</b>, the fingerprint vector correspond to only those topological pharmacophore atom pairs which are present and have non-zero count. However, for <i>FixedSize</i> value of <b>AtomPairsSetSizeToUse</b>, the fingerprint vector contains all possible valid topological pharmacophore atom pairs with both zero and non-zero count values.</p>
+</dd>
+<dt id="SetAtomTypesToUse"><b>SetAtomTypesToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetAtomTypesToUse($ValuesRef);
+<br/>    $TopologicalPharmacophoreAtomPairsFP-&gt;SetAtomTypesToUse(@Values);</div>
+<p>Sets pharmacophore atom types to use for topological pharmacophore fingerprints generation and returns <i>TopologicalPharmacophoreAtomPairsFingerprints</i>.</p>
+<p>Possible values for pharmacophore atom types are: <i>Ar, CA, H, HBA, HBD, Hal, NI, PI, RA</i>. Default value [ Ref 60-62 ] : <i>HBD,HBA,PI,NI,H</i>.</p>
+<p>The pharmacophore atom types abbreviations correspond to:</p>
+<div class="OptionsBox">    HBD: HydrogenBondDonor
+<br/>    HBA: HydrogenBondAcceptor
+<br/>    PI :  PositivelyIonizable
+<br/>    NI : NegativelyIonizable
+<br/>    Ar : Aromatic
+<br/>    Hal : Halogen
+<br/>    H : Hydrophobic
+<br/>    RA : RingAtom
+<br/>    CA : ChainAtom</div>
+<p><i>AtomTypes::FunctionalClassAtomTypes</i> module is used to assign pharmacophore atom types. It uses following definitions [ Ref 60-61, Ref 65-66 ]:</p>
+<div class="OptionsBox">    HydrogenBondDonor: NH, NH2, OH
+<br/>    HydrogenBondAcceptor: N[!H], O
+<br/>    PositivelyIonizable: +, NH2
+<br/>    NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</div>
+</dd>
+<dt id="SetAtomTypesWeight"><b>SetAtomTypesWeight</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetAtomTypesWeight(
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        %AtomTypesToWeight);</div>
+<p>Sets weights of specified pharmacophore atom types to use during calculation of their contribution to atom pair count and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default values: <i>1 for each atom type</i>.</p>
+<p>The weight values allow to increase the importance of specific pharmacophore atom type in the generated fingerprints. A weight value of 0 for an atom type eliminates its contribution to atom pair count where as weight value of 2 doubles its contribution.</p>
+</dd>
+<dt id="SetFuzzFactor"><b>SetFuzzFactor</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetFuzzFactor($Value);</div>
+<p>Sets fuzz factor value to use during fuzzification of atom pairs count and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default value: <i>0.15</i>.</p>
+<p>Valid values: For <i>FuzzyBinning</i> value of <b>FuzzificationMethodology</b>: <i>between 0 and 1.0</i>; For <i>FuzzyBinSmoothing</i> value of <b>FuzzificationMethodology</b>: <i>between 0 and 0.5</i>.</p>
+</dd>
+<dt id="SetFuzzificationMethodology"><b>SetFuzzificationMethodology</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetFuzzificationMethodology($Value);</div>
+<p>Sets fuzzification methodology to use for fuzzification of atom pairs count and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default value: <i>FuzzyBinning</i>. Possible values: <i>FuzzyBinning | FuzzyBinSmoothing</i>.</p>
+<p>In conjunction with values for options <b>FuzzifyAtomPairsCount</b>, <b>FuzzificationMode</b> and <b>FuzzFactor</b>, <b>FuzzificationMethodology</b> option is used to fuzzify pharmacophore atom pairs count.</p>
+<p>Let:</p>
+<div class="OptionsBox">    Px = Pharmacophore atom type x
+<br/>    Py = Pharmacophore atom type y
+<br/>    PPxy = Pharmacophore atom pair between atom type Px and Py
+<br/>
+<br/>    PPxyDn = Pharmacophore atom pairs count between atom type Px and Py
+             at distance Dn
+<br/>    PPxyDn-1 = Pharmacophore atom pairs count between atom type Px and Py
+               at distance Dn - 1
+<br/>    PPxyDn+1 = Pharmacophore atom pairs count between atom type Px and Py
+               at distance Dn + 1
+<br/>
+<br/>    FF = FuzzFactor for FuzzyBinning and FuzzyBinSmoothing</div>
+<p>Then:</p>
+<p>For <i>FuzzyBinning</i>:</p>
+<div class="OptionsBox">    PPxyDn = PPxyDn (Unchanged)
+<br/>
+<br/>    PPxyDn-1 = PPxyDn-1 + PPxyDn * FF
+<br/>    PPxyDn+1 = PPxyDn+1 + PPxyDn * FF</div>
+<p>For <i>FuzzyBinSmoothing</i>:</p>
+<div class="OptionsBox">    PPxyDn = PPxyDn - PPxyDn * 2FF for Dmin &lt; Dn &lt; Dmax
+<br/>    PPxyDn = PPxyDn - PPxyDn * FF for Dn = Dmin or Dmax
+<br/>
+<br/>    PPxyDn-1 = PPxyDn-1 + PPxyDn * FF
+<br/>    PPxyDn+1 = PPxyDn+1 + PPxyDn * FF</div>
+<p>In both fuzzification schemes, a value of 0 for FF implies no fuzzification of occurrence counts. A value of 1 during <i>FuzzyBinning</i> corresponds to maximum fuzzification of occurrence counts; however, a value of 1 during <i>FuzzyBinSmoothing</i> ends up completely distributing the value over the previous and next distance bins.</p>
+<p>So for default value of <b>FuzzFactor</b> (FF) 0.15, the occurrence count of pharmacohore atom pairs at distance Dn during FuzzyBinning is left unchanged and the counts at distances Dn -1 and Dn + 1 are incremented by PPxyDn * 0.15.</p>
+<p>And during <i>FuzzyBinSmoothing</i> the occurrence counts at Distance Dn is scaled back using multiplicative factor of (1 - 2*0.15) and the occurrence counts at distances Dn -1 and Dn + 1 are incremented by PPxyDn * 0.15. In other words, occurrence bin count is smoothed out by distributing it over the previous and next distance value.</p>
+</dd>
+<dt id="SetFuzzificationMode"><b>SetFuzzificationMode</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetFuzzificationMode($Value);</div>
+<p>Sets fuzzification mode to use for fuzzification of atom pairs count and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default value: <i>AfterNormalization</i>. Possible values: <i>BeforeNormalization | AfterNormalization</i>.</p>
+</dd>
+<dt id="SetMaxDistance"><b>SetMaxDistance</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetMaxDistance($Value);</div>
+<p>Sets maximum bond distance between atom pairs for generating topological pharmacophore atom pairs fingerprints and returns <i>TopologicalPharmacophoreAtomPairsFP</i>.</p>
+</dd>
+<dt id="SetMinDistance"><b>SetMinDistance</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetMinDistance($Value);</div>
+<p>Sets minimum bond distance between atom pairs for generating topological pharmacophore atom pairs fingerprints and returns <i>TopologicalPharmacophoreAtomPairsFP</i>.</p>
+</dd>
+<dt id="SetNormalizationMethodology"><b>SetNormalizationMethodology</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetNormalizationMethodology($Value);</div>
+<p>Sets normalization methodology to use for scaling the occurrence count of pharmacophore atom pairs within specified distance range and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default value: <i>None</i>. Possible values: <i>None, ByHeavyAtomsCount or ByAtomTypesCount</i>.</p>
+</dd>
+<dt id="SetValuesPrecision"><b>SetValuesPrecision</b></dt>
+<dd>
+<div class="OptionsBox">    $TopologicalPharmacophoreAtomPairsFP-&gt;SetValuesPrecision($Value);</div>
+<p>Sets precision of atom pairs count real values which might be generated after normalization or fuzzification and returns <i>TopologicalPharmacophoreAtomPairsFP</i>. Default: up to <i>2</i> decimal places.</p>
+</dd>
+<dt id="StringifyTopologicalPharmacophoreAtomPairsFingerprints"><b>StringifyTopologicalPharmacophoreAtomPairsFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $TopologicalPharmacophoreAtomPairsFP-&gt;
+                  StringifyTopologicalPharmacophoreAtomPairsFingerprints();</div>
+<p>Returns a string containing information about <i>TopologicalPharmacophoreAtomPairsFingerprints</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Fingerprints.html">Fingerprints.pm</a>, <a href="./FingerprintsStringUtil.html">FingerprintsStringUtil.pm</a>, <a href="./AtomNeighborhoodsFingerprints.html">AtomNeighborhoodsFingerprints.pm</a>, <a href="./AtomTypesFingerprints.html">AtomTypesFingerprints.pm</a>, <a href="./EStateIndiciesFingerprints.html">EStateIndiciesFingerprints.pm</a>, <a href="./ExtendedConnectivityFingerprints.html">ExtendedConnectivityFingerprints.pm</a>, <a href="./MACCSKeys.html">MACCSKeys.pm</a>, <a href="./PathLengthFingerprints.html">PathLengthFingerprints.pm</a>, <a href="./TopologicalAtomPairsFingerprints.html">TopologicalAtomPairsFingerprints.pm</a>, <a href="./TopologicalAtomTripletsFingerprints.html">TopologicalAtomTripletsFingerprints.pm</a>, <a href="./TopologicalAtomTorsionsFingerprints.html">TopologicalAtomTorsionsFingerprints.pm</a>, <a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html">TopologicalPharmacophoreAtomTripletsFingerprints.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./TopologicalAtomTripletsFingerprints.html" title="TopologicalAtomTripletsFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html" title="TopologicalPharmacophoreAtomTripletsFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Fingerprints/TopologicalPharmacophoreAtomPairsFingerprints.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

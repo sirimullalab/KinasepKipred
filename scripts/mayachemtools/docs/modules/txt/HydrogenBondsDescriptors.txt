@@ -1,0 +1,120 @@
+NAME
+    HydrogenBondsDescriptors
+
+SYNOPSIS
+    use MolecularDescriptors::HydrogenBondsDescriptors;
+
+    use MolecularDescriptors::HydrogenBondsDescriptors qw(:all);
+
+DESCRIPTION
+    HydrogenBondsDescriptors class provides the following methods:
+
+    new, GenerateDescriptors, GetDescriptorNames, SetHydrogenBondsType,
+    StringifyHydrogenBondsDescriptors
+
+    HydrogenBondsDescriptors is derived from MolecularDescriptors class
+    which in turn is derived from ObjectProperty base class that provides
+    methods not explicitly defined in HydrogenBondsDescriptors,
+    MolecularDescriptors or ObjectProperty classes using Perl's AUTOLOAD
+    functionality. These methods are generated on-the-fly for a specified
+    object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+    The current release of MayaChemTools supports identification of two
+    types of hydrogen bond donor and acceptor atoms with these names:
+
+        HBondsType1 or HydrogenBondsType1
+        HBondsType2 or HydrogenBondsType2
+
+    The names of these hydrogen bond types are rather arbitrary. However,
+    their definitions have specific meaning and are as follows:
+
+        HydrogenBondsType1 [ Ref 60-61, Ref 65-66 ]:
+
+            Donor: NH, NH2, OH - Any N and O with available H
+            Acceptor: N[!H], O - Any N without available H and any O
+
+        HydrogenBondsType2 [ Ref 91 ]:
+
+            Donor: NH, NH2, OH - N and O with available H
+            Acceptor: N, O - And N and O
+
+    By default, *HydrogenBondsType2* is used to calculate number hydrogen
+    bond donor and acceptor atoms. This corresponds to RuleOf5 definition of
+    hydrogen bond donors and acceptors.
+
+  METHODS
+    new
+            $HydrogenBondsDescriptors = new MolecularDescriptors::
+                                        HydrogenBondsDescriptors(%NamesAndValues);
+
+        Using specified *HydrogenBondsDescriptors* property names and values
+        hash, new method creates a new object and returns a reference to
+        newly created HydrogenBondsDescriptors object. By default, the
+        following properties are initialized:
+
+            Molecule = ''
+            Type = 'HydrogenBonds'
+            HydrogenBondsType = 'HBondsType2'
+            @DescriptorNames = ('HydrogenBondDonors', 'HydrogenBondAcceptors')
+            @DescriptorValues = ('None', 'None')
+
+        Examples:
+
+            $HydrogenBondsDescriptors = new MolecularDescriptors::
+                                        HydrogenBondsDescriptors();
+
+            $HydrogenBondsDescriptors = new MolecularDescriptors::
+                                        HydrogenBondsDescriptors(
+                                        'HydrogenBondsType' => 'HBondsType2');
+
+            $HydrogenBondsDescriptors->SetMolecule($Molecule);
+            $HydrogenBondsDescriptors->GenerateDescriptors();
+            print "HydrogenBondsDescriptors: $HydrogenBondsDescriptors\n";
+
+    GenerateDescriptors
+            $HydrogenBondsDescriptors->GenerateDescriptors();
+
+        Calculates number of hydrogen bond donors and acceptors a molecule
+        and returns *HydrogenBondsDescriptors*.
+
+    GetDescriptorNames
+            @DescriptorNames = $HydrogenBondsDescriptors->GetDescriptorNames();
+            @DescriptorNames = MolecularDescriptors::HydrogenBondsDescriptors::
+                               GetDescriptorNames();
+
+        Returns all available descriptor names as an array.
+
+    SetHydrogenBondsType
+            $HydrogenBondsDescriptors->SetHydrogenBondsType($HBondsType);
+
+        Sets value of hydrogen bonds type to use during calculation of
+        descriptors and returns *HydrogenBondsDescriptors*. Possible values:
+        *HBondsType1, HydrogenBondsType1, HBondsType2, HydrogenBondsType2*.
+
+    StringifyHydrogenBondsDescriptors
+            $String = $HydrogenBondsDescriptors->
+                                      StringifyHydrogenBondsDescriptors();
+
+        Returns a string containing information about
+        *HydrogenBondsDescriptors* object.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    MolecularDescriptors.pm, MolecularDescriptorsGenerator.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

@@ -1,0 +1,696 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Molecule.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MolecularFormula.html" title="MolecularFormula.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MoleculeFileIO.html" title="MoleculeFileIO.html">Next</a></td><td width="34%" align="middle"><strong>Molecule.pm</strong></td><td width="33%" align="right"><a href="././code/Molecule.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/Molecule.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/Molecule.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/Molecule.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/Molecule.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>Molecule - Molecule class</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Molecule;</p>
+<p>use Molecule qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>Molecule</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#AddAtom">AddAtom</a>, <a href="#AddAtoms">AddAtoms</a>, <a href="#AddBond">AddBond</a>, <a href="#AddBonds">AddBonds</a>, <a href="#AddHydrogens">AddHydrogens</a>, <a href="#AddPolarHydrogens">AddPolarHydrogens</a>, <a href="#ClearRings">ClearRings</a>, <a href="#Copy">Copy</a>, <a href="#DeleteAromaticity">DeleteAromaticity</a>, <a href="#DeleteAtom">DeleteAtom</a>, <a href="#DeleteAtoms">DeleteAtoms</a>, <a href="#DeleteBond">DeleteBond</a>, <a href="#DeleteBonds">DeleteBonds</a>, <a href="#DeleteHydrogens">DeleteHydrogens</a>, <a href="#DeletePolarHydrogens">DeletePolarHydrogens</a>, <a href="#DetectAromaticity">DetectAromaticity</a>, <a href="#DetectRings">DetectRings</a>, <a href="#FormatElementalCompositionInformation">FormatElementalCompositionInformation</a>, <a href="#GetAllAtomPaths">GetAllAtomPaths</a>, <a href="#GetAllAtomPathsStartingAt">GetAllAtomPathsStartingAt</a>, <a href="#GetAllAtomPathsStartingAtWithLength">GetAllAtomPathsStartingAtWithLength</a>, <a href="#GetAllAtomPathsStartingAtWithLengthUpto">GetAllAtomPathsStartingAtWithLengthUpto</a>, <a href="#GetAllAtomPathsWithLength">GetAllAtomPathsWithLength</a>, <a href="#GetAllAtomPathsWithLengthUpto">GetAllAtomPathsWithLengthUpto</a>, <a href="#GetAromaticRings">GetAromaticRings</a>, <a href="#GetAromaticityModel">GetAromaticityModel</a>, <a href="#GetAtomNeighborhoods">GetAtomNeighborhoods</a>, <a href="#GetAtomNeighborhoodsWithRadiusUpto">GetAtomNeighborhoodsWithRadiusUpto</a>, <a href="#GetAtomNeighborhoodsWithSuccessorAtoms">GetAtomNeighborhoodsWithSuccessorAtoms</a>, <a href="#GetAtomNeighborhoodsWithSuccessorAtomsAndRadiusUpto">GetAtomNeighborhoodsWithSuccessorAtomsAndRadiusUpto</a>, <a href="#GetAtomPathBonds">GetAtomPathBonds</a>, <a href="#GetAtomPaths">GetAtomPaths</a>, <a href="#GetAtomPathsBetween">GetAtomPathsBetween</a>, <a href="#GetAtomPathsStartingAt">GetAtomPathsStartingAt</a>, <a href="#GetAtomPathsStartingAtWithLength">GetAtomPathsStartingAtWithLength</a>, <a href="#GetAtomPathsStartingAtWithLengthUpto">GetAtomPathsStartingAtWithLengthUpto</a>, <a href="#GetAtomPathsWithLength">GetAtomPathsWithLength</a>, <a href="#GetAtomPathsWithLengthUpto">GetAtomPathsWithLengthUpto</a>, <a href="#GetAtoms">GetAtoms</a>, <a href="#GetBonds">GetBonds</a>, <a href="#GetCharge">GetCharge</a>, <a href="#GetConnectedComponents">GetConnectedComponents</a>, <a href="#GetConnectedComponentsAtoms">GetConnectedComponentsAtoms</a>, <a href="#GetDimensionality">GetDimensionality</a>, <a href="#GetElementalComposition">GetElementalComposition</a>, <a href="#GetElementsAndNonElements">GetElementsAndNonElements</a>, <a href="#GetExactMass">GetExactMass</a>, <a href="#GetFormalCharge">GetFormalCharge</a>, <a href="#GetFreeRadicalElectrons">GetFreeRadicalElectrons</a>, <a href="#GetFusedAndNonFusedRings">GetFusedAndNonFusedRings</a>, <a href="#GetLargestConnectedComponent">GetLargestConnectedComponent</a>, <a href="#GetLargestConnectedComponentAtoms">GetLargestConnectedComponentAtoms</a>, <a href="#GetLargestRing">GetLargestRing</a>, <a href="#GetMolecularFormula">GetMolecularFormula</a>, <a href="#GetMolecularWeight">GetMolecularWeight</a>, <a href="#GetNumOfAromaticRings">GetNumOfAromaticRings</a>, <a href="#GetNumOfAtoms">GetNumOfAtoms</a>, <a href="#GetNumOfBonds">GetNumOfBonds</a>, <a href="#GetNumOfConnectedComponents">GetNumOfConnectedComponents</a>, <a href="#GetNumOfElementsAndNonElements">GetNumOfElementsAndNonElements</a>, <a href="#GetNumOfHeavyAtoms">GetNumOfHeavyAtoms</a>, <a href="#GetNumOfHydrogenAtoms">GetNumOfHydrogenAtoms</a>, <a href="#GetNumOfMissingHydrogenAtoms">GetNumOfMissingHydrogenAtoms</a>, <a href="#GetNumOfNonHydrogenAtoms">GetNumOfNonHydrogenAtoms</a>, <a href="#GetNumOfRings">GetNumOfRings</a>, <a href="#GetNumOfRingsWithEvenSize">GetNumOfRingsWithEvenSize</a>, <a href="#GetNumOfRingsWithOddSize">GetNumOfRingsWithOddSize</a>, <a href="#GetNumOfRingsWithSize">GetNumOfRingsWithSize</a>, <a href="#GetNumOfRingsWithSizeGreaterThan">GetNumOfRingsWithSizeGreaterThan</a>, <a href="#GetNumOfRingsWithSizeLessThan">GetNumOfRingsWithSizeLessThan</a>, <a href="#GetRingBonds">GetRingBonds</a>, <a href="#GetRingBondsFromRings">GetRingBondsFromRings</a>, <a href="#GetRings">GetRings</a>, <a href="#GetRingsWithEvenSize">GetRingsWithEvenSize</a>, <a href="#GetRingsWithOddSize">GetRingsWithOddSize</a>, <a href="#GetRingsWithSize">GetRingsWithSize</a>, <a href="#GetRingsWithSizeGreaterThan">GetRingsWithSizeGreaterThan</a>, <a href="#GetRingsWithSizeLessThan">GetRingsWithSizeLessThan</a>, <a href="#GetSizeOfLargestRing">GetSizeOfLargestRing</a>, <a href="#GetSizeOfSmallestRing">GetSizeOfSmallestRing</a>, <a href="#GetSmallestRing">GetSmallestRing</a>, <a href="#GetSpinMultiplicity">GetSpinMultiplicity</a>, <a href="#GetSupportedAromaticityModels">GetSupportedAromaticityModels</a>, <a href="#GetTopologicallySortedAtoms">GetTopologicallySortedAtoms</a>, <a href="#GetValenceModel">GetValenceModel</a>, <a href="#HasAromaticAtomsInRings">HasAromaticAtomsInRings</a>, <a href="#HasAromaticAtomsNotInRings">HasAromaticAtomsNotInRings</a>, <a href="#HasAromaticRings">HasAromaticRings</a>, <a href="#HasAtom">HasAtom</a>, <a href="#HasBond">HasBond</a>, <a href="#HasFusedRings">HasFusedRings</a>, <a href="#HasNoRings">HasNoRings</a>, <a href="#HasOnlyOneRing">HasOnlyOneRing</a>, <a href="#HasRings">HasRings</a>, <a href="#IsAromatic">IsAromatic</a>, <a href="#IsMolecule">IsMolecule</a>, <a href="#IsRingAromatic">IsRingAromatic</a>, <a href="#IsSupportedAromaticityModel">IsSupportedAromaticityModel</a>, <a href="#IsThreeDimensional">IsThreeDimensional</a>, <a href="#IsTwoDimensional">IsTwoDimensional</a>, <a href="#KeepLargestComponent">KeepLargestComponent</a>, <a href="#KekulizeAromaticAtoms">KekulizeAromaticAtoms</a>, <a href="#NewAtom">NewAtom</a>, <a href="#NewBond">NewBond</a>, <a href="#SetActiveRings">SetActiveRings</a>, <a href="#SetAromaticityModel">SetAromaticityModel</a>, <a href="#SetID">SetID</a>, <a href="#SetValenceModel">SetValenceModel</a>, <a href="#StringifyMolecule">StringifyMolecule</a>
+</p><p>The following methods can also be used as functions:</p>
+<p>FormatElementalCompositionInformation, IsMolecule</p>
+<p><b>Molecule</b> class is derived from <b>ObjectProperty</b> base class which provides methods not explicitly defined in <b>Molecule</b> or <b>ObjectProperty</b> class using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewMolecule = new Molecule([%PropertyNameAndValues]);</div>
+<p>Using specified <i>Atom</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>Atom</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    ID = SequentialObjectID
+<br/>    Name = &quot;Molecule &lt;SequentialObjectID&gt;&quot;</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $Molecule = new Molecule();
+<br/>
+<br/>    $WaterMolecule = new Molecule(&#39;Name&#39; =&gt; &#39;Water&#39;);
+<br/>
+<br/>    $Oxygen = new Atom(&#39;AtomSymbol&#39; =&gt; &#39;O&#39;, &#39;XYZ&#39; =&gt; [0, 0, 0]);
+<br/>    $Hydrogen1 = new Atom(&#39;AtomSymbol&#39; =&gt; &#39;H&#39;,
+                          &#39;XYZ&#39; =&gt; [0.7144, 0.4125, 0]);
+<br/>    $Hydrogen2 = new Atom(&#39;AtomSymbol&#39; =&gt; &#39;H&#39;,
+                          &#39;XYZ&#39; =&gt; [1.1208, -0.2959, 0]);
+<br/>    $WaterMolecule-&gt;AddAtoms($Oxygen, $Hydrogen1, $Hydrogen2);
+<br/>
+<br/>    $Bond1 = new Bond(&#39;Atoms&#39; =&gt; [$Oxygen, $Hydrogen1],
+                      &#39;BondOrder&#39; =&gt; 1);
+<br/>    $Bond2 = new Bond(&#39;Atoms&#39; =&gt; [$Oxygen, $Hydrogen2],
+                      &#39;BondOrder&#39; =&gt; 1);
+<br/>    $WaterMolecule-&gt;AddBonds($Bond1, $Bond2);</div>
+</dd>
+<dt id="AddAtom"><b>AddAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;AddAtom($Atom);</div>
+<p>Adds an <i>Atom</i> to a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="AddAtoms"><b>AddAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;AddAtoms(@Atoms);</div>
+<p>Adds <i>Atoms</i> to a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="AddBond"><b>AddBond</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;AddBond($Bond);</div>
+<p>Adds a <i>Bond</i> to a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="AddBonds"><b>AddBonds</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;AddBonds(@Bonds);</div>
+<p>Adds <i>Bonds</i> to a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="AddHydrogens"><b>AddHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensAdded = $Molecule-&gt;AddHydrogens();</div>
+<p>Adds hydrogens to each atom in a <i>Molecule</i> and returns total number of hydrogens added. The current release of MayaChemTools doesn&#39;t assign hydrogen positions.</p>
+</dd>
+<dt id="AddPolarHydrogens"><b>AddPolarHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensAdded = $Molecule-&gt;AddPolarHydrogens();</div>
+<p>Adds hydrogens to each polar atom - N, O, P or S - in a <i>Molecule</i> and returns total number of polar hydrogens added. The current release of MayaChemTools doesn&#39;t assign hydrogen positions.</p>
+</dd>
+<dt id="ClearRings"><b>ClearRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;ClearRings();</div>
+<p>Deletes all rings associated with <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="Copy"><b>Copy</b></dt>
+<dd>
+<div class="OptionsBox">    $MoleculeCopy = $Molecule-&gt;Copy();</div>
+<p>Copies <i>Molecule</i> and its associated data using <b>Storable::dclone</b> and returns a new <b>Molecule</b> object.</p>
+</dd>
+<dt id="DeleteAromaticity"><b>DeleteAromaticity</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DeleteAromaticity();</div>
+<p>Deletes aromatic property associated with all atoms and bonds in a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="DeleteAtom"><b>DeleteAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DeleteAtom($Atom);</div>
+<p>Deletes <i>Atom</i> from a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="DeleteAtoms"><b>DeleteAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DeleteAtoms(@Atoms);</div>
+<p>Deletes <i>Atoms</i> from a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="DeleteBond"><b>DeleteBond</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DeleteBond($Bond);</div>
+<p>Deletes <i>Bond</i> from a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="DeleteBonds"><b>DeleteBonds</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DeleteBonds(@Bonds);</div>
+<p>Deletes <i>Bonds</i> from a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="DeleteHydrogens"><b>DeleteHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensDeleted = $Molecule-&gt;DeleteHydrogens();</div>
+<p>Removes hydrogens from each atom in a <i>Molecule</i> and returns total number of hydrogens deleted.</p>
+</dd>
+<dt id="DeletePolarHydrogens"><b>DeletePolarHydrogens</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogensDeleted = $Molecule-&gt;DeletePolarHydrogens();</div>
+<p>Removes hydrogens to each polar atom - N, O, P or S - in a <i>Molecule</i> and returns total number of polar hydrogens deleted.</p>
+</dd>
+<dt id="DetectAromaticity"><b>DetectAromaticity</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DetectAromaticity();</div>
+<p>Associates <i>Aromatic</i> property to atoms and bonds involved in aromatic rings or ring systems in a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+<p>This method assumes the ring detection has already been perfomed using <b>DetectRings</b>. And any existing <i>Aromatic</i> property associated with atoms and bonds is deleted before performing aromaticity detection.</p>
+<p>What is aromaticity? [ Ref 124 ] It&#39;s in the code of the implementer, did you say? Agree. The implementation of aromaticity varies widely across different packages [ Ref 125 ]; additionally, the implementation details are not always completely available, and it&#39;s not possible to figure out the exact implementation of aromaticity across various packages. Using the publicly available information, however, one can try to reproduce the available results to the extent possible, along with parameterizing all the control parameters used to implement different aromaticity models, and that&#39;s exactly what the current release of MayaChemTools does.</p>
+<p>The implementation of aromaticity corresponding to various aromaticity models in MayaChemTools package is driven by an external CSV file AromaticityModelsData.csv, which is distributed with the package and is available in lib/data directory. The CSV files contains names of supported aromaticity models, along with various control parameters and their values. This file is loaded and processed during instantiation of Molecule class and data corresponding to specific aromaticity model are used to detect aromaticity for that model. Any new aromaticity model added to the aromaticity data file, using different combinations of values for existing control parameters, would work without any changes to the code; the addition of any new control parameters, however, requires its implementation in the code used to calculate number of pi electrons available towards delocalization in a ring or ring systems.</p>
+<p>The current release of MayaChemTools package supports these aromaticity models: MDLAromaticityModel, TriposAromaticityModel, MMFFAromaticityModel, ChemAxonBasicAromaticityModel, ChemAxonGeneralAromaticityModel, DaylightAromaticityModel, MayaChemToolsAromaticityModel.</p>
+<p>The current list of control parameters available to detect aromaticity corresponding to different aromaticity models are: AllowHeteroRingAtoms, HeteroRingAtomsList, AllowExocyclicDoubleBonds, AllowHomoNuclearExocyclicDoubleBonds, AllowElectronegativeRingAtomExocyclicDoubleBonds, AllowRingAtomFormalCharge, AllowHeteroRingAtomFormalCharge, MinimumRingSize. The values for these control parameters are specified in AromaticityModelsData.csv file.</p>
+<p>Although definition of aromaticity differs across various aromaticity models, a ring or a ring system containing 4n + 2 pi electrons (Huckel&#39;s rule) corresponding to alternate single and double bonds, in general, is considered aromatic.</p>
+<p>The available valence free electrons on heterocyclic ring atoms, involved in two single ring bonds, are also allowed to participate in pi electron delocalizaiton for most of the supported aromaticity models.</p>
+<p>The presence of exocyclic terminal double bond on ring atoms involved in pi electron delocalization is only allowed for some of the aromaticity models. Additionally, the type atoms involved in exocyclic terminal double bonds may result in making a ring or ring system non-aromatic.</p>
+<p>For molecules containing fused rings, each fused ring set is considered as one aromatic system for counting pi electrons to satisfy Huckel&#39;s rule; In case of a failure, rings in fused set are treated individually for aromaticity detection. Additionally, non-fused rings are handled on their own during aromaticity detection.</p>
+</dd>
+<dt id="DetectRings"><b>DetectRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;DetectRings();</div>
+<p>Detects rings in a <i>Molecule</i> and returns <i>Molecule</i>. Ring detection is performed using <b>DetectCycles</b> method avaible in <b>Graph</b> class which in turn uses methods available <b>Graph::CyclesDetection</b> class. <b>Graph::CyclesDetection</b> class implements collapsing path graph [Ref 31] methodology to detect all cycles in a graph.</p>
+</dd>
+<dt id="FormatElementalCompositionInformation"><b>FormatElementalCompositionInformation</b></dt>
+<dd>
+<div class="OptionsBox">    $FormattedInfo = $Molecule-&gt;FormatElementalCompositionInformation(
+                     $ElementsRef, $ElementCompositionRef,
+                     [$Precision]);
+<br/>    $FormattedInfo = Molecule::FormatElementalCompositionInformation(
+                     $ElementsRef, $ElementCompositionRef,
+                     [$Precision]);</div>
+<p>Using <i>ElementsRef</i> and <i>ElementCompositionRef</i> arrays referneces containg informatio about elements and their composition, formats elemental composition information and returns a <i>FormattedInfo</i> string. Defaule <i>Precision</i> value: <i>2</i>.</p>
+</dd>
+<dt id="GetAromaticityModel"><b>GetAromaticityModel</b></dt>
+<dd>
+<div class="OptionsBox">    $AromaticityModel = $Molecule-&gt;GetAromaticityModel();</div>
+<p>Returns name of <b>AromaticityModel</b> set for <i>Molecule</i> corresponding to <b>AromaticityModel</b> property or default model name of <b>MayaChemToolsAromaticityModel</b>.</p>
+</dd>
+<dt id="GetAllAtomPaths"><b>GetAllAtomPaths</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPaths([$AllowCycles]);</div>
+<p>Returns all paths as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to to all possible paths for each atom in molecule with all possible lengths and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as <b>GetAtomPaths</b> method.</p>
+</dd>
+<dt id="GetAllAtomPathsStartingAt"><b>GetAllAtomPathsStartingAt</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPathsStartingAt($StartAtom,
+                    [$AllowCycles]);</div>
+<p>Returns all atom paths starting from <i>StartAtom</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms atoms correspond to to all possible paths for specified atom in molecule with all possible lengths and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as <b>GetAtomPathsStartingAt</b> method.</p>
+</dd>
+<dt id="GetAllAtomPathsStartingAtWithLength"><b>GetAllAtomPathsStartingAtWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPathsStartingAtWithLength(
+                    $StartAtom, $Length, [$AllowCycles]);</div>
+<p>Returns all atom paths starting from <i>StartAtom</i> with specified <i>Length</i>as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms atoms correspond to to all possible paths for specified atom in molecule with all possible lengths and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as <b>GetAtomPathsStartingAtWithLength</b> method.</p>
+</dd>
+<dt id="GetAllAtomPathsStartingAtWithLengthUpto"><b>GetAllAtomPathsStartingAtWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPathsStartingAtWithLengthUpto(
+                    $StartAtom, $Length, [$AllowCycles]);</div>
+<p>Returns atom paths starting from <i>StartAtom</i> with length up to <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms atoms correspond to all possible paths for specified atom in molecule with length up to a specified length and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as <i>GetAtomPathsStartingAtWithLengthUpto</i> method.</p>
+</dd>
+<dt id="GetAllAtomPathsWithLength"><b>GetAllAtomPathsWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPathsWithLength($Length,
+                    [$AllowCycles]);</div>
+<p>Returns all atom paths with specified <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to to all possible paths for each atom in molecule with length up to a specified length and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as as <i>GetAtomPathsWithLength</i> method.</p>
+</dd>
+<dt id="GetAllAtomPathsWithLengthUpto"><b>GetAllAtomPathsWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAllAtomPathsWithLengthUpto($Length,
+                    [$AllowCycles]);</div>
+<p>Returns all atom paths with length up to <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to to all possible paths for each atom in molecule with length up to a specified length and sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+<p>For molecule without any rings, this method returns the same set of atom paths as as <i>GetAtomPathsWithLengthUpto</i> method.</p>
+</dd>
+<dt id="GetAromaticRings"><b>GetAromaticRings</b></dt>
+<dd>
+<div class="OptionsBox">    @AtomaticRings = $Molecule-&gt;GetAromaticRings();</div>
+<p>Returns aromatic rings as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetAtomNeighborhoods"><b>GetAtomNeighborhoods</b></dt>
+<dd>
+<div class="OptionsBox">    @Neighborhoods = $Molecule-&gt;GetAtomNeighborhoods($StartAtom);</div>
+<p>Returns atom neighborhoods around a <i>StartAtom</i> as an array containing references to arrays with neighborhood <i>Atom</i> objects at possible radii.</p>
+</dd>
+<dt id="GetAtomNeighborhoodsWithRadiusUpto"><b>GetAtomNeighborhoodsWithRadiusUpto</b></dt>
+<dd>
+<div class="OptionsBox">    @Neighborhoods = $Molecule-&gt;GetAtomNeighborhoodsWithRadiusUpto($StartAtom,
+                     $Radius);</div>
+<p>Returns atom neighborhoods around a <i>StartAtom</i> as an array containing references to arrays with neighborhood <i>Atom</i> objects up to <i>Radius</i>.</p>
+</dd>
+<dt id="GetAtomNeighborhoodsWithSuccessorAtoms"><b>GetAtomNeighborhoodsWithSuccessorAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @Neighborhoods = $Molecule-&gt;GetAtomNeighborhoodsWithSuccessorAtoms(
+                     $StartAtom);</div>
+<p>Returns atom neighborhood around a specified <i>StartAtom</i>, along with their successor connected atoms, collected at all radii as an array containing references to arrays with first value corresponding to neighborhood atom at a specific radius and second value as reference to an array containing its successor connected atoms.</p>
+<p>For a neighborhood atom at each radius level, the successor connected atoms correspond to the neighborhood atoms at the next radius level. Consequently, the neighborhood atoms at the last radius level don&#39;t contain any successor atoms which fall outside the range of specified radius.</p>
+</dd>
+<dt id="GetAtomNeighborhoodsWithSuccessorAtomsAndRadiusUpto"><b>GetAtomNeighborhoodsWithSuccessorAtomsAndRadiusUpto</b></dt>
+<dd>
+<div class="OptionsBox">    @Neighborhoods = $Molecule-&gt;GetAtomNeighborhoodsWithSuccessorAtomsAndRadiusUpto(
+                     $StartAtom, $Radius);</div>
+<p>Returns atom neighborhood around a specified <i>StartAtom</i>, along with their successor connected atoms, collected upto specified <i>Radiud</i> as an array containing references to arrays with first value corresponding to neighborhood atom at a specific radius and second value as reference to an array containing its successor connected atoms.</p>
+<p>For a neighborhood atom at each radius level, the successor connected atoms correspond to the neighborhood atoms at the next radius level. Consequently, the neighborhood atoms at the last radius level don&#39;t contain any successor atoms which fall outside the range of specified radius.</p>
+</dd>
+<dt id="GetAtomPathBonds"><b>GetAtomPathBonds</b></dt>
+<dd>
+<div class="OptionsBox">    $Return = $Molecule-&gt;GetAtomPathBonds(@PathAtoms);</div>
+<p>Returns an array containing <b>Bond</b> objects corresponding to successive pair of atoms in <i>PathAtoms</i></p>
+</dd>
+<dt id="GetAtomPaths"><b>GetAtomPaths</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPaths([$AllowCycles]);</div>
+<p>Returns all paths as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to to all possible paths for each atom in molecule with all possible lengths and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtomPathsBetween"><b>GetAtomPathsBetween</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsBetween($StartAtom, $EndAtom);</div>
+<p>Returns all paths as between <i>StartAtom</i> and <i>EndAtom</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>For molecules with rings, atom paths array contains may contain two paths.</p>
+</dd>
+<dt id="GetAtomPathsStartingAt"><b>GetAtomPathsStartingAt</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsStartingAt($StartAtom, [$AllowCycles]);</div>
+<p>Returns paths starting at <i>StartAtom</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to all possible paths for specified atom in molecule with all possible lengths and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtomPathsStartingAtWithLength"><b>GetAtomPathsStartingAtWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsStartingAtWithLength($StartAtom,
+                    $Length, [$AllowCycles]);</div>
+<p>Returns paths starting at <i>StartAtom</i> with length <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to all possible paths for specified atom in molecule with length upto a specified length and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtomPathsStartingAtWithLengthUpto"><b>GetAtomPathsStartingAtWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsStartingAtWithLengthUpto($StartAtom,
+                    $Length, [$AllowCycles]);</div>
+<p>Returns paths starting at <i>StartAtom</i> with length up to <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to all possible paths for specified atom in molecule with length upto a specified length and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtomPathsWithLength"><b>GetAtomPathsWithLength</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsWithLength($Length, [$AllowCycles]);</div>
+<p>Returns all paths with specified <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to all possible paths for each atom in molecule with length upto a specified length and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtomPathsWithLengthUpto"><b>GetAtomPathsWithLengthUpto</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomPathsRef = $Molecule-&gt;GetAtomPathsWithLengthUpto($Length, [$AllowCycles]);</div>
+<p>Returns all paths with length up to <i>Length</i> as a reference to an array containing reference to arrays with path <b>Atom</b> objects.</p>
+<p>Path atoms correspond to all possible paths for each atom in molecule with length upto a specified length and no sharing of bonds in paths traversed. By default, rings are included in paths. A path containing a ring is terminated at an atom completing the ring.</p>
+</dd>
+<dt id="GetAtoms"><b>GetAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @AllAtoms = $Molecule-&gt;GetAtoms();
+<br/>    @PolarAtoms = $Molecule-&gt;GetAtoms(&#39;IsPolarAtom&#39;);
+<br/>
+<br/>    $NegateMethodResult = 1;
+<br/>    @NonHydrogenAtoms = $Molecule-&gt;GetAtoms(&#39;IsHydrogenAtom&#39;,
+                        $NegateMethodResult);
+<br/>
+<br/>    $AtomsCount = $Molecule-&gt;GetAtoms();</div>
+<p>Returns an array of <i>Atoms</i> in a <i>Molecule</i>. In scalar context, it returns number of atoms. Additionally, <b>Atoms</b> array can be filtered by any user specifiable valid <b>Atom</b> class method and the result of the <b>Atom</b> class method used to filter the atoms can also be negated by an optional negate results flag as third parameter.</p>
+</dd>
+<dt id="GetBonds"><b>GetBonds</b></dt>
+<dd>
+<div class="OptionsBox">    @Bonds = $Molecule-&gt;GetBonds();
+<br/>    $BondsCount = $Molecule-&gt;GetBonds();</div>
+<p>Returns an array of <i>Bonds</i> in a <i>Molecule</i>. In scalar context, it returns number of bonds.</p>
+</dd>
+<dt id="GetCharge"><b>GetCharge</b></dt>
+<dd>
+<div class="OptionsBox">    $Charge = $Molecule-&gt;GetCharge();</div>
+<p>Returns net charge on a <i>Molecule</i> using one of the following two methods: explicitly set <b>Charge</b> property or sum of partial atomic charges on each atom.</p>
+</dd>
+<dt id="GetConnectedComponents"><b>GetConnectedComponents</b></dt>
+<dd>
+<div class="OptionsBox">    @ConnectedComponents = $Molecule-&gt;GetConnectedComponents();</div>
+<p>Returns a reference to an array containing <i>Molecule</i> objects corresponding to connected components sorted in decreasing order of component size in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetConnectedComponentsAtoms"><b>GetConnectedComponentsAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @ConnectedComponentsAtoms =
+      $Molecule-&gt;GetConnectedComponentsAtoms();</div>
+<p>Returns an array containing references to arrays with <i>Atom</i> objects corresponding to atoms of connected components sorted in order of component decreasing size in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetDimensionality"><b>GetDimensionality</b></dt>
+<dd>
+<div class="OptionsBox">    $Dimensionality = $Molecule-&gt;GetDimensionality();</div>
+<p>Returns <i>Dimensionality</i> of a <i>Molecule</i> corresponding to explicitly set <i>Dimensionality</i> property value or by processing atomic.</p>
+<p>The <i>Dimensionality</i> value from atomic coordinates is calculated as follows:</p>
+<div class="OptionsBox">    3D - Three dimensional: One of X, Y or Z coordinate is non-zero
+<br/>    2D - Two dimensional: One of X or Y coordinate is non-zero; All Z
+         coordinates are zero
+<br/>    0D - Zero dimensional: All atomic coordinates are zero</div>
+</dd>
+<dt id="GetElementalComposition"><b>GetElementalComposition</b></dt>
+<dd>
+<div class="OptionsBox">    ($ElementsRef, $CompositionRef) =
+      $Molecule-&gt;GetElementalComposition([$IncludeMissingHydrogens]);</div>
+<p>Calculates elemental composition and returns references to arrays containing elements and their percent composition in a <i>Molecule</i>. By default, missing hydrogens are included during the calculation.</p>
+</dd>
+<dt id="GetElementsAndNonElements"><b>GetElementsAndNonElements</b></dt>
+<dd>
+<div class="OptionsBox">    ($ElementsRef, $NonElementsRef) =
+     $Molecule-&gt;GetElementsAndNonElements([$IncludeMissingHydrogens]);</div>
+<p>Counts elements and non-elements in a <i>Molecule</i> and returns references to hashes containing element and non-element as hash keys with values corresponding to their count. By default, missing hydrogens are not added to the element hash.</p>
+</dd>
+<dt id="GetExactMass"><b>GetExactMass</b></dt>
+<dd>
+<div class="OptionsBox">    $ExactMass = $Molecule-&gt;GetExactMass();</div>
+<p>Returns exact mass of a <i>Molecule</i> corresponding to sum of exact masses of all the atoms.</p>
+</dd>
+<dt id="GetFormalCharge"><b>GetFormalCharge</b></dt>
+<dd>
+<div class="OptionsBox">    $FormalCharge = $Molecule-&gt;GetFormalCharge();</div>
+<p>Returns net formal charge on a <i>Molecule</i> using one of the following two methods: explicitly set <b>FormalCharge</b> property or sum of formal charges on each atom.</p>
+<p><b>FormalCharge</b> is different from <b>Charge</b> property of the molecule which corresponds to sum of partial atomic charges explicitly set for each atom using a specific methodology.</p>
+</dd>
+<dt id="GetFreeRadicalElectrons"><b>GetFreeRadicalElectrons</b></dt>
+<dd>
+<div class="OptionsBox">    $FreeRadicalElectrons = $Molecule-&gt;GetFreeRadicalElectrons();</div>
+<p>Returns total number of free radical electrons available in a <i>Molecule</i> using one of the following two methods: explicitly set <b>FreeRadicalElectrons</b> property or sum of available free radical electrons on each atom.</p>
+</dd>
+<dt id="GetFusedAndNonFusedRings"><b>GetFusedAndNonFusedRings</b></dt>
+<dd>
+<div class="OptionsBox">    ($FusedRingSetRef, $NonFusedRingsRef) =
+       $Molecule-&gt;GetFusedAndNonFusedRings();</div>
+<p>Returns references to array of fused ring sets and non-fused rings in a <i>Molecule</i>. Fused ring sets array reference contains refernces to arrays of rings corresponding to ring <i>Atom</i> objects; Non-fused rings array reference contains references to arrays of ring <i>Atom</i> objects.</p>
+</dd>
+<dt id="GetLargestConnectedComponent"><b>GetLargestConnectedComponent</b></dt>
+<dd>
+<div class="OptionsBox">    $ComponentMolecule = $Molecule-&gt;GetLargestConnectedComponent();</div>
+<p>Returns a reference to <b>Molecule</b> object corresponding to a largest connected component in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetLargestConnectedComponentAtoms"><b>GetLargestConnectedComponentAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @ComponentAtoms = $Molecule-&gt;GetLargestConnectedComponentAtoms();</div>
+<p>Returns a reference to an array of <b>Atom</b> objects corresponding to a largest connected component in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetLargestRing"><b>GetLargestRing</b></dt>
+<dd>
+<div class="OptionsBox">    @RingAtoms = $Molecule-&gt;GetLargestRing();</div>
+<p>Returns an array of <i>Atoms</i> objects corresponding to a largest ring in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetMolecularFormula"><b>GetMolecularFormula</b></dt>
+<dd>
+<div class="OptionsBox">    $FormulaString = $Molecule-&gt;GetMolecularFormula(
+                     [$IncludeMissingHydrogens,
+                     $IncludeNonElements]);</div>
+<p>Returns molecular formula of a <i>Molecule</i> by collecting information about all atoms in the molecule and composing the formula using Hills ordering system:</p>
+<div class="OptionsBox">    o C shows up first and H follows assuming C is present.
+<br/>    o All other standard elements are sorted alphanumerically.
+<br/>    o All other non-stanard atom symbols are also sorted
+      alphanumerically and follow standard elements.</div>
+<p>Notes:</p>
+<div class="OptionsBox">    o By default, missing hydrogens and nonelements are also included.
+<br/>    o Elements for disconnected fragments are combined into the same
+      formula.
+<br/>    o Formal charge is also used during compoisiton of molecular formula.</div>
+</dd>
+<dt id="GetMolecularWeight"><b>GetMolecularWeight</b></dt>
+<dd>
+<div class="OptionsBox">    $MolWeight = $Molecule-&gt;GetMolecularWeight();</div>
+<p>Returns molecular weight of a <i>Molecule</i> corresponding to sum of atomic weights of all the atoms.</p>
+</dd>
+<dt id="GetNumOfAromaticRings"><b>GetNumOfAromaticRings</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfAromaticRings = $Molecule-&gt;GetNumOfAromaticRings();</div>
+<p>Returns number of aromatic rings in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfAtoms"><b>GetNumOfAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfAtoms = $Molecule-&gt;GetNumOfAtoms();</div>
+<p>Returns number of atoms in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfBonds"><b>GetNumOfBonds</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfBonds = $Molecule-&gt;GetNumOfBonds();</div>
+<p>Returns number of bonds in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfConnectedComponents"><b>GetNumOfConnectedComponents</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfComponents = $Molecule-&gt;GetNumOfConnectedComponents();</div>
+<p>Returns number of connected components in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfElementsAndNonElements"><b>GetNumOfElementsAndNonElements</b></dt>
+<dd>
+<div class="OptionsBox">    ($NumOfElements, $NumOfNonElements) = $Molecule-&gt;
+                              GetNumOfElementsAndNonElements();
+<br/>    ($NumOfElements, $NumOfNonElements) = $Molecule-&gt;
+                   GetNumOfElementsAndNonElements($IncludeMissingHydrogens);</div>
+<p>Returns number of elements and non-elements in a <i>Molecule</i>. By default, missing hydrogens are not added to element count.</p>
+</dd>
+<dt id="GetNumOfHeavyAtoms"><b>GetNumOfHeavyAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHeavyAtoms = $Molecule-&gt;GetNumOfHeavyAtoms();</div>
+<p>Returns number of heavy atoms, non-hydrogen atoms, in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfHydrogenAtoms"><b>GetNumOfHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfHydrogenAtoms = $Molecule-&gt;GetNumOfHydrogenAtoms();</div>
+<p>Returns number of hydrogen atoms in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfMissingHydrogenAtoms"><b>GetNumOfMissingHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfMissingHydrogenAtoms = $Molecule-&gt;GetNumOfMissingHydrogenAtoms();</div>
+<p>Returns number of hydrogen atoms in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfNonHydrogenAtoms"><b>GetNumOfNonHydrogenAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $NumOfNonHydrogenAtoms = $Molecule-&gt;GetNumOfNonHydrogenAtoms();</div>
+<p>Returns number of non-hydrogen atoms in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRings"><b>GetNumOfRings</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRings();</div>
+<p>Returns number of rings in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRingsWithEvenSize"><b>GetNumOfRingsWithEvenSize</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRingsWithEvenSize();</div>
+<p>Returns number of rings with even size in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRingsWithOddSize"><b>GetNumOfRingsWithOddSize</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRingsWithOddSize();</div>
+<p>Returns number of rings with odd size in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRingsWithSize"><b>GetNumOfRingsWithSize</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRingsWithSize($Size);</div>
+<p>Returns number of rings with <i>Size</i> in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRingsWithSizeGreaterThan"><b>GetNumOfRingsWithSizeGreaterThan</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRingsWithSizeGreaterThan($Size);</div>
+<p>Returns number of rings with size greater than <i>Size</i> in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetNumOfRingsWithSizeLessThan"><b>GetNumOfRingsWithSizeLessThan</b></dt>
+<dd>
+<div class="OptionsBox">    $RingCount = $Molecule-&gt;GetNumOfRingsWithSizeLessThan($Size);</div>
+<p>Returns number of rings with size less than <i>Size</i> in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingBonds"><b>GetRingBonds</b></dt>
+<dd>
+<div class="OptionsBox">    @RingBonds = $Molecule-&gt;GetRingBonds(@RingAtoms);</div>
+<p>Returns an array of ring <b>Bond</b> objects correponding to an array of ring <i>Atoms</i> in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingBondsFromRings"><b>GetRingBondsFromRings</b></dt>
+<dd>
+<div class="OptionsBox">    @RingBondsSets = $Molecule-&gt;GetRingBondsFromRings(@RingAtomsSets);</div>
+<p>Returns an array containing references to arrays of ring <b>Bond</b> objects for rings specified in an array of references to ring <i>Atom</i> objects.</p>
+</dd>
+<dt id="GetRings"><b>GetRings</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRings();</div>
+<p>Returns rings as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingsWithEvenSize"><b>GetRingsWithEvenSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRingsWithEvenSize();</div>
+<p>Returns even size rings as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingsWithOddSize"><b>GetRingsWithOddSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRingsWithOddSize();</div>
+<p>Returns odd size rings as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingsWithSize"><b>GetRingsWithSize</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRingsWithSize($Size);</div>
+<p>Returns rings with <i>Size</i> as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingsWithSizeGreaterThan"><b>GetRingsWithSizeGreaterThan</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRingsWithSizeGreaterThan($Size);</div>
+<p>Returns rings with size greater than <i>Size</i> as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetRingsWithSizeLessThan"><b>GetRingsWithSizeLessThan</b></dt>
+<dd>
+<div class="OptionsBox">    @Rings = $Molecule-&gt;GetRingsWithSizeLessThan($Size);</div>
+<p>Returns rings with size less than <i>Size</i> as an array containing references to arrays of ring <i>Atom</i> objects in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetSizeOfLargestRing"><b>GetSizeOfLargestRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Size = $Molecule-&gt;GetSizeOfLargestRing();</div>
+<p>Returns size of the largest ring in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetSizeOfSmallestRing"><b>GetSizeOfSmallestRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Size = $Molecule-&gt;GetSizeOfSmallestRing();</div>
+<p>Returns size of the smalles ring in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetSmallestRing"><b>GetSmallestRing</b></dt>
+<dd>
+<div class="OptionsBox">    @RingAtoms = $Molecule-&gt;GetSmallestRing();</div>
+<p>Returns an array containing <i>Atom</i> objects corresponding to the smallest ring in a <i>Molecule</i>.</p>
+</dd>
+<dt id="GetSpinMultiplicity"><b>GetSpinMultiplicity</b></dt>
+<dd>
+<div class="OptionsBox">    $SpinMultiplicity = $Molecule-&gt;GetSpinMultiplicity();</div>
+<p>Returns net spin multiplicity of a <i>Molecule</i> using one of the following two methods: explicitly set <b>SpinMultiplicity</b> property or sum of spin multiplicity on each atom.</p>
+</dd>
+<dt id="GetSupportedAromaticityModels"><b>GetSupportedAromaticityModels</b></dt>
+<dd>
+<div class="OptionsBox">    @SupportedModels = $Molecule-&gt;GetSupportedAromaticityModels();</div>
+<p>Returns an array containing a list of supported aromaticity models.</p>
+</dd>
+<dt id="GetValenceModel"><b>GetValenceModel</b></dt>
+<dd>
+<div class="OptionsBox">    $ValenceModel = $Molecule-&gt;GetValenceModel();</div>
+<p>Returns valence model for <i>Molecule</i> using one of the following two methods: explicitly set <b>ValenceModel</b> property or defaul value of <i>InternalValenceModel</i>.</p>
+</dd>
+<dt id="GetTopologicallySortedAtoms"><b>GetTopologicallySortedAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    @SortedAtoms = $Molecule-&gt;GetTopologicallySortedAtoms([$StartAtom]);</div>
+<p>Returns an array of topologically sorted <i>Atom</i> objects starting from <i>StartAtom</i> or an arbitrary atom in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasAromaticRings"><b>HasAromaticRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasAromaticRings();</div>
+<p>Returns 1 or 0 based on whether any aromatic ring is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasAromaticAtomsInRings"><b>HasAromaticAtomsInRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasAromaticAtomsInRings();</div>
+<p>Returns 1 or 0 based on whether any aromatic ring atom is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasAromaticAtomsNotInRings"><b>HasAromaticAtomsNotInRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasAromaticAtomsNotInRings();</div>
+<p>Returns 1 or 0 based on whether any non-ring atom is marked aromatic in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasAtom"><b>HasAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasAtom($Atom);</div>
+<p>Returns 1 or 0 based on whether <i>Atom</i> is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasBond"><b>HasBond</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasBond($Bond);</div>
+<p>Returns 1 or 0 based on whether <i>Bond</i> is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasFusedRings"><b>HasFusedRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasFusedRings();</div>
+<p>Returns 1 or 0 based on whether any fused rings set is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasNoRings"><b>HasNoRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasNoRings();</div>
+<p>Returns 0 or 1 based on whether any ring is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasOnlyOneRing"><b>HasOnlyOneRing</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasOnlyOneRing();</div>
+<p>Returns 1 or 0 based on whether only one ring is present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="HasRings"><b>HasRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;HasRings();</div>
+<p>Returns 1 or 0 based on whether rings are present in a <i>Molecule</i>.</p>
+</dd>
+<dt id="IsAromatic"><b>IsAromatic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;IsAromatic();</div>
+<p>Returns 1 or 0 based on whether <i>Molecule</i> is aromatic.</p>
+</dd>
+<dt id="IsMolecule"><b>IsMolecule</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = Molecule::IsMolecule();</div>
+<p>Returns 1 or 0 based on whether <i>Object</i> is a <b>Molecule</b> object.</p>
+</dd>
+<dt id="IsRingAromatic"><b>IsRingAromatic</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;IsRingAromatic(@RingAtoms);</div>
+<p>Returns 1 or 0 based on whether all <i>RingAtoms</i> are aromatic.</p>
+</dd>
+<dt id="IsSupportedAromaticityModel"><b>IsSupportedAromaticityModel</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;IsSupportedAromaticityModel($AromaticityModel);
+<br/>    $Status = Molecule::IsSupportedAromaticityModel($AromaticityModel);</div>
+<p>Returns 1 or 0 based on whether specified <i>AromaticityModel</i> is supported.</p>
+</dd>
+<dt id="IsTwoDimensional"><b>IsTwoDimensional</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;IsTwoDimensional();</div>
+<p>Returns 1 or 0 based on whether any atom in <i>Molecule</i> has a non-zero value for X or Y coordinate and all atoms have zero value for Z coordinates.</p>
+</dd>
+<dt id="IsThreeDimensional"><b>IsThreeDimensional</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;IsThreeDimensional();</div>
+<p>Returns 1 or 0 based on whether any atom in <i>Molecule</i> has a non-zero value for Z coordinate.</p>
+</dd>
+<dt id="KeepLargestComponent"><b>KeepLargestComponent</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;KeepLargestComponent();</div>
+<p>Deletes atoms corresponding to all other connected components Except for the largest connected component in a <i>Molecule</i> and returns <i>Molecule</i>.</p>
+</dd>
+<dt id="KekulizeAromaticAtoms"><b>KekulizeAromaticAtoms</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = $Molecule-&gt;KekulizeAromaticAtoms();</div>
+<p>Kekulize marked ring and non-ring aromatic atoms in a molecule and return 1 or 1 based on whether the kekulization succeeded.</p>
+</dd>
+<dt id="NewAtom"><b>NewAtom</b></dt>
+<dd>
+<div class="OptionsBox">    $NewAtom = $Molecule-&gt;NewAtom(%AtomPropertyNamesAndValues);</div>
+<p>Creates a new atom using <i>AtomPropertyNamesAndValues</i>, add its to <i>Molecule</i>, and returns new <b>Atom</b> object.</p>
+</dd>
+<dt id="NewBond"><b>NewBond</b></dt>
+<dd>
+<div class="OptionsBox">    $NewBond = $Molecule-&gt;NewBond(%BondPropertyNamesAndValues);</div>
+<p>Creates a new bond using <i>AtomPropertyNamesAndValues</i>, add its to <i>Molecule</i>, and returns new <b>Bond</b> object.</p>
+</dd>
+<dt id="SetActiveRings"><b>SetActiveRings</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule-&gt;SetActiveRings($RingsType);</div>
+<p>Sets up type of detected ring sets to use during all ring related methods and returns <i>Molecule</i>. Possible <i>RingType</i> values: <i>Independent or All</i>. By default, <i>Independent</i> ring set is used during all ring methods.</p>
+</dd>
+<dt id="SetAromaticityModel"><b>SetAromaticityModel</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule = $Molecule-&gt;SetAromaticityModel($AromaticityModel);</div>
+<p>Sets up <i>AromaticityModel</i> property value for <i>Molecule</i> and retrurns <i>Molecule</i>.</p>
+</dd>
+<dt id="SetValenceModel"><b>SetValenceModel</b></dt>
+<dd>
+<div class="OptionsBox">    $Molecule = $Molecule-&gt;SetValenceModel(ValenceModel);</div>
+<p>Sets up <i>ValenceModel</i> property value for <i>Molecule</i> and retrurns <i>Molecule</i>.</p>
+</dd>
+<dt id="StringifyMolecule"><b>StringifyMolecule</b></dt>
+<dd>
+<div class="OptionsBox">    $MoleculeString = $Molecule-&gt;StringifyMolecule();</div>
+<p>Returns a string containing information about <i>Molecule</i> object</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Atom.html">Atom.pm</a>, <a href="./Bond.html">Bond.pm</a>, <a href="./MoleculeFileIO.html">MoleculeFileIO.pm</a>, <a href="./MolecularFormula.html">MolecularFormula.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./MolecularFormula.html" title="MolecularFormula.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MoleculeFileIO.html" title="MoleculeFileIO.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Molecule.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

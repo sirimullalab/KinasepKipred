@@ -1,0 +1,94 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:DownloadPDBFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./DBTablesToTextFiles.html" title="DBTablesToTextFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./EStateIndiciesFingerprints.html" title="EStateIndiciesFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>DownloadPDBFiles.pl</strong></td><td width="33%" align="right"><a href="././code/DownloadPDBFiles.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/DownloadPDBFiles.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/DownloadPDBFiles.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/DownloadPDBFiles.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/DownloadPDBFiles.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>DownloadPDBFiles.pl - Download PDB files for PDB ID(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>DownloadPDBFiles.pl PDBID(s) or PDBIDsTextFile</p>
+<p>DownloadPDBFiles.pl [<b>-c, --colmode</b> <i>colnum | collabel</i>] [<b>-d, --dataLocationURL</b> <i>PDB URL</i>] [<b>-h, --help</b>] [<b>-d, --dataLocationURL</b> <i>PDB URL</i>] [<b>-e, --EDSMap </b> <i>yes | no</i>] [<b>--EDSMapLocationURL</b> <i>EDS Map URL</i>] [<b>-m, --mode</b> &lt;IDsOnCmdLine | IDsInFile&gt;] [<b>--PDBIDsCol </b> <i>number | string</i>] [<b>-w, --WorkingDir</b> dirname] PDBID(s) or PDBIDsTextFile</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Download PDB files corresponding to PDB IDs specified in a column in a CSV/TSV text file or on the command line as space delimited parameters.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="c---colmode-colnum-collabel"><b>-c, --colmode</b> <i>colnum | collabel</i></dt>
+<dd>
+<p>Specify how columns are identified in a <i>TextFile</i> containing PDB IDs: using column number or column label. Possible values: <i>colnum or collabel</i>. Default value: <i>colnum</i>.</p>
+</dd>
+<dt id="d---dataLocationURL-PDB-URL"><b>-d, --dataLocationURL</b> <i>PDB URL</i></dt>
+<dd>
+<p>Specify location of PDB URL where data files are available for download. Default value: <i>http://www.rcsb.org/pdb/files/</i>.</p>
+</dd>
+<dt id="e---EDSMap-yes-no"><b>-e, --EDSMap </b> <i>yes | no</i></dt>
+<dd>
+<p>Download Electron Density Map (EDS) in CCP4 format. Possible values: <i>Yes or No</i>. Default value: <i>no</i>.</p>
+</dd>
+<dt id="EDSMapLocationURL-EDS-Map-URL"><b>--EDSMapLocationURL</b> <i>EDS Map URL</i></dt>
+<dd>
+<p>Specify location of EDS Map URL where data files are available for download. Default value: <i>http://www.ebi.ac.uk/pdbe/coordinates/files/</i>.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="indelim-comma-semicolon"><b>--indelim</b> <i>comma | semicolon</i></dt>
+<dd>
+<p>Input delimiter for CSV <i>TextFile</i> containing PDB IDs. Possible values: <i>comma or semicolon</i>. Default value: <i>comma</i>. For TSV files, this option is ignored and <i>tab</i> is used as a delimiter.</p>
+</dd>
+<dt id="m---mode-IDsOnCmdLine-IDsInFile"><b>-m, --mode</b> &lt;IDsOnCmdLine | IDsInFile&gt;</dt>
+<dd>
+<p>Indicate how PDB IDs are specified: PDB IDs are either present as space delimited command line parameters or in a specific column in a CSV/TSV text file. Possible values: <i>IDsOnCmdLine or IDsInFile</i>. Default: <i>IDsOnCmdLine</i>.</p>
+</dd>
+<dt id="p---PDBIDsCol-number-string"><b>-p, --PDBIDsCol </b> <i>number | string</i></dt>
+<dd>
+<p>Column used to identify PDB ID(s) in a text file. Default value: First column containing text string <b>PDB_ID</b> or &lt;PDBID&gt;.</p>
+<p>For <i>colnum</i> value of <b>-c, --colmode</b> option, input value is a column number. Example: <i>1</i>.</p>
+<p>For <i>collabel</i> value of <b>-c, --colmode</b> option, input value is a column label. Example: <i>PDB_ID</i>.</p>
+<p>This option is ignored during <i>IDsOnCmdLine</i> value of <b>m, --mode</b> option.</p>
+</dd>
+<dt id="w---WorkingDir-dirname"><b>-w, --WorkingDir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To retrieve a PDB files for PDB ID 2HYY and generate a local 2HYY.pdb file, type:</p>
+<div class="ExampleBox">    % DownloadPDBFiles.pl 2HYY</div>
+<p>To retrieve PDB files for multiple PDB IDs 2HYY and 1KV2 and generate corresponding local PDB files, type:</p>
+<div class="ExampleBox">    % DownloadPDBFiles.pl 2HYY 1KV2</div>
+<p>To download PDB files for PDB IDs present in column name PDB_ID or PDBID in SamplePDBIDs.csv file and generate correponding PDB files, type</p>
+<div class="ExampleBox">    % DownloadPDBFiles.pl -m IDsInFile SamplePDBIDs.csv</div>
+<p>To download PDB files for PDB IDs present in a specific column name in SamplePDBIDs.csv file and generate correponding PDB files, type</p>
+<div class="ExampleBox">    % DownloadPDBFiles.pl -m IDsInFile -c collabel -p PDB_ID SamplePDBIDs.csv</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./ExtractFromPDBFiles.html">ExtractFromPDBFiles.pl</a>, <a href="./InfoPDBFiles.html">InfoPDBFiles.pl</a>, <a href="./ModifyPDBFiles.html">ModifyPDBFiles.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./DBTablesToTextFiles.html" title="DBTablesToTextFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./EStateIndiciesFingerprints.html" title="EStateIndiciesFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>DownloadPDBFiles.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

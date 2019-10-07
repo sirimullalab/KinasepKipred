@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:RDKitCalculatePartialCharges.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitCalculateMolecularDescriptors.html" title="RDKitCalculateMolecularDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitCalculateRMSD.html" title="RDKitCalculateRMSD.html">Next</a></td><td width="34%" align="middle"><strong>RDKitCalculatePartialCharges.py</strong></td><td width="33%" align="right"><a href="././code/RDKitCalculatePartialCharges.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/RDKitCalculatePartialCharges.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/RDKitCalculatePartialCharges.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/RDKitCalculatePartialCharges.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/RDKitCalculatePartialCharges.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>RDKitCalculatePartialCharges.py - Calculate partial atomic charges</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>RDKitCalculatePartialCharges.py [<b>--allowParamFailure</b> &lt;yes or no&gt;] [<b>--chargesSDFormat</b> &lt;AtomAliases or DataField&gt;] [<b>--dataFieldLabel</b> &lt;text&gt;] [<b>--infileParams</b> &lt;Name,Value,...&gt;] [<b>--mode</b> &lt;Gasteiger or MMFF&gt;] [<b>--numIters</b> &lt;number&gt;] [<b>--outfileParams</b> &lt;Name,Value,...&gt;] [<b>--precision</b> &lt;number&gt;] [--overwrite] [<b>-w</b> &lt;dir&gt;] <b>-i</b> &lt;infile&gt; <b>-o</b> &lt;outfile&gt;</p>
+<p>RDKitCalculatePartialCharges.py <b>-h</b> | <b>--help</b> | <b>-e</b> | <b>--examples</b></p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Calculate partial charges for atoms in molecules and write them out to a SD file. The hydrogens are automatically added to molecules before calculating partial charges.</p>
+<p>The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi, .txt, .csv, .tsv)</p>
+<p>The supported output file format are: SD File (.sdf, .sd)</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="a---allowParamFailure-yes-or-no-default:-yes"><b>-a, --allowParamFailure</b> &lt;yes or no&gt; [default: yes]</dt>
+<dd>
+<p>Allow calculation of Gasteiger partial charges to proceed for molecules containing atoms with unknown parameters. The atoms with unknown parameters are removed from the calculations by setting their values to zero.</p>
+</dd>
+<dt id="c---chargesSDFormat-AtomAliases-or-DataField-default:-AtomAliases"><b>-c, --chargesSDFormat</b> &lt;AtomAliases or DataField&gt; [default: AtomAliases]</dt>
+<dd>
+<p>Format for writing out partial atomic charges to SD file. Possible values: AtomAliases or DataField.</p>
+<p>The charges are stored as atom property named &#39;molFileAlias&#39; for &#39;AtomAliases&#39; format and may be retrieved using the RDKit function &#39;GetProp&#39; for atoms: Aotm.GetProp(&#39;molFileAliases&#39;).</p>
+<p>The charges are stored under a data field label speciefied using &#39;-d, --dataFieldLabel&#39; for &#39;DataField&#39; format and may be retrieved using the RDKit function &#39;GetProp&#39; for molecues.</p>
+</dd>
+<dt id="d---dataFieldLabel-text-default:-PartialCharges"><b>-d, --dataFieldLabel</b> &lt;text&gt; [default: PartialCharges]</dt>
+<dd>
+<p>Data field label to use for storing charged in SD file during &#39;DataField&#39; value of &#39;-c, --chargesSDFormat&#39;.</p>
+</dd>
+<dt id="e---examples"><b>-e, --examples</b></dt>
+<dd>
+<p>Print examples.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="i---infile-infile"><b>-i, --infile</b> &lt;infile&gt;</dt>
+<dd>
+<p>Input file name.</p>
+</dd>
+<dt id="infileParams-Name-Value-...-default:-auto"><b>--infileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for reading molecules from files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes
+<br/>    SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        smilesTitleLine,auto,sanitize,yes
+<br/>    </div>
+<p>Possible values for smilesDelimiter: space, comma or tab.</p>
+</dd>
+<dt id="m---mode-Gasteiger-or-MMFF-default:-Gasteiger"><b>-m, --mode</b> &lt;Gasteiger or MMFF&gt; [default: Gasteiger]</dt>
+<dd>
+<p>Type of partial atomic charges to calculate. Possible values: Gasteiger [ Ref 138 ] or Merk Molecular Mechanics Fore Field (MMFF) [ Ref 83-87 ].</p>
+</dd>
+<dt id="n---numIters-number-default:-12"><b>-n, --numIters</b> &lt;number&gt; [default: 12]</dt>
+<dd>
+<p>Number of iterations to perform during calculation of Gasteiger charges.</p>
+</dd>
+<dt id="o---outfile-outfile"><b>-o, --outfile</b> &lt;outfile&gt;</dt>
+<dd>
+<p>Output file name.</p>
+</dd>
+<dt id="outfileParams-Name-Value-...-default:-auto"><b>--outfileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for writing molecules to files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD: compute2DCoords,auto,kekulize,no
+<br/>    </div>
+<p>Default value for compute2DCoords: yes for SMILES input file; no for all other file types.</p>
+</dd>
+<dt id="p---precision-number-default:-3"><b>-p, --precision</b> &lt;number&gt; [default: 3]</dt>
+<dd>
+<p>Floating point precision for writing the calculated partial atomic charges.</p>
+</dd>
+<dt id="overwrite"><b>--overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="w---workingdir-dir"><b>-w, --workingdir</b> &lt;dir&gt;</dt>
+<dd>
+<p>Location of working directory which defaults to the current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To calculate Gasteiger partial atomic charges for molecules in a SMILES file and write them out to a SD file as atom aliases, type:</p>
+<div class="ExampleBox">    % RDKitCalculatePartialCharges.py  -i Sample.smi -o SampleOut.sdf</div>
+<p>To calculate MMFF forcefield partial atomic charges for molecules in a SD file and write them out to a SD file under &#39;PartialCharges&#39; data field, type:</p>
+<div class="ExampleBox">    % RDKitCalculatePartialCharges.py  -m MMFF -c DataField -i Sample.sdf
+      -o SampleOut.sdf</div>
+<p>To calculate Gasteiger partial atomic charges for molecules in a SMILES file and write them out to a SD file under a data field named &#39;GasteigerCharges&#39;, type:</p>
+<div class="ExampleBox">    % RDKitCalculatePartialCharges.py  -m Gasteiger -c DataField
+      -d GasteigerCharges -p 4 -i Sample.smi -o SampleOut.sdf</div>
+<p>To calculate Gasteiger partial atomic charges for molecules in a CSV SMILES file, SMILES strings in column 1, name in column 2, and write out a SD file containing charges as atom aliases, type:</p>
+<div class="ExampleBox">    % RDKitCalculatePartialCharges.py --infileParams
+      &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,
+      smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;
+      -i SampleSMILES.csv -o SampleOut.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./RDKitCalculateMolecularDescriptors.html">RDKitCalculateMolecularDescriptors.py</a>, <a href="./RDKitCalculateRMSD.html">RDKitCalculateRMSD.py</a>, <a href="./RDKitCompareMoleculeShapes.html">RDKitCompareMoleculeShapes.py</a>, <a href="./RDKitConvertFileFormat.html">RDKitConvertFileFormat.py</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>The functionality available in this script is implemented using RDKit, an open source toolkit for cheminformatics developed by Greg Landrum.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitCalculateMolecularDescriptors.html" title="RDKitCalculateMolecularDescriptors.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitCalculateRMSD.html" title="RDKitCalculateRMSD.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>RDKitCalculatePartialCharges.py</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

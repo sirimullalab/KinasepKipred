@@ -1,0 +1,687 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitCalculateMolecularDescriptors.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitCalculateMolecularDescriptors.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">rdMolDescriptors</span>
+  43     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">Descriptors</span>
+  44     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">Descriptors3D</span>
+  45 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  46     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  47     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  48     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  49 
+  50 <span class="c1"># RDKit dependency imports...</span>
+  51 <span class="kn">import</span> <span class="nn">numpy</span>
+  52 
+  53 <span class="c1"># MayaChemTools imports...</span>
+  54 <span class="k">try</span><span class="p">:</span>
+  55     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  56     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  57     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  58 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  59     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  60     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  61     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  62 
+  63 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  64 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  65 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  66 
+  67 <span class="n">DescriptorNamesMap</span> <span class="o">=</span> <span class="p">{}</span>
+  68 
+  69 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  70     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  71     
+  72     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  73     
+  74     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  75     
+  76     <span class="c1"># Retrieve command line arguments and options...</span>
+  77     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  78     
+  79     <span class="c1"># Process and validate command line arguments and options...</span>
+  80     <span class="n">ProcessOptions</span><span class="p">()</span>
+  81     
+  82     <span class="c1"># Perform actions required by the script...</span>
+  83     <span class="n">CalculateMolecularDescriptors</span><span class="p">()</span>
+  84     
+  85     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  86     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  87 
+  88 <span class="k">def</span> <span class="nf">CalculateMolecularDescriptors</span><span class="p">():</span>
+  89     <span class="sd">&quot;&quot;&quot;Calculate molecular descriptors.&quot;&quot;&quot;</span>
+  90 
+  91     <span class="n">ProcessMolecularDescriptorsInfo</span><span class="p">()</span>
+  92     <span class="n">PerformCalculations</span><span class="p">()</span>
+  93 
+  94 <span class="k">def</span> <span class="nf">ProcessMolecularDescriptorsInfo</span><span class="p">():</span>
+  95     <span class="sd">&quot;&quot;&quot;Process descriptors information.&quot;&quot;&quot;</span>
+  96 
+  97     <span class="n">RetrieveMolecularDescriptorsInfo</span><span class="p">()</span>
+  98     <span class="n">ProcessSpecifiedDescriptorNames</span><span class="p">()</span>
+  99 
+ 100 <span class="k">def</span> <span class="nf">PerformCalculations</span><span class="p">():</span>
+ 101     <span class="sd">&quot;&quot;&quot;Calculate descriptors for a specified list of descriptors.&quot;&quot;&quot;</span>
+ 102 
+ 103     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+ 104     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+ 105     
+ 106     <span class="n">DescriptorNames</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span>
+ 107     <span class="n">DescriptorCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">DescriptorNames</span><span class="p">)</span>
+ 108     
+ 109     <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileMode&quot;</span><span class="p">]</span>
+ 110     <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileDelim&quot;</span><span class="p">]</span>
+ 111     <span class="n">SMILESOut</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SMILESOut&quot;</span><span class="p">]</span>
+ 112 
+ 113     <span class="n">Precision</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">]</span>
+ 114     
+ 115     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Calculating </span><span class="si">%d</span><span class="s2"> molecular descriptor(s) for each molecule...&quot;</span> <span class="o">%</span> <span class="n">DescriptorCount</span><span class="p">)</span>
+ 116     
+ 117     <span class="c1"># Setup a molecule reader...</span>
+ 118     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+ 119     <span class="n">Mols</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+ 120     
+ 121     <span class="c1"># Setup a writer...</span>
+ 122     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 123     <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 124         <span class="n">Writer</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+ 125     <span class="k">else</span><span class="p">:</span>
+ 126         <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 127         
+ 128     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 129         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 130 
+ 131     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 132 
+ 133     <span class="c1"># Wite out headers for a text file...</span>
+ 134     <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 135         <span class="n">LineWords</span> <span class="o">=</span> <span class="p">[]</span>
+ 136         <span class="k">if</span> <span class="n">SMILESOut</span><span class="p">:</span>
+ 137             <span class="n">LineWords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;SMILES&quot;</span><span class="p">)</span>
+ 138         <span class="n">LineWords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MolID&quot;</span><span class="p">)</span>
+ 139         <span class="n">LineWords</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">DescriptorNames</span><span class="p">)</span>
+ 140         <span class="n">Line</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LineWords</span><span class="p">)</span>
+ 141         <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Line</span><span class="p">)</span>
+ 142         
+ 143     <span class="c1"># Process molecules...</span>
+ 144     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 145     <span class="n">ValidMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 146     <span class="n">MatchCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 147 
+ 148     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 149         <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 150         <span class="k">if</span> <span class="n">Mol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 151             <span class="k">continue</span>
+ 152         
+ 153         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">Mol</span><span class="p">):</span>
+ 154             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 155             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring empty molecule: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolName</span><span class="p">)</span>
+ 156             <span class="k">continue</span>
+ 157         
+ 158         <span class="n">ValidMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 159 
+ 160         <span class="c1"># Calculate descriptors...</span>
+ 161         <span class="n">CalculatedValues</span> <span class="o">=</span> <span class="p">[]</span>
+ 162         <span class="k">for</span> <span class="n">Index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">DescriptorCount</span><span class="p">):</span>
+ 163             <span class="n">Name</span> <span class="o">=</span> <span class="n">DescriptorNames</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 164             <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span>
+ 165             <span class="n">Value</span> <span class="o">=</span> <span class="n">FormatCalculatedValue</span><span class="p">(</span><span class="n">ComputeFunction</span><span class="p">(</span><span class="n">Mol</span><span class="p">),</span> <span class="n">Precision</span><span class="p">)</span>
+ 166             <span class="n">CalculatedValues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 167 
+ 168         <span class="c1"># Write out calculated values...</span>
+ 169         <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 170             <span class="n">LineWords</span> <span class="o">=</span> <span class="p">[]</span>
+ 171             <span class="k">if</span> <span class="n">SMILESOut</span><span class="p">:</span>
+ 172                 <span class="n">SMILES</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolToSmiles</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">isomericSmiles</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">canonical</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+ 173                 <span class="n">LineWords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SMILES</span><span class="p">)</span>
+ 174             
+ 175             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 176             <span class="n">LineWords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MolName</span><span class="p">)</span>
+ 177             <span class="n">LineWords</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">CalculatedValues</span><span class="p">)</span>
+ 178             <span class="n">Line</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LineWords</span><span class="p">)</span>
+ 179             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Line</span><span class="p">)</span>
+ 180         <span class="k">else</span><span class="p">:</span>
+ 181             <span class="k">for</span> <span class="n">Index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">DescriptorCount</span><span class="p">):</span>
+ 182                 <span class="n">Name</span> <span class="o">=</span> <span class="n">DescriptorNames</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 183                 <span class="n">Value</span> <span class="o">=</span> <span class="n">CalculatedValues</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 184                 <span class="n">Mol</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span> <span class="n">Value</span><span class="p">)</span>
+ 185                 
+ 186             <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 187                 <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 188                 
+ 189             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 190     
+ 191     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 192         <span class="n">Writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 193         
+ 194     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 195     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 196     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 197 
+ 198 <span class="k">def</span> <span class="nf">FormatCalculatedValue</span><span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Precision</span><span class="p">):</span>
+ 199     <span class="sd">&quot;&quot;&quot;Format calculated value of descriptor based on its type.&quot;&quot;&quot;</span>
+ 200 
+ 201     <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span> <span class="ow">is</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+ 202         <span class="n">FormattedValue</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%.*f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Precision</span><span class="p">,</span> <span class="n">Value</span><span class="p">)</span>
+ 203         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;[1-9]&quot;</span><span class="p">,</span> <span class="n">FormattedValue</span><span class="p">):</span>
+ 204             <span class="n">FormattedValue</span> <span class="o">=</span> <span class="s2">&quot;0.0&quot;</span>
+ 205     <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+ 206         <span class="n">FormattedValue</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Value</span>
+ 207         <span class="n">FormattedValue</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\[|\]|,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">FormattedValue</span><span class="p">)</span>
+ 208     <span class="k">else</span><span class="p">:</span>
+ 209         <span class="n">FormattedValue</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Value</span>
+ 210 
+ 211     <span class="k">return</span> <span class="n">FormattedValue</span>
+ 212 
+ 213 <span class="k">def</span> <span class="nf">ProcessSpecifiedDescriptorNames</span><span class="p">():</span>
+ 214     <span class="sd">&quot;&quot;&quot;Process and validate specified decriptor names.&quot;&quot;&quot;</span>
+ 215 
+ 216     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 217 
+ 218     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(2D|3D|All|FragmentCountOnly|Specify)$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 219         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Mode value, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="s2">-m, --mode</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value.&quot;</span> <span class="o">%</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">])</span>
+ 220     
+ 221     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^2D$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 222         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;2D&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span>
+ 223         <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">]:</span>
+ 224             <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">])</span>
+ 225         <span class="k">return</span>
+ 226     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^3D$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 227         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;3D&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span>
+ 228         <span class="k">return</span>
+ 229     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^All$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 230         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;2D&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span>
+ 231         <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">]:</span>
+ 232             <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">])</span>
+ 233         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;3D&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">])</span>
+ 234         <span class="k">return</span>
+ 235     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^FragmentCountOnly$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 236         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span>
+ 237         <span class="k">return</span>
+ 238 
+ 239     <span class="c1"># Set up a canonical descriptor names map for checking specified names...</span>
+ 240     <span class="n">CanonicalNameMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 241     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span>  <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]:</span>
+ 242         <span class="n">CanonicalNameMap</span><span class="p">[</span><span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">Name</span>
+ 243     
+ 244     <span class="c1"># Parse and validate specified names...</span>
+ 245     <span class="n">DescriptorNames</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DescriptorNames&quot;</span><span class="p">])</span>
+ 246     <span class="k">if</span> <span class="ow">not</span> <span class="n">DescriptorNames</span><span class="p">:</span>
+ 247         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No descriptor names specified for </span><span class="se">\&quot;</span><span class="s2">-d, --descriptorNames</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 248 
+ 249     <span class="n">SMILESInfile</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;smi&quot;</span><span class="p">)</span>
+ 250     <span class="n">Canonical3DNameMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 251     <span class="k">if</span> <span class="n">SMILESInfile</span><span class="p">:</span>
+ 252         <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;3D&quot;</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]:</span>
+ 253             <span class="n">Canonical3DNameMap</span><span class="p">[</span><span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">Name</span>
+ 254             
+ 255     <span class="n">SpecifiedDescriptorNames</span> <span class="o">=</span> <span class="p">[]</span>
+ 256     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNames</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+ 257         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 258         <span class="k">if</span> <span class="n">CanonicalName</span> <span class="ow">in</span> <span class="n">CanonicalNameMap</span><span class="p">:</span>
+ 259             <span class="n">SpecifiedDescriptorNames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CanonicalNameMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">])</span>
+ 260         <span class="k">else</span><span class="p">:</span>
+ 261             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The descriptor name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-d, --descriptorNames</span><span class="se">\&quot;</span><span class="s2"> option is not a valid name.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Name</span><span class="p">))</span>
+ 262         <span class="k">if</span> <span class="n">SMILESInfile</span><span class="p">:</span>
+ 263             <span class="k">if</span> <span class="n">CanonicalName</span> <span class="ow">in</span> <span class="n">Canonical3DNameMap</span><span class="p">:</span>
+ 264                 <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The 3D descriptor name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-d, --descriptorNames</span><span class="se">\&quot;</span><span class="s2"> option is not a valid for SMILES input file.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Name</span><span class="p">))</span>
+ 265                 
+ 266     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">SpecifiedDescriptorNames</span><span class="p">):</span>
+ 267         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No valid descriptor name specified for </span><span class="se">\&quot;</span><span class="s2">-d, --descriptorNames</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span><span class="p">)</span>
+ 268     
+ 269     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedDescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecifiedDescriptorNames</span>
+ 270 
+ 271 <span class="k">def</span> <span class="nf">RetrieveMolecularDescriptorsInfo</span><span class="p">():</span>
+ 272     <span class="sd">&quot;&quot;&quot;Retrieve descriptors information.&quot;&quot;&quot;</span>
+ 273 
+ 274     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Retrieving information for avalible molecular descriptors...&quot;</span><span class="p">)</span>
+ 275     
+ 276     <span class="c1"># Initialze data for 2D, FragmentCount and 3D descriptors...</span>
+ 277     <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;2D&quot;</span><span class="p">,</span> <span class="s2">&quot;FragmentCount&quot;</span><span class="p">,</span> <span class="s2">&quot;3D&quot;</span><span class="p">]</span>
+ 278     <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+ 279 
+ 280     <span class="n">Autocorr2DExclude</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Autocorr2DExclude&quot;</span><span class="p">]</span>
+ 281     
+ 282     <span class="k">for</span> <span class="n">Type</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">]:</span>
+ 283         <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+ 284         <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 285     
+ 286     <span class="c1"># Setup data for 2D and FragmentCount...</span>
+ 287     <span class="n">DescriptorsInfo</span> <span class="o">=</span> <span class="n">Descriptors</span><span class="o">.</span><span class="n">descList</span>
+ 288     <span class="k">for</span> <span class="n">DescriptorInfo</span> <span class="ow">in</span> <span class="n">DescriptorsInfo</span><span class="p">:</span>
+ 289         <span class="n">Name</span> <span class="o">=</span> <span class="n">DescriptorInfo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+ 290         <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="n">DescriptorInfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+ 291 
+ 292         <span class="n">Type</span> <span class="o">=</span> <span class="s2">&quot;2D&quot;</span>
+ 293         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^fr_&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 294             <span class="n">Type</span> <span class="o">=</span> <span class="s2">&quot;FragmentCount&quot;</span>
+ 295         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Autocorr2D$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 296             <span class="k">if</span> <span class="n">Autocorr2DExclude</span><span class="p">:</span>
+ 297                 <span class="k">continue</span>
+ 298         
+ 299         <span class="k">if</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]:</span>
+ 300             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring duplicate descriptor name: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Name</span><span class="p">)</span>
+ 301         <span class="k">else</span><span class="p">:</span>
+ 302             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Name</span><span class="p">)</span>
+ 303             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComputeFunction</span>
+ 304 
+ 305     <span class="c1"># Add new 2D decriptor name to the list...</span>
+ 306     <span class="n">Type</span> <span class="o">=</span> <span class="s2">&quot;2D&quot;</span>
+ 307     <span class="k">if</span> <span class="ow">not</span> <span class="n">Autocorr2DExclude</span><span class="p">:</span>
+ 308         <span class="k">try</span><span class="p">:</span>
+ 309             <span class="n">Name</span> <span class="o">=</span> <span class="s2">&quot;Autocorr2D&quot;</span>
+ 310             <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcAUTOCORR2D</span>
+ 311             <span class="k">if</span> <span class="ow">not</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]:</span>
+ 312                 <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Name</span><span class="p">)</span>
+ 313                 <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComputeFunction</span>
+ 314         <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+ 315             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;2D descriptor, </span><span class="si">%s</span><span class="s2">, is not available in your current version of RDKit.&quot;</span> <span class="o">%</span> <span class="n">Name</span><span class="p">)</span>
+ 316         
+ 317     <span class="c1"># Set data for 3D descriptors...</span>
+ 318     <span class="n">Type</span> <span class="o">=</span> <span class="s2">&quot;3D&quot;</span>
+ 319     <span class="n">NameToComputeFunctionMap</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;PMI1&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">PMI1</span><span class="p">,</span> <span class="s1">&#39;PMI2&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">PMI2</span><span class="p">,</span> <span class="s1">&#39;PMI3&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">PMI3</span><span class="p">,</span> <span class="s1">&#39;NPR1&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">NPR1</span><span class="p">,</span> <span class="s1">&#39;NPR2&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">NPR2</span><span class="p">,</span> <span class="s1">&#39;RadiusOfGyration&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">RadiusOfGyration</span><span class="p">,</span> <span class="s1">&#39;InertialShapeFactor&#39;</span> <span class="p">:</span>  <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">InertialShapeFactor</span><span class="p">,</span> <span class="s1">&#39;Eccentricity&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">Eccentricity</span><span class="p">,</span> <span class="s1">&#39;Asphericity&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">Asphericity</span><span class="p">,</span> <span class="s1">&#39;SpherocityIndex&#39;</span> <span class="p">:</span> <span class="n">Descriptors3D</span><span class="o">.</span><span class="n">SpherocityIndex</span><span class="p">}</span>
+ 320     
+ 321     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">NameToComputeFunctionMap</span><span class="p">:</span>
+ 322         <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="n">NameToComputeFunctionMap</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span>
+ 323         <span class="k">if</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]:</span>
+ 324             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring duplicate descriptor name: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Name</span><span class="p">)</span>
+ 325         <span class="k">else</span><span class="p">:</span>
+ 326             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Name</span><span class="p">)</span>
+ 327             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComputeFunction</span>
+ 328 
+ 329     <span class="c1"># Check and add new 3D descriptors not directly available through Descriptors3D module...</span>
+ 330     <span class="n">Type</span> <span class="o">=</span> <span class="s2">&quot;3D&quot;</span>
+ 331     <span class="n">AvailableName3DMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 332     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Autocorr3D&#39;</span><span class="p">,</span> <span class="s1">&#39;RDF&#39;</span><span class="p">,</span> <span class="s1">&#39;MORSE&#39;</span><span class="p">,</span> <span class="s1">&#39;WHIM&#39;</span><span class="p">,</span> <span class="s1">&#39;GETAWAY&#39;</span><span class="p">]:</span>
+ 333         <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="bp">None</span>
+ 334         <span class="k">try</span><span class="p">:</span>
+ 335             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Autocorr3D$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 336                 <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcAUTOCORR3D</span>
+ 337             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^RDF$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 338                 <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcRDF</span>
+ 339             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^MORSE$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 340                 <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcMORSE</span>
+ 341             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^WHIM$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 342                 <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcWHIM</span>
+ 343             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^GETAWAY$&quot;</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 344                 <span class="n">ComputeFunction</span> <span class="o">=</span>  <span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">CalcGETAWAY</span>
+ 345             <span class="k">else</span><span class="p">:</span>
+ 346                 <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="bp">None</span>
+ 347         <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+ 348             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;3D descriptor, </span><span class="si">%s</span><span class="s2">, is not available in your current version of RDKit&quot;</span> <span class="o">%</span> <span class="n">Name</span><span class="p">)</span>
+ 349         
+ 350         <span class="k">if</span> <span class="n">ComputeFunction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 351             <span class="n">AvailableName3DMap</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComputeFunction</span>
+ 352 
+ 353     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">AvailableName3DMap</span><span class="p">:</span>
+ 354         <span class="n">ComputeFunction</span> <span class="o">=</span> <span class="n">AvailableName3DMap</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span>
+ 355         <span class="k">if</span> <span class="ow">not</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">]:</span>
+ 356             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Name</span><span class="p">)</span>
+ 357             <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;ComputeFunction&quot;</span><span class="p">][</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ComputeFunction</span>
+ 358 
+ 359     <span class="n">Count</span> <span class="o">=</span> <span class="mi">0</span>
+ 360     <span class="n">TypesCount</span> <span class="o">=</span> <span class="p">[]</span>
+ 361     <span class="k">for</span> <span class="n">Type</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">]:</span>
+ 362         <span class="n">TypeCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">])</span>
+ 363         <span class="n">TypesCount</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TypeCount</span><span class="p">)</span>
+ 364         <span class="n">Count</span> <span class="o">+=</span> <span class="n">TypeCount</span>
+ 365 
+ 366     <span class="k">if</span> <span class="ow">not</span> <span class="n">Count</span><span class="p">:</span>
+ 367         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to retrieve any  molecular descriptors...&quot;</span><span class="p">)</span>
+ 368 
+ 369     <span class="c1"># Sort descriptor names...</span>
+ 370     <span class="k">for</span> <span class="n">Type</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">]:</span>
+ 371         <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">])</span>
+ 372     
+ 373     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of availble molecular descriptors: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Count</span><span class="p">)</span>
+ 374     <span class="k">for</span> <span class="n">Index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">])):</span>
+ 375         <span class="n">Type</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">][</span><span class="n">Index</span><span class="p">]</span>
+ 376         <span class="n">TypeCount</span> <span class="o">=</span> <span class="n">TypesCount</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 377         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of </span><span class="si">%s</span><span class="s2"> molecular descriptors: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Type</span><span class="p">,</span> <span class="n">TypeCount</span><span class="p">))</span>
+ 378     
+ 379     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+ 380     
+ 381 <span class="k">def</span> <span class="nf">ListMolecularDescriptorsInfo</span><span class="p">():</span>
+ 382     <span class="sd">&quot;&quot;&quot;List descriptors information.&quot;&quot;&quot;</span>
+ 383 
+ 384     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Listing information for avalible molecular descriptors...&quot;</span><span class="p">)</span>
+ 385 
+ 386     <span class="n">Delimiter</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span>
+ 387     <span class="k">for</span> <span class="n">Type</span> <span class="ow">in</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="s2">&quot;Types&quot;</span><span class="p">]:</span>
+ 388         <span class="n">Names</span> <span class="o">=</span> <span class="n">DescriptorNamesMap</span><span class="p">[</span><span class="n">Type</span><span class="p">][</span><span class="s2">&quot;Names&quot;</span><span class="p">]</span>
+ 389         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> descriptors: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Type</span><span class="p">,</span> <span class="n">Delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Names</span><span class="p">)))</span>
+ 390 
+ 391     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+ 392 
+ 393 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 394     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 395     
+ 396     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 397     
+ 398     <span class="c1"># Validate options...</span>
+ 399     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 400 
+ 401     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Autocorr2DExclude&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 402     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--autocorr2DExclude&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 403         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Autocorr2DExclude&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 404     
+ 405     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 406     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--fragmentCount&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 407         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FragmentCount&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 408     
+ 409     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DescriptorNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--descriptorNames&quot;</span><span class="p">]</span>
+ 410     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">]</span>
+ 411     
+ 412     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 413     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 414     
+ 415     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 416     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 417     
+ 418     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 419     
+ 420     <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 421     <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 422     <span class="k">if</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;csv&quot;</span><span class="p">):</span>
+ 423         <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 424         <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span>
+ 425     <span class="k">elif</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;tsv txt&quot;</span><span class="p">):</span>
+ 426         <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 427         <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+ 428     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TextOutFileMode</span>
+ 429     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileDelim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span>
+ 430     
+ 431     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--precision&quot;</span><span class="p">])</span>
+ 432     
+ 433     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SMILESOut&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 434     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--smilesOut&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 435         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SMILESOut&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 436 
+ 437 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 438     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 439     
+ 440     <span class="c1"># Get options...</span>
+ 441     <span class="k">global</span> <span class="n">Options</span>
+ 442     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 443     
+ 444     <span class="c1"># Set current working directory to the specified directory...</span>
+ 445     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 446     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 447         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 448     
+ 449     <span class="c1"># Handle examples option...</span>
+ 450     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 451         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 452         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 453         
+ 454     <span class="c1"># Handle listing of descriptor information...</span>
+ 455     <span class="k">if</span>  <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--list&quot;</span><span class="p">]:</span>
+ 456         <span class="n">ProcessListMolecularDescriptorsOption</span><span class="p">()</span>
+ 457         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 458 
+ 459 <span class="k">def</span> <span class="nf">ProcessListMolecularDescriptorsOption</span><span class="p">():</span>
+ 460     <span class="sd">&quot;&quot;&quot;Process list descriptors information.&quot;&quot;&quot;</span>
+ 461 
+ 462     <span class="n">RetrieveMolecularDescriptorsInfo</span><span class="p">()</span>
+ 463     <span class="n">ListMolecularDescriptorsInfo</span><span class="p">()</span>
+ 464 
+ 465 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 466     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 467 
+ 468     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-a, --autocorr2DExclude&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--autocorr2DExclude&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 469     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-f, --fragmentCount&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--fragmentCount&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 470     
+ 471     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-m, --mode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="s2">&quot;2D 3D All FragmentCountOnly Specify&quot;</span><span class="p">)</span>
+ 472     
+ 473     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Specify$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 474         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^none$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--descriptorNames&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 475             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The name(s) of molecular descriptors must be specified using </span><span class="se">\&quot;</span><span class="s2">-d, --descriptorNames</span><span class="se">\&quot;</span><span class="s2"> option during </span><span class="se">\&quot;</span><span class="s2">Specify</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-m, --mode</span><span class="se">\&quot;</span><span class="s2"> option.&quot;</span><span class="p">)</span>
+ 476     
+ 477     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 478     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd mol smi csv tsv txt&quot;</span><span class="p">)</span>
+ 479     
+ 480     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^3D|All$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 481         <span class="k">if</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;smi&quot;</span><span class="p">):</span>
+ 482             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The input SMILES file, </span><span class="si">%s</span><span class="s2">, is not valid for  </span><span class="se">\&quot;</span><span class="s2">3D or All</span><span class="se">\&quot;</span><span class="s2"> value of </span><span class="se">\&quot;</span><span class="s2">-m, --mode</span><span class="se">\&quot;</span><span class="s2"> option.&quot;</span><span class="p">)</span>
+ 483     
+ 484     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd csv tsv txt&quot;</span><span class="p">)</span>
+ 485     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 486     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 487     
+ 488     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionIntegerValue</span><span class="p">(</span><span class="s2">&quot;-p, --precision&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--precision&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;&gt;&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+ 489     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-s, --smilesOut&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--smilesOut&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 490 
+ 491 <span class="c1"># Setup a usage string for docopt...</span>
+ 492 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 493 <span class="s2">RDKitCalculateMolecularDescriptors.py - Calculate 2D/3D molecular descriptors</span>
+ 494 
+ 495 <span class="s2">Usage:</span>
+ 496 <span class="s2">    RDKitCalculateMolecularDescriptors.py [--autocorr2DExclude &lt;yes or no&gt;] [--fragmentCount &lt;yes or no&gt;]</span>
+ 497 <span class="s2">                                          [--descriptorNames &lt;Name1,Name2,...&gt;] [--infileParams &lt;Name,Value,...&gt;]</span>
+ 498 <span class="s2">                                          [--mode &lt;2D, 3D, All...&gt;] [--outfileParams &lt;Name,Value,...&gt;]</span>
+ 499 <span class="s2">                                          [--overwrite] [--precision &lt;number&gt;] [--smilesOut &lt;yes or no&gt;]</span>
+ 500 <span class="s2">                                          [-w &lt;dir&gt;] -i &lt;infile&gt; -o &lt;outfile&gt; </span>
+ 501 <span class="s2">    RDKitCalculateMolecularDescriptors.py -l | --list</span>
+ 502 <span class="s2">    RDKitCalculateMolecularDescriptors.py -h | --help | -e | --examples</span>
+ 503 
+ 504 <span class="s2">Description:</span>
+ 505 <span class="s2">    Calculate 2D/3D molecular descriptors for molecules and write them out to a SD or</span>
+ 506 <span class="s2">    CSV/TSV text file.</span>
+ 507 
+ 508 <span class="s2">    The complete list of currently available molecular descriptors may be obtained by</span>
+ 509 <span class="s2">    using &#39;-l, --list&#39; option. The names of valid 2D, fragment count, and 3D molecular</span>
+ 510 <span class="s2">    descriptors are shown below:</span>
+ 511 
+ 512 <span class="s2">    2D descriptors: Autocorr2D, BalabanJ, BertzCT, Chi0, Chi1, Chi0n - Chi4n, Chi0v - Chi4v,</span>
+ 513 <span class="s2">    EState_VSA1 - EState_VSA11, ExactMolWt, FpDensityMorgan1, FpDensityMorgan2, FpDensityMorgan3,</span>
+ 514 <span class="s2">    FractionCSP3, HallKierAlpha, HeavyAtomCount, HeavyAtomMolWt, Ipc, Kappa1 - Kappa3,</span>
+ 515 <span class="s2">    LabuteASA, MaxAbsEStateIndex, MaxAbsPartialCharge, MaxEStateIndex, MaxPartialCharge,</span>
+ 516 <span class="s2">    MinAbsEStateIndex, MinAbsPartialCharge, MinEStateIndex, MinPartialCharge, MolLogP,</span>
+ 517 <span class="s2">    MolMR, MolWt, NHOHCount, NOCount, NumAliphaticCarbocycles, NumAliphaticHeterocycles,</span>
+ 518 <span class="s2">    NumAliphaticRings, NumAromaticCarbocycles, NumAromaticHeterocycles, NumAromaticRings,</span>
+ 519 <span class="s2">    NumHAcceptors, NumHDonors, NumHeteroatoms, NumRadicalElectrons, NumRotatableBonds,</span>
+ 520 <span class="s2">    NumSaturatedCarbocycles, NumSaturatedHeterocycles, NumSaturatedRings, NumValenceElectrons,</span>
+ 521 <span class="s2">    PEOE_VSA1 - PEOE_VSA14,  RingCount, SMR_VSA1 - SMR_VSA10, SlogP_VSA1 - SlogP_VSA12,</span>
+ 522 <span class="s2">    TPSA, VSA_EState1 - VSA_EState10, qed</span>
+ 523 
+ 524 <span class="s2">    FragmentCount 2D descriptors: fr_Al_COO, fr_Al_OH, fr_Al_OH_noTert, fr_ArN, fr_Ar_COO,</span>
+ 525 <span class="s2">    fr_Ar_N, fr_Ar_NH, fr_Ar_OH, fr_COO, fr_COO2, fr_C_O, fr_C_O_noCOO, fr_C_S, fr_HOCCN,</span>
+ 526 <span class="s2">    fr_Imine, fr_NH0, fr_NH1, fr_NH2, fr_N_O, fr_Ndealkylation1, fr_Ndealkylation2, fr_Nhpyrrole,</span>
+ 527 <span class="s2">    fr_SH, fr_aldehyde, fr_alkyl_carbamate, fr_alkyl_halide, fr_allylic_oxid, fr_amide, fr_amidine,</span>
+ 528 <span class="s2">    fr_aniline, fr_aryl_methyl, fr_azide, fr_azo, fr_barbitur, fr_benzene, fr_benzodiazepine,</span>
+ 529 <span class="s2">    fr_bicyclic, fr_diazo, fr_dihydropyridine, fr_epoxide, fr_ester, fr_ether, fr_furan, fr_guanido,</span>
+ 530 <span class="s2">    fr_halogen, fr_hdrzine, fr_hdrzone, fr_imidazole, fr_imide, fr_isocyan, fr_isothiocyan, fr_ketone,</span>
+ 531 <span class="s2">    fr_ketone_Topliss, fr_lactam, fr_lactone, fr_methoxy, fr_morpholine, fr_nitrile, fr_nitro,</span>
+ 532 <span class="s2">    fr_nitro_arom, fr_nitro_arom_nonortho, fr_nitroso, fr_oxazole, fr_oxime, fr_para_hydroxylation,</span>
+ 533 <span class="s2">    fr_phenol, fr_phenol_noOrthoHbond, fr_phos_acid, fr_phos_ester, fr_piperdine, fr_piperzine,</span>
+ 534 <span class="s2">    fr_priamide, fr_prisulfonamd, fr_pyridine, fr_quatN, fr_sulfide, fr_sulfonamd, fr_sulfone,</span>
+ 535 <span class="s2">    fr_term_acetylene, fr_tetrazole, fr_thiazole, fr_thiocyan, fr_thiophene, fr_unbrch_alkane, fr_urea</span>
+ 536 
+ 537 <span class="s2">    3D descriptors: Asphericity, Autocorr3D, Eccentricity, GETAWAY, InertialShapeFactor, MORSE,</span>
+ 538 <span class="s2">    NPR1, NPR2, PMI1, PMI2, PMI3, RDF, RadiusOfGyration, SpherocityIndex, WHIM</span>
+ 539 
+ 540 <span class="s2">    The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi,</span>
+ 541 <span class="s2">    .txt, .csv, .tsv)</span>
+ 542 
+ 543 <span class="s2">    The supported output file formats are: SD File (.sdf, .sd), CSV/TSV (.csv, .tsv, .txt)</span>
+ 544 
+ 545 <span class="s2">Options:</span>
+ 546 <span class="s2">    -a, --autocorr2DExclude &lt;yes or no&gt;  [default: yes]</span>
+ 547 <span class="s2">        Exclude Autocorr2D descriptor from the calculation of 2D descriptors. </span>
+ 548 <span class="s2">    -f, --fragmentCount &lt;yes or no&gt;  [default: yes]</span>
+ 549 <span class="s2">        Include 2D fragment count descriptors during the calculation. These descriptors are</span>
+ 550 <span class="s2">        counted using SMARTS patterns specified in FragmentDescriptors.csv file distributed</span>
+ 551 <span class="s2">        with RDKit. This option is only used during &#39;2D&#39; or &#39;All&#39; value of &#39;-m, --mode&#39; option.</span>
+ 552 <span class="s2">    -d, --descriptorNames &lt;Name1,Name2,...&gt;  [default: none]</span>
+ 553 <span class="s2">        A comma delimited list of supported molecular descriptor names to calculate.</span>
+ 554 <span class="s2">        This option is only used during &#39;Specify&#39; value of &#39;-m, --mode&#39; option.</span>
+ 555 <span class="s2">    -e, --examples</span>
+ 556 <span class="s2">        Print examples.</span>
+ 557 <span class="s2">    -h, --help</span>
+ 558 <span class="s2">        Print this help message.</span>
+ 559 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 560 <span class="s2">        Input file name.</span>
+ 561 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 562 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 563 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 564 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 565 <span class="s2">            </span>
+ 566 <span class="s2">            SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 567 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 568 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 569 <span class="s2">            </span>
+ 570 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 571 <span class="s2">    -l, --list</span>
+ 572 <span class="s2">        List molecular descriptors without performing any calculations.</span>
+ 573 <span class="s2">    -m, --mode &lt;2D, 3D, All, FragmentCountOnly, or Specify&gt;  [default: 2D]</span>
+ 574 <span class="s2">        Type of molecular descriptors to calculate. Possible values: 2D, 3D,</span>
+ 575 <span class="s2">        All or Specify. The name of molecular descriptors must be specified using</span>
+ 576 <span class="s2">        &#39;-d, --descriptorNames&#39; for &#39;Specify&#39;. 2D descriptors also include 1D descriptors.</span>
+ 577 <span class="s2">        The structure  of molecules must contain 3D coordinates for the  calculation</span>
+ 578 <span class="s2">        of 3D descriptors.</span>
+ 579 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 580 <span class="s2">        Output file name.</span>
+ 581 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 582 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 583 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 584 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 585 <span class="s2">            </span>
+ 586 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 587 <span class="s2">            </span>
+ 588 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 589 <span class="s2">        file types.</span>
+ 590 <span class="s2">    -p, --precision &lt;number&gt;  [default: 3]</span>
+ 591 <span class="s2">        Floating point precision for writing the calculated descriptor values.</span>
+ 592 <span class="s2">    -s, --smilesOut &lt;yes or no&gt;  [default: no]</span>
+ 593 <span class="s2">        Write out SMILES string to CSV/TSV text output file.</span>
+ 594 <span class="s2">    --overwrite</span>
+ 595 <span class="s2">        Overwrite existing files.</span>
+ 596 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 597 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 598 
+ 599 <span class="s2">Examples:</span>
+ 600 <span class="s2">    To compute all available 2D descriptors except Autocorr2D descriptor and</span>
+ 601 <span class="s2">    write out a CSV file, type:</span>
+ 602 
+ 603 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -i Sample.smi -o SampleOut.csv</span>
+ 604 
+ 605 <span class="s2">    To compute all available 2D descriptors including Autocorr2D descriptor and</span>
+ 606 <span class="s2">    excluding fragment count descriptors, and write out a TSV file, type:</span>
+ 607 
+ 608 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -m 2D -a no -f no</span>
+ 609 <span class="s2">          -i Sample.smi -o SampleOut.tsv</span>
+ 610 
+ 611 <span class="s2">    To compute all available 3D descriptors and write out a SD file, type:</span>
+ 612 
+ 613 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -m 3D -i Sample3D.sdf</span>
+ 614 <span class="s2">          -o Sample3DOut.sdf</span>
+ 615 
+ 616 <span class="s2">    To compute only fragment count 2D descriptors and write out a SD</span>
+ 617 <span class="s2">    file file, type:</span>
+ 618 
+ 619 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -m FragmentCountOnly</span>
+ 620 <span class="s2">          -i Sample.sdf -o SampleOut.sdf</span>
+ 621 
+ 622 <span class="s2">    To compute all available 2D and 3D descriptors including fragment count and</span>
+ 623 <span class="s2">    Autocorr2D and write out a CSV file, type:</span>
+ 624 
+ 625 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -m All -a no -i Sample.sdf</span>
+ 626 <span class="s2">          -o SampleOut.csv</span>
+ 627 
+ 628 <span class="s2">    To compute a specific set of 2D and 3D descriptors and write out a</span>
+ 629 <span class="s2">    write out a TSV file, type:</span>
+ 630 
+ 631 <span class="s2">        % RDKitCalculateMolecularDescriptors.py  -m specify</span>
+ 632 <span class="s2">          -d &#39;MolWt,MolLogP,NHOHCount, NOCount,RadiusOfGyration&#39;</span>
+ 633 <span class="s2">          -i Sample3D.sdf -o SampleOut.csv</span>
+ 634 
+ 635 <span class="s2">    To compute all available 2D descriptors except Autocorr2D descriptor for </span>
+ 636 <span class="s2">    molecules in a CSV SMILES file, SMILES strings in column 1, name in</span>
+ 637 <span class="s2">    column 2, and write out a SD file without calculation of 2D coordinates, type:</span>
+ 638 
+ 639 <span class="s2">        % RDKitCalculateMolecularDescriptors.py --infileParams</span>
+ 640 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 641 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,no&quot;</span>
+ 642 <span class="s2">          -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 643 
+ 644 <span class="s2">Author:</span>
+ 645 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 646 
+ 647 <span class="s2">See also:</span>
+ 648 <span class="s2">    RDKitCalculateRMSD.py, RDKitCompareMoleculeShapes.py, RDKitConvertFileFormat.py,</span>
+ 649 <span class="s2">    RDKitGenerateConformers.py, RDKitPerformMinimization.py</span>
+ 650 
+ 651 <span class="s2">Copyright:</span>
+ 652 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 653 
+ 654 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 655 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 656 
+ 657 <span class="s2">    This file is part of MayaChemTools.</span>
+ 658 
+ 659 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 660 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 661 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 662 <span class="s2">    later version.</span>
+ 663 
+ 664 <span class="s2">&quot;&quot;&quot;</span>
+ 665 
+ 666 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 667     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

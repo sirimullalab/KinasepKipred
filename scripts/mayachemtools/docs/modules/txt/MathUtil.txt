@@ -1,0 +1,143 @@
+NAME
+    MathUtil
+
+SYNOPSIS
+    use MathUtil;
+
+    use MathUtil qw(:all);
+
+DESCRIPTION
+    MathUtil module provides a variety of common math functions not
+    available in core Perl package or some other useful math utilities. In
+    order to be consistent with other Perl functions, name of all the
+    functions in this package are in lowercase which differs from
+    MayaChemTools naming convention for function names.
+
+    MathUtil module provides the following functions:
+
+    GeneratePrimeNumbersUpToCount, GeneratePrimeNumbersUpToLimit, acos,
+    asin, ceil, floor, log10, max, min, random, round, srandom, tan
+
+  FUNCTIONS
+    GeneratePrimeNumbersUpToCount
+            $PrimesRef = GeneratePrimeNumbersUpToCount();
+            $PrimesRef = GeneratePrimeNumbersUpToCount($Count);
+
+        Generate prime numbers up to specified *Count* of prime numbers and
+        return a reference to an array containing the prime numbers.
+
+        By default, the first 1000 prime numbers are generated. The 1000th
+        prime number is 7919.
+
+        The algorithm to generate prime numbers is a modification of Sieve
+        of Erastothenes prime number generator.
+
+    GeneratePrimeNumbersUpToLimit
+            $PrimesRef = GeneratePrimeNumbersUpToLimit();
+            $PrimesRef = GeneratePrimeNumbersUpToLimit($Limit);
+
+        Generate prime numbers up to a specified *Limit* and return a
+        reference to an array containing the prime numbers.
+
+        By default, the first 1000 prime numbers are generated. The 1000th
+        prime number is 7919 and that's why default limit is set to 7920.
+
+        The algorithm to generate prime numbers is a modification of Sieve
+        of Erastothenes prime number generator.
+
+    acos
+            $Value = acos($AngleInRadians);
+
+        Returns the nverse cosine of an angle expressed in *Radians* using
+        Math::Trig::acos function.
+
+    asin
+            $Value = asin($AngleInRadians);
+
+        Returns the inverse sine of an angle expressed in *Radians* using
+        Math::Trig::asin function.
+
+    ceil
+            $IntegerValue = ceil($Value);
+
+        Returns the next largest integer for *Value* using POSIX::ceil
+        function.
+
+    floor
+            $IntegerValue = floor($Value);
+
+        Returns the previous smallest integer for *Value* using POSIX::floor
+        function.
+
+    log10
+            $Log10Value = log10($Value);
+
+        Returns the log of *Value* using base 10.
+
+    max
+            $Number = max($Number1, $Number2);
+
+        Returns a Number corresponding to the maximum of *Number1* and
+        *Number2*.
+
+    min
+            $Number = min($Number1, $Number2);
+
+        Returns a Number corresponding to the minimum of *Number1* and
+        *Number2*.
+
+    round
+            $RoundedValue = round($Number);
+            $RoundedValue = round($Number, $DecimalPlaces);
+
+        Returns a value corresponding to a nearst ingeter for *Number* or
+        formatted to *DecimalPlaces*.
+
+    random
+            $RandomNumber = random();
+            $RandomNumber = random($Size);
+
+        Returns a random number between 0 and less than 1 or specified size.
+
+        The random number generator implemented in MayaChemTools is a
+        variant of linear congruential generator (LCG) as described by
+        Miller et al. [ Ref 120 ]. It is also referred to as Lehmer random
+        number generator or Park-Miller random number generator.
+
+        Unlike Perl's core random number generator function rand, the random
+        number generator implemented in MayaChemTools generates consistent
+        random values across different platforms - Windows, CygWin, Linux,
+        Unix - for a specific random seed.
+
+    srandom
+            $Seed = srandom($Seed);
+
+        Sets random number seed to be used by <random> function and returns
+        seed value.
+
+        The random number seed is recommeded to be an integer between 1 and
+        2**31 - 2 [Ref 120] which translates to be 1 and 2147483646.
+
+        The default seed is set to 123456789.
+
+    tan
+            $Value = tan($AngleInRadians);
+
+        Returns the tangent of an angle expressed in *Radians*.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    Constants.pm, ConversionsUtil.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

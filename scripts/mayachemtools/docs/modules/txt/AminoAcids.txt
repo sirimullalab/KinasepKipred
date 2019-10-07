@@ -1,0 +1,103 @@
+NAME
+    AminoAcids
+
+SYNOPSIS
+    use AminoAcids;
+
+    use AminoAcids qw(:all);
+
+DESCRIPTION
+    AminoAcids module provides the following functions:
+
+    GetAminoAcidPropertiesData, GetAminoAcidPropertiesNames,
+    GetAminoAcid<PropertyName>, GetAminoAcids, IsAminoAcid,
+    IsAminoAcidProperty
+
+FUNCTIONS
+    GetAminoAcidPropertiesData
+            $DataHashRef = GetAminoAcidPropertiesData($AminoAcidID);
+
+        Returns a reference to hash containing property names and values for
+        a specified amino acid.
+
+    GetAminoAcidPropertiesNames
+            @Names = GetAminoAcidPropertiesNames([$Mode]);
+            $NamesRef = GetAminoAcidPropertiesNames([$Mode]);
+
+        Returns an array or a reference to an array containing names of
+        amino acids properties. Order of amino acids properties is
+        controlled by optional parameter *Mode*. Possible values for *Mode*:
+        *Alphabetical or ByGroup*; Default: *ByGroup*
+
+    GetAminoAcidPropertyName
+            $Value = GetAminoAcid<PropertyName>($AminoAcidID);
+
+        Returns amino acid property value for a specified amino acid. These
+        functions are not defined in this modules; these are implemented on
+        the fly using Perl's AUTOLOAD funcion. Here is the list of known
+        amino acids *property names*: DNACodons, RNACodons, AcidicBasic,
+        PolarNonpolar, Charged, Aromatic, HydrophobicHydophilic,
+        IsoelectricPoint, pKCOOH, pKNH3+, ChemicalFormula, MolecularWeight,
+        ExactMass, ChemicalFormulaMinusH2O,
+        MolecularWeightMinusH2O(18.01524), ExactMassMinusH2O(18.01056),
+        vanderWaalsVolume, %AccessibleResidues, %BuriedResidues,
+        AlphaHelixChouAndFasman, AlphaHelixDeleageAndRoux, AlphaHelixLevitt,
+        AminoAcidsComposition, AminoAcidsCompositionInSwissProt,
+        AntiparallelBetaStrand, AverageAreaBuried, AverageFlexibility,
+        BetaSheetChouAndFasman, BetaSheetDeleageAndRoux, BetaSheetLevitt,
+        BetaTurnChouAndFasman, BetaTurnDeleageAndRoux, BetaTurnLevitt,
+        Bulkiness, CoilDeleageAndRoux, HPLCHFBARetention,
+        HPLCRetentionAtpH2.1, HPLCRetentionAtpH7.4, HPLCTFARetention,
+        HydrophobicityAbrahamAndLeo, HydrophobicityBlack,
+        HydrophobicityBullAndBreese, HydrophobicityChothia,
+        HydrophobicityEisenbergAndOthers, HydrophobicityFauchereAndOthers,
+        HydrophobicityGuy, HydrophobicityHPLCAtpH3.4Cowan,
+        HydrophobicityHPLCAtpH7.5Cowan, HydrophobicityHPLCParkerAndOthers,
+        HydrophobicityHPLCWilsonAndOthers, HydrophobicityHoppAndWoods,
+        HydrophobicityJanin, HydrophobicityKyteAndDoolittle,
+        HydrophobicityManavalanAndOthers, HydrophobicityMiyazawaAndOthers,
+        HydrophobicityOMHSweetAndOthers, HydrophobicityRaoAndArgos,
+        HydrophobicityRfMobility, HydrophobicityRoseAndOthers,
+        HydrophobicityRoseman, HydrophobicityWellingAndOthers,
+        HydrophobicityWolfendenAndOthers, ParallelBetaStrand,
+        PolarityGrantham, PolarityZimmerman, RatioHeteroEndToSide,
+        RecognitionFactors, Refractivity, RelativeMutability,
+        TotalBetaStrand, LinearStructure, LinearStructureAtpH7.4
+
+    GetAminoAcids
+            $NamesRef = GetAminoAcids([$NameType]);
+            (@Names) = GetAminoAcids([$NameType]);
+
+        Returns an array or a reference to an array containing names of
+        amino acids as one letter code, three letter code, or amino acid
+        name controlled by optional parameter $NameType. By default, amino
+        acids names are returned as three letter code. Possible values for
+        *NameType*: *ThreeLetterCode, OneLetterCode, or AminoAcid*.
+
+    IsAminoAcid
+            $Status = IsAminoAcid($AminoAcidID);
+
+        Returns a flag indicating whether or not its a known amino acid ID.
+
+    IsAminoAcidProperty
+            $Status = IsAminoAcid($PropertyName);
+
+        Returns a flag indicating whether or not its a known amino acid
+        property name.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    NucleicAcids.pm, PeriodicTable.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

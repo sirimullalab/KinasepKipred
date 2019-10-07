@@ -1,0 +1,123 @@
+NAME
+    TPSAAtomTypes
+
+SYNOPSIS
+    use AtomTypes::TPSAAtomTypes;
+
+    use AtomTypes::TPSAAtomTypes qw(:all);
+
+DESCRIPTION
+    TPSAAtomTypes class provides the following methods:
+
+    new, AssignAtomTypes, GetAllPossibleTPSAAtomTypes, GetTPSAAtomTypesData,
+    StringifyTPSAAtomTypes
+
+    The following functions are available:
+
+    GetAllPossibleTPSAAtomTypes, GetTPSAAtomTypesData
+
+    TPSAAtomTypes is derived from AtomTypes class which in turn is derived
+    from ObjectProperty base class that provides methods not explicitly
+    defined in TPSAAtomTypes, AtomTypes or ObjectProperty classes using
+    Perl's AUTOLOAD functionality. These methods are generated on-the-fly
+    for a specified object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+    The data file TPSAAomTypes.csv distributed with MayaChemTools release
+    contains all possible topological surface area (TPSA) [ Ref 90-91 ] atom
+    types.
+
+    The atom type symbols assigned by MayaChemTools are not used in the
+    original publication and the numbers in atom symbols for element types
+    simply correspond to their order of appearance in Table 1 [ Ref 90 ].
+
+    Examples of TPSA atom types:
+
+        N1, N2, N3, O1, O2, O3, S1, S2, P1, P2 and so on
+
+  METHODS
+    new
+            $NewTPSAAtomTypes = new AtomTypes::TPSAAtomTypes(%NamesAndValues);
+
+        Using specified *TPSAAtomTypes* property names and values hash, new
+        method creates a new object and returns a reference to newly created
+        TPSAAtomTypes object. By default, the following properties are
+        initialized:
+
+            Molecule = ''
+            Type = 'TPSA'
+            IgnorePhosphorus = 0
+            IgnoreSulfur = 0
+
+        Examples:
+
+            $TPSAAtomTypes = new AtomTypes::TPSAAtomTypes(
+                                      'Molecule' => $Molecule,
+                                      'IgnorePhosphorus' => 0,
+                                      'IgnoreSulfur' => 0);
+
+    AssignAtomTypes
+            $TPSAAtomTypes->AssignAtomTypes();
+
+        Assigns TPSA atom types to all the atoms in a molecule and returns
+        *TPSAAtomTypes*.
+
+    GetAllPossibleTPSAAtomTypes
+            $AllAtomTypesDataRef = $TPSAAtomTypes->
+                                   GetAllPossibleTPSAAtomTypes();
+            $AllAtomTypesDataRef = AtomTypes::TPSAAtomTypes::
+                                   GetAllPossibleTPSAAtomTypes();
+
+        Returns all possible TPSA atom types corresponding to hydrogen and
+        non-hydrogen atoms as an array reference.
+
+    GetTPSAAtomTypesData
+            $AtomTypesDataMapRef = $TPSAAtomTypes->GetTPSAAtomTypesData();
+            $AtomTypesDataMapRef = AtomTypes::TPSAAtomTypes::GetTPSAAtomTypesData();
+
+        Returns TPSA atom types and associated data loaded from TPSA data
+        file as a reference to hash with the following hash data format:
+
+            @{$TPSAAtomTypesDataMap{AtomTypes}} - Array of all possible atom
+                                                  types for all atoms
+            @{$TPSAAtomTypesDataMap->{ColLabels}} - Array of column labels
+            %{$TPSAAtomTypesDataMap->{DataCol<Num>}} - Hash keys pair:
+                                                       DataCol<Num>, AtomType
+
+    IsAtomTypesAssignmentSuccessful
+            $Status = $AtomTypes->IsAtomTypesAssignmentSuccessful();
+
+        Returns 1 or 0 based on whether atom types assignment was
+        successfully performed. This method overrides the same method
+        available in the base class AtomTypes.pm used to derived this class.
+        It checks for successful atom type assignments for nitrogen and
+        oxygen atoms with an optional check for phosphorous and sulfur
+        atoms.
+
+    StringifyTPSAAtomTypes
+            $String = $TPSAAtomTypes->StringifyTPSAAtomTypes();
+
+        Returns a string containing information about *TPSAAtomTypes*
+        object.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    AtomTypes.pm, AtomicInvariantsAtomTypes.pm, DREIDINGAtomTypes.pm,
+    EStateAtomTypes.pm, FunctionalClassAtomTypes.pm, MMFF94AtomTypes.pm,
+    SLogPAtomTypes.pm, SYBYLAtomTypes.pm, UFFAtomTypes.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

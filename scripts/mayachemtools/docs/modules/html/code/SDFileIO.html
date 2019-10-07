@@ -1,0 +1,261 @@
+<html>
+<head>
+<title>MayaChemTools:Code:FileIO/SDFileIO.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-FileIO::SDFileIO-"></a>   1 <span class="k">package </span><span class="i">FileIO::SDFileIO</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: SDFileIO.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Scalar::Util</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">TextUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">FileUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">SDFileUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">FileIO::FileIO</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">FileIO::MDLMolFileIO</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">Molecule</span><span class="sc">;</span>
+  36 
+  37 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  38 
+  39 <span class="i">@ISA</span> = <span class="q">qw(FileIO::FileIO Exporter)</span><span class="sc">;</span>
+  40 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  41 <span class="i">@EXPORT_OK</span> = <span class="q">qw(IsSDFile)</span><span class="sc">;</span>
+  42 
+  43 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  44 
+  45 <span class="c"># Setup class variables...</span>
+  46 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="sc">;</span>
+  47 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  48 
+  49 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  50 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  51   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  52 
+  53   <span class="c"># Initialize object...</span>
+  54   <span class="k">my</span> <span class="i">$This</span> = <span class="i">$Class</span><span class="i">-&gt;SUPER::new</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  55   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  56   <span class="i">$This</span><span class="i">-&gt;_InitializeSDFileIO</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  57 
+  58   <span class="i">$This</span><span class="i">-&gt;_InitializeSDFileIOProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+  59 
+  60   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  61 <span class="s">}</span>
+  62 
+  63 <span class="c"># Initialize any local object data...</span>
+  64 <span class="c">#</span>
+<a name="_InitializeSDFileIO-"></a>  65 <span class="k">sub </span><span class="m">_InitializeSDFileIO</span> <span class="s">{</span>
+  66   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  67 
+  68   <span class="c"># Sorting of MDL data fields during output: Keep the initial order or write &#39;em out alphabetically...</span>
+  69   <span class="i">$This</span>-&gt;{<span class="w">SortDataFieldsDuringOutput</span>} = <span class="q">&#39;No&#39;</span><span class="sc">;</span>
+  70 
+  71   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  72 <span class="s">}</span>
+  73 
+  74 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a>  75 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+  76   <span class="c">#Class name...</span>
+  77   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+  78 
+  79 <span class="s">}</span>
+  80 
+  81 <span class="c"># Initialize object values...</span>
+<a name="_InitializeSDFileIOProperties-"></a>  82 <span class="k">sub </span><span class="m">_InitializeSDFileIOProperties</span> <span class="s">{</span>
+  83   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  84 
+  85   <span class="c"># All other property names and values along with all Set/Get&lt;PropertyName&gt; methods</span>
+  86   <span class="c"># are implemented on-demand using ObjectProperty class.</span>
+  87 
+  88   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span><span class="sc">;</span>
+  89   <span class="k">while</span> <span class="s">(</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">each</span>  <span class="i">%NamesAndValues</span><span class="s">)</span> <span class="s">{</span>
+  90     <span class="i">$MethodName</span> = <span class="q">&quot;Set${Name}&quot;</span><span class="sc">;</span>
+  91     <span class="i">$This</span><span class="i">-&gt;$MethodName</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+  92   <span class="s">}</span>
+  93 
+  94   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">Name</span>}<span class="s">)</span> <span class="s">{</span>
+  95     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying file name...&quot;</span><span class="sc">;</span>
+  96   <span class="s">}</span>
+  97 
+  98   <span class="c"># Make sure it&#39;s a SD file...</span>
+  99   <span class="i">$Name</span> = <span class="i">$NamesAndValues</span>{<span class="w">Name</span>}<span class="sc">;</span>
+ 100   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;IsSDFile</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 101     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated: File, $Name, doesn&#39;t appear to be SDF format...&quot;</span><span class="sc">;</span>
+ 102   <span class="s">}</span>
+ 103 
+ 104   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 105 <span class="s">}</span>
+ 106 
+ 107 <span class="c"># Is it a SD file?</span>
+<a name="IsSDFile-"></a> 108 <span class="k">sub </span><span class="m">IsSDFile ($;$)</span> <span class="s">{</span>
+ 109   <span class="k">my</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 110   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 111 
+ 112   <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">_IsSDFileIO</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 113     <span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FileName</span><span class="s">)</span> = <span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span><span class="sc">;</span>
+ 114   <span class="s">}</span>
+ 115   <span class="k">else</span> <span class="s">{</span>
+ 116     <span class="i">$FileName</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+ 117   <span class="s">}</span>
+ 118 
+ 119   <span class="c"># Check file extension...</span>
+ 120   <span class="i">$Status</span> = <span class="i">FileUtil::CheckFileType</span><span class="s">(</span><span class="i">$FileName</span><span class="cm">,</span> <span class="q">&quot;sd sdf&quot;</span><span class="s">)</span><span class="sc">;</span>
+ 121 
+ 122   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 123 <span class="s">}</span>
+ 124 
+ 125 <span class="c"># Read molecule from file and return molecule object...</span>
+<a name="ReadMolecule-"></a> 126 <span class="k">sub </span><span class="m">ReadMolecule</span> <span class="s">{</span>
+ 127   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 128   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="s">)</span><span class="sc">;</span>
+ 129 
+ 130   <span class="i">$FileHandle</span> = <span class="i">$This</span><span class="i">-&gt;GetFileHandle</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 131   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;ParseMoleculeString</span><span class="s">(</span><span class="i">SDFileUtil::ReadCmpdString</span><span class="s">(</span><span class="i">$FileHandle</span><span class="s">)</span><span class="s">)</span><span class="sc">;</span>
+ 132 <span class="s">}</span>
+ 133 
+ 134 <span class="c"># Write compound data along with any data field label and values using Molecule object...</span>
+<a name="WriteMolecule-"></a> 135 <span class="k">sub </span><span class="m">WriteMolecule</span> <span class="s">{</span>
+ 136   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 137 
+ 138   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span> &amp;&amp; <span class="i">$Molecule</span><span class="i">-&gt;IsMolecule</span><span class="s">(</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 139     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;WriteMolecule: No data written: Molecule object is not specified...&quot;</span><span class="sc">;</span>
+ 140     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 141   <span class="s">}</span>
+ 142   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="s">)</span><span class="sc">;</span>
+ 143   <span class="i">$FileHandle</span> = <span class="i">$This</span><span class="i">-&gt;GetFileHandle</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 144 
+ 145   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="i">$This</span><span class="i">-&gt;GenerateMoleculeString</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span> . <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 146 
+ 147   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 148 <span class="s">}</span>
+ 149 
+ 150 <span class="c"># Retrieve molecule string...</span>
+<a name="ReadMoleculeString-"></a> 151 <span class="k">sub </span><span class="m">ReadMoleculeString</span> <span class="s">{</span>
+ 152   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 153   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="s">)</span><span class="sc">;</span>
+ 154 
+ 155   <span class="i">$FileHandle</span> = <span class="i">$This</span><span class="i">-&gt;GetFileHandle</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 156   <span class="k">return</span> <span class="i">SDFileUtil::ReadCmpdString</span><span class="s">(</span><span class="i">$FileHandle</span><span class="s">)</span><span class="sc">;</span>
+ 157 <span class="s">}</span>
+ 158 
+ 159 <span class="c"># Parse molecule string and return molecule object. ParseMoleculeString supports two invocation methods: class</span>
+ 160 <span class="c"># method or a package function.</span>
+ 161 <span class="c">#</span>
+<a name="ParseMoleculeString-"></a> 162 <span class="k">sub </span><span class="m">ParseMoleculeString</span> <span class="s">{</span>
+ 163   <span class="k">my</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 164   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$MoleculeString</span><span class="s">)</span><span class="sc">;</span>
+ 165 
+ 166   <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">_IsSDFileIO</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 167     <span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$MoleculeString</span><span class="s">)</span> = <span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span><span class="sc">;</span>
+ 168   <span class="s">}</span>
+ 169   <span class="k">else</span> <span class="s">{</span>
+ 170     <span class="i">$MoleculeString</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+ 171     <span class="i">$This</span> = <span class="k">undef</span><span class="sc">;</span>
+ 172   <span class="s">}</span>
+ 173   <span class="k">if</span> <span class="s">(</span>!<span class="i">$MoleculeString</span><span class="s">)</span> <span class="s">{</span>
+ 174     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 175   <span class="s">}</span>
+ 176   <span class="c"># Parse molecule data...</span>
+ 177   <span class="k">my</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 178   <span class="i">$Molecule</span> = <span class="i">FileIO::MDLMolFileIO::ParseMoleculeString</span><span class="s">(</span><span class="i">$MoleculeString</span><span class="s">)</span><span class="sc">;</span>
+ 179 
+ 180   <span class="c"># Process data label/value pairs...</span>
+ 181   <span class="k">my</span><span class="s">(</span><span class="i">@MoleculeLines</span><span class="cm">,</span> <span class="i">@DataLabels</span><span class="cm">,</span> <span class="i">%DataLabelsAndValues</span><span class="s">)</span><span class="sc">;</span>
+ 182 
+ 183   <span class="i">%DataLabelsAndValues</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 184   <span class="i">@MoleculeLines</span> = <span class="k">split</span> <span class="q">/\n/</span><span class="cm">,</span> <span class="i">$MoleculeString</span><span class="sc">;</span>
+ 185   <span class="i">@DataLabels</span> = <span class="i">SDFileUtil::GetCmpdDataHeaderLabels</span><span class="s">(</span>\<span class="i">@MoleculeLines</span><span class="s">)</span><span class="sc">;</span>
+ 186   <span class="i">%DataLabelsAndValues</span> = <span class="i">SDFileUtil::GetCmpdDataHeaderLabelsAndValues</span><span class="s">(</span>\<span class="i">@MoleculeLines</span><span class="s">)</span><span class="sc">;</span>
+ 187 
+ 188   <span class="c"># Store reference to data labels to keep track of their initial order in SD file...</span>
+ 189   <span class="i">$Molecule</span><span class="i">-&gt;SetDataFieldLabels</span><span class="s">(</span>\<span class="i">@DataLabels</span><span class="s">)</span><span class="sc">;</span>
+ 190 
+ 191   <span class="c"># Store reference to SD data label/value pairs hash as a generic property of molecule...</span>
+ 192   <span class="i">$Molecule</span><span class="i">-&gt;SetDataFieldLabelAndValues</span><span class="s">(</span>\<span class="i">%DataLabelsAndValues</span><span class="s">)</span><span class="sc">;</span>
+ 193 
+ 194   <span class="k">return</span> <span class="i">$Molecule</span><span class="sc">;</span>
+ 195 <span class="s">}</span>
+ 196 
+ 197 <span class="c"># Generate molecule string using molecule object...</span>
+<a name="GenerateMoleculeString-"></a> 198 <span class="k">sub </span><span class="m">GenerateMoleculeString</span> <span class="s">{</span>
+ 199   <span class="k">my</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 200   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 201 
+ 202   <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">_IsSDFileIO</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 203     <span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Molecule</span><span class="s">)</span> = <span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span><span class="sc">;</span>
+ 204   <span class="s">}</span>
+ 205   <span class="k">else</span> <span class="s">{</span>
+ 206     <span class="i">$Molecule</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+ 207     <span class="i">$This</span> = <span class="k">undef</span><span class="sc">;</span>
+ 208   <span class="s">}</span>
+ 209   <span class="k">if</span> <span class="s">(</span>!<span class="k">defined</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 210     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 211   <span class="s">}</span>
+ 212   <span class="c"># Generate CTAB data...</span>
+ 213   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdString</span><span class="s">)</span><span class="sc">;</span>
+ 214   <span class="i">$CmpdString</span> = <span class="i">FileIO::MDLMolFileIO::GenerateMoleculeString</span><span class="s">(</span><span class="i">$Molecule</span><span class="s">)</span><span class="sc">;</span>
+ 215 
+ 216   <span class="c"># Generate any data field labels and values...</span>
+ 217   <span class="k">my</span><span class="s">(</span><span class="i">$DataFieldLabelsAndValuesString</span><span class="s">)</span><span class="sc">;</span>
+ 218 
+ 219   <span class="i">$DataFieldLabelsAndValuesString</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 220   <span class="k">if</span> <span class="s">(</span><span class="i">$Molecule</span><span class="i">-&gt;HasProperty</span><span class="s">(</span><span class="q">&#39;DataFieldLabels&#39;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 221     <span class="k">my</span><span class="s">(</span><span class="i">$DataFieldLabelsRef</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="cm">,</span> <span class="i">$SortDataFields</span><span class="s">)</span><span class="sc">;</span>
+ 222 
+ 223     <span class="i">$SortDataFields</span> = <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">SortDataFieldsDuringOutput</span>}<span class="s">)</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">SortDataFieldsDuringOutput</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 224 
+ 225     <span class="i">$DataFieldLabelsRef</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetDataFieldLabels</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 226     <span class="i">$DataFieldLabelAndValuesRef</span> = <span class="i">$Molecule</span><span class="i">-&gt;GetDataFieldLabelAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 227     <span class="i">$DataFieldLabelsAndValuesString</span> = <span class="k">join</span> <span class="q">&quot;\n&quot;</span><span class="cm">,</span> <span class="i">SDFileUtil::GenerateCmpdDataHeaderLabelsAndValuesLines</span><span class="s">(</span><span class="i">$DataFieldLabelsRef</span><span class="cm">,</span> <span class="i">$DataFieldLabelAndValuesRef</span><span class="cm">,</span> <span class="i">$SortDataFields</span><span class="s">)</span><span class="sc">;</span>
+ 228   <span class="s">}</span>
+ 229 
+ 230   <span class="k">return</span> <span class="q">&quot;${CmpdString }\n${DataFieldLabelsAndValuesString}\n\$\$\$\$&quot;</span><span class="sc">;</span>
+ 231 <span class="s">}</span>
+ 232 
+ 233 
+ 234 <span class="c"># Is it a SDFileIO object?</span>
+<a name="_IsSDFileIO-"></a> 235 <span class="k">sub </span><span class="m">_IsSDFileIO</span> <span class="s">{</span>
+ 236   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 237 
+ 238   <span class="k">return</span> <span class="s">(</span><span class="i">Scalar::Util::blessed</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> &amp;&amp; <span class="i">$Object</span><span class="i">-&gt;isa</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 239 <span class="s">}</span>
+ 240 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

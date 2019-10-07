@@ -1,0 +1,379 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:Fingerprints/AtomTypesFingerprints.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomNeighborhoodsFingerprints.html" title="AtomNeighborhoodsFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./EStateIndiciesFingerprints.html" title="EStateIndiciesFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>Fingerprints/AtomTypesFingerprints.pm</strong></td><td width="33%" align="right"><a href="././code/AtomTypesFingerprints.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/AtomTypesFingerprints.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/AtomTypesFingerprints.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/AtomTypesFingerprints.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/AtomTypesFingerprints.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>AtomTypesFingerprints</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use Fingerprints::AtomTypesFingerprints;</p>
+<p>use Fingerprints::AtomTypesFingerprints qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>AtomTypesFingerprints</b> class provides the following methods:</p>
+<p>
+ <a href="#new">new</a>, <a href="#GenerateFingerprints">GenerateFingerprints</a>, <a href="#GetDescription">GetDescription</a>, <a href="#SetAtomIdentifierType">SetAtomIdentifierType</a>, <a href="#SetAtomTypesSetToUse">SetAtomTypesSetToUse</a>, <a href="#SetAtomicInvariantsToUse">SetAtomicInvariantsToUse</a>, <a href="#SetFunctionalClassesToUse">SetFunctionalClassesToUse</a>, <a href="#SetType">SetType</a>, <a href="#StringifyAtomTypesFingerprints">StringifyAtomTypesFingerprints</a>
+</p><p><b>AtomTypesFingerprints</b> is derived from <b>Fingerprints</b> class which in turn is derived from <b>ObjectProperty</b> base class that provides methods not explicitly defined in <b>AtomNeighborhoodsFingerprints</b>, <b>Fingerprints</b> or <b>ObjectProperty</b> classes using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified object property:</p>
+<div class="OptionsBox">    Set&lt;PropertyName&gt;(&lt;PropertyValue&gt;);
+<br/>    $PropertyValue = Get&lt;PropertyName&gt;();
+<br/>    Delete&lt;PropertyName&gt;();</div>
+<p>The current release of MayaChemTools supports generation of <b>AtomTypesFingerpritns</b> corresponding to following <b>AtomIdentifierTypes</b>:</p>
+<div class="OptionsBox">    AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes,
+<br/>    FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,
+<br/>    SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</div>
+<p>Based on the values specified for <b>AtomIdentifierType</b> along with other specified parameters such as <b>AtomicInvariantsToUse</b> and <b>FunctionalClassesToUse</b>, initial atom types are assigned to all non-hydrogen atoms or all atoms in a molecule.</p>
+<p>Using the assigned atom types and specified <b>Type</b>, one of the following types of fingerprints are generated:</p>
+<div class="OptionsBox">    AtomTypesCount - A vector containing count of atom types
+<br/>    AtomTypesBits - A bit vector indicating presence/absence of atom types</div>
+<p>For <i>AtomTypesCount</i> fingerprints, two types of atom types set size is allowed:</p>
+<div class="OptionsBox">    ArbitrarySize - Corresponds to only atom types detected in molecule
+<br/>    FixedSize - Corresponds to fixed number of atom types previously defined</div>
+<p>For <i>AtomTypesBits</i> fingerprints, only <i>FixedSize</i> atom type set is allowed.</p>
+<p><i>ArbitrarySize</i> corresponds to atom types detected in a molecule where as <i>FixedSize</i> implies a fix number of all possible atom types previously defined for a specific <i>AtomIdentifierType</i>.</p>
+<p>Fix number of all possible atom types for supported <i>AtomIdentifierTypes</i> in current release of MayaChemTools are:</p>
+<div class="OptionsBox">    AtomIdentifier       Total    TotalWithoutHydrogens
+<br/>
+<br/>    DREIDINGAtomTypes    37       34
+<br/>    EStateAtomTypes      109      87
+<br/>    MMFF94AtomTypes      212      171
+<br/>    SLogPAtomTypes       72       67
+<br/>    SYBYLAtomTypes       45       44
+<br/>    TPSAAtomTypes        47       47
+<br/>    UFFAtomTypes         126      124</div>
+<p>Combination of <b>Type</b> and <b>AtomTypesSetToUse</b> along with <b>AtomtomIdentifierType</b> allows generation of following different atom types fingerprints:</p>
+<div class="OptionsBox">    Type                  AtomIdentifierType           AtomTypesSetToUse
+<br/>
+<br/>    AtomTypesCount        AtomicInvariantsAtomTypes    ArbitrarySize
+<br/>
+<br/>    AtomTypesCount        DREIDINGAtomTypes            ArbitrarySize
+<br/>    AtomTypesCount        DREIDINGAtomTypes            FixedSize
+<br/>    AtomTypesBits         DREIDINGAtomTypes            FixedSize
+<br/>
+<br/>    AtomTypesCount        EStateAtomTypes              ArbitrarySize
+<br/>    AtomTypesCount        EStateAtomTypes              FixedSize
+<br/>    AtomTypesBits         EStateAtomTypes              FixedSize
+<br/>
+<br/>    AtomTypesCount        FunctionalClassAtomTypes     ArbitrarySize
+<br/>
+<br/>    AtomTypesCount        MMFF94AtomTypes              ArbitrarySize
+<br/>    AtomTypesCount        MMFF94AtomTypes              FixedSize
+<br/>    AtomTypesBits         MMFF94AtomTypes              FixedSize
+<br/>
+<br/>    AtomTypesCount        SLogPAtomTypes               ArbitrarySize
+<br/>    AtomTypesCount        SLogPAtomTypes               FixedSize
+<br/>    AtomTypesBits         SLogPAtomTypes               FixedSize
+<br/>
+<br/>    AtomTypesCount        SYBYLAtomTypes               ArbitrarySize
+<br/>    AtomTypesCount        SYBYLAtomTypes               FixedSize
+<br/>    AtomTypesBits         SYBYLAtomTypes               FixedSize
+<br/>
+<br/>    AtomTypesCount        TPSAAtomTypes                FixedSize
+<br/>    AtomTypesBits         TPSAAtomTypes                FixedSize
+<br/>
+<br/>    AtomTypesCount        UFFAtomTypes                 ArbitrarySize
+<br/>    AtomTypesCount        UFFAtomTypes                 FixedSize
+<br/>    AtomTypesBits         UFFAtomTypes                 FixedSize</div>
+<p>The current release of MayaChemTools generates the following types of atom types fingerprints bit-vector and vector strings:</p>
+<div class="OptionsBox">    FingerprintsVector;AtomTypesCount:AtomicInvariantsAtomTypes:ArbitraryS
+<br/>    ize;10;NumericalValues;IDsAndValuesString;C.X1.BO1.H3 C.X2.BO2.H2 C.X2
+<br/>    .BO3.H1 C.X3.BO3.H1 C.X3.BO4 F.X1.BO1 N.X2.BO2.H1 N.X3.BO3 O.X1.BO1.H1
+<br/>    O.X1.BO2;2 4 14 3 10 1 1 1 3 2
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:DREIDINGAtomTypes:ArbitrarySize;8;Nu
+<br/>    mericalValues;IDsAndValuesString;C_2 C_3 C_R F_ N_3 N_R O_2 O_3;2 9 22
+<br/>    1 1 1 2 3
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:DREIDINGAtomTypes:FixedSize;34;Order
+<br/>    edNumericalValues;IDsAndValuesString;B_3 B_2 C_3 C_R C_2 C_1 N_3 N_R N
+<br/>    _2 N_1 O_3 O_R O_2 O_1 F_ Al3 Si3 P_3 S_3 Cl Ga3 Ge3 As3 Se3 Br In3 Sn
+<br/>    3 Sb3 Te3 I_ Na Ca Fe Zn;0 0 9 22 2 0 1 1 0 0 3 0 2 0 1 0 0 0 0 0 0 0 
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:DREIDINGAtomTypes:FixedSize;34;Bin
+<br/>    aryString;Ascending;0011101100101010000000000000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:EStateAtomTypes:ArbitrarySize;11;Num
+<br/>    ericalValues;IDsAndValuesString;aaCH aasC aasN dO dssC sCH3 sF sOH ssC
+<br/>    H2 ssNH sssCH;14 8 1 2 2 2 1 3 4 1 3
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:EStateAtomTypes:FixedSize;87;Ordered
+<br/>    NumericalValues;IDsAndValuesString;sLi ssBe ssssBem sBH2 ssBH sssB sss
+<br/>    sBm sCH3 dCH2 ssCH2 tCH dsCH aaCH sssCH ddC tsC dssC aasC aaaC ssssC s
+<br/>    NH3p sNH2 ssNH2p dNH ssNH aaNH tN sssNHp dsN aaN sssN ddsN aasN ss...;
+<br/>    0 0 0 0 0 0 0 2 0 4 0 0 14 3 0 0 2 8 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 3 2 0 0
+<br/>    0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0...
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:EStateAtomTypes:FixedSize;87;Binar
+<br/>    yString;Ascending;0000000101001100110000001000000010110000100000000000
+<br/>    000000000000000000000000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:FunctionalClassAtomTypes:ArbitrarySi
+<br/>    ze;8;NumericalValues;IDsAndValuesString;Ar Ar.HBA HBA HBA.HBD HBD Hal 
+<br/>    NI None;22 1 2 3 1 1 1 10
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:MMFF94AtomTypes:ArbitrarySize;13;Num
+<br/>    ericalValues;IDsAndValuesString;C5A C5B C=ON CB COO CR F N5 NC=O O=CN
+<br/>    O=CO OC=O OR;2 2 1 18 1 9 1 1 1 1 1 1 2
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:MMFF94AtomTypes:FixedSize;171;Ordere
+<br/>    dNumericalValues;IDsAndValuesString;CR C=C CSP2 C=O C=N CGD C=OR C=ON
+<br/>    CONN COO COON COOO C=OS C=S C=SN CSO2 CS=O CSS C=P CSP =C= OR OC=O OC=
+<br/>    C OC=N OC=S ONO2 ON=O OSO3 OSO2 OSO OS=O -OS OPO3 OPO2 OPO -OP -O-...;
+<br/>    9 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 2 1 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 1 0 1 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 18 0 0 0 0 0 0 0 0 ...
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:MMFF94AtomTypes:FixedSize;171;Bina
+<br/>    ryString;Ascending;100000010100000000000110000000000000000101000000100
+<br/>    0100000000000000000000000000000000000000000100000000000000000000000000
+<br/>    0000000011000000000000000001000000000000000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SLogPAtomTypes:ArbitrarySize;16;Nume
+<br/>    ricalValues;IDsAndValuesString;C1 C10 C11 C14 C18 C20 C21 C22 C5 CS F
+<br/>    N11 N4 O10 O2 O9;5 1 1 1 14 4 2 1 2 2 1 1 1 1 3 1
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SLogPAtomTypes:FixedSize;67;OrderedN
+<br/>    umericalValues;IDsAndValuesString;C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C
+<br/>    12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26 C27 CS N1 N
+<br/>    2 N3 N4 N5 N6 N7 N8 N9 N10 N11 N12 N13 N14 NS O1 O2 O3 O4 O5 O6 O7 O8
+<br/>    O9 O10 O11 O12 OS F Cl Br I Hal P S1 S2 S3 Me1 Me2;5 0 0 0 2 0 0 0 0 1
+<br/>    1 0 0 1 0 0 0 14 0 4 2 1 0 0 0 0 0 2 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0...
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:SLogPAtomTypes:FixedSize;67;Binary
+<br/>    String;Ascending;10001000011001000101110000010001000000100000100000011
+<br/>    0001000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SYBYLAtomTypes:ArbitrarySize;9;Numer
+<br/>    icalValues;IDsAndValuesString;C.2 C.3 C.ar F N.am N.ar O.2 O.3 O.co2;2
+<br/>    9 22 1 1 1 1 2 2
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:SYBYLAtomTypes:FixedSize;44;OrderedN
+<br/>    umericalValues;IDsAndValuesString;C.3 C.2 C.1 C.ar C.cat N.3 N.2 N.1 N
+<br/>    .ar N.am N.pl3 N.4 O.3 O.2 O.co2 S.3 S.2 S.o S.o2 P.3 F Cl Br I ANY HA
+<br/>    L HET Li Na Mg Al Si K Ca Cr.th Cr.oh Mn Fe Co.oh Cu Zn Se Mo Sn;9 2 0
+<br/>    22 0 0 0 0 1 1 0 0 2 1 2 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:SYBYLAtomTypes:FixedSize;44;Binary
+<br/>    String;Ascending;110100001100111000001000000000000000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:TPSAAtomTypes:FixedSize;47;OrderedNu
+<br/>    mericalValues;IDsAndValuesString;N1 N2 N3 N4 N5 N6 N7 N8 N9 N10 N11 N1
+<br/>    2 N13 N14 N15 N16 N17 N18 N19 N20 N21 N22 N23 N24 N25 N26 N O1 O2 O3 O
+<br/>    4 O5 O6 O S1 S2 S3 S4 S5 S6 S7 S P1 P2 P3 P4 P;0 0 0 0 0 0 1 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 2 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:TPSAAtomTypes:FixedSize;47;BinaryS
+<br/>    tring;Ascending;000000100000000000001000000001100000000000000000
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:UFFAtomTypes:ArbitrarySize;8;Numeric
+<br/>    alValues;IDsAndValuesString;C_2 C_3 C_R F_ N_3 N_R O_2 O_3;2 9 22 1 1
+<br/>    1 2 3
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:UFFAtomTypes;124;OrderedNumerical
+<br/>    Values;IDsAndValuesString;He4+4 Li Be3+2 B_3 B_2 C_3 C_R C_2 C_1 N_3 N_
+<br/>    R N_2 N_1 O_3 O_3_z O_R O_2 O_1 F_ Ne4+4 Na Mg3+2 Al3 Si3 P_3+3 P_3+5 P
+<br/>    _3+q S_3+2 S_3+4 S_3+6 S_R S_2 Cl Ar4+4 K_ Ca6+2 Sc3+3 Ti3+4 Ti6+4 V_3+
+<br/>    ;0 0 0 0 0 12 0 3 0 3 0 1 0 2 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+<br/>
+<br/>    FingerprintsVector;AtomTypesCount:UFFAtomTypes:FixedSize;124;OrderedNu
+<br/>    mericalValues;IDsAndValuesString;He4+4 Li Be3+2 B_3 B_2 C_3 C_R C_2 C_
+<br/>    1 N_3 N_R N_2 N_1 O_3 O_3_z O_R O_2 O_1 F_ Ne4+4 Na Mg3+2 Al3 Si3 P_3+
+<br/>    3 P_3+5 P_3+q S_3+2 S_3+4 S_3+6 S_R S_2 Cl Ar4+4 K_ Ca6+2 Sc3+3 Ti...;
+<br/>    0 0 0 0 0 9 22 2 0 1 1 0 0 3 0 0 2 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+<br/>    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0...
+<br/>
+<br/>    FingerprintsBitVector;AtomTypesBits:UFFAtomTypes:FixedSize;124;BinaryS
+<br/>    tring;Ascending;000001110110010010100000000000000000000000000000000000
+<br/>    0000000000000000000000000000000000000000000000000000000000000000000000</div>
+<h2 id="METHODS">METHODS</h2>
+<dl>
+<dt id="new"><b>new</b></dt>
+<dd>
+<div class="OptionsBox">    $NewAtomTypesFingerprints = new AtomTypesFingerprints(%NamesAndValues);</div>
+<p>Using specified <i>AtomTypesFingerprints</i> property names and values hash, <b>new</b> method creates a new object and returns a reference to newly created <b>PathLengthFingerprints</b> object. By default, the following properties are initialized:</p>
+<div class="OptionsBox">    Molecule = &#39;&#39;;
+<br/>    Type = &#39;&#39;
+<br/>    AtomIdentifierType = &#39;&#39;
+<br/>    AtomTypesSetToUse = &#39;&#39;
+<br/>    IgnoreHydrogens = 1
+<br/>    AtomicInvariantsToUse = [&#39;AS&#39;, &#39;X&#39;, &#39;BO&#39;, &#39;H&#39;, &#39;FC&#39;, &#39;MN&#39;]
+<br/>    FunctionalClassesToUse = [&#39;HBD&#39;, &#39;HBA&#39;, &#39;PI&#39;, &#39;NI&#39;, &#39;Ar&#39;, &#39;Hal&#39;]</div>
+<p>Examples:</p>
+<div class="OptionsBox">    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesCount&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;AtomicInvariantsAtomTypes&#39;);
+<br/>
+<br/>    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesCount&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;AtomicInvariantsAtomTypes&#39;,
+                              &#39;AtomicInvariantsToUse&#39; =&gt;
+                                              [&#39;AS&#39;, &#39;X&#39;, &#39;BO&#39;, &#39;H&#39;, &#39;FC&#39;] );
+<br/>
+<br/>    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesCount&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;DREIDINGAtomTypes&#39;);
+<br/>
+<br/>    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesCount&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;EStateAtomTypes&#39;,
+                              &#39;AtomTypesSetToUse&#39; =&gt;
+                                              &#39;ArbitrarySize&#39;);
+<br/>
+<br/>    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesCount&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;SLogPAtomTypes&#39;,
+                              &#39;AtomTypesSetToUse&#39; =&gt;
+                                              &#39;FixedSize&#39;);
+<br/>
+<br/>    $AtomTypesFingerprints = new AtomTypesFingerprints(
+                              &#39;Molecule&#39; =&gt; $Molecule,
+                              &#39;Type&#39; =&gt; &#39;AtomTypesBits&#39;,
+                              &#39;AtomIdentifierType&#39; =&gt;
+                                              &#39;MMFF94AtomTypes&#39;,
+                              &#39;AtomTypesSetToUse&#39; =&gt;
+                                              &#39;FixedSize&#39;);
+<br/>
+<br/>    $AtomTypesFingerprints-&gt;GenerateFingerprints();
+<br/>    print &quot;$AtomTypesFingerprints\n&quot;;</div>
+</dd>
+<dt id="GenerateFingerprints"><b>GenerateFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;GenerateFingerprints();</div>
+<p>Generates atom types fingerprints and returns <i>AtomTypesFingerprints</i>.</p>
+</dd>
+<dt id="GetDescription"><b>GetDescription</b></dt>
+<dd>
+<div class="OptionsBox">    $Description = $AtomTypesFingerprints-&gt;GetDescription();</div>
+<p>Returns a string containing description of atom types fingerprints.</p>
+</dd>
+<dt id="SetAtomIdentifierType"><b>SetAtomIdentifierType</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;SetAtomIdentifierType($IdentifierType);</div>
+<p>Sets atom <i>IdentifierType</i> to use during atom types fingerprints generation and returns <i>AtomTypesFingerprints</i>.</p>
+<p>Possible values: <i>AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</i>.</p>
+</dd>
+<dt id="SetAtomTypesSetToUse"><b>SetAtomTypesSetToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;SetAtomTypesSetToUse($Value);</div>
+<p>Sets <i>Value</i> of <i>AtomTypesSetToUse</i> and returns <i>AtomTypesFingerprints</i>. Possible values: <i>ArbitrarySize or FixedSize</i>. Default for <i>AtomTypesCount</i> value of <b>AtomTypesSetToUse</b>: <i>ArbitrarySize</i>.</p>
+</dd>
+<dt id="SetAtomicInvariantsToUse"><b>SetAtomicInvariantsToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;SetAtomicInvariantsToUse($ValuesRef);
+<br/>    $AtomTypesFingerprints-&gt;SetAtomicInvariantsToUse(@Values);</div>
+<p>Sets atomic invariants to use during <i>AtomicInvariantsAtomTypes</i> value of <i>AtomIdentifierType</i> for atom neighborhood fingerprints generation and returns <i>AtomTypesFingerprints</i>.</p>
+<p>Possible values for atomic invariants are: <i>AS, X, BO, LBO, SB, DB, TB, H, Ar, RA, FC, MN, SM</i>. Default value: <i>AS,X,BO,H,FC</i>.</p>
+<p>The atomic invariants abbreviations correspond to:</p>
+<div class="OptionsBox">    AS = Atom symbol corresponding to element symbol
+<br/>
+<br/>    X&lt;n&gt;   = Number of non-hydrogen atom neighbors or heavy atoms
+<br/>    BO&lt;n&gt; = Sum of bond orders to non-hydrogen atom neighbors or heavy atoms
+<br/>    LBO&lt;n&gt; = Largest bond order of non-hydrogen atom neighbors or heavy atoms
+<br/>    SB&lt;n&gt; = Number of single bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    DB&lt;n&gt; = Number of double bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    TB&lt;n&gt; = Number of triple bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    H&lt;n&gt;   = Number of implicit and explicit hydrogens for atom
+<br/>    Ar     = Aromatic annotation indicating whether atom is aromatic
+<br/>    RA     = Ring atom annotation indicating whether atom is a ring
+<br/>    FC&lt;+n/-n&gt; = Formal charge assigned to atom
+<br/>    MN&lt;n&gt; = Mass number indicating isotope other than most abundant isotope
+<br/>    SM&lt;n&gt; = Spin multiplicity of atom. Possible values: 1 (singlet), 2 (doublet) or
+            3 (triplet)</div>
+<p>Atom type generated by AtomTypes::AtomicInvariantsAtomTypes class corresponds to:</p>
+<div class="OptionsBox">    AS.X&lt;n&gt;.BO&lt;n&gt;.LBO&lt;n&gt;.&lt;SB&gt;&lt;n&gt;.&lt;DB&gt;&lt;n&gt;.&lt;TB&gt;&lt;n&gt;.H&lt;n&gt;.Ar.RA.FC&lt;+n/-n&gt;.MN&lt;n&gt;.SM&lt;n&gt;</div>
+<p>Except for AS which is a required atomic invariant in atom types, all other atomic invariants are optional. Atom type specification doesn&#39;t include atomic invariants with zero or undefined values.</p>
+<p>In addition to usage of abbreviations for specifying atomic invariants, the following descriptive words are also allowed:</p>
+<div class="OptionsBox">    X : NumOfNonHydrogenAtomNeighbors or NumOfHeavyAtomNeighbors
+<br/>    BO : SumOfBondOrdersToNonHydrogenAtoms or SumOfBondOrdersToHeavyAtoms
+<br/>    LBO : LargestBondOrderToNonHydrogenAtoms or LargestBondOrderToHeavyAtoms
+<br/>    SB :  NumOfSingleBondsToNonHydrogenAtoms or NumOfSingleBondsToHeavyAtoms
+<br/>    DB : NumOfDoubleBondsToNonHydrogenAtoms or NumOfDoubleBondsToHeavyAtoms
+<br/>    TB : NumOfTripleBondsToNonHydrogenAtoms or NumOfTripleBondsToHeavyAtoms
+<br/>    H :  NumOfImplicitAndExplicitHydrogens
+<br/>    Ar : Aromatic
+<br/>    RA : RingAtom
+<br/>    FC : FormalCharge
+<br/>    MN : MassNumber
+<br/>    SM : SpinMultiplicity</div>
+<p><i>AtomTypes::AtomicInvariantsAtomTypes</i> module is used to assign atomic invariant atom types.</p>
+</dd>
+<dt id="SetFunctionalClassesToUse"><b>SetFunctionalClassesToUse</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;SetFunctionalClassesToUse($ValuesRef);
+<br/>    $AtomTypesFingerprints-&gt;SetFunctionalClassesToUse(@Values);</div>
+<p>Sets functional classes invariants to use during <i>FunctionalClassAtomTypes</i> value of <i>AtomIdentifierType</i> for atom types fingerprints generation and returns <i>AtomTypesFingerprints</i>.</p>
+<p>Possible values for atom functional classes are: <i>Ar, CA, H, HBA, HBD, Hal, NI, PI, RA</i>. Default value [ Ref 24 ]: <i>HBD,HBA,PI,NI,Ar,Hal</i>.</p>
+<p>The functional class abbreviations correspond to:</p>
+<div class="OptionsBox">    HBD: HydrogenBondDonor
+<br/>    HBA: HydrogenBondAcceptor
+<br/>    PI :  PositivelyIonizable
+<br/>    NI : NegativelyIonizable
+<br/>    Ar : Aromatic
+<br/>    Hal : Halogen
+<br/>    H : Hydrophobic
+<br/>    RA : RingAtom
+<br/>    CA : ChainAtom
+<br/>
+ Functional class atom type specification for an atom corresponds to:
+<br/>
+<br/>    Ar.CA.H.HBA.HBD.Hal.NI.PI.RA or None</div>
+<p><i>AtomTypes::FunctionalClassAtomTypes</i> module is used to assign functional class atom types. It uses following definitions [ Ref 60-61, Ref 65-66 ]:</p>
+<div class="OptionsBox">    HydrogenBondDonor: NH, NH2, OH
+<br/>    HydrogenBondAcceptor: N[!H], O
+<br/>    PositivelyIonizable: +, NH2
+<br/>    NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</div>
+</dd>
+<dt id="SetType"><b>SetType</b></dt>
+<dd>
+<div class="OptionsBox">    $AtomTypesFingerprints-&gt;SetType($Type);</div>
+<p>Sets type of AtomTypes fingerpritns and returns <i>AtomTypesFingerprints</i>. Possible values: <i>AtomTypesFingerprintsBits or AtomTypesFingerprintsCount</i>.</p>
+</dd>
+<dt id="StringifyAtomTypesFingerprints"><b>StringifyAtomTypesFingerprints</b></dt>
+<dd>
+<div class="OptionsBox">    $String = $AtomTypesFingerprints-&gt;StringifyAtomTypesFingerprints();</div>
+<p>Returns a string containing information about <i>AtomTypesFingerprints</i> object.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./Fingerprints.html">Fingerprints.pm</a>, <a href="./FingerprintsStringUtil.html">FingerprintsStringUtil.pm</a>, <a href="./AtomNeighborhoodsFingerprints.html">AtomNeighborhoodsFingerprints.pm</a>, <a href="./EStateIndiciesFingerprints.html">EStateIndiciesFingerprints.pm</a>, <a href="./ExtendedConnectivityFingerprints.html">ExtendedConnectivityFingerprints.pm</a>, <a href="./MACCSKeys.html">MACCSKeys.pm</a>, <a href="./PathLengthFingerprints.html">PathLengthFingerprints.pm</a>, <a href="./TopologicalAtomPairsFingerprints.html">TopologicalAtomPairsFingerprints.pm</a>, <a href="./TopologicalAtomTripletsFingerprints.html">TopologicalAtomTripletsFingerprints.pm</a>, <a href="./TopologicalAtomTorsionsFingerprints.html">TopologicalAtomTorsionsFingerprints.pm</a>, <a href="./TopologicalPharmacophoreAtomPairsFingerprints.html">TopologicalPharmacophoreAtomPairsFingerprints.pm</a>, <a href="./TopologicalPharmacophoreAtomTripletsFingerprints.html">TopologicalPharmacophoreAtomTripletsFingerprints.pm</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AtomNeighborhoodsFingerprints.html" title="AtomNeighborhoodsFingerprints.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./EStateIndiciesFingerprints.html" title="EStateIndiciesFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>Fingerprints/AtomTypesFingerprints.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

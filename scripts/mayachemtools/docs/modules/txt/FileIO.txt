@@ -1,0 +1,75 @@
+NAME
+    FileIO
+
+SYNOPSIS
+    use FileIO::FileIO;
+
+    use FileIO::FileIO qw(:all);
+
+DESCRIPTION
+    FIleIO class provides following methods:
+
+    new, Close, Open, SetMode
+
+    FleIO class serves as a base class for all classes involved in file IO.
+    It is derived from ObjectProperty base class which provides methods not
+    explicitly defined in Atom or ObjectProperty class using Perl's AUTOLOAD
+    functionality. These methods are generated on-the-fly for a specified
+    object property:
+
+        Set<PropertyName>(<PropertyValue>);
+        $PropertyValue = Get<PropertyName>();
+        Delete<PropertyName>();
+
+  METHODS
+    new
+            $NewFileIO = new FileIO(%NamesAndValues);
+
+        Using specified *FileIO* property names and values hash, new method
+        creates a new object and returns a reference to a newly created
+        FileIO object. By default, the following properties are initialized:
+
+            Name = '';
+            Mode = 'Read';
+            Status = 0;
+            FileHandle = '';
+
+    Close
+            $FileIO->Close();
+
+        Close open file and returns *FileIO*.
+
+    Open
+            $FileIO->Open();
+
+        Opens the file using file *Name* and *Mode* and returns *FileIO*.
+
+    SetMode
+            $FileIO->SetMode($Mode);
+
+        Sets up file *Mode* and returns *FileIO* Default *Mode* value:
+        *Read*. Supported *Mode* values:
+
+            Read, Write, Append, <, >, >>, r, w, a
+
+    SetName
+            $FileIO->SetName($Name);
+
+        Sets up file *Name* and returns *FileIO*.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    MoleculeFileIO.pm, MDLMolFileIO.pm, SDFileIO.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

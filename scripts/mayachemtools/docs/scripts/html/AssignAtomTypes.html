@@ -1,0 +1,204 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:AssignAtomTypes.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AnalyzeTextFilesData.html" title="AnalyzeTextFilesData.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomNeighborhoodsFingerprints.html" title="AtomNeighborhoodsFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>AssignAtomTypes.pl</strong></td><td width="33%" align="right"><a href="././code/AssignAtomTypes.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/AssignAtomTypes.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/AssignAtomTypes.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/AssignAtomTypes.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/AssignAtomTypes.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>AssignAtomTypes.pl - Assign atom types for SD files</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>AssignAtomTypes.pl SDFile(s)...</p>
+<p>AtomTypesFingerprints.pl [<b>--AromaticityModel</b> <i>AromaticityModelType</i>] [<b>-a, --AtomIdentifierType</b> <i>AtomicInvariantsAtomTypes | DREIDINGAtomTypes | EStateAtomTypes | MMFF94AtomTypes | SLogPAtomTypes | SYBYLAtomTypes | TPSAAtomTypes | UFFAtomTypes</i>] [<b>--AtomicInvariantsToUse</b> <i>&quot;AtomicInvariant, AtomicInvariant...&quot;</i>] [<b>--FunctionalClassesToUse</b> <i>&quot;FunctionalClass1,FunctionalClass2...&quot;</i>] [<b>--AtomTypesSetToUse</b> <i>ArbitrarySize | FixedSize</i>] [<b>--BitsOrder</b> <i>Ascending | Descending</i>] [<b>-b, --BitStringFormat</b> <i>BinaryString | HexadecimalString</i>] [<b>--CompoundID</b> <i>DataFieldName or LabelPrefixString</i>] [<b>--CompoundIDLabel</b> <i>text</i>] [<b>--CompoundIDMode</b> <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i>] [<b>--DataFields</b> <i>&quot;FieldLabel1,FieldLabel2,...&quot;</i>] [<b>-d, --DataFieldsMode</b> <i>All | Common | Specify | CompoundID</i>] [<b>-f, --Filter</b> <i>Yes | No</i>] [<b>--FingerprintsLabelMode</b> <i>FingerprintsLabelOnly | FingerprintsLabelWithIDs</i>] [<b>--FingerprintsLabel</b> <i>text</i>] [<b>-h, --help</b>] [<b>-k, --KeepLargestComponent</b> <i>Yes | No</i>] [<b>-m, --mode</b> <i>AtomTypesCount | AtomTypesBits</i>] [<b>-i, --IgnoreHydrogens</b> <i>Yes | No</i>] [<b>--OutDelim</b> <i>comma | tab | semicolon</i>] [<b>--output</b> <i>SD |FP | text | all</i>] [<b>-o, --overwrite</b>] [<b>-q, --quote</b> <i>Yes | No</i>] [<b>-r, --root</b> <i>RootName</i>] [<b>-s, --size</b> <i>number</i>] [<b>--ValuesPrecision</b> <i>number</i>] [<b>-v, --VectorStringFormat</b> <i>IDsAndValuesString | IDsAndValuesPairsString | ValuesAndIDsString | ValuesAndIDsPairsString</i>] [<b>-w, --WorkingDir</b> <i>DirName</i>]</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Generate atom types for <i>SDFile(s)</i> and create appropriate SD, or CSV/TSV text file(s) containing atom types assigned to atoms in molecules.</p>
+<p>Multiple SDFile names are separated by spaces. The valid file extensions are <i>.sdf</i> and <i>.sd</i>. All other file names are ignored. All the SD files in a current directory can be specified either by <i>*.sdf</i> or the current directory name.</p>
+<p>The current release of MayaChemTools supports generation of atom types corresponding to following <b>-a, --AtomIdentifierTypes</b>:</p>
+<div class="OptionsBox">    AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes,
+<br/>    FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,
+<br/>    SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</div>
+<p>Based on the values specified for <b>-a, --AtomIdentifierType</b> along with other specified parameters such as <b>--AtomicInvariantsToUse</b> and <b>--FunctionalClassesToUse</b>, atom ypes are assigned to all non-hydrogen atoms or all atoms in a molecule</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="AromaticityModel-MDLAromaticityModel-TriposAromaticityModel-MMFFAromaticityModel-ChemAxonBasicAromaticityModel-ChemAxonGeneralAromaticityModel-DaylightAromaticityModel-MayaChemToolsAromaticityModel"><b>--AromaticityModel</b> <i>MDLAromaticityModel | TriposAromaticityModel | MMFFAromaticityModel | ChemAxonBasicAromaticityModel | ChemAxonGeneralAromaticityModel | DaylightAromaticityModel | MayaChemToolsAromaticityModel</i></dt>
+<dd>
+<p>Specify aromaticity model to use during detection of aromaticity. Possible values in the current release are: <i>MDLAromaticityModel, TriposAromaticityModel, MMFFAromaticityModel, ChemAxonBasicAromaticityModel, ChemAxonGeneralAromaticityModel, DaylightAromaticityModel or MayaChemToolsAromaticityModel</i>. Default value: <i>MayaChemToolsAromaticityModel</i>.</p>
+<p>The supported aromaticity model names along with model specific control parameters are defined in <b>AromaticityModelsData.csv</b>, which is distributed with the current release and is available under <b>lib/data</b> directory. <b>Molecule.pm</b> module retrieves data from this file during class instantiation and makes it available to method <b>DetectAromaticity</b> for detecting aromaticity corresponding to a specific model.</p>
+</dd>
+<dt id="AtomicInvariantsToUse-AtomicInvariant-AtomicInvariant"><b>--AtomicInvariantsToUse</b> <i>&quot;AtomicInvariant,AtomicInvariant...&quot;</i></dt>
+<dd>
+<p>This value is used during <i>AtomicInvariantsAtomTypes</i> value of <b>m, --mode</b> option. It&#39;s a list of comma separated valid atomic invariant atom types.</p>
+<p>Possible values for atomic invariants are: <i>AS, X, BO, LBO, SB, DB, TB, H, Ar, RA, FC, MN, SM</i>. Default value: <i>AS,X,BO,H,FC</i>.</p>
+<p>The atomic invariants abbreviations correspond to:</p>
+<div class="OptionsBox">    AS = Atom symbol corresponding to element symbol
+<br/>
+<br/>    X&lt;n&gt;   = Number of non-hydrogen atom neighbors or heavy atoms
+<br/>    BO&lt;n&gt; = Sum of bond orders to non-hydrogen atom neighbors or heavy atoms
+<br/>    LBO&lt;n&gt; = Largest bond order of non-hydrogen atom neighbors or heavy atoms
+<br/>    SB&lt;n&gt; = Number of single bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    DB&lt;n&gt; = Number of double bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    TB&lt;n&gt; = Number of triple bonds to non-hydrogen atom neighbors or heavy atoms
+<br/>    H&lt;n&gt;   = Number of implicit and explicit hydrogens for atom
+<br/>    Ar     = Aromatic annotation indicating whether atom is aromatic
+<br/>    RA     = Ring atom annotation indicating whether atom is a ring
+<br/>    FC&lt;+n/-n&gt; = Formal charge assigned to atom
+<br/>    MN&lt;n&gt; = Mass number indicating isotope other than most abundant isotope
+<br/>    SM&lt;n&gt; = Spin multiplicity of atom. Possible values: 1 (singlet), 2 (doublet) or
+            3 (triplet)</div>
+<p>Atom type generated by AtomTypes::AtomicInvariantsAtomTypes class corresponds to:</p>
+<div class="OptionsBox">    AS.X&lt;n&gt;.BO&lt;n&gt;.LBO&lt;n&gt;.&lt;SB&gt;&lt;n&gt;.&lt;DB&gt;&lt;n&gt;.&lt;TB&gt;&lt;n&gt;.H&lt;n&gt;.Ar.RA.FC&lt;+n/-n&gt;.MN&lt;n&gt;.SM&lt;n&gt;</div>
+<p>Except for AS which is a required atomic invariant in atom types, all other atomic invariants are optional. Atom type specification doesn&#39;t include atomic invariants with zero or undefined values.</p>
+<p>In addition to usage of abbreviations for specifying atomic invariants, the following descriptive words are also allowed:</p>
+<div class="OptionsBox">    X : NumOfNonHydrogenAtomNeighbors or NumOfHeavyAtomNeighbors
+<br/>    BO : SumOfBondOrdersToNonHydrogenAtoms or SumOfBondOrdersToHeavyAtoms
+<br/>    LBO : LargestBondOrderToNonHydrogenAtoms or LargestBondOrderToHeavyAtoms
+<br/>    SB :  NumOfSingleBondsToNonHydrogenAtoms or NumOfSingleBondsToHeavyAtoms
+<br/>    DB : NumOfDoubleBondsToNonHydrogenAtoms or NumOfDoubleBondsToHeavyAtoms
+<br/>    TB : NumOfTripleBondsToNonHydrogenAtoms or NumOfTripleBondsToHeavyAtoms
+<br/>    H :  NumOfImplicitAndExplicitHydrogens
+<br/>    Ar : Aromatic
+<br/>    RA : RingAtom
+<br/>    FC : FormalCharge
+<br/>    MN : MassNumber
+<br/>    SM : SpinMultiplicity</div>
+<p><i>AtomTypes::AtomicInvariantsAtomTypes</i> module is used to assign atomic invariant atom types.</p>
+</dd>
+<dt id="FunctionalClassesToUse-FunctionalClass1-FunctionalClass2"><b>--FunctionalClassesToUse</b> <i>&quot;FunctionalClass1,FunctionalClass2...&quot;</i></dt>
+<dd>
+<p>This value is used during <i>FunctionalClassAtomTypes</i> value of <b>m, --mode</b> option. It&#39;s a list of comma separated valid functional classes.</p>
+<p>Possible values for atom functional classes are: <i>Ar, CA, H, HBA, HBD, Hal, NI, PI, RA</i>. Default value [ Ref 24 ]: <i>HBD,HBA,PI,NI,Ar,Hal</i>.</p>
+<p>The functional class abbreviations correspond to:</p>
+<div class="OptionsBox">    HBD: HydrogenBondDonor
+<br/>    HBA: HydrogenBondAcceptor
+<br/>    PI :  PositivelyIonizable
+<br/>    NI : NegativelyIonizable
+<br/>    Ar : Aromatic
+<br/>    Hal : Halogen
+<br/>    H : Hydrophobic
+<br/>    RA : RingAtom
+<br/>    CA : ChainAtom
+<br/>
+ Functional class atom type specification for an atom corresponds to:
+<br/>
+<br/>    Ar.CA.H.HBA.HBD.Hal.NI.PI.RA</div>
+<p><i>AtomTypes::FunctionalClassAtomTypes</i> module is used to assign functional class atom types. It uses following definitions [ Ref 60-61, Ref 65-66 ]:</p>
+<div class="OptionsBox">    HydrogenBondDonor: NH, NH2, OH
+<br/>    HydrogenBondAcceptor: N[!H], O
+<br/>    PositivelyIonizable: +, NH2
+<br/>    NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</div>
+</dd>
+<dt id="CompoundID-DataFieldName-or-LabelPrefixString"><b>--CompoundID</b> <i>DataFieldName or LabelPrefixString</i></dt>
+<dd>
+<p>This value is <b>--CompoundIDMode</b> specific and indicates how compound ID is generated.</p>
+<p>For <i>DataField</i> value of <b>--CompoundIDMode</b> option, it corresponds to datafield label name whose value is used as compound ID; otherwise, it&#39;s a prefix string used for generating compound IDs like LabelPrefixString&lt;Number&gt;. Default value, <i>Cmpd</i>, generates compound IDs which look like Cmpd&lt;Number&gt;.</p>
+<p>Examples for <i>DataField</i> value of <b>--CompoundIDMode</b>:</p>
+<div class="OptionsBox">    MolID
+<br/>    ExtReg</div>
+<p>Examples for <i>LabelPrefix</i> or <i>MolNameOrLabelPrefix</i> value of <b>--CompoundIDMode</b>:</p>
+<div class="OptionsBox">    Compound</div>
+<p>The value specified above generates compound IDs which correspond to Compound&lt;Number&gt; instead of default value of Cmpd&lt;Number&gt;.</p>
+</dd>
+<dt id="CompoundIDLabel-text"><b>--CompoundIDLabel</b> <i>text</i></dt>
+<dd>
+<p>Specify compound ID column label for FP or CSV/TSV text file(s) used during <i>CompoundID</i> value of <b>--DataFieldsMode</b> option. Default: <i>CompoundID</i>.</p>
+</dd>
+<dt id="CompoundIDMode-DataField-MolName-LabelPrefix-MolNameOrLabelPrefix"><b>--CompoundIDMode</b> <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i></dt>
+<dd>
+<p>Specify how to generate compound IDs and write to FP or CSV/TSV text file(s) along with generated fingerprints for <i>FP | text | all</i> values of <b>--output</b> option: use a <i>SDFile(s)</i> datafield value; use molname line from <i>SDFile(s)</i>; generate a sequential ID with specific prefix; use combination of both MolName and LabelPrefix with usage of LabelPrefix values for empty molname lines.</p>
+<p>Possible values: <i>DataField | MolName | LabelPrefix | MolNameOrLabelPrefix</i>. Default: <i>LabelPrefix</i>.</p>
+<p>For <i>MolNameAndLabelPrefix</i> value of <b>--CompoundIDMode</b>, molname line in <i>SDFile(s)</i> takes precedence over sequential compound IDs generated using <i>LabelPrefix</i> and only empty molname values are replaced with sequential compound IDs.</p>
+<p>This is only used for <i>CompoundID</i> value of <b>--DataFieldsMode</b> option.</p>
+</dd>
+<dt id="DataFields-FieldLabel1-FieldLabel2"><b>--DataFields</b> <i>&quot;FieldLabel1,FieldLabel2,...&quot;</i></dt>
+<dd>
+<p>Comma delimited list of <i>SDFiles(s)</i> data fields to extract and write to CSV/TSV text file(s) along with generated atom types for <i>text | all</i> values of <b>--output</b> option.</p>
+<p>This is only used for <i>Specify</i> value of <b>--DataFieldsMode</b> option.</p>
+<p>Examples:</p>
+<div class="OptionsBox">    Extreg
+<br/>    MolID,CompoundName</div>
+</dd>
+<dt id="d---DataFieldsMode-All-Common-Specify-CompoundID"><b>-d, --DataFieldsMode</b> <i>All | Common | Specify | CompoundID</i></dt>
+<dd>
+<p>Specify how data fields in <i>SDFile(s)</i> are transferred to output CSV/TSV text file(s) along with generated fingerprints for <i>text | all</i> values of <b>--output</b> option: transfer all SD data field; transfer SD data files common to all compounds; extract specified data fields; generate a compound ID using molname line, a compound prefix, or a combination of both. Possible values: <i>All | Common | specify | CompoundID</i>. Default value: <i>CompoundID</i>.</p>
+</dd>
+<dt id="f---Filter-Yes-No"><b>-f, --Filter</b> <i>Yes | No</i></dt>
+<dd>
+<p>Specify whether to check and filter compound data in SDFile(s). Possible values: <i>Yes or No</i>. Default value: <i>Yes</i>.</p>
+<p>By default, compound data is checked before calculating fingerprints and compounds containing atom data corresponding to non-element symbols or no atom data are ignored.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="i---IgnoreHydrogens-Yes-No"><b>-i, --IgnoreHydrogens</b> <i>Yes | No</i></dt>
+<dd>
+<p>Ignore hydrogens during fingerprints generation. Possible values: <i>Yes or No</i>. Default value: <i>Yes</i>.</p>
+<p>For <i>yes</i> value of <b>-i, --IgnoreHydrogens</b>, any explicit hydrogens are also used for generation of atom type fingerprints; implicit hydrogens are still ignored.</p>
+</dd>
+<dt id="k---KeepLargestComponent-Yes-No"><b>-k, --KeepLargestComponent</b> <i>Yes | No</i></dt>
+<dd>
+<p>Generate fingerprints for only the largest component in molecule. Possible values: <i>Yes or No</i>. Default value: <i>Yes</i>.</p>
+<p>For molecules containing multiple connected components, fingerprints can be generated in two different ways: use all connected components or just the largest connected component. By default, all atoms except for the largest connected component are deleted before generation of fingerprints.</p>
+</dd>
+<dt id="m---mode-AtomicInvariantsAtomTypes-DREIDINGAtomTypes-EStateAtomTypes-FunctionalClassAtomTypes-MMFF94AtomTypes-SLogPAtomTypes-SYBYLAtomTypes-TPSAAtomTypes-UFFAtomTypes-All"><b>-m, --mode</b> <i>AtomicInvariantsAtomTypes | DREIDINGAtomTypes | EStateAtomTypes | FunctionalClassAtomTypes | MMFF94AtomTypes | SLogPAtomTypes | SYBYLAtomTypes | TPSAAtomTypes | UFFAtomTypes | All</i></dt>
+<dd>
+<p>Specify atom identifier type to use for assignment of atom types to hydrogen and/or non-hydrogen atoms during calculation of atom types fingerprints. Possible values in the current release are: <i>AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes or All</i>. Default value: <i>AtomicInvariantsAtomTypes</i>.</p>
+</dd>
+<dt id="OutDelim-comma-tab-semicolon"><b>--OutDelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Delimiter for output CSV/TSV text file(s). Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="output-SD-text-all"><b>--output</b> <i>SD | text | all</i></dt>
+<dd>
+<p>Type of output files to generate. Possible values: <i>SD, text, or all</i>. Default value: <i>text</i>.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="q---quote-Yes-No"><b>-q, --quote</b> <i>Yes | No</i></dt>
+<dd>
+<p>Put quote around column values in output CSV/TSV text file(s). Possible values: <i>Yes or No</i>. Default value: <i>Yes</i>.</p>
+</dd>
+<dt id="r---root-RootName"><b>-r, --root</b> <i>RootName</i></dt>
+<dd>
+<p>New file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default for new file names: &lt;SDFileName&gt;&lt;AtomTypes&gt;.&lt;Ext&gt;. The file type determines &lt;Ext&gt; value. The sdf, csv, and tsv &lt;Ext&gt; values are used for SD, comma/semicolon, and tab delimited text files, respectively.This option is ignored for multiple input files.</p>
+</dd>
+<dt id="w---WorkingDir-DirName"><b>-w, --WorkingDir</b> <i>DirName</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To generate atomic invariants atom types count fingerprints of arbitrary size in vector string format and create a SampleATFP.csv file containing sequential compound IDs along with fingerprints vector strings data, type:</p>
+<div class="ExampleBox">    % AtomTypesFingerprints.pl -r SampleATFP -o Sample.sdf
+ demo:</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./AtomTypesFingerprints.html">AtomTypesFingerprints.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AnalyzeTextFilesData.html" title="AnalyzeTextFilesData.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AtomNeighborhoodsFingerprints.html" title="AtomNeighborhoodsFingerprints.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>AssignAtomTypes.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

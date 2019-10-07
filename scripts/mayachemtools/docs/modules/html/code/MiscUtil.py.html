@@ -1,0 +1,896 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Python/MiscUtil.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1"># File: MiscUtil.py</span>
+   3 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   4 <span class="c1">#</span>
+   5 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   6 <span class="c1">#</span>
+   7 <span class="c1"># This file is part of MayaChemTools.</span>
+   8 <span class="c1">#</span>
+   9 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  10 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  11 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  12 <span class="c1"># later version.</span>
+  13 <span class="c1">#</span>
+  14 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  15 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  16 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  17 <span class="c1"># details.</span>
+  18 <span class="c1">#</span>
+  19 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  20 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  21 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  22 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  23 <span class="c1">#</span>
+  24 
+  25 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  26 
+  27 <span class="kn">import</span> <span class="nn">os</span>
+  28 <span class="kn">import</span> <span class="nn">sys</span>
+  29 <span class="kn">import</span> <span class="nn">time</span>
+  30 <span class="kn">import</span> <span class="nn">re</span>
+  31 <span class="kn">import</span> <span class="nn">csv</span>
+  32 <span class="kn">import</span> <span class="nn">textwrap</span>
+  33 
+  34 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CheckFileExt&quot;</span><span class="p">,</span> <span class="s2">&quot;CheckTextValue&quot;</span><span class="p">,</span> <span class="s2">&quot;DoesSMILESFileContainTitleLine&quot;</span><span class="p">,</span> <span class="s2">&quot;GetExamplesTextFromDocOptText&quot;</span><span class="p">,</span>  <span class="s2">&quot;GetExcelStyleColumnLabel&quot;</span><span class="p">,</span> <span class="s2">&quot;GetMayaChemToolsLibDataPath&quot;</span><span class="p">,</span> <span class="s2">&quot;GetTextLinesWords&quot;</span><span class="p">,</span> <span class="s2">&quot;GetWallClockAndProcessorTime&quot;</span><span class="p">,</span> <span class="s2">&quot;GetFormattedElapsedTime&quot;</span><span class="p">,</span> <span class="s2">&quot;IsEmpty&quot;</span><span class="p">,</span> <span class="s2">&quot;IsFloat&quot;</span><span class="p">,</span> <span class="s2">&quot;IsInteger&quot;</span><span class="p">,</span> <span class="s2">&quot;IsNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;JoinWords&quot;</span><span class="p">,</span> <span class="s2">&quot;ParseFileName&quot;</span><span class="p">,</span> <span class="s2">&quot;PrintError&quot;</span><span class="p">,</span> <span class="s2">&quot;PrintInfo&quot;</span><span class="p">,</span> <span class="s2">&quot;PrintWarning&quot;</span><span class="p">,</span>  <span class="s2">&quot;ProcessOptionInfileParameters&quot;</span><span class="p">,</span> <span class="s2">&quot;ProcessOptionOutfileParameters&quot;</span><span class="p">,</span> <span class="s2">&quot;ReplaceHTMLEntitiesInText&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionsDistinctFileNames&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionFileExt&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionFilePath&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionFloatValue&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionIntegerValue&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionNumberValue&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionNumberValues&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionsOutputFileOverwrite&quot;</span><span class="p">,</span> <span class="s2">&quot;ValidateOptionTextValue&quot;</span><span class="p">,</span>  <span class="s2">&quot;TruncateText&quot;</span><span class="p">,</span> <span class="s2">&quot;WrapText&quot;</span><span class="p">]</span>
+  35 
+  36 <span class="k">def</span> <span class="nf">CheckFileExt</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">FileExts</span><span class="p">):</span>
+  37     <span class="sd">&quot;&quot;&quot;Check file type based on the specified file extensions delimited by spaces.</span>
+  38 <span class="sd">    </span>
+  39 <span class="sd">    Arguments:</span>
+  40 <span class="sd">        FileName (str): Name of a file.</span>
+  41 <span class="sd">        FileExts (str): Space delimited string containing valid file extensions.</span>
+  42 
+  43 <span class="sd">    Returns:</span>
+  44 <span class="sd">        bool : True, FileName contains a valid file extension; Otherwise, False.</span>
+  45 
+  46 <span class="sd">    &quot;&quot;&quot;</span>
+  47     
+  48     <span class="k">for</span> <span class="n">FileExt</span> <span class="ow">in</span> <span class="n">FileExts</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+  49         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\.</span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="n">FileExt</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+  50             <span class="k">return</span> <span class="bp">True</span>
+  51     
+  52     <span class="k">return</span> <span class="bp">False</span>
+  53 
+  54 <span class="k">def</span> <span class="nf">CheckTextValue</span><span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">ValidValues</span><span class="p">):</span>
+  55     <span class="sd">&quot;&quot;&quot;Check text value based on the specified valid values delimited by spaces.</span>
+  56 
+  57 <span class="sd">    Arguments:</span>
+  58 <span class="sd">        Value (str): Text value</span>
+  59 <span class="sd">        ValidValues (str): Space delimited string containing valid values.</span>
+  60 
+  61 <span class="sd">    Returns:</span>
+  62 <span class="sd">        bool : True, Value is valid; Otherwise, False.</span>
+  63 
+  64 <span class="sd">    &quot;&quot;&quot;</span>
+  65     
+  66     <span class="n">ValidValues</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">ValidValues</span><span class="p">)</span>
+  67     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(</span><span class="si">%s</span><span class="s2">)$&quot;</span> <span class="o">%</span> <span class="n">ValidValues</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+  68         <span class="k">return</span> <span class="bp">True</span>
+  69     
+  70     <span class="k">return</span> <span class="bp">False</span>
+  71 
+  72 <span class="k">def</span> <span class="nf">GetTextLinesWords</span><span class="p">(</span><span class="n">TextFilePath</span><span class="p">,</span> <span class="n">Delimiter</span><span class="p">,</span> <span class="n">QuoteChar</span><span class="p">,</span> <span class="n">IgnoreHeaderLine</span><span class="p">):</span>
+  73     <span class="sd">&quot;&quot;&quot;Parse lines in the specified text file into words in a line and return a list containing</span>
+  74 <span class="sd">    list of parsed line words.</span>
+  75 
+  76 <span class="sd">    Arguments:</span>
+  77 <span class="sd">        TextFilePath (str): Text file name including file path.</span>
+  78 <span class="sd">        Delimiter (str): Delimiter for parsing text lines.</span>
+  79 <span class="sd">        QuoteChar (str): Quote character for line words.</span>
+  80 <span class="sd">        IgnoreHeaderLine (bool): A flag indicating whether to ignore first</span>
+  81 <span class="sd">            valid data line corresponding to header line.</span>
+  82 
+  83 <span class="sd">    Returns:</span>
+  84 <span class="sd">        list : A list of lists containing parsed words for lines.</span>
+  85 
+  86 <span class="sd">    Notes:</span>
+  87 <span class="sd">        The lines starting with # or // are considered comment lines and are</span>
+  88 <span class="sd">        ignored during parsing along with any empty lines.</span>
+  89 
+  90 <span class="sd">    &quot;&quot;&quot;</span>
+  91     <span class="n">TextFile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">TextFilePath</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+  92     <span class="k">if</span> <span class="n">TextFile</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+  93         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t open text file: </span><span class="si">%s</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">TextFilePath</span><span class="p">))</span>
+  94 
+  95     <span class="c1"># Collect text lines...</span>
+  96     <span class="n">TextLines</span> <span class="o">=</span> <span class="p">[]</span>
+  97     <span class="n">FirstValidLine</span> <span class="o">=</span> <span class="bp">True</span>
+  98     <span class="k">for</span> <span class="n">Line</span> <span class="ow">in</span> <span class="n">TextFile</span><span class="p">:</span>
+  99         <span class="n">Line</span> <span class="o">=</span> <span class="n">Line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+ 100         
+ 101         <span class="c1"># Ignore empty lines...</span>
+ 102         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">Line</span><span class="p">):</span>
+ 103             <span class="k">continue</span>
+ 104         
+ 105         <span class="c1"># Ignore comments...</span>
+ 106         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(#|\/\/)&quot;</span><span class="p">,</span> <span class="n">Line</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 107             <span class="k">continue</span>
+ 108 
+ 109         <span class="c1"># Ignore header line...</span>
+ 110         <span class="k">if</span> <span class="n">FirstValidLine</span><span class="p">:</span>
+ 111             <span class="n">FirstValidLine</span> <span class="o">=</span> <span class="bp">False</span>
+ 112             <span class="k">if</span> <span class="n">IgnoreHeaderLine</span><span class="p">:</span>
+ 113                 <span class="k">continue</span>
+ 114         
+ 115         <span class="n">TextLines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Line</span><span class="p">)</span>
+ 116         
+ 117     <span class="n">TextFile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 118 
+ 119     <span class="c1"># Parse text lines...</span>
+ 120     <span class="n">TextLinesWords</span> <span class="o">=</span> <span class="p">[]</span>
+ 121     
+ 122     <span class="n">TextLinesReader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">TextLines</span><span class="p">,</span> <span class="n">delimiter</span> <span class="o">=</span> <span class="n">Delimiter</span><span class="p">,</span> <span class="n">quotechar</span> <span class="o">=</span> <span class="n">QuoteChar</span><span class="p">)</span>
+ 123     <span class="k">for</span> <span class="n">LineWords</span> <span class="ow">in</span> <span class="n">TextLinesReader</span><span class="p">:</span>
+ 124         <span class="n">TextLinesWords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">LineWords</span><span class="p">)</span>
+ 125     
+ 126     <span class="k">return</span> <span class="n">TextLinesWords</span>
+ 127     
+ 128 <span class="k">def</span> <span class="nf">DoesSMILESFileContainTitleLine</span><span class="p">(</span><span class="n">FileName</span><span class="p">):</span>
+ 129     <span class="sd">&quot;&quot;&quot;Determine whether the SMILES file contain a title line based on the  presence</span>
+ 130 <span class="sd">    of a string SMILES, Name or ID in the first line.</span>
+ 131 
+ 132 <span class="sd">    Arguments:</span>
+ 133 <span class="sd">        FileName (str): Name of a file.</span>
+ 134 
+ 135 <span class="sd">    Returns:</span>
+ 136 <span class="sd">        bool : True, File contains title line; Otherwise, False.</span>
+ 137 
+ 138 <span class="sd">    &quot;&quot;&quot;</span>
+ 139     
+ 140     <span class="n">Infile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+ 141     <span class="k">if</span> <span class="n">Infile</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 142         <span class="k">return</span> <span class="bp">False</span>
+ 143 
+ 144     <span class="n">Line</span> <span class="o">=</span> <span class="n">Infile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+ 145     <span class="n">Infile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 146 
+ 147     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;(SMILES|Name|ID)&quot;</span><span class="p">,</span> <span class="n">Line</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 148         <span class="k">return</span> <span class="bp">True</span>
+ 149         
+ 150     <span class="k">return</span> <span class="bp">False</span>
+ 151     
+ 152 <span class="k">def</span> <span class="nf">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">DocOptText</span><span class="p">):</span>
+ 153     <span class="sd">&quot;&quot;&quot;Get script usage example lines from a docopt doc string. The example text</span>
+ 154 <span class="sd">    line start from a line containing `Examples:`  keyword at the beginning of the line.</span>
+ 155 <span class="sd">    </span>
+ 156 <span class="sd">    Arguments:</span>
+ 157 <span class="sd">        DocOptText (str): Doc string containing script usage examples lines starting with</span>
+ 158 <span class="sd">            a line marked by `Examples:` keyword at the beginning of a line.</span>
+ 159 
+ 160 <span class="sd">    Returns:</span>
+ 161 <span class="sd">        str : A string containing text lines retrieved from the examples section of</span>
+ 162 <span class="sd">            DocOptText parameter.</span>
+ 163 
+ 164 <span class="sd">    &quot;&quot;&quot;</span>
+ 165     
+ 166     <span class="n">ExamplesStart</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^Examples:&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+ 167     <span class="n">ExamplesEnd</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^(Author:|See also:|Copyright:)&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+ 168     
+ 169     <span class="n">ExamplesText</span> <span class="o">=</span> <span class="s1">&#39;Examples text is not available&#39;</span><span class="p">;</span>
+ 170     <span class="n">ExamplesTextFound</span> <span class="o">=</span> <span class="bp">False</span>
+ 171     
+ 172     <span class="k">for</span> <span class="n">Line</span> <span class="ow">in</span> <span class="n">DocOptText</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+ 173         <span class="k">if</span> <span class="n">ExamplesStart</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">Line</span><span class="p">):</span>
+ 174             <span class="n">ExamplesText</span> <span class="o">=</span> <span class="s1">&#39;Examples:&#39;</span><span class="p">;</span>
+ 175             <span class="n">ExamplesTextFound</span> <span class="o">=</span> <span class="bp">True</span>
+ 176             <span class="k">continue</span>
+ 177         
+ 178         <span class="k">if</span> <span class="n">ExamplesEnd</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">Line</span><span class="p">):</span>
+ 179             <span class="k">break</span>
+ 180         
+ 181         <span class="k">if</span> <span class="n">ExamplesTextFound</span><span class="p">:</span>
+ 182             <span class="n">ExamplesText</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">Line</span><span class="p">;</span>
+ 183     
+ 184     <span class="k">return</span> <span class="n">ExamplesText</span>
+ 185 
+ 186 <span class="k">def</span> <span class="nf">GetExcelStyleColumnLabel</span><span class="p">(</span><span class="n">ColNum</span><span class="p">):</span>
+ 187     <span class="sd">&quot;&quot;&quot;Return Excel style column label for a colum number.</span>
+ 188 <span class="sd">    </span>
+ 189 <span class="sd">    Arguments:</span>
+ 190 <span class="sd">        ColNum (int): Column number</span>
+ 191 
+ 192 <span class="sd">    Returns:</span>
+ 193 <span class="sd">        str : Excel style column label.</span>
+ 194 
+ 195 <span class="sd">    &quot;&quot;&quot;</span>
+ 196     <span class="n">Letters</span> <span class="o">=</span> <span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;</span>
+ 197     
+ 198     <span class="n">ColLabelList</span> <span class="o">=</span> <span class="p">[]</span>
+ 199     <span class="k">while</span> <span class="n">ColNum</span><span class="p">:</span>
+ 200         <span class="n">ColNum</span><span class="p">,</span> <span class="n">SubColNum</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">ColNum</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+ 201         <span class="n">ColLabelList</span><span class="p">[:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Letters</span><span class="p">[</span><span class="n">SubColNum</span><span class="p">]</span>
+ 202     
+ 203     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ColLabelList</span><span class="p">)</span>
+ 204     
+ 205 <span class="k">def</span> <span class="nf">GetWallClockAndProcessorTime</span><span class="p">():</span>
+ 206     <span class="sd">&quot;&quot;&quot;Get wallclock and processor times in seconds.</span>
+ 207 <span class="sd">    </span>
+ 208 <span class="sd">    Returns:</span>
+ 209 <span class="sd">        float : Wallclock time.</span>
+ 210 <span class="sd">        float : Processor time.</span>
+ 211 
+ 212 <span class="sd">    &quot;&quot;&quot;</span>
+ 213     <span class="k">return</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">())</span>
+ 214 
+ 215 <span class="k">def</span> <span class="nf">GetMayaChemToolsLibDataPath</span><span class="p">():</span>
+ 216     <span class="sd">&quot;&quot;&quot;Get location of MayaChemTools lib data directory.</span>
+ 217 <span class="sd">    </span>
+ 218 <span class="sd">    Returns:</span>
+ 219 <span class="sd">        str : Location of MayaChemTools lib data directory.</span>
+ 220 
+ 221 <span class="sd">    Notes:</span>
+ 222 <span class="sd">        The location of MayaChemTools lib data directory is determined relative to</span>
+ 223 <span class="sd">        MayaChemTools python lib directory name available through sys.path.</span>
+ 224 
+ 225 <span class="sd">    &quot;&quot;&quot;</span>
+ 226     <span class="n">MayaChemToolsDataPath</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 227     
+ 228     <span class="k">for</span> <span class="n">PathEntry</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+ 229         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;MayaChemTools&quot;</span><span class="p">,</span> <span class="n">PathEntry</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;Python&quot;</span><span class="p">,</span> <span class="n">PathEntry</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 230             <span class="n">MayaChemToolsDataPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">PathEntry</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span>  <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+ 231             <span class="k">break</span>
+ 232         <span class="k">else</span><span class="p">:</span>
+ 233             <span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;PathEntry didn&#39;t match&quot;</span><span class="p">)</span>
+ 234     
+ 235     <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">MayaChemToolsDataPath</span><span class="p">):</span>
+ 236         <span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;MayaChemTools lib directory location doesn&#39;t appear to exist in system search path specified by sys.path...&quot;</span><span class="p">)</span>
+ 237         
+ 238     <span class="k">return</span> <span class="n">MayaChemToolsDataPath</span>
+ 239     
+ 240 <span class="k">def</span> <span class="nf">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">StartingWallClockTime</span><span class="p">,</span> <span class="n">StartingProcessorTime</span><span class="p">):</span>
+ 241     <span class="sd">&quot;&quot;&quot;Get elapsed wallclock and processor times  as a string in the following</span>
+ 242 <span class="sd">    format: %d wallclock secs ( %.2f process secs).</span>
+ 243 <span class="sd">    </span>
+ 244 <span class="sd">    Arguments:</span>
+ 245 <span class="sd">        StartingWallClockTime (float): Starting wallclock time in seconds.</span>
+ 246 <span class="sd">        StartingProcessorTime (float): Starting processor time in seconds.</span>
+ 247 
+ 248 <span class="sd">    Returns:</span>
+ 249 <span class="sd">        str : Elapsed time formatted as: %d wallclock secs ( %.2f process secs)</span>
+ 250 
+ 251 <span class="sd">    &quot;&quot;&quot;</span>
+ 252     
+ 253     <span class="n">ElapsedWallClockTime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">StartingWallClockTime</span>
+ 254     <span class="n">ElapsedProcessorTime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span> <span class="n">StartingProcessorTime</span>
+ 255     
+ 256     <span class="n">ElapsedTime</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> wallclock secs ( </span><span class="si">%.2f</span><span class="s2"> process secs)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ElapsedWallClockTime</span><span class="p">,</span> <span class="n">ElapsedProcessorTime</span><span class="p">)</span>
+ 257     
+ 258     <span class="k">return</span> <span class="n">ElapsedTime</span>
+ 259 
+ 260 <span class="k">def</span> <span class="nf">IsEmpty</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 261     <span class="sd">&quot;&quot;&quot;Determine whether the specified value is empty after converting</span>
+ 262 <span class="sd">    it in to a string and removing all leading and trailing white spaces. A  value</span>
+ 263 <span class="sd">    of type None is considered empty.</span>
+ 264 <span class="sd">    </span>
+ 265 <span class="sd">    Arguments:</span>
+ 266 <span class="sd">        Value (str, int or float): Text or a value</span>
+ 267 
+ 268 <span class="sd">    Returns:</span>
+ 269 <span class="sd">        bool : True, Text string is empty; Otherwsie, False.</span>
+ 270 
+ 271 <span class="sd">    &quot;&quot;&quot;</span>
+ 272 
+ 273     <span class="k">if</span> <span class="n">Value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 274         <span class="k">return</span> <span class="bp">True</span>
+ 275 
+ 276     <span class="n">TextValue</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Value</span>
+ 277     <span class="n">TextValue</span> <span class="o">=</span> <span class="n">TextValue</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+ 278 
+ 279     <span class="k">return</span> <span class="bp">False</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">TextValue</span><span class="p">)</span> <span class="k">else</span> <span class="bp">True</span>
+ 280 
+ 281 <span class="k">def</span> <span class="nf">IsFloat</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 282     <span class="sd">&quot;&quot;&quot;Determine whether the specified value is a float by converting it</span>
+ 283 <span class="sd">    into a float.</span>
+ 284 <span class="sd">    </span>
+ 285 <span class="sd">    Arguments:</span>
+ 286 <span class="sd">        Value (str, int or float): Text</span>
+ 287 
+ 288 <span class="sd">    Returns:</span>
+ 289 <span class="sd">        bool : True, Value is a float; Otherwsie, False.</span>
+ 290 
+ 291 <span class="sd">    &quot;&quot;&quot;</span>
+ 292 
+ 293     <span class="k">return</span> <span class="n">IsNumber</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 294 
+ 295 <span class="k">def</span> <span class="nf">IsInteger</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 296     <span class="sd">&quot;&quot;&quot;Determine whether the specified value is an integer by converting it</span>
+ 297 <span class="sd">    into an int.</span>
+ 298 <span class="sd">    </span>
+ 299 <span class="sd">    Arguments:</span>
+ 300 <span class="sd">        Value (str, int or float): Text</span>
+ 301 
+ 302 <span class="sd">    Returns:</span>
+ 303 <span class="sd">        bool : True, Value is an integer; Otherwsie, False.</span>
+ 304 
+ 305 <span class="sd">    &quot;&quot;&quot;</span>
+ 306 
+ 307     <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 308     
+ 309     <span class="k">if</span> <span class="n">Value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 310         <span class="k">return</span> <span class="bp">False</span>
+ 311 
+ 312     <span class="k">try</span><span class="p">:</span>
+ 313         <span class="n">Value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 314         <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 315     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+ 316         <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 317     
+ 318     <span class="k">return</span> <span class="n">Status</span>
+ 319 
+ 320 <span class="k">def</span> <span class="nf">IsNumber</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 321     <span class="sd">&quot;&quot;&quot;Determine whether the specified value is a number by converting it</span>
+ 322 <span class="sd">    into a float.</span>
+ 323 <span class="sd">    </span>
+ 324 <span class="sd">    Arguments:</span>
+ 325 <span class="sd">        Value (str, int or float): Text</span>
+ 326 
+ 327 <span class="sd">    Returns:</span>
+ 328 <span class="sd">        bool : True, Value is a number; Otherwsie, False.</span>
+ 329 
+ 330 <span class="sd">    &quot;&quot;&quot;</span>
+ 331 
+ 332     <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 333     
+ 334     <span class="k">if</span> <span class="n">Value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 335         <span class="k">return</span> <span class="n">Status</span>
+ 336 
+ 337     <span class="k">try</span><span class="p">:</span>
+ 338         <span class="n">Value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 339         <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 340     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+ 341         <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 342     
+ 343     <span class="k">return</span> <span class="n">Status</span>
+ 344 
+ 345 <span class="k">def</span> <span class="nf">JoinWords</span><span class="p">(</span><span class="n">Words</span><span class="p">,</span> <span class="n">Delimiter</span><span class="p">,</span> <span class="n">Quote</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+ 346     <span class="sd">&quot;&quot;&quot;Join words in a list using specified delimiter with optional quotes around words.</span>
+ 347 <span class="sd">    </span>
+ 348 <span class="sd">    Arguments:</span>
+ 349 <span class="sd">        Words (list): List containing words to join.</span>
+ 350 <span class="sd">        Delimiter (string): Delimiter for joining words.</span>
+ 351 <span class="sd">        Quote (boolean): Put quotes around words.</span>
+ 352 
+ 353 <span class="sd">    Returns:</span>
+ 354 <span class="sd">        str : String containing joined words.</span>
+ 355 
+ 356 <span class="sd">    &quot;&quot;&quot;</span>
+ 357     
+ 358     <span class="k">if</span> <span class="n">Quote</span><span class="p">:</span>
+ 359         <span class="n">JoinedWords</span> <span class="o">=</span> <span class="n">Delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;{0}&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Word</span><span class="p">)</span> <span class="k">for</span> <span class="n">Word</span> <span class="ow">in</span> <span class="n">Words</span><span class="p">)</span>
+ 360     <span class="k">else</span><span class="p">:</span>
+ 361         <span class="n">JoinedWords</span> <span class="o">=</span> <span class="n">Delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Words</span><span class="p">)</span>
+ 362         
+ 363     <span class="k">return</span> <span class="n">JoinedWords</span>
+ 364     
+ 365 <span class="k">def</span> <span class="nf">ParseFileName</span><span class="p">(</span><span class="n">FilePath</span><span class="p">):</span>
+ 366     <span class="sd">&quot;&quot;&quot;Parse specified file path and return file dir, file name, and file extension.</span>
+ 367 <span class="sd">    </span>
+ 368 <span class="sd">    Arguments:</span>
+ 369 <span class="sd">        FilePath (str): Name of a file with complete file path.</span>
+ 370 
+ 371 <span class="sd">    Returns:</span>
+ 372 <span class="sd">        str : File directory.</span>
+ 373 <span class="sd">        str : File name without file extension.</span>
+ 374 <span class="sd">        str : File extension.</span>
+ 375 
+ 376 <span class="sd">    &quot;&quot;&quot;</span>
+ 377     <span class="n">FileDir</span><span class="p">,</span> <span class="n">FileBaseName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">FilePath</span><span class="p">)</span>
+ 378     <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">FileBaseName</span><span class="p">)</span>
+ 379     
+ 380     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^\.&quot;</span><span class="p">,</span> <span class="n">FileExt</span><span class="p">):</span>
+ 381         <span class="n">FileExt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;^\.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">FileExt</span><span class="p">)</span>
+ 382         
+ 383     <span class="k">return</span> <span class="p">(</span><span class="n">FileDir</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span><span class="p">)</span>
+ 384     
+ 385 <span class="k">def</span> <span class="nf">PrintError</span><span class="p">(</span><span class="n">Msg</span><span class="p">,</span> <span class="n">Status</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+ 386     <span class="sd">&quot;&quot;&quot;Print message to stderr along with flushing stderr and exit with a specified</span>
+ 387 <span class="sd">    status. An `Error` prefix is placed before the message.</span>
+ 388 <span class="sd">    </span>
+ 389 <span class="sd">    Arguments:</span>
+ 390 <span class="sd">        Msg (str): Text message.</span>
+ 391 <span class="sd">        Status (int): Exit status.</span>
+ 392 
+ 393 <span class="sd">    &quot;&quot;&quot;</span>
+ 394     
+ 395     <span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Error: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Msg</span><span class="p">)</span>
+ 396     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">Status</span><span class="p">)</span>
+ 397 
+ 398 <span class="k">def</span> <span class="nf">PrintInfo</span><span class="p">(</span><span class="n">Msg</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+ 399     <span class="sd">&quot;&quot;&quot;Print message to stderr along with flushing stderr.</span>
+ 400 <span class="sd">    </span>
+ 401 <span class="sd">    Arguments:</span>
+ 402 <span class="sd">        Msg (str): Text message.</span>
+ 403 
+ 404 <span class="sd">    &quot;&quot;&quot;</span>
+ 405     
+ 406     <span class="k">print</span><span class="p">(</span><span class="n">Msg</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+ 407     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+ 408 
+ 409 <span class="k">def</span> <span class="nf">PrintWarning</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+ 410     <span class="sd">&quot;&quot;&quot;Print message to stderr along with flushing stderr. An `Warning` prefix</span>
+ 411 <span class="sd">    is placed before the message.</span>
+ 412 <span class="sd">    </span>
+ 413 <span class="sd">    Arguments:</span>
+ 414 <span class="sd">        Msg (str): Text message.</span>
+ 415 
+ 416 <span class="sd">    &quot;&quot;&quot;</span>
+ 417     
+ 418     <span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Warning: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+ 419 
+ 420 <span class="k">def</span> <span class="nf">ValidateOptionFileExt</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExts</span><span class="p">):</span>
+ 421     <span class="sd">&quot;&quot;&quot;Validate file type based on the specified file extensions delimited by spaces.</span>
+ 422 <span class="sd">    </span>
+ 423 <span class="sd">    Arguments:</span>
+ 424 <span class="sd">        OptionName (str): Command line option name.</span>
+ 425 <span class="sd">        FileName (str): Name of a file.</span>
+ 426 <span class="sd">        FileExts (str): Space delimited string containing valid file extensions.</span>
+ 427 
+ 428 <span class="sd">    Notes:</span>
+ 429 <span class="sd">        The function exits with an error message for a file name containing</span>
+ 430 <span class="sd">        invalid file extension.</span>
+ 431 
+ 432 <span class="sd">    &quot;&quot;&quot;</span>
+ 433     
+ 434     <span class="k">if</span> <span class="ow">not</span> <span class="n">CheckFileExt</span><span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">FileExts</span><span class="p">):</span>
+ 435         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The file name specified , </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> is not valid. Supported file formats: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">FileExts</span><span class="p">))</span>
+ 436 
+ 437 <span class="k">def</span> <span class="nf">ValidateOptionFilePath</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">FilePath</span><span class="p">):</span>
+ 438     <span class="sd">&quot;&quot;&quot;Validate presence of the file.</span>
+ 439 <span class="sd">    </span>
+ 440 <span class="sd">    Arguments:</span>
+ 441 <span class="sd">        OptionName (str): Command line option name.</span>
+ 442 <span class="sd">        FilePath (str): Name of a file with complete path.</span>
+ 443 
+ 444 <span class="sd">    Notes:</span>
+ 445 <span class="sd">        The function exits with an error message for a file path that doesn&#39;t exist.</span>
+ 446 
+ 447 <span class="sd">    &quot;&quot;&quot;</span>
+ 448     
+ 449     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">FilePath</span><span class="p">):</span>
+ 450         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The file specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> doesn&#39;t exist.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FilePath</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">))</span>
+ 451 
+ 452 <span class="k">def</span> <span class="nf">ValidateOptionFloatValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValue</span><span class="p">,</span> <span class="n">CmpOpValueMap</span><span class="p">):</span>
+ 453     <span class="sd">&quot;&quot;&quot;Validate option value using comparison operater and value pairs in specified in</span>
+ 454 <span class="sd">    a map.</span>
+ 455 <span class="sd">    </span>
+ 456 <span class="sd">    Arguments:</span>
+ 457 <span class="sd">        OptionName (str): Command line option name.</span>
+ 458 <span class="sd">        OptionValue (float or str): Command line option value.</span>
+ 459 <span class="sd">        CmpOpValueMap (dictionary): Comparison operator key and value pairs to</span>
+ 460 <span class="sd">            validate values specified in OptionValue.</span>
+ 461 
+ 462 <span class="sd">    Notes:</span>
+ 463 <span class="sd">        The function exits with an error message for an invalid option values specified</span>
+ 464 <span class="sd">        in OptionValue.</span>
+ 465 
+ 466 <span class="sd">    Examples:</span>
+ 467 
+ 468 <span class="sd">        ValidateOptionNumberValue(&quot;-b, --butinaSimilarityCutoff&quot;, </span>
+ 469 <span class="sd">            Options[&quot;--butinaSimilarityCutoff&quot;],</span>
+ 470 <span class="sd">            {&quot;&gt;&quot;: 0.0, &quot;&lt;=&quot; : 1.0})</span>
+ 471 
+ 472 <span class="sd">    &quot;&quot;&quot;</span>
+ 473 
+ 474     <span class="k">if</span> <span class="ow">not</span> <span class="n">IsFloat</span><span class="p">(</span><span class="n">OptionValue</span><span class="p">):</span>
+ 475         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> must be a float.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValue</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">))</span>
+ 476     
+ 477     <span class="k">return</span> <span class="n">ValidateOptionNumberValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">OptionValue</span><span class="p">),</span> <span class="n">CmpOpValueMap</span><span class="p">)</span>
+ 478 
+ 479 <span class="k">def</span> <span class="nf">ValidateOptionIntegerValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValue</span><span class="p">,</span> <span class="n">CmpOpValueMap</span><span class="p">):</span>
+ 480     <span class="sd">&quot;&quot;&quot;Validate option value using comparison operater and value pairs in specified in</span>
+ 481 <span class="sd">    a map.</span>
+ 482 <span class="sd">    </span>
+ 483 <span class="sd">    Arguments:</span>
+ 484 <span class="sd">        OptionName (str): Command line option name.</span>
+ 485 <span class="sd">        OptionValue (int or str): Command line option value.</span>
+ 486 <span class="sd">        CmpOpValueMap (dictionary): Comparison operator key and value pairs to</span>
+ 487 <span class="sd">            validate values specified in OptionValue.</span>
+ 488 
+ 489 <span class="sd">    Notes:</span>
+ 490 <span class="sd">        The function exits with an error message for an invalid option values specified</span>
+ 491 <span class="sd">        in OptionValue.</span>
+ 492 
+ 493 <span class="sd">    Examples:</span>
+ 494 
+ 495 <span class="sd">        ValidateOptionIntegerValue(&quot;--maxConfs&quot;, Options[&quot;--maxConfs&quot;],</span>
+ 496 <span class="sd">            {&quot;&gt;&quot;: 0})</span>
+ 497 
+ 498 <span class="sd">    &quot;&quot;&quot;</span>
+ 499 
+ 500     <span class="k">if</span> <span class="ow">not</span> <span class="n">IsInteger</span><span class="p">(</span><span class="n">OptionValue</span><span class="p">):</span>
+ 501         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> must be an integer.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValue</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">))</span>
+ 502     
+ 503     <span class="k">return</span> <span class="n">ValidateOptionNumberValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">OptionValue</span><span class="p">),</span> <span class="n">CmpOpValueMap</span><span class="p">)</span>
+ 504 
+ 505 <span class="k">def</span> <span class="nf">ValidateOptionNumberValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValue</span><span class="p">,</span> <span class="n">CmpOpValueMap</span><span class="p">):</span>
+ 506     <span class="sd">&quot;&quot;&quot;Validate option value using comparison operater and value pairs in specified in</span>
+ 507 <span class="sd">    a map.</span>
+ 508 <span class="sd">    </span>
+ 509 <span class="sd">    Arguments:</span>
+ 510 <span class="sd">        OptionName (str): Command line option name.</span>
+ 511 <span class="sd">        OptionValue (int or float): Command line option value.</span>
+ 512 <span class="sd">        CmpOpValueMap (dictionary): Comparison operator key and value pairs to</span>
+ 513 <span class="sd">            validate values specified in OptionValue.</span>
+ 514 
+ 515 <span class="sd">    Notes:</span>
+ 516 <span class="sd">        The function exits with an error message for an invalid option values specified</span>
+ 517 <span class="sd">        in OptionValue.</span>
+ 518 
+ 519 <span class="sd">    Examples:</span>
+ 520 
+ 521 <span class="sd">        ValidateOptionNumberValue(&quot;--maxConfs&quot;, int(Options[&quot;--maxConfs&quot;]),</span>
+ 522 <span class="sd">            {&quot;&gt;&quot;: 0})</span>
+ 523 <span class="sd">        ValidateOptionNumberValue(&quot;-b, --butinaSimilarityCutoff&quot;, </span>
+ 524 <span class="sd">            float(Options[&quot;--butinaSimilarityCutoff&quot;]),</span>
+ 525 <span class="sd">            {&quot;&gt;&quot;: 0.0, &quot;&lt;=&quot; : 1.0})</span>
+ 526 
+ 527 <span class="sd">    &quot;&quot;&quot;</span>
+ 528     
+ 529     <span class="n">Status</span> <span class="o">=</span> <span class="bp">True</span>
+ 530     <span class="k">for</span> <span class="n">CmpOp</span> <span class="ow">in</span> <span class="n">CmpOpValueMap</span><span class="p">:</span>
+ 531         <span class="n">Value</span> <span class="o">=</span> <span class="n">CmpOpValueMap</span><span class="p">[</span><span class="n">CmpOp</span><span class="p">]</span>
+ 532         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^&gt;$&quot;</span><span class="p">,</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 533             <span class="k">if</span> <span class="n">OptionValue</span> <span class="o">&lt;=</span> <span class="n">Value</span><span class="p">:</span>
+ 534                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 535                 <span class="k">break</span>
+ 536         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^&gt;=$&quot;</span><span class="p">,</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 537             <span class="k">if</span> <span class="n">OptionValue</span> <span class="o">&lt;</span> <span class="n">Value</span><span class="p">:</span>
+ 538                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 539                 <span class="k">break</span>
+ 540         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^&lt;$&quot;</span><span class="p">,</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 541             <span class="k">if</span> <span class="n">OptionValue</span> <span class="o">&gt;=</span> <span class="n">Value</span><span class="p">:</span>
+ 542                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 543                 <span class="k">break</span>
+ 544         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^&lt;=$&quot;</span><span class="p">,</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 545             <span class="k">if</span> <span class="n">OptionValue</span> <span class="o">&gt;</span> <span class="n">Value</span><span class="p">:</span>
+ 546                 <span class="n">Status</span> <span class="o">=</span> <span class="bp">False</span>
+ 547                 <span class="k">break</span>
+ 548         <span class="k">else</span><span class="p">:</span>
+ 549             <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The specified comparison operator, </span><span class="si">%s</span><span class="s2">, for function MiscUtil.ValidateOptionNumberValue is not supported</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">CmpOp</span><span class="p">))</span>
+ 550     
+ 551     <span class="k">if</span> <span class="ow">not</span> <span class="n">Status</span><span class="p">:</span>
+ 552         <span class="n">FirstValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 553         <span class="n">SupportedValues</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 554         <span class="k">for</span> <span class="n">CmpOp</span> <span class="ow">in</span> <span class="n">CmpOpValueMap</span><span class="p">:</span>
+ 555             <span class="n">Value</span> <span class="o">=</span> <span class="n">CmpOpValueMap</span><span class="p">[</span><span class="n">CmpOp</span><span class="p">]</span>
+ 556             <span class="k">if</span> <span class="n">FirstValue</span><span class="p">:</span>
+ 557                 <span class="n">FirstValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 558                 <span class="n">SupportedValues</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">CmpOp</span><span class="p">,</span> <span class="n">Value</span><span class="p">)</span>
+ 559             <span class="k">else</span><span class="p">:</span>
+ 560                 <span class="n">SupportedValues</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">SupportedValues</span><span class="p">,</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">Value</span><span class="p">)</span>
+ 561         
+ 562         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> is not valid. Supported value(s): </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValue</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">SupportedValues</span><span class="p">))</span>
+ 563 
+ 564 <span class="k">def</span> <span class="nf">ValidateOptionNumberValues</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValueString</span><span class="p">,</span> <span class="n">OptionValueCount</span><span class="p">,</span> <span class="n">OptionValueDelimiter</span><span class="p">,</span> <span class="n">OptionValueType</span><span class="p">,</span> <span class="n">CmpOpValueMap</span><span class="p">):</span>
+ 565     <span class="sd">&quot;&quot;&quot;Validate numerical option values using option value string, delimiter, value type,</span>
+ 566 <span class="sd">    and a specified map containing comparison operator and value pairs.</span>
+ 567 <span class="sd">    </span>
+ 568 <span class="sd">    Arguments:</span>
+ 569 <span class="sd">        OptionName (str): Command line option name.</span>
+ 570 <span class="sd">        OptionValueString (str): Command line option value.</span>
+ 571 <span class="sd">        OptionValueCount (int): Number of values in OptionValueString.</span>
+ 572 <span class="sd">        OptionValueDelimiter (str): Delimiter used for values in OptionValueString.</span>
+ 573 <span class="sd">        OptionValueType (str): Valid number types (integer or float)</span>
+ 574 <span class="sd">        CmpOpValueMap (dictionary): Comparison operator key and value pairs to</span>
+ 575 <span class="sd">            validate values specified in OptionValueString.</span>
+ 576 
+ 577 <span class="sd">    Notes:</span>
+ 578 <span class="sd">        The function exits with an error message for invalid option values specified</span>
+ 579 <span class="sd">        in OptionValueString</span>
+ 580 
+ 581 <span class="sd">    Examples:</span>
+ 582 
+ 583 <span class="sd">        ValidateOptionNumberValues(&quot;-m, --molImageSize&quot;,</span>
+ 584 <span class="sd">            Options[&quot;--molImageSize&quot;], 2, &quot;,&quot;, &quot;integer&quot;, {&quot;&gt;&quot;: 0})</span>
+ 585 
+ 586 <span class="sd">    &quot;&quot;&quot;</span>
+ 587     <span class="k">if</span> <span class="ow">not</span> <span class="n">CheckTextValue</span><span class="p">(</span><span class="n">OptionValueType</span><span class="p">,</span> <span class="s2">&quot;integer float&quot;</span><span class="p">):</span>
+ 588         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The option value type specified, </span><span class="si">%s</span><span class="s2">, for function MiscUtil.ValidateOptionNumberValues  is not valid. Supported value: integer float &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValueType</span><span class="p">))</span>
+ 589         
+ 590     <span class="n">Values</span> <span class="o">=</span> <span class="n">OptionValueString</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">OptionValueDelimiter</span><span class="p">)</span>
+ 591     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Values</span><span class="p">)</span> <span class="o">!=</span> <span class="n">OptionValueCount</span><span class="p">:</span>
+ 592         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> is not valid. It must contain </span><span class="si">%d</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> values separated by </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValueString</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValueCount</span><span class="p">,</span> <span class="n">OptionValueType</span><span class="p">,</span> <span class="n">OptionValueDelimiter</span><span class="p">))</span>
+ 593 
+ 594     <span class="n">IsIntergerValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 595     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^float$&quot;</span><span class="p">,</span> <span class="n">OptionValueType</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 596         <span class="n">IsIntergerValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 597     
+ 598     <span class="k">for</span> <span class="n">Value</span> <span class="ow">in</span> <span class="n">Values</span><span class="p">:</span>
+ 599         <span class="k">if</span> <span class="n">IsIntergerValue</span><span class="p">:</span>
+ 600             <span class="k">if</span> <span class="ow">not</span> <span class="n">IsInteger</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 601                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> in string </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> must be an integer.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValueString</span><span class="p">))</span>
+ 602             <span class="n">Value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 603         <span class="k">else</span><span class="p">:</span>
+ 604             <span class="k">if</span> <span class="ow">not</span> <span class="n">IsFloat</span><span class="p">(</span><span class="n">Value</span><span class="p">):</span>
+ 605                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> in string </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> must be a float.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValueString</span><span class="p">))</span>
+ 606             <span class="n">Value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 607         <span class="n">ValidateOptionNumberValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">CmpOpValueMap</span><span class="p">)</span>
+ 608     
+ 609 <span class="k">def</span> <span class="nf">ValidateOptionTextValue</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">OptionValue</span><span class="p">,</span> <span class="n">ValidValues</span><span class="p">):</span>
+ 610     <span class="sd">&quot;&quot;&quot;Validate option value based on the valid specified values separated by spaces.</span>
+ 611 <span class="sd">    </span>
+ 612 <span class="sd">    Arguments:</span>
+ 613 <span class="sd">        OptionName (str): Command line option name.</span>
+ 614 <span class="sd">        OptionValue (str): Command line option value.</span>
+ 615 <span class="sd">        ValidValues (str): Space delimited string containing valid values.</span>
+ 616 
+ 617 <span class="sd">    Notes:</span>
+ 618 <span class="sd">        The function exits with an error message for an invalid option value.</span>
+ 619 
+ 620 <span class="sd">    &quot;&quot;&quot;</span>
+ 621     
+ 622     <span class="k">if</span> <span class="ow">not</span> <span class="n">CheckTextValue</span><span class="p">(</span><span class="n">OptionValue</span><span class="p">,</span> <span class="n">ValidValues</span><span class="p">):</span>
+ 623         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The value specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> is not valid. Supported value(s): </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionValue</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">ValidValues</span><span class="p">))</span>
+ 624 
+ 625 <span class="k">def</span> <span class="nf">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="n">OptionName</span><span class="p">,</span> <span class="n">FilePath</span><span class="p">,</span> <span class="n">OverwriteOptionName</span><span class="p">,</span> <span class="n">OverwriteStatus</span><span class="p">):</span>
+ 626     <span class="sd">&quot;&quot;&quot;Validate overwriting of output file.</span>
+ 627 <span class="sd">    </span>
+ 628 <span class="sd">    Arguments:</span>
+ 629 <span class="sd">        OptionName (str): Command line option name.</span>
+ 630 <span class="sd">        FilePath (str): Name of a file with complete file path.</span>
+ 631 <span class="sd">        OverwriteOptionName (str): Overwrite command line option name.</span>
+ 632 <span class="sd">        OverwriteStatus (bool): True, overwrite</span>
+ 633 
+ 634 <span class="sd">    Notes:</span>
+ 635 <span class="sd">        The function exits with an error message for a file that is present and is not allowed</span>
+ 636 <span class="sd">        to be written as indicated by value of OverwriteStatus.</span>
+ 637 
+ 638 <span class="sd">    &quot;&quot;&quot;</span>
+ 639     
+ 640     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">FilePath</span><span class="p">):</span>
+ 641         <span class="k">if</span> <span class="ow">not</span> <span class="n">OverwriteStatus</span><span class="p">:</span>
+ 642             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">OverwriteOptionName</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+ 643                 <span class="n">ShortOverwriteOptionName</span> <span class="o">=</span> <span class="n">OverwriteOptionName</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+ 644             <span class="k">else</span><span class="p">:</span>
+ 645                 <span class="n">ShortOverwriteOptionName</span> <span class="o">=</span> <span class="n">OverwriteOptionName</span>
+ 646             
+ 647             <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The file specified, </span><span class="si">%s</span><span class="s2">, for option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> already exist. Use option </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> or </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> and try again.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FilePath</span><span class="p">,</span> <span class="n">OptionName</span><span class="p">,</span> <span class="n">ShortOverwriteOptionName</span><span class="p">,</span> <span class="n">OverwriteOptionName</span><span class="p">))</span>
+ 648 
+ 649 <span class="k">def</span> <span class="nf">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="n">OptionName1</span><span class="p">,</span> <span class="n">FilePath1</span><span class="p">,</span> <span class="n">OptionName2</span><span class="p">,</span> <span class="n">FilePath2</span><span class="p">):</span>
+ 650     <span class="sd">&quot;&quot;&quot;Validate two distinct file names.</span>
+ 651 
+ 652 <span class="sd">    Arguments:</span>
+ 653 <span class="sd">        OptionName1 (str): Command line option name.</span>
+ 654 <span class="sd">        FilePath1 (str): Name of a file with complete file path.</span>
+ 655 <span class="sd">        OptionName2 (str): Command line option name.</span>
+ 656 <span class="sd">        FilePath2 (str): Name of a file with complete file path.</span>
+ 657 
+ 658 <span class="sd">    Notes:</span>
+ 659 <span class="sd">        The function exits with an error message for two non distinct file names.</span>
+ 660 <span class="sd">    </span>
+ 661 <span class="sd">    &quot;&quot;&quot;</span>
+ 662     
+ 663     <span class="n">FilePath1Pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;^&quot;</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">FilePath1</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;$&quot;</span><span class="p">;</span>
+ 664     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">FilePath1Pattern</span><span class="p">,</span> <span class="n">FilePath2</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 665         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The file name specified, </span><span class="si">%s</span><span class="s2">, for options </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> and </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> must be different.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FilePath1</span><span class="p">,</span> <span class="n">OptionName1</span><span class="p">,</span> <span class="n">OptionName2</span><span class="p">))</span>
+ 666 
+ 667 <span class="k">def</span> <span class="nf">ProcessOptionInfileParameters</span><span class="p">(</span><span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">OutfileName</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+ 668     <span class="sd">&quot;&quot;&quot;Process parameters for reading input files and return a map containing</span>
+ 669 <span class="sd">    processed parameter names and values.</span>
+ 670 <span class="sd">    </span>
+ 671 <span class="sd">    Arguments:</span>
+ 672 <span class="sd">        ParamsOptionName (str): Command line input parameters option name.</span>
+ 673 <span class="sd">        ParamsOptionValues (str): Comma delimited list of parameter name and value pairs.</span>
+ 674 <span class="sd">        InfileName (str): Name of input file.</span>
+ 675 <span class="sd">        OutfileName (str): Name of output file.</span>
+ 676 
+ 677 <span class="sd">    Returns:</span>
+ 678 <span class="sd">        dictionary: Processed parameter name and value pairs.</span>
+ 679 
+ 680 <span class="sd">    Notes:</span>
+ 681 <span class="sd">        The parameter name and values specified in ParamsOptionValues are validated before</span>
+ 682 <span class="sd">        returning them in a dictionary.</span>
+ 683 
+ 684 <span class="sd">    &quot;&quot;&quot;</span>
+ 685     
+ 686     <span class="n">ParamsInfo</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;RemoveHydrogens&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s1">&#39;Sanitize&#39;</span> <span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s1">&#39;StrictParsing&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>  <span class="s1">&#39;SMILESColumn&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;SMILESNameColumn&#39;</span> <span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;SMILESDelimiter&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;SMILESTitleLine&#39;</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="p">}</span>
+ 687     <span class="n">_ProcessInfileAndOutfileParameters</span><span class="p">(</span><span class="s1">&#39;Infile&#39;</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">,)</span>
+ 688     
+ 689     <span class="k">return</span> <span class="n">ParamsInfo</span>
+ 690 
+ 691 <span class="k">def</span> <span class="nf">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">OutfileName</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+ 692     <span class="sd">&quot;&quot;&quot;Process parameters for writing output files and return a map containing</span>
+ 693 <span class="sd">    processed parameter names and values.</span>
+ 694 <span class="sd">    </span>
+ 695 <span class="sd">    Arguments:</span>
+ 696 <span class="sd">        ParamsOptionName (str): Command line input parameters option name.</span>
+ 697 <span class="sd">        ParamsOptionValues (str): Comma delimited list of parameter name and value pairs.</span>
+ 698 <span class="sd">        InfileName (str): Name of input file.</span>
+ 699 <span class="sd">        OutfileName (str): Name of output file.</span>
+ 700 
+ 701 <span class="sd">    Returns:</span>
+ 702 <span class="sd">        dictionary: Processed parameter name and value pairs.</span>
+ 703 
+ 704 <span class="sd">    Notes:</span>
+ 705 <span class="sd">        The parameter name and values specified in ParamsOptionValues are validated before</span>
+ 706 <span class="sd">        returning them in a dictionary.</span>
+ 707 
+ 708 <span class="sd">        The default value of some parameters may depend on type of input file. Consequently,</span>
+ 709 <span class="sd">        the input file name is also needed.</span>
+ 710 
+ 711 <span class="sd">    &quot;&quot;&quot;</span>
+ 712     <span class="n">ParamsInfo</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Compute2DCoords&#39;</span> <span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;Kekulize&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s1">&#39;SMILESDelimiter&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;SMILESIsomeric&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>  <span class="s1">&#39;SMILESTitleLine&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span>
+ 713     <span class="n">_ProcessInfileAndOutfileParameters</span><span class="p">(</span><span class="s1">&#39;Outfile&#39;</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">)</span>
+ 714     
+ 715     <span class="k">return</span> <span class="n">ParamsInfo</span>
+ 716     
+ 717 <span class="k">def</span> <span class="nf">_ProcessInfileAndOutfileParameters</span><span class="p">(</span><span class="n">Mode</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">):</span>
+ 718     <span class="sd">&quot;&quot;&quot;Process specified infile and outfile paramaters.</span>
+ 719 <span class="sd">    </span>
+ 720 <span class="sd">    &quot;&quot;&quot;</span>
+ 721     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 722         <span class="c1"># No specific parameters to process except for parameters with possible auto value...</span>
+ 723         <span class="n">_ProcessInfileAndOutfileAutoParameters</span><span class="p">(</span><span class="n">Mode</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">)</span>
+ 724         <span class="k">return</span>
+ 725     
+ 726     <span class="n">ParamsOptionValue</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">)</span>
+ 727     <span class="k">if</span> <span class="ow">not</span> <span class="n">ParamsOptionValue</span><span class="p">:</span>
+ 728         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No valid parameter name and value pairs specified using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option&quot;</span> <span class="o">%</span> <span class="n">ParamsOptionName</span><span class="p">)</span>
+ 729     
+ 730     <span class="n">ParamsOptionValueWords</span> <span class="o">=</span> <span class="n">ParamsOptionValue</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+ 731     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ParamsOptionValueWords</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+ 732         <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The number of comma delimited paramater names and values, </span><span class="si">%d</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option must be an even number.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ParamsOptionValueWords</span><span class="p">),</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 733         
+ 734     <span class="c1"># Setup a canonical paramater names...</span>
+ 735     <span class="n">ValidParamNames</span> <span class="o">=</span> <span class="p">[]</span>
+ 736     <span class="n">CanonicalParamNamesMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 737     <span class="k">for</span> <span class="n">ParamName</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ParamsInfo</span><span class="p">):</span>
+ 738         <span class="n">ValidParamNames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ParamName</span><span class="p">)</span>
+ 739         <span class="n">CanonicalParamNamesMap</span><span class="p">[</span><span class="n">ParamName</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">ParamName</span>
+ 740     
+ 741     <span class="c1"># Validate paramater name and value pairs...</span>
+ 742     <span class="k">for</span> <span class="n">Index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ParamsOptionValueWords</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+ 743         <span class="n">Name</span> <span class="o">=</span> <span class="n">ParamsOptionValueWords</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 744         <span class="n">Value</span> <span class="o">=</span> <span class="n">ParamsOptionValueWords</span><span class="p">[</span><span class="n">Index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+ 745 
+ 746         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 747         <span class="k">if</span>  <span class="ow">not</span> <span class="n">CanonicalName</span> <span class="ow">in</span> <span class="n">CanonicalParamNamesMap</span><span class="p">:</span>
+ 748             <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> is not a valid name. Supported parameter names: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ValidParamNames</span><span class="p">)))</span>
+ 749 
+ 750         <span class="n">ParamName</span> <span class="o">=</span> <span class="n">CanonicalParamNamesMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span>
+ 751         <span class="n">ParamValue</span> <span class="o">=</span> <span class="n">Value</span>
+ 752         
+ 753         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Sanitize|StrictParsing|RemoveHydrogens|Kekulize|SMILESIsomeric)$&quot;</span><span class="p">,</span> <span class="n">ParamName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 754             <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|No|True|False)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 755                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for parameter name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: Yes No True False&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 756             <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 757             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(No|False)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 758                 <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 759         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^SMILESTitleLine$&quot;</span><span class="p">,</span> <span class="n">ParamName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 760             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Infile$&quot;</span><span class="p">,</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 761                 <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|No|True|False|Auto)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 762                     <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for paramater name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: Yes No True False Auto&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 763             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Outfile$&quot;</span><span class="p">,</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 764                 <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|No|True|False)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 765                     <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for parameter name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: Yes No True False&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 766                 <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 767                 <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(No|False)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 768                     <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 769         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^SMILESDelimiter$&quot;</span><span class="p">,</span> <span class="n">ParamName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 770             <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(space|tab|comma)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 771                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for parameter name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: space tab comma&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 772             <span class="n">ParamValue</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+ 773             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^tab$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 774                 <span class="n">ParamValue</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+ 775             <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^comma$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 776                 <span class="n">ParamValue</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span>
+ 777         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Compute2DCoords$&quot;</span><span class="p">,</span> <span class="n">ParamName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 778             <span class="c1"># No need to set the value. It would be processed later to handle &quot;auto&quot; value...</span>
+ 779             <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|No|True|False|Auto)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 780                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for paramater name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: Yes No True False Auto&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 781         <span class="k">else</span><span class="p">:</span>
+ 782             <span class="n">ParamValue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 783             <span class="k">if</span> <span class="n">ParamValue</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+ 784                 <span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified for parameter name, </span><span class="si">%s</span><span class="s2">, using </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2"> option is not a valid value. Supported values: &gt; 0&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">))</span>
+ 785         
+ 786         <span class="c1"># Set value...</span>
+ 787         <span class="n">ParamsInfo</span><span class="p">[</span><span class="n">ParamName</span><span class="p">]</span> <span class="o">=</span> <span class="n">ParamValue</span>
+ 788         
+ 789     <span class="c1"># Handle paramaters with possible auto values...</span>
+ 790     <span class="n">_ProcessInfileAndOutfileAutoParameters</span><span class="p">(</span><span class="n">Mode</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">)</span>
+ 791 
+ 792 <span class="k">def</span> <span class="nf">_ProcessInfileAndOutfileAutoParameters</span><span class="p">(</span><span class="n">Mode</span><span class="p">,</span> <span class="n">ParamsInfo</span><span class="p">,</span> <span class="n">ParamsOptionName</span><span class="p">,</span> <span class="n">ParamsOptionValue</span><span class="p">,</span> <span class="n">InfileName</span><span class="p">,</span> <span class="n">OutfileName</span><span class="p">):</span>
+ 793     <span class="sd">&quot;&quot;&quot;Process parameters with possible auto values.</span>
+ 794 <span class="sd">    </span>
+ 795 <span class="sd">    &quot;&quot;&quot;</span>
+ 796     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Infile$&quot;</span><span class="p">,</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 797         <span class="c1"># SMILESTitleLine parameter...</span>
+ 798         <span class="n">Value</span> <span class="o">=</span> <span class="n">ParamsInfo</span><span class="p">[</span><span class="s2">&quot;SMILESTitleLine&quot;</span><span class="p">]</span>
+ 799         <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 800         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 801             <span class="k">if</span> <span class="n">InfileName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 802                 <span class="k">if</span> <span class="n">CheckFileExt</span><span class="p">(</span><span class="n">InfileName</span><span class="p">,</span> <span class="s2">&quot;smi csv tsv txt&quot;</span><span class="p">):</span>
+ 803                     <span class="n">ParamValue</span> <span class="o">=</span> <span class="n">DoesSMILESFileContainTitleLine</span><span class="p">(</span><span class="n">InfileName</span><span class="p">)</span>
+ 804         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|True)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 805             <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 806         <span class="n">ParamsInfo</span><span class="p">[</span><span class="s2">&quot;SMILESTitleLine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ParamValue</span>
+ 807     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Outfile$&quot;</span><span class="p">,</span> <span class="n">Mode</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 808         <span class="c1"># Compute2DCoords parameter...</span>
+ 809         <span class="n">Value</span> <span class="o">=</span> <span class="n">ParamsInfo</span><span class="p">[</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 810         <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 811         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 812             <span class="k">if</span> <span class="n">InfileName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 813                 <span class="k">if</span> <span class="n">CheckFileExt</span><span class="p">(</span><span class="n">InfileName</span><span class="p">,</span> <span class="s2">&quot;smi csv tsv txt&quot;</span><span class="p">):</span>
+ 814                     <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 815             <span class="k">if</span> <span class="n">OutfileName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 816                 <span class="k">if</span> <span class="n">CheckFileExt</span><span class="p">(</span><span class="n">OutfileName</span><span class="p">,</span> <span class="s2">&quot;smi csv tsv txt&quot;</span><span class="p">):</span>
+ 817                     <span class="c1"># No need to compute 2D coords for SMILES file...</span>
+ 818                     <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 819         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|True)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 820             <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 821         <span class="n">ParamsInfo</span><span class="p">[</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ParamValue</span>
+ 822 
+ 823 <span class="k">def</span> <span class="nf">ReplaceHTMLEntitiesInText</span><span class="p">(</span><span class="n">Text</span><span class="p">):</span>
+ 824     <span class="sd">&quot;&quot;&quot;Check and replace the followng HTML entities to their respective code</span>
+ 825 <span class="sd">    for display in a browser: &lt; (less than), &gt; (greater than), &amp; (ampersand),</span>
+ 826 <span class="sd">    &quot; (double quote),  and &#39; (single quote).</span>
+ 827 
+ 828 <span class="sd">    Arguments:</span>
+ 829 <span class="sd">        Text (str): Text value.</span>
+ 830 
+ 831 <span class="sd">    Returns:</span>
+ 832 <span class="sd">        str : Modifed text value.</span>
+ 833 
+ 834 <span class="sd">    &quot;&quot;&quot;</span>
+ 835 
+ 836     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;(&lt;|&gt;|&amp;|&quot;|&#39;)&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">Text</span><span class="p">):</span>
+ 837         <span class="k">return</span> <span class="n">Text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;lt;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;gt;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;amp;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="s2">&quot;&amp;apos;&quot;</span><span class="p">)</span>
+ 838     <span class="k">else</span><span class="p">:</span>
+ 839         <span class="k">return</span> <span class="n">Text</span>
+ 840 
+ 841 <span class="k">def</span> <span class="nf">TruncateText</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Width</span><span class="p">,</span> <span class="n">TrailingChars</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span><span class="p">):</span>
+ 842     <span class="sd">&quot;&quot;&quot;Truncate text using specified width along with appending any trailing</span>
+ 843 <span class="sd">    characters.</span>
+ 844 <span class="sd">    </span>
+ 845 <span class="sd">    Arguments:</span>
+ 846 <span class="sd">        Text (string): Input text.</span>
+ 847 <span class="sd">        Width (int): Max number of characters before truncating text.</span>
+ 848 <span class="sd">        Delimiter (string): Trailing characters to append or None.</span>
+ 849 
+ 850 <span class="sd">    Returns:</span>
+ 851 <span class="sd">        str : Truncated text</span>
+ 852 
+ 853 <span class="sd">    &quot;&quot;&quot;</span>
+ 854     
+ 855     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Width</span><span class="p">:</span>
+ 856         <span class="k">return</span> <span class="n">Text</span>
+ 857     
+ 858     <span class="n">TruncatedText</span> <span class="o">=</span> <span class="p">(</span><span class="n">Text</span><span class="p">[:</span><span class="n">Width</span><span class="p">]</span> <span class="o">+</span> <span class="n">TrailingChars</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">IsEmpty</span><span class="p">(</span><span class="n">TrailingChars</span><span class="p">)</span> <span class="k">else</span> <span class="n">Text</span><span class="p">[:</span><span class="n">Width</span><span class="p">]</span> 
+ 859     
+ 860     <span class="k">return</span> <span class="n">TruncatedText</span>
+ 861 
+ 862 <span class="k">def</span> <span class="nf">WrapText</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">Delimiter</span><span class="p">,</span> <span class="n">Width</span><span class="p">):</span>
+ 863     <span class="sd">&quot;&quot;&quot;Wrap text using specified delimiter and width.</span>
+ 864 <span class="sd">    </span>
+ 865 <span class="sd">    Arguments:</span>
+ 866 <span class="sd">        Text (string): Input text</span>
+ 867 <span class="sd">        Delimiter (string): Delimiter for wrapping text</span>
+ 868 <span class="sd">        Width (int): Max number of characters before wrapping text</span>
+ 869 
+ 870 <span class="sd">    Returns:</span>
+ 871 <span class="sd">        str : Wrapped text</span>
+ 872 
+ 873 <span class="sd">    &quot;&quot;&quot;</span>
+ 874     <span class="n">WrappedText</span> <span class="o">=</span> <span class="n">Delimiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">Width</span><span class="p">))</span>
+ 875     
+ 876     <span class="k">return</span> <span class="n">WrappedText</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

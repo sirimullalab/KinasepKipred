@@ -1,0 +1,1572 @@
+<html>
+<head>
+<title>MayaChemTools:Code:FileIO/FingerprintsFPFileIO.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-FileIO::FingerprintsFPFileIO-"></a>   1 <span class="k">package </span><span class="i">FileIO::FingerprintsFPFileIO</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: FingerprintsFPFileIO.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Scalar::Util</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">TextUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">FileUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">TimeUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">Fingerprints::FingerprintsStringUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">PackageInfo</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">FileIO::FileIO</span><span class="sc">;</span>
+  36 
+  37 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  38 
+  39 <span class="i">@ISA</span> = <span class="q">qw(FileIO::FileIO Exporter)</span><span class="sc">;</span>
+  40 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  41 <span class="i">@EXPORT_OK</span> = <span class="q">qw(IsFingerprintsFPFile)</span><span class="sc">;</span>
+  42 
+  43 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  44 
+  45 <span class="c"># Setup class variables...</span>
+  46 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="sc">;</span>
+  47 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  48 
+  49 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  50 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  51   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  52 
+  53   <span class="c"># Initialize object...</span>
+  54   <span class="k">my</span> <span class="i">$This</span> = <span class="i">$Class</span><span class="i">-&gt;SUPER::new</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  55   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  56   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIO</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  57 
+  58   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIOProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+  59 
+  60   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  61 <span class="s">}</span>
+  62 
+  63 <span class="c"># Initialize object data...</span>
+  64 <span class="c">#</span>
+<a name="_InitializeFingerprintsFPFileIO-"></a>  65 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIO</span> <span class="s">{</span>
+  66   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  67 
+  68   <span class="c"># Fingerprints string data format during read/write...</span>
+  69   <span class="c">#</span>
+  70   <span class="c"># For file read:</span>
+  71   <span class="c">#</span>
+  72   <span class="c"># AutoDetect  - automatically detect format of fingerprints string</span>
+  73   <span class="c"># FingerprintsBitVectorString - Bit vector fingerprints string format</span>
+  74   <span class="c"># FingerprintsVectorString - Vector fingerprints string format</span>
+  75   <span class="c">#</span>
+  76   <span class="c"># Default value: AutoDetect</span>
+  77   <span class="c">#</span>
+  78   <span class="c"># For file write:</span>
+  79   <span class="c">#</span>
+  80   <span class="c"># FingerprintsBitVectorString - Bit vector fingerprints string format</span>
+  81   <span class="c"># FingerprintsVectorString - Vector fingerprints string format</span>
+  82   <span class="c">#</span>
+  83   <span class="c"># Default value: undef</span>
+  84   <span class="c">#</span>
+  85   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} = <span class="k">undef</span><span class="sc">;</span>
+  86 
+  87   <span class="c"># For file read:</span>
+  88   <span class="c">#</span>
+  89   <span class="c">#   o Fingerprints bit-vector and vector object for current fingerprints string</span>
+  90   <span class="c">#</span>
+  91   <span class="c"># For file write:</span>
+  92   <span class="c">#</span>
+  93   <span class="c">#   o Fingerprints bit-vector and vector object for current fingerprints string</span>
+  94   <span class="c">#   o Any supported fingerprints object: PathLengthFingerprints, ExtendedConnectivity, and so on.</span>
+  95   <span class="c">#</span>
+  96   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="k">undef</span><span class="sc">;</span>
+  97 
+  98   <span class="c"># Fingeprints string for current line during read/write...</span>
+  99   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 100 
+ 101   <span class="c"># Partial fingeprints string corresponding to what&#39;s on the current line for current</span>
+ 102   <span class="c"># line during read/write...</span>
+ 103   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 104 
+ 105   <span class="c"># Required header data keys and values during read/write...</span>
+ 106   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 107   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 108 
+ 109   <span class="c"># First data line read/write...</span>
+ 110   <span class="i">$This</span>-&gt;{<span class="w">FirstDataLineIO</span>} = <span class="n">1</span><span class="sc">;</span>
+ 111 
+ 112   <span class="c"># Current fingerprints string data line number during read/write...</span>
+ 113   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} = <span class="n">0</span><span class="sc">;</span>
+ 114 
+ 115   <span class="c"># FP line data during read/write...</span>
+ 116   <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 117 
+ 118   <span class="c"># Initialize parameters for read...</span>
+ 119   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIORead</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 120 
+ 121   <span class="c"># Initialize parameters for write...</span>
+ 122   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIOWrite</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 123 
+ 124   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 125 <span class="s">}</span>
+ 126 
+ 127 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a> 128 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+ 129   <span class="c">#Class name...</span>
+ 130   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+ 131 
+ 132 <span class="s">}</span>
+ 133 
+ 134 <span class="c"># Initialize object data for reading fingerprints FP file...</span>
+ 135 <span class="c">#</span>
+<a name="_InitializeFingerprintsFPFileIORead-"></a> 136 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIORead</span> <span class="s">{</span>
+ 137   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 138 
+ 139   <span class="c"># Header data keys and values...</span>
+ 140   <span class="c">#</span>
+ 141   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 142   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 143   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 144 
+ 145   <span class="c"># By default, the fingerprints data is assumed to be valid and no validation is</span>
+ 146   <span class="c"># performed before generating fingerprints objects...</span>
+ 147   <span class="c">#</span>
+ 148   <span class="i">$This</span>-&gt;{<span class="w">ValidateData</span>} = <span class="n">1</span><span class="sc">;</span>
+ 149 
+ 150   <span class="c"># Level of detail to print during validation of data for invalid or missing data...</span>
+ 151   <span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} = <span class="n">1</span><span class="sc">;</span>
+ 152 
+ 153   <span class="c"># Number of missing and invalid fingerprints string data lines...</span>
+ 154   <span class="i">$This</span>-&gt;{<span class="w">NumOfLinesWithMissingData</span>} = <span class="n">0</span><span class="sc">;</span>
+ 155   <span class="i">$This</span>-&gt;{<span class="w">NumOfLinesWithInvalidData</span>} = <span class="n">0</span><span class="sc">;</span>
+ 156 
+ 157   <span class="c"># Compound ID for current fingerprints string...</span>
+ 158   <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 159 
+ 160   <span class="c"># Status of data in fingerprints FP file...</span>
+ 161   <span class="i">$This</span>-&gt;{<span class="w">ValidFileData</span>} = <span class="n">0</span><span class="sc">;</span>
+ 162   <span class="i">$This</span>-&gt;{<span class="w">ValidRequiredHeaderDataKeys</span>} = <span class="n">0</span><span class="sc">;</span>
+ 163   <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+ 164 
+ 165   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 166 <span class="s">}</span>
+ 167 
+ 168 <span class="c"># Initialize object data for writing fingerprints FP file...</span>
+ 169 <span class="c">#</span>
+<a name="_InitializeFingerprintsFPFileIOWrite-"></a> 170 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIOWrite</span> <span class="s">{</span>
+ 171   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 172 
+ 173   <span class="c"># Fingerprints bit vector string format...</span>
+ 174   <span class="c">#</span>
+ 175   <span class="c"># Possible values: BinaryString or HexadecimalString [Default]</span>
+ 176   <span class="c">#</span>
+ 177   <span class="c"># Default BitStringFormat is set during first write using Fingerprints::FingerprintsStringUtil::GetDefaultBitStringFormat.</span>
+ 178   <span class="c">#</span>
+ 179   <span class="i">$This</span>-&gt;{<span class="w">BitStringFormat</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 180 
+ 181   <span class="c"># Bits order in fingerprints bit vector string...</span>
+ 182   <span class="c">#</span>
+ 183   <span class="c"># Ascending - First bit in each byte as the lowest bit [Default]</span>
+ 184   <span class="c"># Descending - First bit in each byte as the highest bit</span>
+ 185   <span class="c">#</span>
+ 186   <span class="c"># Default BitsOrder is set during first write using Fingerprints::FingerprintsStringUtil::GetDefaultBitsOrder.</span>
+ 187   <span class="c">#</span>
+ 188   <span class="i">$This</span>-&gt;{<span class="w">BitsOrder</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 189 
+ 190   <span class="c"># Fingerprints vector string format...</span>
+ 191   <span class="c">#</span>
+ 192   <span class="c"># Possible values: IDsAndValuesString, IDsAndValuesPairsString, ValuesAndIDsString, ValuesAndIDsPairsString, ValuesString</span>
+ 193   <span class="c">#</span>
+ 194   <span class="c"># Default VectorStringFormat is set during first write using Fingerprints::FingerprintsStringUtil::GetDefaultVectorStringFormat.</span>
+ 195   <span class="c"># For fingerprints vector object containing vector NumericalValues, it corresponds to IDsAndValuesString; otherwise,</span>
+ 196   <span class="c"># it&#39;s set to ValuesString.</span>
+ 197   <span class="c">#</span>
+ 198   <span class="i">$This</span>-&gt;{<span class="w">VectorStringFormat</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 199 
+ 200   <span class="c"># Overwriting existing file...</span>
+ 201   <span class="i">$This</span>-&gt;{<span class="w">Overwrite</span>} = <span class="n">0</span><span class="sc">;</span>
+ 202 
+ 203   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 204 <span class="s">}</span>
+ 205 
+ 206 <span class="c"># Initialize object values...</span>
+<a name="_InitializeFingerprintsFPFileIOProperties-"></a> 207 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIOProperties</span> <span class="s">{</span>
+ 208   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 209 
+ 210   <span class="c"># All other property names and values along with all Set/Get&lt;PropertyName&gt; methods</span>
+ 211   <span class="c"># are implemented on-demand using ObjectProperty class.</span>
+ 212 
+ 213   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span><span class="sc">;</span>
+ 214   <span class="k">while</span> <span class="s">(</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">each</span>  <span class="i">%NamesAndValues</span><span class="s">)</span> <span class="s">{</span>
+ 215     <span class="i">$MethodName</span> = <span class="q">&quot;Set${Name}&quot;</span><span class="sc">;</span>
+ 216     <span class="i">$This</span><span class="i">-&gt;$MethodName</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 217   <span class="s">}</span>
+ 218 
+ 219   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">Name</span>}<span class="s">)</span> <span class="s">{</span>
+ 220     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying file name...&quot;</span><span class="sc">;</span>
+ 221   <span class="s">}</span>
+ 222 
+ 223   <span class="c"># Make sure it&#39;s a fingerprints file...</span>
+ 224   <span class="i">$Name</span> = <span class="i">$NamesAndValues</span>{<span class="w">Name</span>}<span class="sc">;</span>
+ 225   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;IsFingerprintsFPFile</span><span class="s">(</span><span class="i">$Name</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 226     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated: File, $Name, doesn&#39;t appear to be fingerprints format...&quot;</span><span class="sc">;</span>
+ 227   <span class="s">}</span>
+ 228 
+ 229   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;GetMode</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^Read$/i</span><span class="s">)</span> <span class="s">{</span>
+ 230     <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIOReadProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+ 231   <span class="s">}</span>
+ 232   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;GetMode</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^(Write|Append)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 233     <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsFPFileIOWriteProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+ 234   <span class="s">}</span>
+ 235 
+ 236   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 237 <span class="s">}</span>
+ 238 
+ 239 <span class="c"># Initialize object properties for reading fingerprints FP file...</span>
+ 240 <span class="c">#</span>
+<a name="_InitializeFingerprintsFPFileIOReadProperties-"></a> 241 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIOReadProperties</span> <span class="s">{</span>
+ 242   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 243 
+ 244   <span class="c"># Set default value for FingerprintsStringMode...</span>
+ 245   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+ 246     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} = <span class="q">&#39;AutoDetect&#39;</span><span class="sc">;</span>
+ 247   <span class="s">}</span>
+ 248 
+ 249   <span class="i">$This</span><span class="i">-&gt;_PrepareForReadingFingerprintsFPFileData</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 250 
+ 251   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 252 <span class="s">}</span>
+ 253 
+ 254 <span class="c"># Initialize object properties for writing fingerprints FP file...</span>
+ 255 <span class="c">#</span>
+<a name="_InitializeFingerprintsFPFileIOWriteProperties-"></a> 256 <span class="k">sub </span><span class="m">_InitializeFingerprintsFPFileIOWriteProperties</span> <span class="s">{</span>
+ 257   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 258 
+ 259   <span class="c"># Check FingerprintsStringMode value...</span>
+ 260   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">FingerprintsStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+ 261     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying FingerprintsStringMode...&quot;</span><span class="sc">;</span>
+ 262   <span class="s">}</span>
+ 263 
+ 264   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} !~ <span class="q">/^(FingerprintsBitVectorString|FingerprintsVectorString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 265     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated: FingerprintsStringMode value, $This-&gt;{FingerprintsStringMode}, is not valid; Supported values for write/append: FingerprintsBitVectorString or FingerprintsVectorString...&quot;</span><span class="sc">;</span>
+ 266   <span class="s">}</span>
+ 267 
+ 268   <span class="i">$This</span><span class="i">-&gt;_PrepareForWritingFingerprintsFPFileData</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 269 
+ 270   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 271 <span class="s">}</span>
+ 272 
+ 273 <span class="c"># Set FingerprintsStringMode...</span>
+ 274 <span class="c">#</span>
+<a name="SetFingerprintsStringMode-"></a> 275 <span class="k">sub </span><span class="m">SetFingerprintsStringMode</span> <span class="s">{</span>
+ 276   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 277 
+ 278   <span class="c"># AutoDetect - automatically detect format of fingerprints string</span>
+ 279   <span class="c"># FingerprintsBitVectorString - Bit vector fingerprints string format</span>
+ 280   <span class="c"># FingerprintsVectorString - Vector fingerprints string format</span>
+ 281 
+ 282   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(AutoDetect|FingerprintsBitVectorString|FingerprintsVectorString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 283     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetFingerprintsStringMode: FingerprintsStringMode value, $Value, is not valid; Supported values: AutoDetect, FingerprintsBitVectorString or FingerprintsVectorString...&quot;</span><span class="sc">;</span>
+ 284   <span class="s">}</span>
+ 285 
+ 286   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 287 
+ 288   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 289 <span class="s">}</span>
+ 290 
+ 291 <span class="c"># Set DetailLevel...</span>
+ 292 <span class="c">#</span>
+<a name="SetDetailLevel-"></a> 293 <span class="k">sub </span><span class="m">SetDetailLevel</span> <span class="s">{</span>
+ 294   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 295 
+ 296   <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 297     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetDetailLevel: DetailLevel value, $Value, is not valid; Supported values: &gt; 0...&quot;</span><span class="sc">;</span>
+ 298   <span class="s">}</span>
+ 299 
+ 300   <span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 301 
+ 302   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 303 <span class="s">}</span>
+ 304 
+ 305 <span class="c"># Set BitStringFormat...</span>
+ 306 <span class="c">#</span>
+<a name="SetBitStringFormat-"></a> 307 <span class="k">sub </span><span class="m">SetBitStringFormat</span> <span class="s">{</span>
+ 308   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 309 
+ 310   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(BinaryString|HexadecimalString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 311     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetBitStringFormat: BitStringFormat value, $Value, is not valid; Supported values: BinaryString or HexadecimalString...&quot;</span><span class="sc">;</span>
+ 312   <span class="s">}</span>
+ 313 
+ 314   <span class="i">$This</span>-&gt;{<span class="w">BitStringFormat</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 315 
+ 316   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 317 <span class="s">}</span>
+ 318 
+ 319 <span class="c"># Set BitsOrder...</span>
+ 320 <span class="c">#</span>
+<a name="SetBitsOrder-"></a> 321 <span class="k">sub </span><span class="m">SetBitsOrder</span> <span class="s">{</span>
+ 322   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 323 
+ 324   <span class="c"># Ascending - First bit in each byte as the lowest bit</span>
+ 325   <span class="c"># Descending - First bit in each byte as the highest bit</span>
+ 326   <span class="c">#</span>
+ 327   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(Ascending|Descending)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 328     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetBitsOrder: FingerprintsStringMode value, $Value, is not valid; Supported values: Ascending or Descending...&quot;</span><span class="sc">;</span>
+ 329   <span class="s">}</span>
+ 330 
+ 331   <span class="i">$This</span>-&gt;{<span class="w">BitsOrder</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 332 
+ 333   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 334 <span class="s">}</span>
+ 335 
+ 336 <span class="c"># Set compound ID...</span>
+ 337 <span class="c">#</span>
+<a name="SetCompoundID-"></a> 338 <span class="k">sub </span><span class="m">SetCompoundID</span> <span class="s">{</span>
+ 339   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 340 
+ 341   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/ /</span><span class="s">)</span> <span class="s">{</span>
+ 342     <span class="i">$Value</span> =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 343     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetCompoundID: Spaces are not allowed in compound ID; They have been removed...&quot;</span><span class="sc">;</span>
+ 344   <span class="s">}</span>
+ 345 
+ 346   <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 347 
+ 348   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 349 <span class="s">}</span>
+ 350 
+ 351 <span class="c"># Set VectorStringFormat...</span>
+ 352 <span class="c">#</span>
+<a name="SetVectorStringFormat-"></a> 353 <span class="k">sub </span><span class="m">SetVectorStringFormat</span> <span class="s">{</span>
+ 354   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 355 
+ 356   <span class="c"># Possible values: IDsAndValuesString, IDsAndValuesPairsString, ValuesAndIDsString, ValuesAndIDsPairsString</span>
+ 357 
+ 358   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(IDsAndValuesString|IDsAndValuesPairsString|ValuesAndIDsString|ValuesAndIDsPairsString|ValuesString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 359     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetVectorStringFormat: FingerprintsStringMode value, $Value, is not valid; Supported values: IDsAndValuesString, IDsAndValuesPairsString, ValuesAndIDsString, ValuesAndIDsPairsString, or ValuesString...&quot;</span><span class="sc">;</span>
+ 360   <span class="s">}</span>
+ 361 
+ 362   <span class="i">$This</span>-&gt;{<span class="w">VectorStringFormat</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 363 
+ 364   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 365 <span class="s">}</span>
+ 366 
+ 367 <span class="c"># Get header data keys or number of header data keys in header data block...</span>
+ 368 <span class="c">#</span>
+<a name="GetHeaderDataKeys-"></a> 369 <span class="k">sub </span><span class="m">GetHeaderDataKeys</span> <span class="s">{</span>
+ 370   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 371 
+ 372   <span class="k">return</span> <span class="k">wantarray</span> ? <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeys</span>}} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeys</span>}}<span class="sc">;</span>
+ 373 <span class="s">}</span>
+ 374 
+ 375 <span class="c"># Set header data keys...</span>
+ 376 <span class="c">#</span>
+<a name="SetHeaderDataKeys-"></a> 377 <span class="k">sub </span><span class="m">SetHeaderDataKeys</span> <span class="s">{</span>
+ 378   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Keys</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 379 
+ 380   <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetHeaderDataKeys: Can&#39;t set HeaderDataKeys: Not allowed...&quot;</span><span class="sc">;</span>
+ 381 
+ 382   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 383 <span class="s">}</span>
+ 384 
+ 385 <span class="c"># Get header data keys and values hash...</span>
+ 386 <span class="c">#</span>
+<a name="GetHeaderDataKeysAndValues-"></a> 387 <span class="k">sub </span><span class="m">GetHeaderDataKeysAndValues</span> <span class="s">{</span>
+ 388   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 389 
+ 390   <span class="k">return</span> <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeysAndValues</span>}}<span class="sc">;</span>
+ 391 <span class="s">}</span>
+ 392 
+ 393 <span class="c"># Set header data keys and values hash...</span>
+ 394 <span class="c">#</span>
+<a name="SetHeaderDataKeysAndValues-"></a> 395 <span class="k">sub </span><span class="m">SetHeaderDataKeysAndValues</span> <span class="s">{</span>
+ 396   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%KeysAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 397 
+ 398   <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetHeaderDataKeysAndValues: Can&#39;t set HeaderDataKeysAndValues: Not allowed...&quot;</span><span class="sc">;</span>
+ 399 
+ 400   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 401 <span class="s">}</span>
+ 402 
+ 403 <span class="c"># Get required header data keys or number of header data keys in header data block...</span>
+ 404 <span class="c">#</span>
+<a name="GetRequiredHeaderDataKeys-"></a> 405 <span class="k">sub </span><span class="m">GetRequiredHeaderDataKeys</span> <span class="s">{</span>
+ 406   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 407 
+ 408   <span class="k">return</span> <span class="k">wantarray</span> ? <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="sc">;</span>
+ 409 <span class="s">}</span>
+ 410 
+ 411 <span class="c"># Set required header data keys...</span>
+ 412 <span class="c">#</span>
+<a name="SetRequiredHeaderDataKeys-"></a> 413 <span class="k">sub </span><span class="m">SetRequiredHeaderDataKeys</span> <span class="s">{</span>
+ 414   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Keys</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 415 
+ 416   <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetRequiredHeaderDataKeys: Can&#39;t set RequiredHeaderDataKeys: Not allowed...&quot;</span><span class="sc">;</span>
+ 417 
+ 418   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 419 <span class="s">}</span>
+ 420 
+ 421 <span class="c"># Get required header data keys and values hash...</span>
+ 422 <span class="c">#</span>
+<a name="GetRequiredHeaderDataKeysAndValues-"></a> 423 <span class="k">sub </span><span class="m">GetRequiredHeaderDataKeysAndValues</span> <span class="s">{</span>
+ 424   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 425 
+ 426   <span class="k">return</span> <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}}<span class="sc">;</span>
+ 427 <span class="s">}</span>
+ 428 
+ 429 <span class="c"># Set required header data keys and values hash...</span>
+ 430 <span class="c">#</span>
+<a name="SetRequiredHeaderDataKeysAndValues-"></a> 431 <span class="k">sub </span><span class="m">SetRequiredHeaderDataKeysAndValues</span> <span class="s">{</span>
+ 432   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%KeysAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 433 
+ 434   <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetRequiredHeaderDataKeysAndValues: Can&#39;t set RequiredHeaderDataKeysAndValues: Not allowed...&quot;</span><span class="sc">;</span>
+ 435 
+ 436   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 437 <span class="s">}</span>
+ 438 
+ 439 <span class="c"># Get fingerprints object for current data line...</span>
+ 440 <span class="c">#</span>
+<a name="GetFingerprints-"></a> 441 <span class="k">sub </span><span class="m">GetFingerprints</span> <span class="s">{</span>
+ 442   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 443 
+ 444   <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="sc">;</span>
+ 445 <span class="s">}</span>
+ 446 
+ 447 <span class="c"># Set fingerprints object for current data line...</span>
+ 448 <span class="c">#</span>
+<a name="SetFingerprints-"></a> 449 <span class="k">sub </span><span class="m">SetFingerprints</span> <span class="s">{</span>
+ 450   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 451 
+ 452   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+ 453 
+ 454   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 455 <span class="s">}</span>
+ 456 
+ 457 <span class="c"># Get fingerprints string  for current data line...</span>
+ 458 <span class="c">#</span>
+<a name="GetFingerprintsString-"></a> 459 <span class="k">sub </span><span class="m">GetFingerprintsString</span> <span class="s">{</span>
+ 460   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 461 
+ 462   <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} ? <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} <span class="co">:</span> <span class="q">&#39;None&#39;</span><span class="sc">;</span>
+ 463 <span class="s">}</span>
+ 464 
+ 465 <span class="c"># Set fingerprints string for current data line...</span>
+ 466 <span class="c">#</span>
+<a name="SetFingerprintsString-"></a> 467 <span class="k">sub </span><span class="m">SetFingerprintsString</span> <span class="s">{</span>
+ 468   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsString</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 469 
+ 470   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">$FingerprintsString</span><span class="sc">;</span>
+ 471 
+ 472   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 473 <span class="s">}</span>
+ 474 
+ 475 <span class="c"># Get partial fingerprints string  for current data line...</span>
+ 476 <span class="c">#</span>
+<a name="GetPartialFingerprintsString-"></a> 477 <span class="k">sub </span><span class="m">GetPartialFingerprintsString</span> <span class="s">{</span>
+ 478   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 479 
+ 480   <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} ? <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} <span class="co">:</span> <span class="q">&#39;None&#39;</span><span class="sc">;</span>
+ 481 <span class="s">}</span>
+ 482 
+ 483 <span class="c"># Set partial fingerprints string for current data line...</span>
+ 484 <span class="c">#</span>
+<a name="SetPartialFingerprintsString-"></a> 485 <span class="k">sub </span><span class="m">SetPartialFingerprintsString</span> <span class="s">{</span>
+ 486   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$PartialFingerprintsString</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 487 
+ 488   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="i">$PartialFingerprintsString</span><span class="sc">;</span>
+ 489 
+ 490   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 491 <span class="s">}</span>
+ 492 
+ 493 <span class="c"># Does fingerprints FP file contain valid data?</span>
+ 494 <span class="c">#</span>
+<a name="IsFingerprintsFileDataValid-"></a> 495 <span class="k">sub </span><span class="m">IsFingerprintsFileDataValid</span> <span class="s">{</span>
+ 496   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 497 
+ 498   <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">ValidFileData</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 499 <span class="s">}</span>
+ 500 
+ 501 <span class="c"># Does current data line contains valid fingerprints object data?</span>
+ 502 <span class="c">#</span>
+<a name="IsFingerprintsDataValid-"></a> 503 <span class="k">sub </span><span class="m">IsFingerprintsDataValid</span> <span class="s">{</span>
+ 504   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 505 
+ 506   <span class="k">return</span> <span class="k">defined</span> <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 507 <span class="s">}</span>
+ 508 
+ 509 <span class="c"># Check presence of a header data key...</span>
+ 510 <span class="c">#</span>
+<a name="IsHeaderDataKeyPresent-"></a> 511 <span class="k">sub </span><span class="m">IsHeaderDataKeyPresent</span> <span class="s">{</span>
+ 512   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Key</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 513   <span class="k">my</span><span class="s">(</span><span class="i">$CannonicalKey</span><span class="s">)</span><span class="sc">;</span>
+ 514 
+ 515   <span class="i">$CannonicalKey</span> = <span class="k">lc</span> <span class="i">$Key</span><span class="sc">;</span>
+ 516 
+ 517   <span class="k">return</span> <span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}{<span class="i">$CannonicalKey</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 518 <span class="s">}</span>
+ 519 
+ 520 <span class="c"># Get value of header data key...</span>
+ 521 <span class="c">#</span>
+<a name="GetHeaderDataKeyValue-"></a> 522 <span class="k">sub </span><span class="m">GetHeaderDataKeyValue</span> <span class="s">{</span>
+ 523   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Key</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 524   <span class="k">my</span><span class="s">(</span><span class="i">$CannonicalKey</span><span class="s">)</span><span class="sc">;</span>
+ 525 
+ 526   <span class="i">$CannonicalKey</span> = <span class="k">lc</span> <span class="i">$Key</span><span class="sc">;</span>
+ 527 
+ 528   <span class="k">return</span> <span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}{<span class="i">$CannonicalKey</span>} ?  <span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}{<span class="i">$CannonicalKey</span>} <span class="co">:</span> <span class="k">undef</span><span class="sc">;</span>
+ 529 <span class="s">}</span>
+ 530 
+ 531 <span class="c">#</span>
+ 532 <span class="c"># Read next available fingerprints line, process it and generate appropriate fingerprints</span>
+ 533 <span class="c"># objects...</span>
+ 534 <span class="c">#</span>
+<a name="Read-"></a> 535 <span class="k">sub </span><span class="m">Read</span> <span class="s">{</span>
+ 536   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 537 
+ 538   <span class="c"># Read data line...</span>
+ 539   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_ReadDataLine</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 540     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 541   <span class="s">}</span>
+ 542 
+ 543   <span class="c"># No need to process invalid FP file with invalid data...</span>
+ 544   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">ValidFileData</span>}<span class="s">)</span> <span class="s">{</span>
+ 545     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">ValidateData</span>}<span class="s">)</span> <span class="s">{</span>
+ 546       <span class="i">$This</span>-&gt;{<span class="w">NumOfLinesWithMissingData</span>} += <span class="n">1</span><span class="sc">;</span>
+ 547     <span class="s">}</span>
+ 548     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 549   <span class="s">}</span>
+ 550 
+ 551   <span class="c"># Perform data validation...</span>
+ 552   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">ValidateData</span>}<span class="s">)</span> <span class="s">{</span>
+ 553     <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_ValidateReadDataLine</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 554       <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 555     <span class="s">}</span>
+ 556   <span class="s">}</span>
+ 557 
+ 558   <span class="c"># Check again to handle problematic data for non-validated data lines...</span>
+ 559   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span> <span class="s">{</span>
+ 560     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 561   <span class="s">}</span>
+ 562 
+ 563   <span class="c"># Generate fingeprints object...</span>
+ 564   <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsObject</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 565 
+ 566   <span class="c"># Setup fingerprints compound ID for fingerprints string...</span>
+ 567   <span class="i">$This</span><span class="i">-&gt;_GenerateCompoundID</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 568 
+ 569   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 570 <span class="s">}</span>
+ 571 
+ 572 <span class="c"># Read next available fingerprints line, process it and generate appropriate fingerprints</span>
+ 573 <span class="c"># objects...</span>
+ 574 <span class="c">#</span>
+<a name="Next-"></a> 575 <span class="k">sub </span><span class="m">Next</span> <span class="s">{</span>
+ 576   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 577 
+ 578   <span class="k">return</span> <span class="i">$This</span><span class="i">-&gt;Read</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 579 <span class="s">}</span>
+ 580 
+ 581 <span class="c"># Read fingerprints data line line...</span>
+ 582 <span class="c">#</span>
+<a name="_ReadDataLine-"></a> 583 <span class="k">sub </span><span class="m">_ReadDataLine</span> <span class="s">{</span>
+ 584   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 585 
+ 586   <span class="c"># Initialize data for current line...</span>
+ 587   <span class="i">$This</span><span class="i">-&gt;_InitializeReadDataLine</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 588 
+ 589   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FirstDataLineIO</span>}<span class="s">)</span> <span class="s">{</span>
+ 590     <span class="c"># Get first data line...</span>
+ 591     <span class="i">$This</span><span class="i">-&gt;_ProcessFirstDataLineRead</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 592   <span class="s">}</span>
+ 593   <span class="k">else</span> <span class="s">{</span>
+ 594     <span class="c"># Get next data line...</span>
+ 595     <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+ 596     <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="i">TextUtil::GetTextLine</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FileHandle</span>}<span class="s">)</span><span class="sc">;</span>
+ 597   <span class="s">}</span>
+ 598 
+ 599   <span class="c"># Is it end of file?</span>
+ 600   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">DataLine</span>}<span class="s">)</span> <span class="s">{</span>
+ 601     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 602   <span class="s">}</span>
+ 603 
+ 604   <span class="c"># Process data line to retrieve compound ID and fingerprints string information...</span>
+ 605   <span class="i">$This</span><span class="i">-&gt;_ProcessDataLineRead</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 606 
+ 607   <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 608 <span class="s">}</span>
+ 609 
+ 610 <span class="c"># Process data line to retrieve compound ID and fingerprints string information...</span>
+ 611 <span class="c">#</span>
+<a name="_ProcessDataLineRead-"></a> 612 <span class="k">sub </span><span class="m">_ProcessDataLineRead</span> <span class="s">{</span>
+ 613   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 614   <span class="k">my</span><span class="s">(</span><span class="i">$CompoundID</span><span class="cm">,</span> <span class="i">$PartialFingerprintsString</span><span class="s">)</span><span class="sc">;</span>
+ 615 
+ 616   <span class="s">(</span><span class="i">$CompoundID</span><span class="cm">,</span> <span class="i">$PartialFingerprintsString</span><span class="s">)</span> = <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} =~ <span class="q">/^(.*?)[ ]+(.*?)$/</span><span class="sc">;</span>
+ 617 
+ 618   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$CompoundID</span><span class="s">)</span> &amp;&amp; <span class="k">defined</span><span class="s">(</span><span class="i">$PartialFingerprintsString</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 619     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 620   <span class="s">}</span>
+ 621 
+ 622   <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} = <span class="i">$CompoundID</span><span class="sc">;</span>
+ 623   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="i">$PartialFingerprintsString</span><span class="sc">;</span>
+ 624 
+ 625   <span class="c"># Set up fingerprints string...</span>
+ 626   <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsStringFromPartialFingerprintsString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 627 
+ 628   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 629 <span class="s">}</span>
+ 630 
+ 631 <span class="c"># Initialize data line for reading...</span>
+ 632 <span class="c">#</span>
+<a name="_InitializeReadDataLine-"></a> 633 <span class="k">sub </span><span class="m">_InitializeReadDataLine</span> <span class="s">{</span>
+ 634   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 635 
+ 636   <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 637   <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 638 
+ 639   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 640 
+ 641   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 642   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+ 643 
+ 644   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 645 <span class="s">}</span>
+ 646 
+ 647 <span class="c"># Validate fingerprints string data line...</span>
+ 648 <span class="c">#</span>
+<a name="_ValidateReadDataLine-"></a> 649 <span class="k">sub </span><span class="m">_ValidateReadDataLine</span> <span class="s">{</span>
+ 650   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 651 
+ 652   <span class="c"># Check for missing data...</span>
+ 653   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 654     <span class="c"># Missing data...</span>
+ 655     <span class="i">$This</span>-&gt;{<span class="w">NumOfLinesWithMissingData</span>} += <span class="n">1</span><span class="sc">;</span>
+ 656     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} &gt;= <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 657       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadDataLine: Data line number $This-&gt;{LineNum} contains no fingerprints data: $This-&gt;{DataLine}...&quot;</span><span class="sc">;</span>
+ 658     <span class="s">}</span>
+ 659     <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 660       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadDataLine: Data line number $This-&gt;{LineNum} contains no fingerprints data...&quot;</span><span class="sc">;</span>
+ 661     <span class="s">}</span>
+ 662     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 663   <span class="s">}</span>
+ 664 
+ 665   <span class="c"># Check for invalid data...</span>
+ 666   <span class="k">my</span><span class="s">(</span><span class="i">$InvalidFingerprintsData</span><span class="s">)</span><span class="sc">;</span>
+ 667 
+ 668   <span class="i">$InvalidFingerprintsData</span> = <span class="n">0</span><span class="sc">;</span>
+ 669   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span> <span class="s">{</span>
+ 670     <span class="i">$InvalidFingerprintsData</span> = <span class="i">Fingerprints::FingerprintsStringUtil::AreFingerprintsStringValuesValid</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span> ? <span class="n">0</span> <span class="co">:</span> <span class="n">1</span><span class="sc">;</span>
+ 671   <span class="s">}</span>
+ 672   <span class="k">else</span> <span class="s">{</span>
+ 673     <span class="i">$InvalidFingerprintsData</span> = <span class="n">1</span><span class="sc">;</span>
+ 674   <span class="s">}</span>
+ 675 
+ 676   <span class="k">if</span> <span class="s">(</span><span class="i">$InvalidFingerprintsData</span><span class="s">)</span> <span class="s">{</span>
+ 677     <span class="i">$This</span>-&gt;{<span class="w">NumOfLinesWithInvalidData</span>} += <span class="n">1</span><span class="sc">;</span>
+ 678     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} &gt;= <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 679       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadDataLine: Data line number $This-&gt;{LineNum} contains invalid fingerprints data: $This-&gt;{DataLine}...&quot;</span><span class="sc">;</span>
+ 680     <span class="s">}</span>
+ 681     <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">DetailLevel</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 682       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadDataLine: Data line number $This-&gt;{LineNum} contains invalid fingerprints data...&quot;</span><span class="sc">;</span>
+ 683     <span class="s">}</span>
+ 684     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 685   <span class="s">}</span>
+ 686 
+ 687   <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 688 <span class="s">}</span>
+ 689 
+ 690 <span class="c"># Setup fingerprints compound ID for fingerprints string...</span>
+<a name="_GenerateCompoundID-"></a> 691 <span class="k">sub </span><span class="m">_GenerateCompoundID</span> <span class="s">{</span>
+ 692   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 693 
+ 694   <span class="c"># Set fingerprints ID...</span>
+ 695   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="s">)</span> <span class="s">{</span>
+ 696     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="i">-&gt;SetID</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>}<span class="s">)</span><span class="sc">;</span>
+ 697   <span class="s">}</span>
+ 698 
+ 699   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 700 <span class="s">}</span>
+ 701 
+ 702 <span class="c"># Process first read...</span>
+ 703 <span class="c">#</span>
+<a name="_ProcessFirstDataLineRead-"></a> 704 <span class="k">sub </span><span class="m">_ProcessFirstDataLineRead</span> <span class="s">{</span>
+ 705   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 706   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+ 707 
+ 708   <span class="i">$This</span>-&gt;{<span class="w">FirstDataLineIO</span>} = <span class="n">0</span><span class="sc">;</span>
+ 709 
+ 710   <span class="c"># Skip over header data lines and collect first data line...</span>
+ 711 
+ 712   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">TextUtil::GetTextLine</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FileHandle</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 713     <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+ 714 
+ 715     <span class="c"># Is it a header data line?</span>
+ 716     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> =~ <span class="q">/^#/</span><span class="s">)</span> <span class="s">{</span>
+ 717       <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 718     <span class="s">}</span>
+ 719     <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="i">$Line</span><span class="sc">;</span>
+ 720     <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+ 721   <span class="s">}</span>
+ 722 
+ 723   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 724 <span class="s">}</span>
+ 725 
+ 726 <span class="c"># Get ready for reading fingerprints FP file...</span>
+ 727 <span class="c">#</span>
+<a name="_PrepareForReadingFingerprintsFPFileData-"></a> 728 <span class="k">sub </span><span class="m">_PrepareForReadingFingerprintsFPFileData</span> <span class="s">{</span>
+ 729   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 730 
+ 731   <span class="c"># Retrieve FP file data headers information....</span>
+ 732   <span class="i">$This</span><span class="i">-&gt;_RetrieveFPFileDataHeaders</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 733 
+ 734   <span class="c"># Validate header data keys and values information...</span>
+ 735   <span class="i">$This</span><span class="i">-&gt;_ValidateReadHeaderDataKeysAndValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 736 
+ 737   <span class="c"># Validate fingeprints string mode information...</span>
+ 738   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">ValidRequiredHeaderDataKeys</span>}<span class="s">)</span> <span class="s">{</span>
+ 739     <span class="i">$This</span><span class="i">-&gt;_ValidateReadFingerprintsStringMode</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 740   <span class="s">}</span>
+ 741 
+ 742   <span class="c"># Set status of FP file data...</span>
+ 743   <span class="i">$This</span>-&gt;{<span class="w">ValidFileData</span>} = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">ValidRequiredHeaderDataKeys</span>} &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 744 
+ 745   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 746 <span class="s">}</span>
+ 747 
+ 748 <span class="c"># Retrieve information about fingerprints date header in FP file...</span>
+ 749 <span class="c">#</span>
+<a name="_RetrieveFPFileDataHeaders-"></a> 750 <span class="k">sub </span><span class="m">_RetrieveFPFileDataHeaders</span> <span class="s">{</span>
+ 751   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 752   <span class="k">my</span><span class="s">(</span><span class="i">$FPFile</span><span class="cm">,</span> <span class="i">$Line</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$KeyValuePair</span><span class="cm">,</span> <span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$KeyValueDelimiter</span><span class="cm">,</span> <span class="i">$KeyValuePairDelimiter</span><span class="cm">,</span> <span class="i">@LineKeyValuePairs</span><span class="s">)</span><span class="sc">;</span>
+ 753 
+ 754   <span class="i">$FPFile</span> = <span class="i">$This</span>-&gt;{<span class="w">Name</span>}<span class="sc">;</span>
+ 755 
+ 756   <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">-e</span> <span class="i">$FPFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 757     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_RetrieveFPFileDataHeaders: File, $FPFile, doesn&#39;t exist...&quot;</span><span class="sc">;</span>
+ 758   <span class="s">}</span>
+ 759 
+ 760   <span class="k">if</span> <span class="s">(</span>!<span class="k">open</span> <span class="w">FPFILE</span><span class="cm">,</span> <span class="q">&quot;$FPFile&quot;</span><span class="s">)</span> <span class="s">{</span>
+ 761     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_RetrieveFPFileDataHeaders: Couldn&#39;t open input FP file $FPFile: $! ...&quot;</span><span class="sc">;</span>
+ 762   <span class="s">}</span>
+ 763 
+ 764   <span class="c"># Process header key/value pair data...</span>
+ 765   <span class="c">#</span>
+ 766   <span class="i">$KeyValueDelimiter</span> = <span class="q">&#39;=&#39;</span><span class="sc">;</span>
+ 767   <span class="i">$KeyValuePairDelimiter</span> = <span class="q">&#39;;&#39;</span><span class="sc">;</span>
+ 768 
+ 769   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 770   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 771   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 772 
+ 773   <span class="j">LINE:</span> <span class="k">while</span> <span class="s">(</span><span class="i">$Line</span> = <span class="i">TextUtil::GetTextLine</span><span class="s">(</span>\<span class="i">*FPFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 774     <span class="c"># Is it a key/value pairs line?</span>
+ 775     <span class="k">if</span> <span class="s">(</span><span class="i">$Line</span> !~ <span class="q">/^#/</span><span class="s">)</span> <span class="s">{</span>
+ 776       <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+ 777     <span class="s">}</span>
+ 778 
+ 779     <span class="c"># Take out starting hash mark before processing key/value pairs...</span>
+ 780     <span class="i">$Line</span> =~ <span class="q">s/^#//</span><span class="sc">;</span>
+ 781     <span class="k">if</span> <span class="s">(</span><span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$Line</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 782       <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 783     <span class="s">}</span>
+ 784 
+ 785     <span class="i">@LineKeyValuePairs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 786 
+ 787     <span class="k">for</span> <span class="i">$KeyValuePair</span> <span class="s">(</span><span class="k">split</span> <span class="q">&quot;$KeyValuePairDelimiter&quot;</span><span class="cm">,</span> <span class="i">$Line</span><span class="s">)</span> <span class="s">{</span>
+ 788       <span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">split</span> <span class="q">&quot;$KeyValueDelimiter&quot;</span><span class="cm">,</span> <span class="i">$KeyValuePair</span><span class="sc">;</span>
+ 789 
+ 790       <span class="i">$Key</span> = <span class="k">defined</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span> ? <span class="i">TextUtil::RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span> <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 791       <span class="i">$Value</span> = <span class="k">defined</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> ? <span class="i">TextUtil::RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span> <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 792 
+ 793       <span class="k">if</span> <span class="s">(</span><span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span> || <span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 794         <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_RetrieveFPFileDataHeaders: Data header line containing \&quot;Key = Value\&quot; pairs is not valid: It must contain even number of \&quot;Key = Value\&quot; pairs with valid values. Ignoring data header line: \&quot;$Line\&quot;...&quot;</span><span class="sc">;</span>
+ 795         <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+ 796       <span class="s">}</span>
+ 797       <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeys</span>}}<span class="cm">,</span> <span class="i">$Key</span><span class="sc">;</span>
+ 798       <span class="k">push</span> <span class="i">@LineKeyValuePairs</span><span class="cm">,</span> <span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 799     <span class="s">}</span>
+ 800 
+ 801     <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index</span> &lt; <span class="i">$#LineKeyValuePairs</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 802       <span class="i">$Key</span> = <span class="i">$LineKeyValuePairs</span>[<span class="i">$Index</span>]<span class="sc">;</span> <span class="i">$Value</span> = <span class="i">$LineKeyValuePairs</span>[<span class="i">$Index</span> + <span class="n">1</span>]<span class="sc">;</span>
+ 803 
+ 804       <span class="i">$This</span>-&gt;{<span class="w">HeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 805       <span class="i">$This</span>-&gt;{<span class="w">CannonicalHeaderDataKeysAndValues</span>}{<span class="k">lc</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 806     <span class="s">}</span>
+ 807   <span class="s">}</span>
+ 808   <span class="k">close</span> <span class="w">FPFILE</span><span class="sc">;</span>
+ 809 
+ 810   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 811 <span class="s">}</span>
+ 812 
+ 813 <span class="c"># Validate header data and keys...</span>
+ 814 <span class="c">#</span>
+<a name="_ValidateReadHeaderDataKeysAndValues-"></a> 815 <span class="k">sub </span><span class="m">_ValidateReadHeaderDataKeysAndValues</span> <span class="s">{</span>
+ 816   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 817   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsStringType</span><span class="cm">,</span> <span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">@RequiredHeaderDataKeys</span><span class="s">)</span><span class="sc">;</span>
+ 818 
+ 819   <span class="i">$This</span>-&gt;{<span class="w">ValidRequiredHeaderDataKeys</span>} = <span class="n">0</span><span class="sc">;</span>
+ 820   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 821 
+ 822   <span class="c"># Is FingerprintsStringType key is present?</span>
+ 823   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;IsHeaderDataKeyPresent</span><span class="s">(</span><span class="q">&#39;FingerprintsStringType&#39;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 824     <span class="w">carp</span> <span class="q">&quot;carp: ${ClassName}-&gt;_ValidateReadHeaderDataKeysAndValues: FingerprintsStringType data header key is missing in fingerprints file...&quot;</span><span class="sc">;</span>
+ 825     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 826   <span class="s">}</span>
+ 827   <span class="i">$FingerprintsStringType</span> = <span class="i">$This</span><span class="i">-&gt;GetHeaderDataKeyValue</span><span class="s">(</span><span class="q">&#39;FingerprintsStringType&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 828 
+ 829   <span class="c"># Are all required data header keys present?</span>
+ 830   <span class="c">#</span>
+ 831   <span class="i">@RequiredHeaderDataKeys</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 832 
+ 833   <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> =~ <span class="q">/^(FingerprintsBitVector|FingerprintsVector)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 834     <span class="k">push</span> <span class="i">@RequiredHeaderDataKeys</span><span class="cm">,</span> <span class="i">$This</span><span class="i">-&gt;_GetRequiredHeaderDataKeys</span><span class="s">(</span><span class="i">$FingerprintsStringType</span><span class="s">)</span><span class="sc">;</span>
+ 835   <span class="s">}</span>
+ 836   <span class="k">else</span> <span class="s">{</span>
+ 837     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadHeaderDataKeysAndValues: FingerprintsStringType data header key value, $FingerprintsStringType, is not valid. SUpported values: FingerprintsBitVector or FingerprintsVector...&quot;</span><span class="sc">;</span>
+ 838     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 839   <span class="s">}</span>
+ 840 
+ 841   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@RequiredHeaderDataKeys</span><span class="s">)</span> <span class="s">{</span>
+ 842     <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;IsHeaderDataKeyPresent</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 843       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateReadHeaderDataKeysAndValues: Requires data header key, $Key, is missing in fingerprints file...&quot;</span><span class="sc">;</span>
+ 844     <span class="s">}</span>
+ 845   <span class="s">}</span>
+ 846 
+ 847   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="cm">,</span> <span class="i">@RequiredHeaderDataKeys</span><span class="sc">;</span>
+ 848 
+ 849   <span class="c"># Are all required data header key values valid?</span>
+ 850   <span class="c">#</span>
+ 851   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_ValidateRequiredHeaderDataKeyValues</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 852     <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 853   <span class="s">}</span>
+ 854 
+ 855   <span class="c"># Process required header key values...</span>
+ 856   <span class="c">#</span>
+ 857   <span class="i">$This</span><span class="i">-&gt;_ProcessRequiredHeaderDataKeyValues</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 858 
+ 859   <span class="i">$This</span>-&gt;{<span class="w">ValidRequiredHeaderDataKeys</span>} = <span class="n">1</span><span class="sc">;</span>
+ 860 
+ 861   <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 862 <span class="s">}</span>
+ 863 
+ 864 <span class="c"># Validate data header key values....</span>
+ 865 <span class="c">#</span>
+<a name="_ValidateRequiredHeaderDataKeyValues-"></a> 866 <span class="k">sub </span><span class="m">_ValidateRequiredHeaderDataKeyValues</span> <span class="s">{</span>
+ 867   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 868   <span class="k">my</span><span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 869 
+ 870   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="s">)</span> <span class="s">{</span>
+ 871     <span class="i">$Value</span> = <span class="i">$This</span><span class="i">-&gt;GetHeaderDataKeyValue</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span><span class="sc">;</span>
+ 872     <span class="j">KEY:</span> <span class="s">{</span>
+ 873       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^FingerprintsStringType$/i</span><span class="s">)</span> <span class="s">{</span>
+ 874         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(FingerprintsBitVector|FingerprintsVector)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 875           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: FingerprintsBitVector or FingerprintsVector...&quot;</span><span class="sc">;</span>
+ 876           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 877         <span class="s">}</span>
+ 878         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 879       <span class="s">}</span>
+ 880       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^Size$/i</span><span class="s">)</span> <span class="s">{</span>
+ 881         <span class="k">if</span> <span class="s">(</span>!<span class="i">TextUtil::IsPositiveInteger</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 882           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: &gt; 0...&quot;</span><span class="sc">;</span>
+ 883           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 884         <span class="s">}</span>
+ 885         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 886       <span class="s">}</span>
+ 887       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^BitStringFormat$/i</span><span class="s">)</span> <span class="s">{</span>
+ 888         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(BinaryString|HexadecimalString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 889           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: BinaryString or HexadecimalString ...&quot;</span><span class="sc">;</span>
+ 890           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 891         <span class="s">}</span>
+ 892         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 893       <span class="s">}</span>
+ 894       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^BitsOrder$/i</span><span class="s">)</span> <span class="s">{</span>
+ 895         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(Ascending|Descending)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 896           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: Ascending or Descending...&quot;</span><span class="sc">;</span>
+ 897           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 898         <span class="s">}</span>
+ 899         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 900       <span class="s">}</span>
+ 901       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^VectorStringFormat$/i</span><span class="s">)</span> <span class="s">{</span>
+ 902         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(IDsAndValuesString|IDsAndValuesPairsString|ValuesAndIDsString|ValuesAndIDsPairsString|ValuesString)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 903           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: IDsAndValuesString, IDsAndValuesPairsString, ValuesAndIDsString, ValuesAndIDsPairsString, or ValuesString ...&quot;</span><span class="sc">;</span>
+ 904           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 905         <span class="s">}</span>
+ 906         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 907       <span class="s">}</span>
+ 908       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^VectorValuesType$/i</span><span class="s">)</span> <span class="s">{</span>
+ 909         <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(OrderedNumericalValues|NumericalValues|AlphaNumericalValues)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 910           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value, $Value, is not valid. Supported values: OrderedNumericalValues, NumericalValues or AlphaNumericalValues...&quot;</span><span class="sc">;</span>
+ 911           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 912         <span class="s">}</span>
+ 913         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 914       <span class="s">}</span>
+ 915       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^Description$/i</span><span class="s">)</span> <span class="s">{</span>
+ 916         <span class="k">if</span> <span class="s">(</span><span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 917           <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key value is not valid. Supported value: A no-empty text string...&quot;</span><span class="sc">;</span>
+ 918           <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 919         <span class="s">}</span>
+ 920         <span class="k">last</span> <span class="j">KEY</span><span class="sc">;</span>
+ 921       <span class="s">}</span>
+ 922       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateRequiredHeaderDataKeyValues: Required $Key data header key is not not supported...&quot;</span><span class="sc">;</span>
+ 923       <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+ 924     <span class="s">}</span>
+ 925   <span class="s">}</span>
+ 926 
+ 927   <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+ 928 <span class="s">}</span>
+ 929 
+ 930 <span class="c"># Process required header key valeues for access during complete fingerprints</span>
+ 931 <span class="c"># string generation from a partial fingerprints string specified on fingerprints</span>
+ 932 <span class="c"># line...</span>
+ 933 <span class="c">#</span>
+<a name="_ProcessRequiredHeaderDataKeyValues-"></a> 934 <span class="k">sub </span><span class="m">_ProcessRequiredHeaderDataKeyValues</span> <span class="s">{</span>
+ 935   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 936   <span class="k">my</span><span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">@Keys</span><span class="s">)</span><span class="sc">;</span>
+ 937 
+ 938   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 939 
+ 940   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="s">)</span> <span class="s">{</span>
+ 941     <span class="i">$Value</span> = <span class="i">$This</span><span class="i">-&gt;GetHeaderDataKeyValue</span><span class="s">(</span><span class="i">$Key</span><span class="s">)</span><span class="sc">;</span>
+ 942     <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 943   <span class="s">}</span>
+ 944 
+ 945   <span class="c"># Setup prefixes for generating fingerprints strings...</span>
+ 946   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringPrefix</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 947   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix1</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 948   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix2</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 949 
+ 950   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="w">FingerprintsStringType</span>} =~ <span class="q">/^FingerprintsBitVector$/i</span><span class="s">)</span> <span class="s">{</span>
+ 951     <span class="i">@Keys</span> = <span class="q">qw(FingerprintsStringType Description Size BitStringFormat BitsOrder)</span><span class="sc">;</span>
+ 952     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringPrefix</span>} = <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsPrefixUsingKeys</span><span class="s">(</span><span class="i">@Keys</span><span class="s">)</span><span class="sc">;</span>
+ 953   <span class="s">}</span>
+ 954   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="w">FingerprintsStringType</span>} =~ <span class="q">/^FingerprintsVector$/i</span><span class="s">)</span> <span class="s">{</span>
+ 955     <span class="i">@Keys</span> = <span class="q">qw(FingerprintsStringType Description)</span><span class="sc">;</span>
+ 956     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix1</span>} = <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsPrefixUsingKeys</span><span class="s">(</span><span class="i">@Keys</span><span class="s">)</span><span class="sc">;</span>
+ 957 
+ 958     <span class="i">@Keys</span> = <span class="q">qw(VectorValuesType VectorStringFormat)</span><span class="sc">;</span>
+ 959     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix2</span>} = <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsPrefixUsingKeys</span><span class="s">(</span><span class="i">@Keys</span><span class="s">)</span><span class="sc">;</span>
+ 960   <span class="s">}</span>
+ 961 
+ 962   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 963 <span class="s">}</span>
+ 964 
+ 965 <span class="c"># Generate fingerprints prefix using header keys data...</span>
+ 966 <span class="c">#</span>
+<a name="_GenerateFingerprintsPrefixUsingKeys-"></a> 967 <span class="k">sub </span><span class="m">_GenerateFingerprintsPrefixUsingKeys</span> <span class="s">{</span>
+ 968   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Keys</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 969   <span class="k">my</span><span class="s">(</span><span class="i">$Delimiter</span><span class="cm">,</span> <span class="i">$Key</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span><span class="sc">;</span>
+ 970 
+ 971   <span class="i">$Delimiter</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingeprintsStringDelimiter</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 972 
+ 973   <span class="i">@Values</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 974   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@Keys</span><span class="s">)</span> <span class="s">{</span>
+ 975     <span class="k">push</span> <span class="i">@Values</span><span class="cm">,</span> <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>}<span class="sc">;</span>
+ 976   <span class="s">}</span>
+ 977 
+ 978   <span class="k">return</span> <span class="k">join</span><span class="s">(</span><span class="i">$Delimiter</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span>
+ 979 <span class="s">}</span>
+ 980 
+ 981 <span class="c"># Get required header data keys...</span>
+ 982 <span class="c">#</span>
+<a name="_GetRequiredHeaderDataKeys-"></a> 983 <span class="k">sub </span><span class="m">_GetRequiredHeaderDataKeys</span> <span class="s">{</span>
+ 984   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsStringType</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 985   <span class="k">my</span><span class="s">(</span><span class="i">@RequiredKeys</span><span class="s">)</span><span class="sc">;</span>
+ 986 
+ 987   <span class="i">@RequiredKeys</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 988 
+ 989   <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> =~ <span class="q">/FingerprintsBitVector$/i</span><span class="s">)</span> <span class="s">{</span>
+ 990     <span class="k">push</span> <span class="i">@RequiredKeys</span><span class="cm">,</span> <span class="q">qw(FingerprintsStringType Description Size BitStringFormat BitsOrder)</span><span class="sc">;</span>
+ 991   <span class="s">}</span>
+ 992   <span class="k">elsif</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> =~ <span class="q">/^FingerprintsVector/i</span><span class="s">)</span> <span class="s">{</span>
+ 993     <span class="k">push</span> <span class="i">@RequiredKeys</span><span class="cm">,</span> <span class="q">qw(FingerprintsStringType Description VectorStringFormat VectorValuesType)</span><span class="sc">;</span>
+ 994   <span class="s">}</span>
+ 995   <span class="k">else</span> <span class="s">{</span>
+ 996     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;GetRequiredHeaderDataKeys: FingerprintsStringType value, $FingerprintsStringType, is not valid. Supported values: FingerprintsBitVector or FingerprintsVector...&quot;</span><span class="sc">;</span>
+ 997   <span class="s">}</span>
+ 998 
+ 999   <span class="k">return</span> <span class="i">@RequiredKeys</span><span class="sc">;</span>
+1000 <span class="s">}</span>
+1001 
+1002 <span class="c"># Validate fingerprints string mode information...</span>
+1003 <span class="c">#</span>
+<a name="_ValidateReadFingerprintsStringMode-"></a>1004 <span class="k">sub </span><span class="m">_ValidateReadFingerprintsStringMode</span> <span class="s">{</span>
+1005   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1006   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsStringType</span><span class="cm">,</span> <span class="i">$FingerprintsStringDescription</span><span class="cm">,</span> <span class="i">$FingerprintsBitVectorStringMode</span><span class="cm">,</span> <span class="i">$FingerprintsVectorStringMode</span><span class="cm">,</span> <span class="i">$FirstFingerprintsStringType</span><span class="cm">,</span> <span class="i">$FirstFingerprintsStringDescription</span><span class="s">)</span><span class="sc">;</span>
+1007 
+1008   <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1009   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1010   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1011 
+1012   <span class="i">$This</span>-&gt;{<span class="w">FirstFingerprintsStringType</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1013   <span class="i">$This</span>-&gt;{<span class="w">FirstFingerprintsStringDescription</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1014 
+1015   <span class="i">$FingerprintsBitVectorStringMode</span> = <span class="n">0</span><span class="sc">;</span>
+1016   <span class="i">$FingerprintsVectorStringMode</span> = <span class="n">0</span><span class="sc">;</span>
+1017 
+1018   <span class="i">$FirstFingerprintsStringType</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1019   <span class="i">$FirstFingerprintsStringDescription</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1020 
+1021   <span class="i">$FingerprintsStringType</span> = <span class="i">$This</span><span class="i">-&gt;GetHeaderDataKeyValue</span><span class="s">(</span><span class="q">&#39;FingerprintsStringType&#39;</span><span class="s">)</span><span class="sc">;</span>
+1022   <span class="i">$FingerprintsStringDescription</span> = <span class="i">$This</span><span class="i">-&gt;GetHeaderDataKeyValue</span><span class="s">(</span><span class="q">&#39;Description&#39;</span><span class="s">)</span><span class="sc">;</span>
+1023 
+1024   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} =~ <span class="q">/^FingerprintsBitVectorString$/i</span><span class="s">)</span> <span class="s">{</span>
+1025     <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> !~ <span class="q">/^FingerprintsBitVector$/i</span><span class="s">)</span> <span class="s">{</span>
+1026       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadFingerprintsStringMode: Fingerprints string data type, $FingerprintsStringType, doesn&#39;t correspond to, FingerprintsBitVectorString, specified using \&quot;FingerprintsStringMode\&quot;...&quot;</span><span class="sc">;</span>
+1027       <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+1028     <span class="s">}</span>
+1029     <span class="i">$FingerprintsBitVectorStringMode</span> = <span class="n">1</span><span class="sc">;</span>
+1030     <span class="i">$FirstFingerprintsStringType</span> = <span class="q">&#39;FingerprintsBitVector&#39;</span><span class="sc">;</span>
+1031     <span class="i">$FirstFingerprintsStringDescription</span> = <span class="i">$FingerprintsStringDescription</span><span class="sc">;</span>
+1032   <span class="s">}</span>
+1033   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} =~ <span class="q">/^FingerprintsVectorString$/i</span><span class="s">)</span> <span class="s">{</span>
+1034     <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> !~ <span class="q">/^FingerprintsVector$/i</span><span class="s">)</span> <span class="s">{</span>
+1035       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadFingerprintsStringMode: Fingerprints string data type, $FingerprintsStringType, doesn&#39;t correspond to, FingerprintsVectorString, specified using \&quot;FingerprintsStringMode\&quot;...&quot;</span><span class="sc">;</span>
+1036       <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+1037     <span class="s">}</span>
+1038     <span class="i">$FingerprintsVectorStringMode</span> = <span class="n">1</span><span class="sc">;</span>
+1039     <span class="i">$FirstFingerprintsStringType</span> = <span class="q">&#39;FingerprintsVector&#39;</span><span class="sc">;</span>
+1040     <span class="i">$FirstFingerprintsStringDescription</span> = <span class="i">$FingerprintsStringDescription</span><span class="sc">;</span>
+1041   <span class="s">}</span>
+1042   <span class="k">else</span> <span class="s">{</span>
+1043     <span class="c"># AutoDetect mode...</span>
+1044     <span class="k">if</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> =~ <span class="q">/^FingerprintsBitVector$/i</span><span class="s">)</span> <span class="s">{</span>
+1045       <span class="i">$FingerprintsBitVectorStringMode</span> = <span class="n">1</span><span class="sc">;</span>
+1046     <span class="s">}</span>
+1047     <span class="k">elsif</span> <span class="s">(</span><span class="i">$FingerprintsStringType</span> =~ <span class="q">/^FingerprintsVector$/i</span><span class="s">)</span> <span class="s">{</span>
+1048       <span class="i">$FingerprintsVectorStringMode</span> = <span class="n">1</span><span class="sc">;</span>
+1049     <span class="s">}</span>
+1050     <span class="k">else</span> <span class="s">{</span>
+1051       <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;_ValidateReadFingerprintsStringMode: Fingerprints string data type, $FingerprintsStringType, identified during, AutoDetect, value of \&quot;FingerprintsStringMode\&quot; is not valid; Supported fingerprints types: FingerprintBitVector or FingerprintsVector...&quot;</span><span class="sc">;</span>
+1052       <span class="k">return</span> <span class="n">0</span><span class="sc">;</span>
+1053     <span class="s">}</span>
+1054     <span class="i">$FirstFingerprintsStringType</span> = <span class="i">$FingerprintsStringType</span><span class="sc">;</span>
+1055     <span class="i">$FirstFingerprintsStringDescription</span> = <span class="i">$FingerprintsStringDescription</span><span class="sc">;</span>
+1056   <span class="s">}</span>
+1057 
+1058   <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>} = <span class="n">1</span><span class="sc">;</span>
+1059 
+1060   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} = <span class="i">$FingerprintsBitVectorStringMode</span><span class="sc">;</span>
+1061   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>} = <span class="i">$FingerprintsVectorStringMode</span><span class="sc">;</span>
+1062 
+1063   <span class="i">$This</span>-&gt;{<span class="w">FirstFingerprintsStringType</span>} = <span class="i">$FirstFingerprintsStringType</span><span class="sc">;</span>
+1064   <span class="i">$This</span>-&gt;{<span class="w">FirstFingerprintsStringDescription</span>} = <span class="i">$FirstFingerprintsStringDescription</span><span class="sc">;</span>
+1065 
+1066   <span class="k">return</span> <span class="n">1</span><span class="sc">;</span>
+1067 <span class="s">}</span>
+1068 
+1069 <span class="c"># Write fingerprints string generated from specified fingerprints - fingerprints-bit vector or</span>
+1070 <span class="c"># fingerprints vector - object and other data to FP file...</span>
+1071 <span class="c">#</span>
+<a name="WriteFingerprints-"></a>1072 <span class="k">sub </span><span class="m">WriteFingerprints</span> <span class="s">{</span>
+1073   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsObject</span><span class="cm">,</span> <span class="i">$CompoundID</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1074 
+1075   <span class="c"># Initialize data for current line...</span>
+1076   <span class="i">$This</span><span class="i">-&gt;_InitializeWriteDataLine</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1077 
+1078   <span class="c"># Set fingerprints object and compound ID...</span>
+1079   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="i">$FingerprintsObject</span><span class="sc">;</span>
+1080   <span class="i">$This</span><span class="i">-&gt;SetCompoundID</span><span class="s">(</span><span class="i">$CompoundID</span><span class="s">)</span><span class="sc">;</span>
+1081 
+1082   <span class="c"># Generate fingerprints string...</span>
+1083   <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1084 
+1085   <span class="c"># Generate partial fingerprints string...</span>
+1086   <span class="i">$This</span><span class="i">-&gt;_GeneratePartialFingerprintsStringFromFingerprintsString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1087 
+1088   <span class="c"># Write data line..</span>
+1089   <span class="i">$This</span><span class="i">-&gt;_WriteDataLine</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1090 
+1091   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1092 <span class="s">}</span>
+1093 
+1094 <span class="c"># Write fingerprints string and other data to FP file...</span>
+1095 <span class="c">#</span>
+1096 <span class="c"># Notes:</span>
+1097 <span class="c">#   o FingerprintsStringMode, BitStringFormat, BitsOrder, VectorStringFormat values</span>
+1098 <span class="c">#     are ignored during writing of fingerprints and it&#39;s written to the file as it is.</span>
+1099 <span class="c">#   o FingerprintsString is a regular fingerprints string as oppose to a partial fingerprints</span>
+1100 <span class="c">#     string.</span>
+1101 <span class="c">#</span>
+<a name="WriteFingerprintsString-"></a>1102 <span class="k">sub </span><span class="m">WriteFingerprintsString</span> <span class="s">{</span>
+1103   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FingerprintsString</span><span class="cm">,</span> <span class="i">$CompoundID</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1104 
+1105   <span class="c"># Initialize data for current line...</span>
+1106   <span class="i">$This</span><span class="i">-&gt;_InitializeWriteDataLine</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1107 
+1108   <span class="c"># Set fingerprints string and compound ID...</span>
+1109   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">$FingerprintsString</span><span class="sc">;</span>
+1110   <span class="i">$This</span><span class="i">-&gt;SetCompoundID</span><span class="s">(</span><span class="i">$CompoundID</span><span class="s">)</span><span class="sc">;</span>
+1111 
+1112   <span class="c"># Generate fingerprints object...</span>
+1113   <span class="i">$This</span><span class="i">-&gt;_GenerateFingerprintsObject</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1114 
+1115   <span class="c"># Generate partial fingerprints string...</span>
+1116   <span class="i">$This</span><span class="i">-&gt;_GeneratePartialFingerprintsStringFromFingerprintsString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1117 
+1118   <span class="c"># Write data line..</span>
+1119   <span class="i">$This</span><span class="i">-&gt;_WriteDataLine</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1120 
+1121   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1122 <span class="s">}</span>
+1123 
+1124 <span class="c"># Initialize data line for reading...</span>
+1125 <span class="c">#</span>
+<a name="_InitializeWriteDataLine-"></a>1126 <span class="k">sub </span><span class="m">_InitializeWriteDataLine</span> <span class="s">{</span>
+1127   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1128 
+1129   <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="k">undef</span><span class="sc">;</span>
+1130   <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} = <span class="k">undef</span><span class="sc">;</span>
+1131 
+1132   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="k">undef</span><span class="sc">;</span>
+1133 
+1134   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+1135   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="k">undef</span><span class="sc">;</span>
+1136 
+1137   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1138 <span class="s">}</span>
+1139 
+1140 <span class="c"># Write fingerprints data line line...</span>
+1141 <span class="c">#</span>
+<a name="_WriteDataLine-"></a>1142 <span class="k">sub </span><span class="m">_WriteDataLine</span> <span class="s">{</span>
+1143   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1144   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="cm">,</span> <span class="i">$Line</span><span class="s">)</span><span class="sc">;</span>
+1145 
+1146   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FirstDataLineIO</span>}<span class="s">)</span> <span class="s">{</span>
+1147     <span class="i">$This</span><span class="i">-&gt;_ProcessFirstDataLineWrite</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1148   <span class="s">}</span>
+1149 
+1150   <span class="c"># Write data compound ID along with partial fingerprints string...</span>
+1151   <span class="i">$Line</span> = <span class="i">$This</span>-&gt;{<span class="w">CompoundID</span>} . <span class="q">&#39; &#39;</span> . <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>}<span class="sc">;</span>
+1152 
+1153   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1154   <span class="i">$FileHandle</span> = <span class="i">$This</span>-&gt;{<span class="w">FileHandle</span>}<span class="sc">;</span>
+1155   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;$Line\n&quot;</span><span class="sc">;</span>
+1156 
+1157   <span class="i">$This</span>-&gt;{<span class="w">DataLine</span>} = <span class="i">$Line</span><span class="sc">;</span>
+1158 
+1159   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1160 <span class="s">}</span>
+1161 
+1162 <span class="c"># Process first write...</span>
+1163 <span class="c">#</span>
+<a name="_ProcessFirstDataLineWrite-"></a>1164 <span class="k">sub </span><span class="m">_ProcessFirstDataLineWrite</span> <span class="s">{</span>
+1165   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1166   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$FileHandle</span><span class="s">)</span><span class="sc">;</span>
+1167 
+1168   <span class="i">$This</span>-&gt;{<span class="w">FirstDataLineIO</span>} = <span class="n">0</span><span class="sc">;</span>
+1169 
+1170   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span><span class="i">-&gt;GetMode</span><span class="s">(</span><span class="s">)</span> =~ <span class="q">/^Write$/i</span><span class="s">)</span> <span class="s">{</span>
+1171     <span class="c"># Skip it for append mode...</span>
+1172     <span class="i">$This</span><span class="i">-&gt;_WritePackageAndTimeStampHeaderKeys</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1173     <span class="i">$This</span><span class="i">-&gt;_WriteRequiredHeaderDataKeys</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1174   <span class="s">}</span>
+1175 
+1176   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1177 <span class="s">}</span>
+1178 
+1179 <span class="c"># Write out package and time stamp information...</span>
+1180 <span class="c">#</span>
+<a name="_WritePackageAndTimeStampHeaderKeys-"></a>1181 <span class="k">sub </span><span class="m">_WritePackageAndTimeStampHeaderKeys</span> <span class="s">{</span>
+1182   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1183   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="cm">,</span> <span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+1184 
+1185   <span class="i">$FileHandle</span> = <span class="i">$This</span>-&gt;{<span class="w">FileHandle</span>}<span class="sc">;</span>
+1186 
+1187   <span class="c"># Package information...</span>
+1188   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1189   <span class="i">$Key</span> = <span class="q">&quot;Package&quot;</span><span class="sc">;</span> <span class="i">$Value</span> = <span class="i">PackageInfo::GetPackageName</span><span class="s">(</span><span class="s">)</span> . <span class="q">&quot; &quot;</span> . <span class="i">PackageInfo::GetVersionNumber</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1190   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;# $Key = $Value\n&quot;</span><span class="sc">;</span>
+1191 
+1192   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1193   <span class="i">$Key</span> = <span class="q">&quot;Release Date&quot;</span><span class="sc">;</span> <span class="i">$Value</span> = <span class="i">PackageInfo::GetReleaseDate</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1194   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;# $Key = $Value\n&quot;</span><span class="sc">;</span>
+1195 
+1196   <span class="c"># Timestamp information...</span>
+1197   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1198   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;#\n&quot;</span><span class="sc">;</span>
+1199 
+1200   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1201   <span class="i">$Key</span> = <span class="q">&quot;TimeStamp&quot;</span><span class="sc">;</span> <span class="i">$Value</span> = <span class="i">TimeUtil::FPFileTimeStamp</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1202   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;# $Key = $Value\n&quot;</span><span class="sc">;</span>
+1203 
+1204   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1205 <span class="s">}</span>
+1206 
+1207 <span class="c"># Write out required header data keys...</span>
+1208 <span class="c">#</span>
+<a name="_WriteRequiredHeaderDataKeys-"></a>1209 <span class="k">sub </span><span class="m">_WriteRequiredHeaderDataKeys</span> <span class="s">{</span>
+1210   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1211   <span class="k">my</span><span class="s">(</span><span class="i">$FileHandle</span><span class="cm">,</span> <span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+1212 
+1213   <span class="i">$FileHandle</span> = <span class="i">$This</span>-&gt;{<span class="w">FileHandle</span>}<span class="sc">;</span>
+1214 
+1215   <span class="i">$This</span><span class="i">-&gt;_GenerateWriteRequiredHeaderDataKeys</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1216 
+1217   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1218   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;#\n&quot;</span><span class="sc">;</span>
+1219 
+1220   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="s">)</span> <span class="s">{</span>
+1221     <span class="i">$Value</span> = <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>}<span class="sc">;</span>
+1222 
+1223     <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1224     <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;# $Key = $Value\n&quot;</span><span class="sc">;</span>
+1225 
+1226     <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^FingerprintsStringType$/i</span><span class="s">)</span> <span class="s">{</span>
+1227       <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1228       <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;#\n&quot;</span><span class="sc">;</span>
+1229     <span class="s">}</span>
+1230   <span class="s">}</span>
+1231 
+1232   <span class="i">$This</span>-&gt;{<span class="w">LineNum</span>} += <span class="n">1</span><span class="sc">;</span>
+1233   <span class="k">print</span> <span class="i">$FileHandle</span> <span class="q">&quot;#\n&quot;</span><span class="sc">;</span>
+1234 
+1235   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1236 <span class="s">}</span>
+1237 
+<a name="_GenerateWriteRequiredHeaderDataKeys-"></a>1238 <span class="k">sub </span><span class="m">_GenerateWriteRequiredHeaderDataKeys</span> <span class="s">{</span>
+1239   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1240 
+1241   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} &amp;&amp; <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} =~ <span class="q">/^FingerprintsBitVector/i</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1242     <span class="i">$This</span><span class="i">-&gt;_GenerateWriteRequiredHeaderDataKeysForBitVectorString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1243   <span class="s">}</span>
+1244   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>} &amp;&amp; <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} =~ <span class="q">/^FingerprintsVector/i</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1245     <span class="i">$This</span><span class="i">-&gt;_GenerateWriteRequiredHeaderDataKeysForVectorString</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1246   <span class="s">}</span>
+1247   <span class="k">else</span> <span class="s">{</span>
+1248     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_GenerateWriteRequiredHeaderDataKeys: Required header data keys can&#39;t be generated: FingerprintsStringMode value, $This-&gt;{FingerprintsStringMode}, doesn&#39;t correspond to type of first FingerprintsString: $This-&gt;{FingerprintsString}...&quot;</span><span class="sc">;</span>
+1249   <span class="s">}</span>
+1250 
+1251   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1252 <span class="s">}</span>
+1253 
+1254 <span class="c"># Generate required data header keys and values for writing fingerprints bit vector string...</span>
+1255 <span class="c">#</span>
+<a name="_GenerateWriteRequiredHeaderDataKeysForBitVectorString-"></a>1256 <span class="k">sub </span><span class="m">_GenerateWriteRequiredHeaderDataKeysForBitVectorString</span> <span class="s">{</span>
+1257   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1258   <span class="k">my</span><span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Size</span><span class="cm">,</span> <span class="i">$BitStringFormat</span><span class="cm">,</span> <span class="i">$BitsOrder</span><span class="s">)</span><span class="sc">;</span>
+1259 
+1260   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1261   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="cm">,</span> <span class="i">$This</span><span class="i">-&gt;_GetRequiredHeaderDataKeys</span><span class="s">(</span><span class="q">&#39;FingerprintsBitVector&#39;</span><span class="s">)</span><span class="sc">;</span>
+1262 
+1263   <span class="s">(</span><span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Size</span><span class="cm">,</span> <span class="i">$BitStringFormat</span><span class="cm">,</span> <span class="i">$BitsOrder</span><span class="s">)</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingerprintsStringValues</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1264 
+1265   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1266 
+1267   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="s">)</span> <span class="s">{</span>
+1268     <span class="j">KEYTYPE:</span> <span class="s">{</span>
+1269       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^FingerprintsStringType$/i</span><span class="s">)</span> <span class="s">{</span>
+1270         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$VectorType</span><span class="sc">;</span>
+1271         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1272       <span class="s">}</span>
+1273       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^Description$/i</span><span class="s">)</span> <span class="s">{</span>
+1274         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$Description</span><span class="sc">;</span>
+1275         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1276       <span class="s">}</span>
+1277       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^Size$/i</span><span class="s">)</span> <span class="s">{</span>
+1278         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$Size</span><span class="sc">;</span>
+1279         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1280       <span class="s">}</span>
+1281       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^BitStringFormat$/i</span><span class="s">)</span> <span class="s">{</span>
+1282         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$BitStringFormat</span><span class="sc">;</span>
+1283         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1284       <span class="s">}</span>
+1285       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^BitsOrder$/i</span><span class="s">)</span> <span class="s">{</span>
+1286         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$BitsOrder</span><span class="sc">;</span>
+1287         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1288       <span class="s">}</span>
+1289       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_GenerateWriteRequiredHeaderDataKeysForBitVectorString: Required header data key, $Key, value can&#39;t be generated: It&#39;s not a known key ...&quot;</span><span class="sc">;</span>
+1290     <span class="s">}</span>
+1291   <span class="s">}</span>
+1292 
+1293   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1294 <span class="s">}</span>
+1295 
+1296 <span class="c"># Generate required data header keys and values for writing fingerprints vector string...</span>
+1297 <span class="c">#</span>
+<a name="_GenerateWriteRequiredHeaderDataKeysForVectorString-"></a>1298 <span class="k">sub </span><span class="m">_GenerateWriteRequiredHeaderDataKeysForVectorString</span> <span class="s">{</span>
+1299   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1300   <span class="k">my</span><span class="s">(</span><span class="i">$Key</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span>  <span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorValuesType</span><span class="cm">,</span> <span class="i">$VectorStringFormat</span><span class="s">)</span><span class="sc">;</span>
+1301 
+1302   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1303   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="cm">,</span> <span class="i">$This</span><span class="i">-&gt;_GetRequiredHeaderDataKeys</span><span class="s">(</span><span class="q">&#39;FingerprintsVector&#39;</span><span class="s">)</span><span class="sc">;</span>
+1304 
+1305   <span class="s">(</span><span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorValuesType</span><span class="cm">,</span> <span class="i">$VectorStringFormat</span><span class="s">)</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingerprintsStringValues</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1306 
+1307   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1308 
+1309   <span class="k">for</span> <span class="i">$Key</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeys</span>}}<span class="s">)</span> <span class="s">{</span>
+1310     <span class="j">KEYTYPE:</span> <span class="s">{</span>
+1311       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^FingerprintsStringType$/i</span><span class="s">)</span> <span class="s">{</span>
+1312         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$VectorType</span><span class="sc">;</span>
+1313         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1314       <span class="s">}</span>
+1315       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^Description$/i</span><span class="s">)</span> <span class="s">{</span>
+1316         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$Description</span><span class="sc">;</span>
+1317         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1318       <span class="s">}</span>
+1319       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^VectorValuesType$/i</span><span class="s">)</span> <span class="s">{</span>
+1320         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$VectorValuesType</span><span class="sc">;</span>
+1321         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1322       <span class="s">}</span>
+1323       <span class="k">if</span> <span class="s">(</span><span class="i">$Key</span> =~ <span class="q">/^VectorStringFormat$/i</span><span class="s">)</span> <span class="s">{</span>
+1324         <span class="i">$This</span>-&gt;{<span class="w">RequiredHeaderDataKeysAndValues</span>}{<span class="i">$Key</span>} = <span class="i">$VectorStringFormat</span><span class="sc">;</span>
+1325         <span class="k">last</span> <span class="j">KEYTYPE</span><span class="sc">;</span>
+1326       <span class="s">}</span>
+1327       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_GenerateWriteRequiredHeaderDataKeysForVectorString: Required header data key, $Key, value can&#39;t be generated: It&#39;s not a known key ...&quot;</span><span class="sc">;</span>
+1328     <span class="s">}</span>
+1329   <span class="s">}</span>
+1330 
+1331   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1332 <span class="s">}</span>
+1333 
+1334 
+1335 <span class="c"># Get ready for writing fingerprints FP file...</span>
+1336 <span class="c">#</span>
+<a name="_PrepareForWritingFingerprintsFPFileData-"></a>1337 <span class="k">sub </span><span class="m">_PrepareForWritingFingerprintsFPFileData</span> <span class="s">{</span>
+1338   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1339   <span class="k">my</span><span class="s">(</span><span class="i">$FPFile</span><span class="cm">,</span> <span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="cm">,</span> <span class="i">$OutDelim</span><span class="s">)</span><span class="sc">;</span>
+1340 
+1341   <span class="i">$FPFile</span> = <span class="i">$This</span>-&gt;{<span class="w">Name</span>}<span class="sc">;</span>
+1342   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">Overwrite</span>}<span class="s">)</span> <span class="s">{</span>
+1343     <span class="k">if</span> <span class="s">(</span><span class="k">-e</span> <span class="i">$FPFile</span><span class="s">)</span> <span class="s">{</span>
+1344       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_PrepareForWritingFingerprintsFPFileData: File, $FPFile, already exist. Use overwrite option...&quot;</span><span class="sc">;</span>
+1345     <span class="s">}</span>
+1346   <span class="s">}</span>
+1347 
+1348   <span class="c"># Setup FingerprintsStringMode status...</span>
+1349   <span class="c">#</span>
+1350   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1351   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1352   <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>} = <span class="n">0</span><span class="sc">;</span>
+1353 
+1354   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} =~ <span class="q">/^FingerprintsBitVectorString$/i</span><span class="s">)</span> <span class="s">{</span>
+1355     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} = <span class="n">1</span><span class="sc">;</span>
+1356   <span class="s">}</span>
+1357   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsStringMode</span>} =~ <span class="q">/^FingerprintsVectorString$/i</span><span class="s">)</span> <span class="s">{</span>
+1358     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>} = <span class="n">1</span><span class="sc">;</span>
+1359   <span class="s">}</span>
+1360 
+1361   <span class="i">$This</span>-&gt;{<span class="w">ValidFingerprintsStringMode</span>} = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>} || <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+1362 
+1363   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1364     <span class="i">$This</span><span class="i">-&gt;_SetDefaultBitStringFormat</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1365     <span class="i">$This</span><span class="i">-&gt;_SetDefaultBitsOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1366   <span class="s">}</span>
+1367   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1368     <span class="i">$This</span><span class="i">-&gt;_SetDefaultVectorStringFormat</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1369   <span class="s">}</span>
+1370 
+1371   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1372 <span class="s">}</span>
+1373 
+1374 <span class="c"># Set default value for bit string format...</span>
+1375 <span class="c">#</span>
+<a name="_SetDefaultBitStringFormat-"></a>1376 <span class="k">sub </span><span class="m">_SetDefaultBitStringFormat</span> <span class="s">{</span>
+1377   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1378 
+1379   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">BitStringFormat</span>}<span class="s">)</span> <span class="s">{</span>
+1380     <span class="i">$This</span>-&gt;{<span class="w">BitStringFormat</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::GetDefaultBitStringFormat</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1381   <span class="s">}</span>
+1382 
+1383   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1384 <span class="s">}</span>
+1385 
+1386 <span class="c"># Set default value for bit string format...</span>
+1387 <span class="c">#</span>
+<a name="_SetDefaultBitsOrder-"></a>1388 <span class="k">sub </span><span class="m">_SetDefaultBitsOrder</span> <span class="s">{</span>
+1389   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1390 
+1391   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">BitsOrder</span>}<span class="s">)</span> <span class="s">{</span>
+1392     <span class="i">$This</span>-&gt;{<span class="w">BitsOrder</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::GetDefaultBitsOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1393   <span class="s">}</span>
+1394 
+1395   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1396 <span class="s">}</span>
+1397 
+1398 <span class="c"># Set default value for vector string format...</span>
+1399 <span class="c">#</span>
+<a name="_SetDefaultVectorStringFormat-"></a>1400 <span class="k">sub </span><span class="m">_SetDefaultVectorStringFormat</span> <span class="s">{</span>
+1401   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1402 
+1403   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">VectorStringFormat</span>} &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="s">)</span> <span class="s">{</span>
+1404     <span class="i">$This</span>-&gt;{<span class="w">VectorStringFormat</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::GetDefaultVectorStringFormat</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="s">)</span><span class="sc">;</span>
+1405   <span class="s">}</span>
+1406 
+1407   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1408 <span class="s">}</span>
+1409 
+1410 <span class="c"># Generate fingerprints object using current fingerprints string...</span>
+1411 <span class="c">#</span>
+<a name="_GenerateFingerprintsObject-"></a>1412 <span class="k">sub </span><span class="m">_GenerateFingerprintsObject</span> <span class="s">{</span>
+1413   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1414 
+1415   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="k">undef</span><span class="sc">;</span>
+1416 
+1417   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span> <span class="s">{</span>
+1418     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1419   <span class="s">}</span>
+1420 
+1421   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1422     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::ParseFingerprintsBitVectorString</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1423   <span class="s">}</span>
+1424   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1425     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::ParseFingerprintsVectorString</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1426   <span class="s">}</span>
+1427   <span class="k">else</span> <span class="s">{</span>
+1428     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+1429   <span class="s">}</span>
+1430 
+1431   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1432 <span class="s">}</span>
+1433 
+1434 <span class="c"># Generate fingerprints string using current fingerprints object...</span>
+1435 <span class="c">#</span>
+<a name="_GenerateFingerprintsString-"></a>1436 <span class="k">sub </span><span class="m">_GenerateFingerprintsString</span> <span class="s">{</span>
+1437   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1438 
+1439   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1440 
+1441   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="s">)</span> <span class="s">{</span>
+1442     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1443   <span class="s">}</span>
+1444 
+1445   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1446     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::GenerateFingerprintsString</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="cm">,</span> <span class="i">$This</span>-&gt;{<span class="w">BitStringFormat</span>}<span class="cm">,</span> <span class="i">$This</span>-&gt;{<span class="w">BitsOrder</span>}<span class="s">)</span><span class="sc">;</span>
+1447   <span class="s">}</span>
+1448   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1449     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">Fingerprints::FingerprintsStringUtil::GenerateFingerprintsString</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsObject</span>}<span class="cm">,</span> <span class="i">$This</span>-&gt;{<span class="w">VectorStringFormat</span>}<span class="s">)</span><span class="sc">;</span>
+1450   <span class="s">}</span>
+1451 
+1452   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1453 <span class="s">}</span>
+1454 
+1455 <span class="c"># Generate fingerprints string using partial fingerprints string and header keys data...</span>
+1456 <span class="c">#</span>
+1457 <span class="c"># Notes:</span>
+1458 <span class="c">#   o FP file fingerprints data line only contain partial fingerprints data which</span>
+1459 <span class="c">#     can&#39;t be used directly to create fingerprints bit-vector or vector objects</span>
+1460 <span class="c">#     using functions available in FingerprintsStringUtil.pm module</span>
+1461 <span class="c">#</span>
+<a name="_GenerateFingerprintsStringFromPartialFingerprintsString-"></a>1462 <span class="k">sub </span><span class="m">_GenerateFingerprintsStringFromPartialFingerprintsString</span> <span class="s">{</span>
+1463   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1464   <span class="k">my</span><span class="s">(</span><span class="i">$FPStringDelim</span><span class="s">)</span><span class="sc">;</span>
+1465 
+1466   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1467 
+1468   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>}<span class="s">)</span> <span class="s">{</span>
+1469     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1470   <span class="s">}</span>
+1471 
+1472   <span class="i">$FPStringDelim</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingeprintsStringDelimiter</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1473 
+1474   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1475     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringPrefix</span>} . <span class="i">$FPStringDelim</span> . <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>}<span class="sc">;</span>
+1476   <span class="s">}</span>
+1477   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1478     <span class="k">my</span><span class="s">(</span><span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorStringData</span><span class="s">)</span><span class="sc">;</span>
+1479 
+1480     <span class="s">(</span><span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorStringData</span><span class="s">)</span> =  <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} =~ <span class="q">/^(.*?)$FPStringDelim(.*?)$/</span><span class="sc">;</span>
+1481     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">defined</span><span class="s">(</span><span class="i">$NumOfValues</span><span class="s">)</span> &amp;&amp; <span class="k">defined</span><span class="s">(</span><span class="i">$VectorStringData</span><span class="s">)</span> &amp;&amp; <span class="i">$VectorStringData</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1482       <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1483     <span class="s">}</span>
+1484 
+1485     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>} = <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix1</span>} . <span class="i">$FPStringDelim</span> . <span class="i">$NumOfValues</span> . <span class="i">$FPStringDelim</span> . <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringPrefix2</span>} . <span class="i">$FPStringDelim</span> . <span class="i">$VectorStringData</span><span class="sc">;</span>
+1486   <span class="s">}</span>
+1487 
+1488   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1489 <span class="s">}</span>
+1490 
+1491 <span class="c"># Generate partial fingerprints string using fingerprints string and header keys data...</span>
+1492 <span class="c">#</span>
+1493 <span class="c"># Notes:</span>
+1494 <span class="c">#   o FP file fingerprints data line only contain partial fingerprints data which</span>
+1495 <span class="c">#     can&#39;t be used directly to create fingerprints bit-vector or vector objects</span>
+1496 <span class="c">#     using functions available in FingerprintsStringUtil.pm module</span>
+1497 <span class="c">#</span>
+<a name="_GeneratePartialFingerprintsStringFromFingerprintsString-"></a>1498 <span class="k">sub </span><span class="m">_GeneratePartialFingerprintsStringFromFingerprintsString</span> <span class="s">{</span>
+1499   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1500 
+1501   <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1502 
+1503   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span> <span class="s">{</span>
+1504     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1505   <span class="s">}</span>
+1506 
+1507   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1508     <span class="k">my</span><span class="s">(</span><span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Size</span><span class="cm">,</span> <span class="i">$BitStringFormat</span><span class="cm">,</span> <span class="i">$BitsOrder</span><span class="cm">,</span> <span class="i">$BitVectorString</span><span class="s">)</span><span class="sc">;</span>
+1509 
+1510     <span class="s">(</span><span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$Size</span><span class="cm">,</span> <span class="i">$BitStringFormat</span><span class="cm">,</span> <span class="i">$BitsOrder</span><span class="cm">,</span> <span class="i">$BitVectorString</span><span class="s">)</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingerprintsStringValues</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1511     <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="i">$BitVectorString</span><span class="sc">;</span>
+1512   <span class="s">}</span>
+1513   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorStringMode</span>}<span class="s">)</span> <span class="s">{</span>
+1514     <span class="k">my</span><span class="s">(</span><span class="i">$FPStringDelim</span><span class="cm">,</span> <span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorValuesType</span><span class="cm">,</span> <span class="i">$VectorStringFormat</span><span class="cm">,</span> <span class="i">$VectorString1</span><span class="cm">,</span> <span class="i">$VectorString2</span><span class="cm">,</span> <span class="i">$VectorString</span><span class="s">)</span><span class="sc">;</span>
+1515 
+1516     <span class="i">$FPStringDelim</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingeprintsStringDelimiter</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1517 
+1518     <span class="s">(</span><span class="i">$VectorType</span><span class="cm">,</span> <span class="i">$Description</span><span class="cm">,</span> <span class="i">$NumOfValues</span><span class="cm">,</span> <span class="i">$VectorValuesType</span><span class="cm">,</span> <span class="i">$VectorStringFormat</span><span class="cm">,</span> <span class="i">$VectorString1</span><span class="cm">,</span> <span class="i">$VectorString2</span><span class="s">)</span> = <span class="i">Fingerprints::FingerprintsStringUtil::GetFingerprintsStringValues</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">FingerprintsString</span>}<span class="s">)</span><span class="sc">;</span>
+1519     <span class="i">$VectorString</span> = <span class="i">TextUtil::IsEmpty</span><span class="s">(</span><span class="i">$VectorString2</span><span class="s">)</span> ? <span class="i">$VectorString1</span> <span class="co">:</span> <span class="q">&quot;${VectorString1}${FPStringDelim}${VectorString2}&quot;</span><span class="sc">;</span>
+1520 
+1521     <span class="i">$This</span>-&gt;{<span class="w">PartialFingerprintsString</span>} = <span class="i">$NumOfValues</span> . <span class="i">$FPStringDelim</span> . <span class="i">$VectorString</span><span class="sc">;</span>
+1522   <span class="s">}</span>
+1523 
+1524   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+1525 <span class="s">}</span>
+1526 
+1527 <span class="c"># Is it a fingerprints file?</span>
+<a name="IsFingerprintsFPFile-"></a>1528 <span class="k">sub </span><span class="m">IsFingerprintsFPFile ($;$)</span> <span class="s">{</span>
+1529   <span class="k">my</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1530   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+1531 
+1532   <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">@_</span> == <span class="n">2</span><span class="s">)</span> &amp;&amp; <span class="s">(</span><span class="i">_IsFingerprintsFPFileIO</span><span class="s">(</span><span class="i">$FirstParameter</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1533     <span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$FileName</span><span class="s">)</span> = <span class="s">(</span><span class="i">$FirstParameter</span><span class="cm">,</span> <span class="i">$SecondParameter</span><span class="s">)</span><span class="sc">;</span>
+1534   <span class="s">}</span>
+1535   <span class="k">else</span> <span class="s">{</span>
+1536     <span class="i">$FileName</span> = <span class="i">$FirstParameter</span><span class="sc">;</span>
+1537   <span class="s">}</span>
+1538 
+1539   <span class="c"># Check file extension...</span>
+1540   <span class="i">$Status</span> = <span class="i">FileUtil::CheckFileType</span><span class="s">(</span><span class="i">$FileName</span><span class="cm">,</span> <span class="q">&quot;fpf fp&quot;</span><span class="s">)</span><span class="sc">;</span>
+1541 
+1542   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+1543 <span class="s">}</span>
+1544 
+1545 <span class="c"># Is it a FingerprintsFPFileIO object?</span>
+<a name="_IsFingerprintsFPFileIO-"></a>1546 <span class="k">sub </span><span class="m">_IsFingerprintsFPFileIO</span> <span class="s">{</span>
+1547   <span class="k">my</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+1548 
+1549   <span class="k">return</span> <span class="s">(</span><span class="i">Scalar::Util::blessed</span><span class="s">(</span><span class="i">$Object</span><span class="s">)</span> &amp;&amp; <span class="i">$Object</span><span class="i">-&gt;isa</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+1550 <span class="s">}</span>
+1551 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

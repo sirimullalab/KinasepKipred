@@ -1,0 +1,451 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitGenerateMolecularFrameworks.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitGenerateMolecularFrameworks.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 <span class="kn">import</span> <span class="nn">csv</span>
+  37 
+  38 <span class="c1"># RDKit imports...</span>
+  39 <span class="k">try</span><span class="p">:</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  43     <span class="kn">from</span> <span class="nn">rdkit.Chem.Scaffolds</span> <span class="kn">import</span> <span class="n">MurckoScaffold</span>
+  44 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  45     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  46     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  47     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  48 
+  49 <span class="c1"># MayaChemTools imports...</span>
+  50 <span class="k">try</span><span class="p">:</span>
+  51     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  52     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  53     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  54 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  55     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  56     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  57     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  58 
+  59 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  60 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  61 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  62 
+  63 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  64     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  65     
+  66     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  67     
+  68     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  69     
+  70     <span class="c1"># Retrieve command line arguments and options...</span>
+  71     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  72     
+  73     <span class="c1"># Process and validate command line arguments and options...</span>
+  74     <span class="n">ProcessOptions</span><span class="p">()</span>
+  75     
+  76     <span class="c1"># Perform actions required by the script...</span>
+  77     <span class="n">GenerateMolecularFrameworks</span><span class="p">()</span>
+  78     
+  79     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  80     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  81 
+  82 <span class="k">def</span> <span class="nf">GenerateMolecularFrameworks</span><span class="p">():</span>
+  83     <span class="sd">&quot;&quot;&quot;Generate Bemis Murcko molecular framworks.&quot;&quot;&quot;</span>
+  84     
+  85     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+  86     <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+  87 
+  88     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+  89 
+  90     <span class="n">RemoveDuplicateFrameworks</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicateFrameworks&quot;</span><span class="p">]</span>
+  91     <span class="n">UseGraphFrameworks</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseGraphFrameworks&quot;</span><span class="p">]</span>
+  92     
+  93     <span class="n">SortFrameworks</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SortFrameworks&quot;</span><span class="p">]</span>
+  94     <span class="k">if</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+  95         <span class="n">FrameworkMolIDs</span> <span class="o">=</span> <span class="p">[]</span>
+  96         <span class="n">FrameworkMolIDToMolMap</span> <span class="o">=</span> <span class="p">{}</span>
+  97         <span class="n">FrameworkMolIDToAtomCountMap</span> <span class="o">=</span> <span class="p">{}</span>
+  98         
+  99         <span class="n">DuplicateFrameworkMolIDs</span> <span class="o">=</span> <span class="p">[]</span>
+ 100         <span class="n">DuplicateFrameworkMolIDToMolMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 101         <span class="n">DuplicateFrameworkMolIDToAtomCountMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 102         
+ 103     <span class="n">DuplicatesOutfile</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 104     <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 105         <span class="n">DuplicatesOutfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DuplicatesOutfile&quot;</span><span class="p">]</span>
+ 106 
+ 107     <span class="c1"># Setup a molecule reader...</span>
+ 108     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+ 109     <span class="n">Mols</span>  <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+ 110     
+ 111     <span class="c1"># Set up a molecular framework  writer...</span>
+ 112     <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 113     <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 114         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 115     
+ 116     <span class="c1"># Set up a duplicate molecular framework writer...    </span>
+ 117     <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 118         <span class="n">DuplicatesWriter</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">DuplicatesOutfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 119         <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 120             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for duplicates output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">DuplicatesOutfile</span><span class="p">)</span>
+ 121         
+ 122     <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 123         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating files: </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="n">DuplicatesOutfile</span><span class="p">))</span>
+ 124     <span class="k">else</span><span class="p">:</span>
+ 125         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 126 
+ 127     <span class="c1"># Process molecules...</span>
+ 128     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 129     <span class="n">ValidMolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 130     
+ 131     <span class="n">FrameworksCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 132     <span class="n">UniqueFrameworksCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 133     <span class="n">DuplicateFrameworksCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 134     
+ 135     <span class="n">CanonicalSMILESMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 136     
+ 137     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 138     
+ 139     <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">:</span>
+ 140         <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 141         
+ 142         <span class="k">if</span> <span class="n">Mol</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 143             <span class="k">continue</span>
+ 144         
+ 145         <span class="k">if</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">IsMolEmpty</span><span class="p">(</span><span class="n">Mol</span><span class="p">):</span>
+ 146             <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 147             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintWarning</span><span class="p">(</span><span class="s2">&quot;Ignoring empty molecule: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolName</span><span class="p">)</span>
+ 148             <span class="k">continue</span>
+ 149         
+ 150         <span class="n">ValidMolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 151 
+ 152         <span class="k">if</span> <span class="n">UseGraphFrameworks</span><span class="p">:</span>
+ 153             <span class="n">FrameworksMol</span> <span class="o">=</span> <span class="n">MurckoScaffold</span><span class="o">.</span><span class="n">MakeScaffoldGeneric</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 154         <span class="k">else</span><span class="p">:</span>
+ 155             <span class="n">FrameworksMol</span> <span class="o">=</span> <span class="n">MurckoScaffold</span><span class="o">.</span><span class="n">GetScaffoldForMol</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 156 
+ 157         <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 158             <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">)</span>
+ 159             
+ 160         <span class="k">if</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+ 161             <span class="n">HeavyAtomCount</span> <span class="o">=</span> <span class="n">FrameworksMol</span><span class="o">.</span><span class="n">GetNumHeavyAtoms</span><span class="p">()</span>
+ 162 
+ 163         <span class="n">FrameworksCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 164         
+ 165         <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 166             <span class="n">CanonicalSMILES</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolToSmiles</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">,</span> <span class="n">isomericSmiles</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">canonical</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+ 167             <span class="k">if</span> <span class="n">CanonicalSMILES</span> <span class="ow">in</span> <span class="n">CanonicalSMILESMap</span><span class="p">:</span>
+ 168                 <span class="n">DuplicateFrameworksCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 169                 <span class="k">if</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+ 170                     <span class="c1"># Track duplicate frameworks...</span>
+ 171                     <span class="n">DuplicateFrameworkMolIDs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DuplicateFrameworksCount</span><span class="p">)</span>
+ 172                     <span class="n">DuplicateFrameworkMolIDToMolMap</span><span class="p">[</span><span class="n">DuplicateFrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrameworksMol</span>
+ 173                     <span class="n">DuplicateFrameworkMolIDToAtomCountMap</span><span class="p">[</span><span class="n">DuplicateFrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">HeavyAtomCount</span>
+ 174                 <span class="k">else</span><span class="p">:</span>
+ 175                     <span class="c1"># Write it out...</span>
+ 176                     <span class="n">DuplicatesWriter</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">)</span>
+ 177             <span class="k">else</span><span class="p">:</span>
+ 178                 <span class="n">UniqueFrameworksCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 179                 <span class="n">CanonicalSMILESMap</span><span class="p">[</span><span class="n">CanonicalSMILES</span><span class="p">]</span> <span class="o">=</span> <span class="n">CanonicalSMILES</span>
+ 180                 <span class="k">if</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+ 181                     <span class="c1"># Track unique frameworks...</span>
+ 182                     <span class="n">FrameworkMolIDs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UniqueFrameworksCount</span><span class="p">)</span>
+ 183                     <span class="n">FrameworkMolIDToMolMap</span><span class="p">[</span><span class="n">UniqueFrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrameworksMol</span>
+ 184                     <span class="n">FrameworkMolIDToAtomCountMap</span><span class="p">[</span><span class="n">UniqueFrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">HeavyAtomCount</span>
+ 185                 <span class="k">else</span><span class="p">:</span>
+ 186                     <span class="c1"># Write it out...</span>
+ 187                     <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">)</span>
+ 188         <span class="k">elif</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+ 189             <span class="c1"># Track for sorting...</span>
+ 190             <span class="n">FrameworkMolIDs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FrameworksCount</span><span class="p">)</span>
+ 191             <span class="n">FrameworkMolIDToMolMap</span><span class="p">[</span><span class="n">FrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrameworksMol</span>
+ 192             <span class="n">FrameworkMolIDToAtomCountMap</span><span class="p">[</span><span class="n">FrameworksCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">HeavyAtomCount</span>
+ 193         <span class="k">else</span><span class="p">:</span>
+ 194             <span class="c1"># Write it out...</span>
+ 195             <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">)</span>
+ 196             
+ 197     <span class="k">if</span> <span class="n">SortFrameworks</span><span class="p">:</span>
+ 198         <span class="n">ReverseOrder</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DescendingSortOrder&quot;</span><span class="p">]</span>
+ 199         <span class="n">SortAndWriteFrameworks</span><span class="p">(</span><span class="n">Writer</span><span class="p">,</span> <span class="n">FrameworkMolIDs</span><span class="p">,</span> <span class="n">FrameworkMolIDToMolMap</span><span class="p">,</span> <span class="n">FrameworkMolIDToAtomCountMap</span><span class="p">,</span> <span class="n">ReverseOrder</span><span class="p">)</span>
+ 200         <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 201             <span class="n">SortAndWriteFrameworks</span><span class="p">(</span><span class="n">DuplicatesWriter</span><span class="p">,</span> <span class="n">DuplicateFrameworkMolIDs</span><span class="p">,</span> <span class="n">DuplicateFrameworkMolIDToMolMap</span><span class="p">,</span> <span class="n">DuplicateFrameworkMolIDToAtomCountMap</span><span class="p">,</span> <span class="n">ReverseOrder</span><span class="p">)</span>
+ 202     
+ 203     <span class="n">Writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 204     <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 205         <span class="n">DuplicatesWriter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 206 
+ 207     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecular frameworks: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">FrameworksCount</span><span class="p">)</span>
+ 208     <span class="k">if</span> <span class="n">RemoveDuplicateFrameworks</span><span class="p">:</span>
+ 209         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of unique molecular frameworks: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">UniqueFrameworksCount</span><span class="p">)</span>
+ 210         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of duplicate molecular frameworks: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">DuplicateFrameworksCount</span><span class="p">)</span>
+ 211         
+ 212     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 213     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 214     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 215 
+ 216 <span class="k">def</span> <span class="nf">SortAndWriteFrameworks</span><span class="p">(</span><span class="n">MolWriter</span><span class="p">,</span> <span class="n">MolIDs</span><span class="p">,</span> <span class="n">MolIDToMolMap</span><span class="p">,</span> <span class="n">MolIDToAtomCountMap</span><span class="p">,</span> <span class="n">ReverseOrder</span><span class="p">):</span>
+ 217     <span class="sd">&quot;&quot;&quot;Sort frameworks and write them out.&quot;&quot;&quot;</span>
+ 218     <span class="n">SortedMolIDs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">MolIDs</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">MolID</span><span class="p">:</span> <span class="n">MolIDToAtomCountMap</span><span class="p">[</span><span class="n">MolID</span><span class="p">],</span> <span class="n">reverse</span> <span class="o">=</span> <span class="n">ReverseOrder</span><span class="p">)</span>
+ 219     <span class="k">for</span> <span class="n">MolID</span> <span class="ow">in</span> <span class="n">SortedMolIDs</span><span class="p">:</span>
+ 220         <span class="n">FrameworksMol</span> <span class="o">=</span> <span class="n">MolIDToMolMap</span><span class="p">[</span><span class="n">MolID</span><span class="p">]</span>
+ 221         <span class="n">MolWriter</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">FrameworksMol</span><span class="p">)</span>
+ 222 
+ 223 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 224     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 225     
+ 226     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 227     
+ 228     <span class="c1"># Validate options...</span>
+ 229     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 230     
+ 231     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 232     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 233     
+ 234     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 235     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 236     
+ 237     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 238 
+ 239     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">]</span>
+ 240     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseGraphFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 241     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^GraphFrameworks$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Mode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 242         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseGraphFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 243     
+ 244     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--removeDuplicates&quot;</span><span class="p">]</span>
+ 245     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicateFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 246     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicates&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 247         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicateFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 248         
+ 249     <span class="c1"># Setup outfile for writing out duplicates...</span>
+ 250     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DuplicatesOutfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 251     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;RemoveDuplicateFrameworks&quot;</span><span class="p">]:</span>
+ 252         <span class="n">FileDir</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ParseFileName</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">])</span>
+ 253         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DuplicatesOutfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">Duplicates.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span><span class="p">)</span>
+ 254 
+ 255     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Sort&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--sort&quot;</span><span class="p">]</span>
+ 256     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SortFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 257     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Sort&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 258         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SortFrameworks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 259     
+ 260     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SortOrder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--sortOrder&quot;</span><span class="p">]</span>
+ 261     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DescendingSortOrder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 262     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Descending$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SortOrder&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 263         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;DescendingSortOrder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 264     
+ 265     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 266     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 267         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 268 
+ 269 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 270     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 271     
+ 272     <span class="c1"># Get options...</span>
+ 273     <span class="k">global</span> <span class="n">Options</span>
+ 274     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 275     
+ 276     <span class="c1"># Set current working directory to the specified directory...</span>
+ 277     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 278     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 279         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 280     
+ 281     <span class="c1"># Handle examples option...</span>
+ 282     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 283         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 284         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 285 
+ 286 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 287     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 288     
+ 289     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 290     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi txt csv tsv&quot;</span><span class="p">)</span>
+ 291     
+ 292     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi&quot;</span><span class="p">)</span>
+ 293     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 294     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 295     
+ 296     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-m, --mode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">],</span> <span class="s2">&quot;GraphFrameworks AtomicFrameworks&quot;</span><span class="p">)</span>
+ 297     
+ 298     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-r, --removeDuplicates&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--removeDuplicates&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 299     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-s, --sort&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--sort&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 300     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--sortOrder&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--sortOrder&quot;</span><span class="p">],</span> <span class="s2">&quot;ascending descending&quot;</span><span class="p">)</span>
+ 301 
+ 302     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--useChirality&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 303     
+ 304 <span class="c1"># Setup a usage string for docopt...</span>
+ 305 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 306 <span class="s2">RDKitGenerateMolecularFrameworks.py - Generate Bemis Murcko molecular frameworks</span>
+ 307 
+ 308 <span class="s2">Usage:</span>
+ 309 <span class="s2">    RDKitGenerateMolecularFrameworks.py [--infileParams &lt;Name,Value,...&gt;]</span>
+ 310 <span class="s2">                                         [--mode &lt;GraphFrameworks or AtomicFrameworks&gt; ]</span>
+ 311 <span class="s2">                                         [ --outfileParams &lt;Name,Value,...&gt; ]  [--overwrite] [--removeDuplicates &lt;yes or no&gt;]</span>
+ 312 <span class="s2">                                         [--sort &lt;yes or no&gt;] [--sortOrder &lt;ascending or descending&gt;]</span>
+ 313 <span class="s2">                                         [--useChirality &lt;yes or no&gt;] [-w &lt;dir&gt;] -i &lt;infile&gt; -o &lt;outfile&gt;</span>
+ 314 <span class="s2">    RDKitGenerateMolecularFrameworks.py -h | --help | -e | --examples</span>
+ 315 
+ 316 <span class="s2">Description:</span>
+ 317 <span class="s2">    Generate Bemis Murcko [ Ref 133 ] molecular frameworks for molecules. Two types of molecular</span>
+ 318 <span class="s2">    frameworks can be generated: Graph or atomic frameworks. The graph molecular framework</span>
+ 319 <span class="s2">    is a generic framework. The atom type, hybridization, and bond order is ignore during its</span>
+ 320 <span class="s2">    generation. All atoms are set to carbon atoms and all bonds are single bonds. The atom type,</span>
+ 321 <span class="s2">    hybridization, and bond order is preserved during generation of atomic molecular frameworks.</span>
+ 322 
+ 323 <span class="s2">    The supported input file formats are: SD (.sdf, .sd), SMILES (.smi, .csv, .tsv, .txt)</span>
+ 324 
+ 325 <span class="s2">    The supported output file formats are: SD (.sdf, .sd), SMILES (.smi)</span>
+ 326 
+ 327 <span class="s2">Options:</span>
+ 328 <span class="s2">    -e, --examples</span>
+ 329 <span class="s2">        Print examples.</span>
+ 330 <span class="s2">    -h, --help</span>
+ 331 <span class="s2">        Print this help message.</span>
+ 332 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 333 <span class="s2">        Input file name.</span>
+ 334 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 335 <span class="s2">        A comma delimited list of parameter name and value pairs for reading</span>
+ 336 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 337 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 338 <span class="s2">            </span>
+ 339 <span class="s2">            SD: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 340 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 341 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 342 <span class="s2">            </span>
+ 343 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 344 <span class="s2">    -m, --mode &lt;GraphFrameworks or AtomicFrameworks&gt;  [default: GraphFrameworks]</span>
+ 345 <span class="s2">        Type of molecular frameworks to generate for molecules. Possible values: GraphFrameworks</span>
+ 346 <span class="s2">         or AtomicFrameworks. The graph molecular framework is a generic framework. The atom type,</span>
+ 347 <span class="s2">         hybridization, and bond order is ignore during its generation. All atoms are set to carbon atoms</span>
+ 348 <span class="s2">         and all bonds are single bonds. The atom type, hybridization, and bond order is preserved</span>
+ 349 <span class="s2">         during the generation of atomic molecular frameworks.</span>
+ 350 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 351 <span class="s2">        Output file name.</span>
+ 352 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 353 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 354 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 355 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 356 <span class="s2">            </span>
+ 357 <span class="s2">            SD: compute2DCoords,auto</span>
+ 358 <span class="s2">            SMILES: smilesDelimiter,space,smilesTitleLine,yes</span>
+ 359 <span class="s2">            </span>
+ 360 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 361 <span class="s2">        file types.</span>
+ 362 <span class="s2">    --overwrite</span>
+ 363 <span class="s2">        Overwrite existing files.</span>
+ 364 <span class="s2">    -r, --removeDuplicates &lt;yes or no&gt;  [default: no]</span>
+ 365 <span class="s2">        Remove duplicate molecular frameworks. Possible values: yes or no. The duplicate</span>
+ 366 <span class="s2">        molecular franworks are identified using canonical SMILES. The removed frameworks</span>
+ 367 <span class="s2">        are written to a separate output file.</span>
+ 368 <span class="s2">    -s, --sort &lt;yes or no&gt;  [default: no]</span>
+ 369 <span class="s2">        Sort molecular frameworks by heavy atom count. Possible values: yes or no.</span>
+ 370 <span class="s2">    --sortOrder &lt;ascending or descending&gt;  [default: ascending]</span>
+ 371 <span class="s2">        Sorting order for molecular frameworks. Possible values: ascending or descending.</span>
+ 372 <span class="s2">    -u, --useChirality &lt;yes or no&gt;  [default: yes]</span>
+ 373 <span class="s2">        Use stereochemistry for generation of canonical SMILES strings to identify</span>
+ 374 <span class="s2">        duplicate molecular frameworks.</span>
+ 375 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 376 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 377 
+ 378 <span class="s2">Examples:</span>
+ 379 <span class="s2">    To generate graph molecular framworks for molecules and write out a SMILES file,</span>
+ 380 <span class="s2">    type:</span>
+ 381 
+ 382 <span class="s2">        % RDKitGenerateMolecularFrameworks.py -i Sample.smi -o SampleOut.smi</span>
+ 383 
+ 384 <span class="s2">    To generate graph molecular framworks, remove duplicate frameworks for molecules</span>
+ 385 <span class="s2">    and write out SD files for unique and duplicate frameworks, type:</span>
+ 386 
+ 387 <span class="s2">        % RDKitGenerateMolecularFrameworks.py -m GraphFrameworks -r yes</span>
+ 388 <span class="s2">          -i Sample.sdf -o SampleOut.sdf</span>
+ 389 
+ 390 <span class="s2">    To generate atomic molecular framworks, remove duplicate frameworks, sort</span>
+ 391 <span class="s2">    framworks by heavy atom count in ascending order, write out SMILES files for</span>
+ 392 <span class="s2">    unique and duplicate frameworks, type:</span>
+ 393 
+ 394 <span class="s2">        % RDKitGenerateMolecularFrameworks.py -m AtomicFrameworks -r yes</span>
+ 395 <span class="s2">          -s yes -i Sample.smi -o SampleOut.smi</span>
+ 396 
+ 397 <span class="s2">    To generate graph molecular framworks for molecules in a CSV SMILES file,</span>
+ 398 <span class="s2">    SMILES strings in column 1, name in olumn 2, emove duplicate frameworks,</span>
+ 399 <span class="s2">    sort framworks by heavy atom count in decending order and write out a SD</span>
+ 400 <span class="s2">    file, type:</span>
+ 401 
+ 402 <span class="s2">        % RDKitGenerateMolecularFrameworks.py -m AtomicFrameworks</span>
+ 403 <span class="s2">          --removeDuplicates yes -s yes --sortOrder descending --infileParams</span>
+ 404 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 405 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;</span>
+ 406 <span class="s2">          -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 407 
+ 408 <span class="s2">Author:</span>
+ 409 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 410 
+ 411 <span class="s2">See also:</span>
+ 412 <span class="s2">    RDKitConvertFileFormat.py, RDKitDrawMolecules.py, RDKitSearchFunctionalGroups.py,</span>
+ 413 <span class="s2">    RDKitSearchSMARTS.py</span>
+ 414 
+ 415 <span class="s2">Copyright:</span>
+ 416 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 417 
+ 418 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 419 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 420 
+ 421 <span class="s2">    This file is part of MayaChemTools.</span>
+ 422 
+ 423 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 424 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 425 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 426 <span class="s2">    later version.</span>
+ 427 
+ 428 <span class="s2">&quot;&quot;&quot;</span>
+ 429 
+ 430 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 431     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

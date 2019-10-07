@@ -1,0 +1,185 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:InfoPeriodicTableElements.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoPDBFiles.html" title="InfoPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoSDFiles.html" title="InfoSDFiles.html">Next</a></td><td width="34%" align="middle"><strong>InfoPeriodicTableElements.pl</strong></td><td width="33%" align="right"><a href="././code/InfoPeriodicTableElements.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/InfoPeriodicTableElements.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/InfoPeriodicTableElements.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/InfoPeriodicTableElements.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/InfoPeriodicTableElements.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>InfoPeriodicTableElements.pl - List atomic properties of elements</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>InfoPeriodicTableElements.pl ElementID(s)...</p>
+<p>InfoPeriodicTableElements.pl [<b>-h, --help</b>] [<b>-m, --mode</b> ElementID | AmericanGroupLabel | EuropeanGroupLabel | GroupNumber | GroupName | PeriodNumber | All] [<b>--outdelim</b> comma | tab | semicolon] [<b>--output</b> STDOUT | File] [<b>--outputstyle</b> ElementBlock | ElementRows] [<b>-o, --overwrite</b>] [<b>--precision</b> number] [<b>--propertiesmode</b> Categories | Names | All] [<b>-p, --properties</b> CategoryName,[CategoryName,...] | PropertyName,[PropertyName,...]] [<b>--propertieslinting</b> ByGroup | Alphabetical] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>-w, --workingdir</b> dirname] ElementID(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>List atomic properties of elements in the periodic table. A variety of methods are available to specify elements of interest: atomic numbers, element symbols, American or European style group labels, IUPAC group numbers, period numbers, and group names.</p>
+<p>Atomic properties data, in addition to basic information about the periodic table elements, is also available for these categories: atomic radii, bulk properties, common valences, electronegativities, electron affinities, historical data, ionization energies, natural isotopes, oxidation states, and thermal properties.</p>
+<p>Natural isotopes data include mass number, relative atomic mass and percent natural abundance for each isotope of an element.</p>
+<h1 id="PARAMETERS">PARAMETERS</h2>
+<dl>
+<dt id="ElementIDs-ElementSymbol-AtomicNumber...-GroupLabel-GroupLabel...-GroupNumbel-GroupNumber...-PeriodNumber-PeriodNumbe"><b>ElementIDs</b> <i>ElementSymbol [AtomicNumber...] | GroupLabel [GroupLabel...] | GroupNumbel [GroupNumber...] | PeriodNumber [PeriodNumbe...]</i></dt>
+<dd>
+<p>Command line specification of elements is mode specific. In general, it&#39;s a space delimited list of values to identify elements. All element IDs must correspond to a specific mode; mixed specifications is not supported.</p>
+<p>For <i>ElementID</i> mode, input value format is: <i>AtomicNumber [ElementSymbol ...]</i>. Default: <i>H</i>. Examples:</p>
+<div class="OptionsBox">    C
+<br/>    6
+<br/>    C N O P S Cl
+<br/>    6 7 8 15 16 17
+<br/>    C 7 8 15 S 17</div>
+<p>For <i>AmericanGroupLabel</i> mode, input value format is: <i>GroupLabel [GroupLabel ...]</i>. Default: <i>IA</i>. Possible group label values are: <i>IA IIA IIIB IVB VB VIB VIIB VIII or VIIIB IB IIB IIIA IVA VA, VIA, VIIA, VIIA</i>. Examples:</p>
+<div class="OptionsBox">    IA
+<br/>    IA IVA IIB</div>
+<p>For <i>EuropeanGroupLabel</i> mode, input value format is: <i>GroupLabel [GroupLabel ...]</i>. Default: <i>IA</i>. Possible group label values are: <i>IA IIA IIIA IVA VA VIA VIIA VIII or VIIIA IB IIB IIIB IVB VB, VIB VIIB VIIB</i>. Examples:</p>
+<div class="OptionsBox">    IA
+<br/>    IA IVB IIB</div>
+<p>For IUPAC <i>GroupNumber</i> mode, input value format is: <i>GroupNumber [GroupNumber...]</i>. Default: <i>1</i>. Possible group label values are: <i>1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18</i>. Examples:</p>
+<div class="OptionsBox">    1
+<br/>    1 14 12</div>
+<p>For <i>GroupName</i> mode, input value format is: <i>GroupName [GroupName...]</i>. Default: <i>AlkaliMetals</i>. Possible group name values are: <i>AlkaliMetals AlkalineEarthMetals Chalcogens CoinageMetals Halogens NobleGases Pnictogens Lanthanides or Lanthanoids, Actinides or Actinoids</i>. Examples:</p>
+<div class="OptionsBox">    AlkaliMetals
+<br/>    AlkaliMetals Halogens NobleGases</div>
+<p>For <i>PeriodNumber</i> mode, input value format is: <i>PeriodNumber [PeriodNumber,...]</i>. Default: <i>1</i>. Possible group label values are: <i>1 2 3 4 5 6 7</i>. Examples:</p>
+<div class="OptionsBox">    1
+<br/>    1 2 3</div>
+<p>For <i>All</i> mode, no input value is needed and atomic properties information is listed for all the elements.</p>
+</dd>
+</dl>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="m---mode-ElementID-AmericanGroupLabel-EuropeanGroupLabel-GroupNumber-GroupName-PeriodNumber-All"><b>-m, --mode</b> <i>ElementID | AmericanGroupLabel | EuropeanGroupLabel | GroupNumber | GroupName | PeriodNumber | All</i></dt>
+<dd>
+<p>Specify elements for listing atomic properties using one of these methods: atomic numbers and/or element symbols list, American style group labels, European style group labels, IUPAC group number, group names, period numbers, or all elements.</p>
+<p>Possible values: <i>ElementID, AmericanGroupLabel, EuropeanGroupLabel, GroupNumber, GroupName, PeriodNumber, All</i>. Default: <i>ElementID</i>.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="output-STDOUT-File"><b>--output</b> <i>STDOUT | File</i></dt>
+<dd>
+<p>List information at STDOUT or write it to a file. Possible values: <i>STDOUT or File</i>. Default: <i>STDOUT</i>. <b>-r, --root</b> option is used to generate output file name.</p>
+</dd>
+<dt id="outputstyle-ElementBlock-ElementRows"><b>--outputstyle</b> <i>ElementBlock | ElementRows</i></dt>
+<dd>
+<p>Specify how to list element information: add a new line for each property and present it as a block for each element; or include all properties in one line and show it as a single line.</p>
+<p>Possible values: <i>ElementBlock | ElementRows</i>. Default: <i>ElementBlock</i></p>
+<p>An example for <i>ElementBlock</i> output style:</p>
+<div class="OptionsBox">    Atomic number: 1
+<br/>    Element symbol: H
+<br/>    Element name: Hydrogen
+<br/>    Atomic weight: 1.00794
+<br/>    ... ...
+<br/>    ... ...
+<br/>
+<br/>    Atomic number: 6
+<br/>    Element symbol: C
+<br/>    Element name: Carbon
+<br/>    Atomic weight: 12.0107
+<br/>    ... ...
+<br/>    ... ...</div>
+<p>An example for <i>ElementRows</i> output style:</p>
+<div class="OptionsBox">    Atomic number, Element symbol, Elemenet name, Atomic weight, ...
+<br/>    1,H,Hydrogen,1.00794,..
+<br/>    6,C,Carbon,12.0107,..</div>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="precision-number"><b>--precision</b> <i>number</i></dt>
+<dd>
+<p>Precision for listing numerical values. Default: up to <i>4</i> decimal places. Valid values: positive integers.</p>
+</dd>
+<dt id="propertiesmode-Categories-Names-All"><b>--propertiesmode</b> <i>Categories | Names | All</i></dt>
+<dd>
+<p>Specify how property names are specified: use category names; explicit list of property names; or use all available properties. Possible values: <i>Categories, Names, or All</i>. Default: <i>Categories</i>.</p>
+<p>This option is used in conjunction with <b>-p, --properties</b> option to specify properties of interest.</p>
+</dd>
+<dt id="p---properties-CategoryName-CategoryName-...-PropertyName-PropertyName"><b>-p, --properties</b> <i>CategoryName,[CategoryName,...] | PropertyName,[PropertyName,...]</i></dt>
+<dd>
+<p>This option is <b>--propertiesmode</b> specific. In general, it&#39;s a list of comma separated category or property names.</p>
+<p>Specify which atomic properties information to list for the elements specified using command line parameters: list basic and/or isotope information; list all available information; or specify a comma separated list of atomic property names.</p>
+<p>Possible values: <i>Basic| BasicAndNaturalIsotope | NaturalIsotope | PropertyName,[PropertyName,...]</i>. Default: <i>Basic</i>.</p>
+<p><i>Basic</i> includes: <i>AtomicNumber, ElementSymbol, ElementName, AtomicWeight, GroundStateConfiguration, GroupNumber, PeriodNumber, FirstIonizationEnergy</i>.</p>
+<p><i>NaturalIsotope</i> includes: <i>AtomicNumber, ElementSymbol, ElementName, MassNumber, RelativeAtomicMass, NaturalAbundance</i>.</p>
+<p>Here is a complete list of available properties: AllenElectronegativity, AllredRochowElectronegativity, AtomicNumber, AtomicRadiusCalculated, AtomicRadiusEmpirical, AtomicWeight, Block, BoilingPoint, BondLength, BrinellHardness, BulkModulus, Classification, CoefficientOfLinearExpansion, Color, CommonValences, LowestCommonValence, HighestCommonValence, CommonOxidationNumbers, LowestCommonOxidationNumber, HighestCommonOxidationNumber, CovalentRadiusEmpirical, CriticalTemperature, DensityOfSolid, DiscoveredAt, DiscoveredBy, DiscoveredWhen, ElectricalResistivity, ElectronAffinity, ElementName, ElementSymbol, EnthalpyOfAtmization, EnthalpyOfFusion, EnthalpyOfVaporization, FirstIonizationEnergy, GroundStateConfiguration, GroundStateLevel, GroupName, GroupNumber, NaturalIsotopeData, MeltingPoint, MineralHardness, MolarVolume, MullikenJaffeElectronegativity, OriginOfName, PaulingElectronegativity, PeriodNumber, PoissonsRatio, Reflectivity, RefractiveIndex, RigidityModulus, SandersonElectronegativity, StandardState, SuperconductionTemperature, ThermalConductivity, VanderWaalsRadius, VelocityOfSound, VickersHardness, YoungsModulus.</p>
+</dd>
+<dt id="propertieslisting-ByGroup-Alphabetical"><b>--propertieslisting</b> <i>ByGroup | Alphabetical</i></dt>
+<dd>
+<p>Specify how to list properties for elements: group by category or an alphabetical by property names. Possible values: <i>ByGroup or Alphabetical</i>. Default: <i>ByGroup</i>. During <i>Alphabetical</i> listing, element identification data - <i>AtomicNumber, ElementSymbol, ElementName</i> - is show first, and natural isotope data - <i>MassNumber, RelativeAtomicMass, NaturalAbundance</i> - is listed in the end.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New text file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. File name is only used during <i>File</i> value of <b>-o, --output</b> option.</p>
+<p>Default file name: PeriodicTableElementsInfo&lt;mode&gt;.&lt;Ext&gt;. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w, --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To list basic atomic properties information for element H, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl</div>
+<p>To list basic atomic properties information for elements C,N,O and F, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl C N O F</div>
+<p>To list all available atomic properties information for elements C,N,O and F, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl --propertiesmode all 6 N O 9</div>
+<p>To list basic and natural isotope information for elements C,N,O and F, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl --propertiesmode Categories
+      --properties BasicAndNaturalIsotope  C N O F</div>
+<p>To list AtomicNumber, ElementName, AtomicWeight and CommonValences information for elements C,N,O and F, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl --propertiesmode Names
+      --properties AtomicNumber,ElementName,AtomicWeight,CommonValences
+      C N O F</div>
+<p>To alphabetically list basic and natural isotope information for elements C,N,O and F in rows instead of element blocks with quotes around the values, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl --propertiesmode Categories
+      --properties BasicAndNaturalIsotope --propertieslisting alphabetical
+      --outdelim comma --outputstyle ElementRows --quote yes C N O F</div>
+<p>To alphabetically list all available atomic information for elements C,N,O and F in rows instead of element blocks with quotes around the values and write them into a file ElementProperties.csv, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl --propertiesmode Categories
+      --properties BasicAndNaturalIsotope --propertieslisting alphabetical
+      --outdelim comma --outputstyle ElementRows --quote yes
+      --output File -r ElementsProperties -o -m All</div>
+<p>To list basic atomic properties information for elements in groups IA and VIA using American style group labels, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl -m AmericanGroupLabel IA VIA</div>
+<p>To list basic atomic properties information for elements in groups IA and VB using European style group labels, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl -m AmericanGroupLabel IA VB</div>
+<p>To list basic atomic properties information for elements in groups Halogens and NobleGases, type:</p>
+<div class="ExampleBox">    % InfoPeriodicTableElements.pl -m GroupName Halogens NobleGases</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./InfoAminoAcids.plInfoNucleicAcids.html">InfoAminoAcids.plInfoNucleicAcids.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./InfoPDBFiles.html" title="InfoPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./InfoSDFiles.html" title="InfoSDFiles.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>InfoPeriodicTableElements.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

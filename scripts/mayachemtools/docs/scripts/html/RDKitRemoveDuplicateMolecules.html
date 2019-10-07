@@ -1,0 +1,111 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:RDKitRemoveDuplicateMolecules.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitPickDiverseMolecules.html" title="RDKitPickDiverseMolecules.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitRemoveSalts.html" title="RDKitRemoveSalts.html">Next</a></td><td width="34%" align="middle"><strong>RDKitRemoveDuplicateMolecules.py</strong></td><td width="33%" align="right"><a href="././code/RDKitRemoveDuplicateMolecules.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/RDKitRemoveDuplicateMolecules.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/RDKitRemoveDuplicateMolecules.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/RDKitRemoveDuplicateMolecules.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/RDKitRemoveDuplicateMolecules.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>RDKitRemoveDuplicateMolecules.py - Remove duplicate molecules</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>RDKitRemoveDuplicateMolecules.py [<b>--infileParams</b> &lt;Name,Value,...&gt;] [<b>--mode</b> &lt;remove or count&gt;] [ <b>--outfileParams</b> &lt;Name,Value,...&gt; ] [<b>--overwrite]</b> [<b>--useChirality</b> &lt;yes or no&gt;] [<b>-w</b> &lt;dir&gt;] [<b>-o</b> &lt;outfile&gt;] <b>-i</b> &lt;infile&gt;</p>
+<p>RDKitRemoveDuplicateMolecules.py <b>-h</b> | <b>--help</b> | <b>-e</b> | <b>--examples</b></p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Identify and remove duplicate molecules based on canonical SMILES strings or simply count the number of duplicate molecules.</p>
+<p>The supported input file formats are: SD (.sdf, .sd), SMILES (.smi., csv, .tsv, .txt)</p>
+<p>The supported output file formats are: SD (.sdf, .sd), SMILES (.smi)</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="e---examples"><b>-e, --examples</b></dt>
+<dd>
+<p>Print examples.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="i---infile-infile"><b>-i, --infile</b> &lt;infile&gt;</dt>
+<dd>
+<p>Input file name.</p>
+</dd>
+<dt id="infileParams-Name-Value-...-default:-auto"><b>--infileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for reading molecules from files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD: removeHydrogens,yes,sanitize,yes,strictParsing,yes
+<br/>    SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        smilesTitleLine,auto,sanitize,yes
+<br/>    </div>
+<p>Possible values for smilesDelimiter: space, comma or tab.</p>
+</dd>
+<dt id="m---mode-remove-or-count-default:-remove"><b>-m, --mode</b> &lt;remove or count&gt; [default: remove]</dt>
+<dd>
+<p>Specify whether to remove duplicate molecules and write out filtered molecules to output files or or simply count the number of duplicate molecules.</p>
+</dd>
+<dt id="o---outfile-outfile"><b>-o, --outfile</b> &lt;outfile&gt;</dt>
+<dd>
+<p>Output file name.</p>
+</dd>
+<dt id="outfileParams-Name-Value-...-default:-auto"><b>--outfileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for writing molecules to files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD: compute2DCoords,auto,kekulize,no
+<br/>    SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        smilesTitleLine,yes
+<br/>    </div>
+<p>Default value for compute2DCoords: yes for SMILES input file; no for all other file types.</p>
+</dd>
+<dt id="overwrite"><b>--overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="u---useChirality-yes-or-no-default:-yes"><b>-u, --useChirality</b> &lt;yes or no&gt; [default: yes]</dt>
+<dd>
+<p>Use stereochemistry information for generation of canonical SMILES strings to identify duplicate molecules.</p>
+</dd>
+<dt id="w---workingdir-dir"><b>-w, --workingdir</b> &lt;dir&gt;</dt>
+<dd>
+<p>Location of working directory which defaults to the current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To remove duplicate molecules and generate output files containing unique and duplicate SMILES strings, type:</p>
+<div class="ExampleBox">    % RDKitRemoveDuplicateMolecules.py -i Sample.smi -o SampleOut.smi</div>
+<p>To remove duplicate molecules without using stereochemistry information for generation of canonical SMILES and generate output files containing unique and duplicate SMILES strings, type:</p>
+<div class="ExampleBox">    % RDKitRemoveDuplicateMolecules.py -u no -i Sample.sdf -o SampleOut.sdf</div>
+<p>To count number of unique and duplicate molecules without generating any output files, type:</p>
+<div class="ExampleBox">    % RDKitRemoveDuplicateMolecules.py -m count -i Sample.sdf</div>
+<p>To remove duplicate molecules from a CSV SMILES file, SMILES strings in column 1, name in column 2, and generate output SD files containing unique and duplicate molecules, type:</p>
+<div class="ExampleBox">    % RDKitRemoveDuplicateMolecules.py --infileParams 
+      &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,
+      smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;
+      -i SampleSMILES.csv -o SampleOut.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./RDKitConvertFileFormat.html">RDKitConvertFileFormat.py</a>, <a href="./RDKitRemoveSalts.html">RDKitRemoveSalts</a>, <a href="./RDKitSearchFunctionalGroups.html">RDKitSearchFunctionalGroups.py</a>, <a href="./RDKitSearchSMARTS.html">RDKitSearchSMARTS.py</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>The functionality available in this script is implemented using RDKit, an open source toolkit for cheminformatics developed by Greg Landrum.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitPickDiverseMolecules.html" title="RDKitPickDiverseMolecules.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitRemoveSalts.html" title="RDKitRemoveSalts.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>RDKitRemoveDuplicateMolecules.py</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

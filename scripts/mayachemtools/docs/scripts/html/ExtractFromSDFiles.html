@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:ExtractFromSDFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ExtractFromPDBFiles.html" title="ExtractFromPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtractFromSequenceFiles.html" title="ExtractFromSequenceFiles.html">Next</a></td><td width="34%" align="middle"><strong>ExtractFromSDFiles.pl</strong></td><td width="33%" align="right"><a href="././code/ExtractFromSDFiles.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/ExtractFromSDFiles.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/ExtractFromSDFiles.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/ExtractFromSDFiles.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/ExtractFromSDFiles.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>ExtractFromSDFiles.pl - Extract specific data from SDFile(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>ExtractFromSDFiles.pl SDFile(s)...</p>
+<p>ExtractFromSDFiles.pl [<b>-h, --help</b>] [<b>-d, --datafields</b> &quot;fieldlabel,...&quot; | &quot;fieldlabel,value,criteria...&quot; | &quot;fieldlabel,value,value...&quot;] [<b>--datafieldsfile</b> filename] [<b>--indelim</b> comma | tab | semicolon] [<b>-m, --mode</b> alldatafields | commondatafields | | datafieldnotbylist | datafields | datafieldsbyvalue | datafieldsbyregex | datafieldbylist | datafielduniquebylist | molnames | randomcmpds | recordnum | recordnums | recordrange | 2dcmpdrecords | 3dcmpdrecords ] [<b>-n, --numofcmpds</b> number] [<b>--outdelim</b> comma | tab | semicolon] [<b>--output</b> SD | text | both] [<b>-o, --overwrite</b>] [<b>-q, --quote</b> yes | no] [<b>--record</b> recnum | startrecnum,endrecnum] <b>--RegexIgnoreCase</b> <i>yes or no</i> [<b>-r, --root</b> rootname] [<b>-s, --seed</b> number] [<b>--StrDataString</b> yes | no] [<b>--StrDataStringDelimiter</b> text] [<b>--StrDataStringMode</b> StrOnly | StrAndDataFields] [<b>--ValueComparisonMode</b> <i>Numeric | Alphanumeric</i>] [<b>-v, --violations-</b> number] [<b>-w, --workingdir</b> dirname] SDFile(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Extract specific data from <i>SDFile(s)</i> and generate appropriate SD or CSV/TSV text file(s). The structure data from SDFile(s) is not transferred to CSV/TSV text file(s). Multiple SDFile names are separated by spaces. The valid file extensions are <i>.sdf</i> and <i>.sd</i>. All other file names are ignored. All the SD files in a current directory can be specified either by <i>*.sdf</i> or the current directory name.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="d---datafields-fieldlabel-...-fieldlabel-value-criteria...-fieldlabel-value-value"><b>-d, --datafields</b> <i>&quot;fieldlabel,...&quot; | &quot;fieldlabel,value,criteria...&quot; | &quot;fieldlabel,value,value,...&quot;</i></dt>
+<dd>
+<p>This value is mode specific. In general, it&#39;s a list of comma separated data field labels and associated mode specific values.</p>
+<p>For <i>datafields</i> mode, input value format is: <i>fieldlabel,...</i>. Examples:</p>
+<div class="OptionsBox">    Extreg
+<br/>    Extreg,CompoundName,ID</div>
+<p>For <i>datafieldsbyvalue</i> mode, input value format contains these triplets: <i>fieldlabel,value, criteria...</i>. Possible values for criteria: <i>le, ge or eq</i>. The values of <b>--ValueComparisonMode</b> indicates whether values are compared numerical or string comarison operators. Default is to consider data field values as numerical values and use numerical comparison operators. Examples:</p>
+<div class="OptionsBox">    MolWt,450,le
+<br/>    MolWt,450,le,LogP,5,le,SumNumNO,10,le,SumNHOH,5,le</div>
+<p>For <i>datafieldsbyregex</i> mode, input value format contains these triplets: <i>fieldlabel,regex, criteria...</i>. <i>regex</i> corresponds to any valid regular expression and is used to match the values for specified <i>fieldlabel</i>. Possible values for criteria: <i>eq or ne</i>. During <i>eq</i> and <i>ne</i> values, data field label value is matched with regular expression using =~ and !~ respectively. <b>--RegexIgnoreCase</b> option value is used to determine whether to ignore letter upper/lower case during regular expression match. Examples:</p>
+<div class="OptionsBox">    Name,ol,eq
+<br/>    Name,&#39;^pat&#39;,ne</div>
+<p>For <i>datafieldbylist</i> and <i>datafielduniquebylist</i> mode, input value format is: <i>fieldlabel,value1,value2...</i>. This is equivalent to <i>datafieldsbyvalue</i> mode with this input value format:<i>fieldlabel,value1,eq,fieldlabel,value2,eq,...</i>. For <i>datafielduniquebylist</i> mode, only unique compounds identified by first occurrence of <i>value</i> associated with <i>fieldlabel</i> in <i>SDFile(s)</i> are kept; any subsequent compounds are simply ignored.</p>
+<p>For <i>datafieldnotbylist</i> mode, input value format is: <i>fieldlabel,value1,value2...</i>. In this mode, the script behaves exactly opposite of <i>datafieldbylist</i> mode, and only those compounds are extracted whose data field values don&#39;t match any specified data field value.</p>
+</dd>
+<dt id="datafieldsfile-filename"><b>--datafieldsfile</b> <i>filename</i></dt>
+<dd>
+<p>Filename which contains various mode specific values. This option provides a way to specify mode specific values in a file instead of entering them on the command line using <b>-d --datafields</b>.</p>
+<p>For <i>datafields</i> mode, input file lines contain comma delimited field labels: <i>fieldlabel,...</i>. Example:</p>
+<div class="OptionsBox">    Line 1:MolId
+<br/>    Line 2:&quot;Extreg&quot;,CompoundName,ID</div>
+<p>For <i>datafieldsbyvalue</i> mode, input file lines contains these comma separated triplets: <i>fieldlabel,value, criteria</i>. Possible values for criteria: <i>le, ge or eq</i>. Examples:</p>
+<div class="OptionsBox">    Line 1:MolWt,450,le
+<br/>
+<br/>    Line 1:&quot;MolWt&quot;,450,le,&quot;LogP&quot;,5,le,&quot;SumNumNO&quot;,10,le,&quot;SumNHOH&quot;,5,le
+<br/>
+<br/>    Line 1:MolWt,450,le
+<br/>    Line 2:&quot;LogP&quot;,5,le
+<br/>    Line 3:&quot;SumNumNO&quot;,10,le
+<br/>    Line 4: SumNHOH,5,le</div>
+<p>For <i>datafieldbylist</i> and <i>datafielduniquebylist</i> mode, input file line format is:</p>
+<div class="OptionsBox">    Line 1:fieldlabel;
+<br/>    Subsequent lines:value1,value2...</div>
+<p>For <i>datafieldbylist</i>, <i>datafielduniquebylist</i>, and <i>datafieldnotbylist</i> mode, input file line format is:</p>
+<div class="OptionsBox">    Line 1:fieldlabel;
+<br/>    Subsequent lines:value1,value2...</div>
+<p>For <i>datafielduniquebylist</i> mode, only unique compounds identified by first occurrence of <i>value</i> associated with <i>fieldlabel</i> in <i>SDFile(s)</i> are kept; any subsequent compounds are simply ignored. Example:</p>
+<div class="OptionsBox">    Line 1: MolID
+<br/>    Subsequent Lines:
+<br/>    907508
+<br/>    832291,4642
+<br/>    &quot;1254&quot;,&quot;907303&quot;</div>
+</dd>
+<dt id="indelim-comma-tab-semicolon"><b>--indelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Delimiter used to specify text values for <b>-d --datafields</b> and <b>--datafieldsfile</b> options. Possible values: <i>comma, tab, or semicolon</i>. Default value: <i>comma</i>.</p>
+</dd>
+<dt id="m---mode-alldatafields-commondatafields-datafields-datafieldsbyvalue-datafieldsbyregex-datafieldbylist-datafielduniquebylist-datafieldnotbylist-molnames-randomcmpds-recordnum-recordnums-recordrange-2dcmpdrecords-3dcmpdrecords"><b>-m, --mode</b> <i>alldatafields | commondatafields | datafields | datafieldsbyvalue | datafieldsbyregex | datafieldbylist | datafielduniquebylist | datafieldnotbylist | molnames | randomcmpds | recordnum | recordnums | recordrange | 2dcmpdrecords | 3dcmpdrecords</i></dt>
+<dd>
+<p>Specify what to extract from <i>SDFile(s)</i>. Possible values: <i>alldatafields, commondatafields, datafields, datafieldsbyvalue, datafieldsbyregex, datafieldbylist, datafielduniquebylist, datafieldnotbylist, molnames, randomcmpds, recordnum, recordnums, recordrange, 2dcmpdrecords, 3dcmpdrecords</i>. Default value: <i>alldatafields</i>.</p>
+<p>For <i>alldatafields</i> and <i>molnames</i> mode, only a CSV/TSV text file is generated; for all other modes, however, a SD file is generated by default - you can change the behavior to genereate text file using <i>--output</i> option.</p>
+<p>For <i>3DCmpdRecords</i> mode, only those compounds with at least one non-zero value for Z atomic coordinates are retrieved; however, during retrieval of compounds in <i>2DCmpdRecords</i> mode, all Z atomic coordinates must be zero.</p>
+</dd>
+<dt id="n---numofcmpds-number"><b>-n, --numofcmpds</b> <i>number</i></dt>
+<dd>
+<p>Number of compouds to extract during <i>randomcmpds</i> mode.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Delimiter for output CSV/TSV text file(s). Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i></p>
+</dd>
+<dt id="output-SD-text-both"><b>--output</b> <i>SD | text | both</i></dt>
+<dd>
+<p>Type of output files to generate. Possible values: <i>SD, text, or both</i>. Default value: <i>SD</i>. For <i>alldatafields</i> and <i>molnames</i> mode, this option is ingored and only a CSV/TSV text file is generated.</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quote around column values in output CSV/TSV text file(s). Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="record-recnum-recnums-startrecnum-endrecnum"><b>--record</b> <i>recnum | recnums | startrecnum,endrecnum</i></dt>
+<dd>
+<p>Record number, record numbers or range of records to extract during <i>recordnum</i>, <i>recordnums</i> and <i>recordrange</i> mode. Input value format is: &lt;num&gt;, &lt;num1,num2,...&gt; and &lt;startnum, endnum&gt; for <i>recordnum</i>, <i>recordnums</i> and <i>recordrange</i> modes recpectively. Default value: none.</p>
+</dd>
+<dt id="RegexIgnoreCase-yes-or-no"><b>--RegexIgnoreCase</b> <i>yes or no</i></dt>
+<dd>
+<p>Specify whether to ingnore case during <i>datafieldsbyregex</i> value of <b>-m, --mode</b> option. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default for new file names: &lt;SDFileName&gt;&lt;mode&gt;.&lt;Ext&gt;. The file type determines &lt;Ext&gt; value. The sdf, csv, and tsv &lt;Ext&gt; values are used for SD, comma/semicolon, and tab delimited text files respectively.This option is ignored for multiple input files.</p>
+</dd>
+<dt id="s---seed-number"><b>-s, --seed</b> <i>number</i></dt>
+<dd>
+<p>Random number seed used for <i>randomcmpds</i> mode. Default:123456789.</p>
+</dd>
+<dt id="StrDataString-yes-no"><b>--StrDataString</b> <i>yes | no</i></dt>
+<dd>
+<p>Specify whether to write out structure data string to CSV/TSV text file(s). Possible values: <i>yes or no</i>. Default value: <i>no</i>.</p>
+<p>The value of <b>StrDataStringDelimiter</b> option is used as a delimiter to join structure data lines into a structure data string.</p>
+<p>This option is ignored during generation of SD file(s).</p>
+</dd>
+<dt id="StrDataStringDelimiter-text"><b>--StrDataStringDelimiter</b> <i>text</i></dt>
+<dd>
+<p>Delimiter for joining multiple stucture data lines into a string before writing to CSV/TSV text file(s). Possible values: <i>any alphanumeric text</i>. Default value: <i>|</i>.</p>
+<p>This option is ignored during generation of SD file(s).</p>
+</dd>
+<dt id="StrDataStringMode-StrOnly-StrAndDataFields"><b>--StrDataStringMode</b> <i>StrOnly | StrAndDataFields</i></dt>
+<dd>
+<p>Specify whether to include SD data fields and values along with the structure data into structure data string before writing it out to CSV/TSV text file(s). Possible values: <i>StrOnly or StrAndDataFields</i>. Default value: <i>StrOnly</i>.</p>
+<p>The value of <b>StrDataStringDelimiter</b> option is used as a delimiter to join structure data lines into a structure data string.</p>
+<p>This option is ignored during generation of SD file(s).</p>
+</dd>
+<dt id="ValueComparisonMode-Numeric-Alphanumeric"><b>--ValueComparisonMode</b> <i>Numeric | Alphanumeric</i></dt>
+<dd>
+<p>Specify how to compare data field values during <i>datafieldsbyvalue</i> mode: Compare values using either numeric or string ((eq, le, ge) comparison operators. Possible values: <i>Numeric or Alphanumeric</i>. Defaule value: <i>Numeric</i>.</p>
+</dd>
+<dt id="v---violations-number"><b>-v, --violations</b> <i>number</i></dt>
+<dd>
+<p>Number of criterion violations allowed for values specified during <i>datafieldsbyvalue</i> and <i>datafieldsbyregex</i> mode. Default value: <i>0</i>.</p>
+</dd>
+<dt id="w---workingdir-dirname"><b>-w, --workingdir</b> <i>dirname</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To retrieve all data fields from SD files and generate CSV text files, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -o Sample.sdf
+    <br/>% ExtractFromSDFiles.pl -o *.sdf</div>
+<p>To retrieve all data fields from SD file and generate CSV text files containing a column with structure data as a string with | as line delimiter, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl --StrDataString Yes -o Sample.sdf</div>
+<p>To retrieve MOL_ID data fileld from SD file and generate CSV text files containing a column with structure data along with all data fields as a string with | as line delimiter, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m datafields -d &quot;Mol_ID&quot; --StrDataString Yes
+      --StrDataStringMode StrAndDataFields --StrDataStringDelimiter &quot;|&quot;
+      --output text -o Sample.sdf</div>
+<p>To retrieve common data fields which exists for all the compounds in a SD file and generate a TSV text file NewSample.tsv, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m commondatafields --outdelim tab -r NewSample
+      --output Text -o Sample.sdf</div>
+<p>To retrieve MolId, ExtReg, and CompoundName data field from a SD file and generate a CSV text file NewSample.csv, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m datafields -d &quot;Mol_ID,MolWeight,
+      CompoundName&quot; -r NewSample --output Text -o Sample.sdf</div>
+<p>To retrieve compounds from a SD which meet a specific set of criteria - MolWt &lt;= 450, LogP &lt;= 5 and SumNO &lt; 10 - from a SD file and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m datafieldsbyvalue -d &quot;MolWt,450,le,LogP
+      ,5,le,SumNO,10&quot; -r NewSample -o Sample.sdf</div>
+<p>To retrive compounds from a SD file with a specific set of values for MolID and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m datafieldbylist -d &quot;Mol_ID,159,4509,4619&quot;
+      -r NewSample -o Sample.sdf</div>
+<p>To retrive compounds from a SD file with values for MolID not on a list of specified values and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m datafieldnotbylist -d &quot;Mol_ID,159,4509,4619&quot;
+      -r NewSample -o Sample.sdf</div>
+<p>To retrive 10 random compounds from a SD file and generate a new SD file RandomSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m randomcmpds -n 10 -r RandomSample
+      -o Sample.sdf</div>
+<p>To retrive compound record number 10 from a SD file and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m recordnum --record 10 -r NewSample
+      -o Sample.sdf</div>
+<p>To retrive compound record numbers 10, 20 and 30 from a SD file and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m recordnums --record 10,20,30 -r NewSample
+      -o Sample.sdf</div>
+<p>To retrive compound records between 10 to 20 from SD file and generate a new SD file NewSample.sdf, type:</p>
+<div class="ExampleBox">    % ExtractFromSDFiles.pl -m recordrange --record 10,20 -r NewSample
+      -o Sample.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./FilterSDFiles.html">FilterSDFiles.pl</a>, <a href="./InfoSDFiles.html">InfoSDFiles.pl</a>, <a href="./SplitSDFiles.html">SplitSDFiles.pl</a>, <a href="./MergeTextFilesWithSD.html">MergeTextFilesWithSD.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ExtractFromPDBFiles.html" title="ExtractFromPDBFiles.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./ExtractFromSequenceFiles.html" title="ExtractFromSequenceFiles.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>ExtractFromSDFiles.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

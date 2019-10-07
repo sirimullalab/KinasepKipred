@@ -1,0 +1,87 @@
+NAME
+    JoinTextFiles.pl - Join multiple CSV or TSV text files into a single
+    text file
+
+SYNOPSIS
+    JoinTextFiles.pl TextFiles...
+
+    JoinTextFiles.pl [-f, --fast] [-h, --help] [--indelim comma | semicolon]
+    [-l, --label yes | no] [-o, --overwrite] [--outdelim comma | tab |
+    semicolon] [-q, --quote yes | no] [-r, --root rootname] [-w,
+    --workingdir dirname] TextFiles...
+
+DESCRIPTION
+    Multiple CSV or TSV *TextFiles* are joined to generate a single text
+    file. The file names are separated by spaces. The valid file extensions
+    are *.csv* and *.tsv* for comma/semicolon and tab delimited text files
+    respectively. All other file names are ignored. All the text files in a
+    current directory can be specified by **.csv*, **.tsv*, or the current
+    directory name. The --indelim option determines the format of
+    *TextFiles*. Any file which doesn't correspond to the format indicated
+    by --indelim option is ignored.
+
+OPTIONS
+    -f, --fast
+        In this mode, --indelim and -q --quote options are ignored. The
+        format of input and output file(s) are assumed to be similar. And
+        the text lines from *TextFiles* are simply transferred to output
+        file without any processing.
+
+    -h, --help
+        Print this help message.
+
+    --indelim *comma | semicolon*
+        Input delimiter for CSV *TextFile(s)*. Possible values: *comma or
+        semicolon*. Default value: *comma*. For TSV files, this option is
+        ignored and *tab* is used as a delimiter.
+
+    -l, --label *yes | no*
+        First line contains column labels. Possible values: *yes or no*.
+        Default value: *yes*.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    --outdelim *comma | tab | semicolon*
+        Output text file delimiter. Possible values: *comma, tab, or
+        semicolon* Default value: *comma*.
+
+    -q, --quote *yes | no*
+        Put quotes around column values in output text file. Possible
+        values: *yes or no*. Default value: *yes*.
+
+    -r, --root *rootname*
+        New text file name is generated using the root: <Root>.<Ext>.
+        Default file name: <FirstTextFileName>1To<Count>Joined.<Ext>. The
+        csv, and tsv <Ext> values are used for comma/semicolon, and tab
+        delimited text files respectively.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To join CSV text files, type:
+
+        % JoinTextFiles.pl -o Sample1.csv Sample2.csv
+        % JoinTextFiles.pl -o *.csv
+
+    To join Sample*.tsv TSV text files into a NewSample.tsv file, type:
+
+        % JoinTextFiles.pl -o -r NewSample Sample*.tsv
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    MergeTextFiles.pl, ModifyTextFilesFormat.pl, SplitTextFiles.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

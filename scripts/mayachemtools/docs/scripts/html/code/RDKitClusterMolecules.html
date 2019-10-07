@@ -1,0 +1,904 @@
+<html>
+<head>
+<title>MayaChemTools:Code:RDKitClusterMolecules.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsPythonCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 <span class="ch">#!/bin/env python</span>
+   2 <span class="c1">#</span>
+   3 <span class="c1"># File: RDKitClusterMolecules.py</span>
+   4 <span class="c1"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c1">#</span>
+   6 <span class="c1"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c1">#</span>
+   8 <span class="c1"># The functionality available in this script is implemented using RDKit, an</span>
+   9 <span class="c1"># open source toolkit for cheminformatics developed by Greg Landrum.</span>
+  10 <span class="c1">#</span>
+  11 <span class="c1"># This file is part of MayaChemTools.</span>
+  12 <span class="c1">#</span>
+  13 <span class="c1"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  14 <span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  15 <span class="c1"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  16 <span class="c1"># later version.</span>
+  17 <span class="c1">#</span>
+  18 <span class="c1"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  19 <span class="c1"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  20 <span class="c1"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  21 <span class="c1"># details.</span>
+  22 <span class="c1">#</span>
+  23 <span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+  24 <span class="c1"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  25 <span class="c1"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  26 <span class="c1"># Boston, MA, 02111-1307, USA.</span>
+  27 <span class="c1">#</span>
+  28 
+  29 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+  30 
+  31 <span class="c1"># Add local python path to the global path and import standard library modules...</span>
+  32 <span class="kn">import</span> <span class="nn">os</span>
+  33 <span class="kn">import</span> <span class="nn">sys</span><span class="p">;</span>  <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">))</span>
+  34 <span class="kn">import</span> <span class="nn">time</span>
+  35 <span class="kn">import</span> <span class="nn">re</span>
+  36 
+  37 <span class="c1"># RDKit imports...</span>
+  38 <span class="k">try</span><span class="p">:</span>
+  39     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">rdBase</span>
+  40     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+  41     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">AllChem</span>
+  42     <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">DataStructs</span>
+  43     <span class="kn">from</span> <span class="nn">rdkit.Chem.Fingerprints</span> <span class="kn">import</span> <span class="n">FingerprintMols</span>
+  44     <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">rdMolDescriptors</span>
+  45     <span class="kn">from</span> <span class="nn">rdkit.ML.Cluster</span> <span class="kn">import</span> <span class="n">Butina</span>
+  46     <span class="kn">from</span> <span class="nn">rdkit.SimDivFilters</span> <span class="kn">import</span> <span class="n">rdSimDivPickers</span>
+  47     <span class="kn">from</span> <span class="nn">rdkit.SimDivFilters.rdSimDivPickers</span> <span class="kn">import</span> <span class="n">HierarchicalClusterPicker</span>
+  48 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  49     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import RDKit module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  50     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your RDKit environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  51     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  52 
+  53 <span class="c1"># MayaChemTools imports...</span>
+  54 <span class="k">try</span><span class="p">:</span>
+  55     <span class="kn">from</span> <span class="nn">docopt</span> <span class="kn">import</span> <span class="n">docopt</span>
+  56     <span class="kn">import</span> <span class="nn">MiscUtil</span>
+  57     <span class="kn">import</span> <span class="nn">RDKitUtil</span>
+  58 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">ErrMsg</span><span class="p">:</span>
+  59     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Failed to import MayaChemTools module/package: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ErrMsg</span><span class="p">)</span>
+  60     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Check/update your MayaChemTools environment and try again.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  61     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  62 
+  63 <span class="n">ScriptName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  64 <span class="n">Options</span> <span class="o">=</span> <span class="p">{}</span>
+  65 <span class="n">OptionsInfo</span> <span class="o">=</span> <span class="p">{}</span>
+  66 
+  67 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+  68     <span class="sd">&quot;&quot;&quot;Start execution of the script&quot;&quot;&quot;</span>
+  69     
+  70     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2"> (RDK v</span><span class="si">%s</span><span class="s2">; </span><span class="si">%s</span><span class="s2">): Starting...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ScriptName</span><span class="p">,</span> <span class="n">rdBase</span><span class="o">.</span><span class="n">rdkitVersion</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+  71     
+  72     <span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">)</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetWallClockAndProcessorTime</span><span class="p">()</span>
+  73     
+  74     <span class="c1"># Retrieve command line arguments and options...</span>
+  75     <span class="n">RetrieveOptions</span><span class="p">()</span>
+  76     
+  77     <span class="c1"># Process and validate command line arguments and options...</span>
+  78     <span class="n">ProcessOptions</span><span class="p">()</span>
+  79     
+  80     <span class="c1"># Perform actions required by the script...</span>
+  81     <span class="n">ClusterMolecules</span><span class="p">()</span>
+  82     
+  83     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: Done...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ScriptName</span><span class="p">)</span>
+  84     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total time: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetFormattedElapsedTime</span><span class="p">(</span><span class="n">WallClockTime</span><span class="p">,</span> <span class="n">ProcessorTime</span><span class="p">))</span>
+  85 
+  86 <span class="k">def</span> <span class="nf">ClusterMolecules</span><span class="p">():</span>
+  87     <span class="sd">&quot;&quot;&quot;Cluster molecules.&quot;&quot;&quot;</span>
+  88 
+  89     <span class="n">Mols</span> <span class="o">=</span> <span class="n">RetrieveMolecules</span><span class="p">()</span>
+  90     <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="n">GenerateFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+  91     <span class="n">MolsClusters</span> <span class="o">=</span> <span class="n">PerformClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">)</span>
+  92     
+  93     <span class="n">WriteMolecules</span><span class="p">(</span><span class="n">MolsClusters</span><span class="p">)</span>
+  94 
+  95 <span class="k">def</span> <span class="nf">PerformClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">):</span>
+  96     <span class="sd">&quot;&quot;&quot;Perform clustering.&quot;&quot;&quot;</span>
+  97 
+  98     <span class="n">ClusteredMols</span> <span class="o">=</span> <span class="p">[]</span>
+  99     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Butina$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClusteringMethod&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 100         <span class="k">return</span> <span class="n">PerformButinaClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">)</span>
+ 101     <span class="k">else</span><span class="p">:</span>
+ 102         <span class="k">return</span> <span class="n">PerformHierarchicalClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">)</span>
+ 103     
+ 104     <span class="k">return</span> <span class="n">ClusteredMols</span>
+ 105 
+ 106 <span class="k">def</span> <span class="nf">PerformButinaClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">):</span>
+ 107     <span class="sd">&quot;&quot;&quot;Perform clustering using Butina methodology.&quot;&quot;&quot;</span>
+ 108 
+ 109     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Clustering molecules using Butina methodology and </span><span class="si">%s</span><span class="s2"> similarity metric...&quot;</span> <span class="o">%</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">])</span>
+ 110     
+ 111     <span class="n">FingerprintsCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">)</span>
+ 112     <span class="n">DistanceCutoff</span> <span class="o">=</span>  <span class="mi">1</span> <span class="o">-</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ButinaSimilarityCutoff&quot;</span><span class="p">]</span>
+ 113     <span class="n">Reordering</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ButinaReordering&quot;</span><span class="p">]</span>
+ 114     
+ 115     <span class="n">DistanceMatrix</span> <span class="o">=</span> <span class="n">GenerateLowerTriangularDistanceMatrix</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">)</span>
+ 116 
+ 117     <span class="n">ClusteredMolIndices</span> <span class="o">=</span> <span class="n">Butina</span><span class="o">.</span><span class="n">ClusterData</span><span class="p">(</span><span class="n">DistanceMatrix</span><span class="p">,</span> <span class="n">FingerprintsCount</span><span class="p">,</span> <span class="n">DistanceCutoff</span><span class="p">,</span> <span class="n">reordering</span> <span class="o">=</span> <span class="n">Reordering</span><span class="p">,</span> <span class="n">isDistData</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+ 118 
+ 119     <span class="n">MolsClusters</span> <span class="o">=</span> <span class="p">[]</span>
+ 120     <span class="k">for</span> <span class="n">Cluster</span> <span class="ow">in</span> <span class="n">ClusteredMolIndices</span><span class="p">:</span>
+ 121         <span class="n">MolsCluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">Mols</span><span class="p">[</span><span class="n">MolIndex</span><span class="p">]</span> <span class="k">for</span> <span class="n">MolIndex</span> <span class="ow">in</span> <span class="n">Cluster</span><span class="p">]</span>
+ 122         <span class="n">MolsClusters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MolsCluster</span><span class="p">)</span>
+ 123 
+ 124     <span class="k">return</span> <span class="n">MolsClusters</span>
+ 125 
+ 126 <span class="k">def</span> <span class="nf">PerformHierarchicalClustering</span><span class="p">(</span><span class="n">Mols</span><span class="p">,</span> <span class="n">MolsFingerprints</span><span class="p">):</span>
+ 127     <span class="sd">&quot;&quot;&quot;Perform hierarchical clustering.&quot;&quot;&quot;</span>
+ 128 
+ 129     <span class="k">try</span><span class="p">:</span>
+ 130         <span class="kn">import</span> <span class="nn">numpy</span>
+ 131     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+ 132         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to import numpy python module. This is required to cluster molecules using hierarchical clustering methodology.&quot;</span><span class="p">)</span>
+ 133     
+ 134     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;NumClusters&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 135         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The number of clusters, </span><span class="si">%d</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-n, --numClusters</span><span class="se">\&quot;</span><span class="s2"> must be less than total number of valid molecules, </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;NumClusters&quot;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">Mols</span><span class="p">)))</span>
+ 136     
+ 137     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Cluster molecules using </span><span class="si">%s</span><span class="s2"> hierarchical clustering methodology and </span><span class="si">%s</span><span class="s2"> similarity metric......&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethod&quot;</span><span class="p">],</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">]))</span>
+ 138     
+ 139     <span class="n">NumFingerprints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">)</span>
+ 140     <span class="n">NumClusters</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;NumClusters&quot;</span><span class="p">]</span>
+ 141     <span class="n">DistanceMatrix</span> <span class="o">=</span> <span class="n">GenerateLowerTriangularDistanceMatrix</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">)</span>
+ 142     
+ 143     <span class="n">ClusterPicker</span> <span class="o">=</span> <span class="n">HierarchicalClusterPicker</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethodID&quot;</span><span class="p">])</span>
+ 144     <span class="n">ClusteredMolIndices</span> <span class="o">=</span> <span class="n">ClusterPicker</span><span class="o">.</span><span class="n">Cluster</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">DistanceMatrix</span><span class="p">),</span> <span class="n">NumFingerprints</span><span class="p">,</span> <span class="n">NumClusters</span><span class="p">)</span>
+ 145 
+ 146     <span class="n">MolsClusters</span> <span class="o">=</span> <span class="p">[]</span>
+ 147     <span class="k">for</span> <span class="n">Cluster</span> <span class="ow">in</span> <span class="n">ClusteredMolIndices</span><span class="p">:</span>
+ 148         <span class="n">MolsCluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">Mols</span><span class="p">[</span><span class="n">MolIndex</span><span class="p">]</span> <span class="k">for</span> <span class="n">MolIndex</span> <span class="ow">in</span> <span class="n">Cluster</span><span class="p">]</span>
+ 149         <span class="n">MolsClusters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MolsCluster</span><span class="p">)</span>
+ 150     
+ 151     <span class="k">return</span> <span class="n">MolsClusters</span>
+ 152 
+ 153 <span class="k">def</span> <span class="nf">WriteMolecules</span><span class="p">(</span><span class="n">MolsClusters</span><span class="p">):</span>
+ 154     <span class="sd">&quot;&quot;&quot;Write out molecules for each cluster along with cluster numbers.&quot;&quot;&quot;</span>
+ 155 
+ 156     <span class="n">ClustersCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsClusters</span><span class="p">)</span>
+ 157     
+ 158     <span class="n">SingleOutFileMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SingleOutFileMode&quot;</span><span class="p">]</span>
+ 159     <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileMode&quot;</span><span class="p">]</span>
+ 160     <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileDelim&quot;</span><span class="p">]</span>
+ 161 
+ 162     <span class="n">Compute2DCoords</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Compute2DCoords&quot;</span><span class="p">]</span>
+ 163     
+ 164     <span class="n">SMILESIsomeric</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;SMILESIsomeric&quot;</span><span class="p">]</span>
+ 165     <span class="n">SMILESKekulize</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;Kekulize&quot;</span><span class="p">]</span>
+ 166     
+ 167     <span class="c1"># Setup outfile names and writers...</span>
+ 168     <span class="n">SetupClustersOutFilesNames</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">MolsClusters</span><span class="p">))</span>
+ 169     <span class="n">SingleClusterWriter</span><span class="p">,</span> <span class="n">ClustersOutfilesWriters</span> <span class="o">=</span> <span class="n">SetupMoleculeWriters</span><span class="p">(</span><span class="n">ClustersCount</span><span class="p">)</span>
+ 170 
+ 171     <span class="n">MolCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 172     <span class="n">SingleMolClustersCount</span> <span class="o">=</span> <span class="mi">0</span>
+ 173     
+ 174     <span class="k">if</span> <span class="n">SingleOutFileMode</span><span class="p">:</span>
+ 175         <span class="n">Writer</span> <span class="o">=</span> <span class="n">SingleClusterWriter</span>
+ 176     
+ 177     <span class="k">for</span> <span class="n">ClusterIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ClustersCount</span><span class="p">):</span>
+ 178         <span class="n">MolsCluster</span> <span class="o">=</span> <span class="n">MolsClusters</span><span class="p">[</span><span class="n">ClusterIndex</span><span class="p">]</span>
+ 179         <span class="n">ClusterNum</span> <span class="o">=</span> <span class="n">ClusterIndex</span> <span class="o">+</span> <span class="mi">1</span>
+ 180 
+ 181         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsCluster</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+ 182             <span class="n">SingleMolClustersCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 183         
+ 184         <span class="k">if</span> <span class="ow">not</span> <span class="n">SingleOutFileMode</span><span class="p">:</span>
+ 185             <span class="n">Writer</span> <span class="o">=</span> <span class="n">ClustersOutfilesWriters</span><span class="p">[</span><span class="n">ClusterIndex</span><span class="p">]</span>
+ 186             
+ 187         <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">MolsCluster</span><span class="p">:</span>
+ 188             <span class="n">MolCount</span> <span class="o">+=</span> <span class="mi">1</span>
+ 189 
+ 190             <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 191                 <span class="c1"># Write out text file including SMILES file...</span>
+ 192                 <span class="n">SMILES</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolToSmiles</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">isomericSmiles</span> <span class="o">=</span> <span class="n">SMILESIsomeric</span><span class="p">,</span> <span class="n">kekuleSmiles</span> <span class="o">=</span> <span class="n">SMILESKekulize</span><span class="p">)</span>
+ 193                 <span class="n">MolName</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">GetMolName</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">)</span>
+ 194                 <span class="n">Line</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">SMILES</span><span class="p">,</span> <span class="n">MolName</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ClusterNum</span><span class="p">])</span>
+ 195                 <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Line</span><span class="p">)</span>
+ 196             <span class="k">else</span><span class="p">:</span>
+ 197                 <span class="c1"># Write out SD file...</span>
+ 198                 <span class="n">Mol</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="s2">&quot;ClusterNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ClusterNum</span><span class="p">)</span>
+ 199                 <span class="k">if</span> <span class="n">Compute2DCoords</span><span class="p">:</span>
+ 200                     <span class="n">AllChem</span><span class="o">.</span><span class="n">Compute2DCoords</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 201                 <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span>
+ 202     
+ 203     <span class="k">if</span> <span class="n">SingleClusterWriter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+ 204         <span class="n">SingleClusterWriter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 205     <span class="k">for</span> <span class="n">ClusterOutfileWriter</span> <span class="ow">in</span> <span class="n">ClustersOutfilesWriters</span><span class="p">:</span>
+ 206         <span class="n">ClusterOutfileWriter</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 207 
+ 208     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of clusters: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ClustersCount</span><span class="p">)</span>
+ 209 
+ 210     <span class="k">if</span> <span class="n">ClustersCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+ 211         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of clusters containing only a single molecule: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">SingleMolClustersCount</span><span class="p">)</span>
+ 212         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Average number of molecules per cluster: </span><span class="si">%.1f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span><span class="o">/</span><span class="n">ClustersCount</span><span class="p">))</span>
+ 213     
+ 214         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of molecules in each cluster:&quot;</span><span class="p">)</span>
+ 215         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;ClusterNumber,MolCount&quot;</span><span class="p">)</span>
+ 216         <span class="n">ClusterNum</span> <span class="o">=</span> <span class="mi">0</span>
+ 217         <span class="k">for</span> <span class="n">MolsCluster</span> <span class="ow">in</span> <span class="n">MolsClusters</span><span class="p">:</span>
+ 218             <span class="n">ClusterNum</span> <span class="o">+=</span> <span class="mi">1</span>
+ 219             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">,</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ClusterNum</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsCluster</span><span class="p">)))</span>
+ 220 
+ 221 <span class="k">def</span> <span class="nf">RetrieveMolecules</span><span class="p">():</span>
+ 222     <span class="sd">&quot;&quot;&quot;Retrieve molecules.&quot;&quot;&quot;</span>
+ 223 
+ 224     <span class="n">Infile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span>
+ 225     
+ 226     <span class="c1"># Read molecules...</span>
+ 227     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reading file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Infile</span><span class="p">)</span>
+ 228     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;AllowEmptyMols&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 229     <span class="n">ValidMols</span><span class="p">,</span> <span class="n">MolCount</span><span class="p">,</span> <span class="n">ValidMolCount</span>  <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">ReadAndValidateMolecules</span><span class="p">(</span><span class="n">Infile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">])</span>
+ 230     
+ 231     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Total number of molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">MolCount</span><span class="p">)</span>
+ 232     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of valid molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ValidMolCount</span><span class="p">)</span>
+ 233     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Number of ignored molecules: </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">MolCount</span> <span class="o">-</span> <span class="n">ValidMolCount</span><span class="p">))</span>
+ 234 
+ 235     <span class="k">return</span> <span class="n">ValidMols</span>
+ 236 
+ 237 <span class="k">def</span> <span class="nf">GenerateFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 238     <span class="sd">&quot;&quot;&quot;Generate fingerprints.&quot;&quot;&quot;</span>
+ 239 
+ 240     <span class="n">FingerprintsName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFingerprints&quot;</span><span class="p">]</span>
+ 241     
+ 242     <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[]</span>
+ 243     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^AtomPairs$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 244         <span class="k">return</span> <span class="n">GenerateAtomPairsFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 245     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^MACCS166Keys$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 246         <span class="k">return</span> <span class="n">GenerateMACCS166KeysFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 247     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Morgan$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 248         <span class="k">return</span> <span class="n">GenerateMorganFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 249     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^MorganFeatures$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 250         <span class="k">return</span> <span class="n">GenerateMorganFeaturesFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 251     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^PathLength$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 252         <span class="k">return</span> <span class="n">GeneratePathLengthFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 253     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^TopologicalTorsions$&quot;</span><span class="p">,</span> <span class="n">FingerprintsName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 254         <span class="k">return</span> <span class="n">GenerateTopologicalTorsionsFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">)</span>
+ 255     <span class="k">else</span><span class="p">:</span>
+ 256         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Fingerprints name, </span><span class="si">%s</span><span class="s2">, is not a valid name&quot;</span> <span class="o">%</span> <span class="n">FingerprintsName</span><span class="p">)</span>
+ 257     
+ 258     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 259 
+ 260 <span class="k">def</span> <span class="nf">GenerateAtomPairsFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 261     <span class="sd">&quot;&quot;&quot;Generate AtomPairs fingerprints.&quot;&quot;&quot;</span>
+ 262 
+ 263     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating AtomPairs fingerprints...&quot;</span><span class="p">)</span>
+ 264     
+ 265     <span class="n">MinLength</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;AtomPairs&quot;</span><span class="p">][</span><span class="s2">&quot;MinLength&quot;</span><span class="p">]</span>
+ 266     <span class="n">MaxLength</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;AtomPairs&quot;</span><span class="p">][</span><span class="s2">&quot;MaxLength&quot;</span><span class="p">]</span>
+ 267     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;AtomPairs&quot;</span><span class="p">][</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+ 268 
+ 269     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GenerateBitVectFingerints&quot;</span><span class="p">]:</span>
+ 270         <span class="c1"># Generate ExplicitBitVect fingerprints...</span>
+ 271         <span class="n">FPSize</span> <span class="o">=</span> <span class="mi">2048</span>
+ 272         <span class="n">BitsPerHash</span> <span class="o">=</span> <span class="mi">4</span>
+ 273         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetHashedAtomPairFingerprintAsBitVect</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">minLength</span> <span class="o">=</span> <span class="n">MinLength</span><span class="p">,</span> <span class="n">maxLength</span> <span class="o">=</span> <span class="n">MaxLength</span><span class="p">,</span> <span class="n">includeChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">nBits</span> <span class="o">=</span> <span class="n">FPSize</span><span class="p">,</span> <span class="n">nBitsPerEntry</span> <span class="o">=</span> <span class="n">BitsPerHash</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 274     <span class="k">else</span><span class="p">:</span>
+ 275         <span class="c1"># Generate IntSparseIntVect fingerprints...</span>
+ 276         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetAtomPairFingerprint</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">minLength</span> <span class="o">=</span> <span class="n">MinLength</span><span class="p">,</span> <span class="n">maxLength</span> <span class="o">=</span> <span class="n">MaxLength</span><span class="p">,</span> <span class="n">includeChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 277 
+ 278     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 279 
+ 280 <span class="k">def</span> <span class="nf">GenerateMACCS166KeysFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 281     <span class="sd">&quot;&quot;&quot;Generate MACCS166Keys fingerprints.&quot;&quot;&quot;</span>
+ 282 
+ 283     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating MACCS166Keys fingerprints...&quot;</span><span class="p">)</span>
+ 284 
+ 285     <span class="c1"># Generate ExplicitBitVect fingerprints...</span>
+ 286     <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetMACCSKeysFingerprint</span><span class="p">(</span><span class="n">Mol</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 287 
+ 288     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 289 
+ 290 <span class="k">def</span> <span class="nf">GenerateMorganFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 291     <span class="sd">&quot;&quot;&quot;Generate Morgan fingerprints.&quot;&quot;&quot;</span>
+ 292 
+ 293     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating  Morgan fingerprints...&quot;</span><span class="p">)</span>
+ 294     
+ 295     <span class="n">Radius</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;Morgan&quot;</span><span class="p">][</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span>
+ 296     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;Morgan&quot;</span><span class="p">][</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+ 297     <span class="n">UseFeatures</span> <span class="o">=</span> <span class="bp">False</span>
+ 298 
+ 299     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GenerateBitVectFingerints&quot;</span><span class="p">]:</span>
+ 300         <span class="c1"># Generate ExplicitBitVect fingerprints...</span>
+ 301         <span class="n">FPSize</span> <span class="o">=</span> <span class="mi">2048</span>
+ 302         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetMorganFingerprintAsBitVect</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Radius</span><span class="p">,</span> <span class="n">useFeatures</span> <span class="o">=</span> <span class="n">UseFeatures</span><span class="p">,</span> <span class="n">useChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">nBits</span> <span class="o">=</span> <span class="n">FPSize</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 303     <span class="k">else</span><span class="p">:</span>
+ 304         <span class="c1"># Generate UIntSparseIntVect fingerprints...</span>
+ 305         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetMorganFingerprint</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Radius</span><span class="p">,</span> <span class="n">useFeatures</span> <span class="o">=</span> <span class="n">UseFeatures</span><span class="p">,</span> <span class="n">useChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 306 
+ 307     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 308 
+ 309 <span class="k">def</span> <span class="nf">GenerateMorganFeaturesFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 310     <span class="sd">&quot;&quot;&quot;Generate MorganFeatures fingerprints.&quot;&quot;&quot;</span>
+ 311 
+ 312     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating  MorganFeatures fingerprints...&quot;</span><span class="p">)</span>
+ 313     
+ 314     <span class="c1"># Setup fingerprints parameters...</span>
+ 315     <span class="n">Radius</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;MorganFeatures&quot;</span><span class="p">][</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span>
+ 316     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;MorganFeatures&quot;</span><span class="p">][</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+ 317     <span class="n">UseFeatures</span> <span class="o">=</span> <span class="bp">True</span>
+ 318     
+ 319     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GenerateBitVectFingerints&quot;</span><span class="p">]:</span>
+ 320         <span class="c1"># Generate ExplicitBitVect fingerprints...</span>
+ 321         <span class="n">FPSize</span> <span class="o">=</span> <span class="mi">2048</span>
+ 322         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetMorganFingerprintAsBitVect</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Radius</span><span class="p">,</span> <span class="n">useFeatures</span> <span class="o">=</span> <span class="n">UseFeatures</span><span class="p">,</span> <span class="n">useChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">nBits</span> <span class="o">=</span> <span class="n">FPSize</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 323     <span class="k">else</span><span class="p">:</span>
+ 324         <span class="c1"># Generate UIntSparseIntVect fingerprints...</span>
+ 325         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetMorganFingerprint</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">Radius</span><span class="p">,</span> <span class="n">useFeatures</span> <span class="o">=</span> <span class="n">UseFeatures</span><span class="p">,</span> <span class="n">useChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 326 
+ 327     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 328 
+ 329 <span class="k">def</span> <span class="nf">GeneratePathLengthFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 330     <span class="sd">&quot;&quot;&quot;Generate PathLength fingerprints.&quot;&quot;&quot;</span>
+ 331 
+ 332     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating PathLength fingerprints ...&quot;</span><span class="p">)</span>
+ 333     
+ 334     <span class="n">MinPath</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;PathLength&quot;</span><span class="p">][</span><span class="s2">&quot;MinPath&quot;</span><span class="p">]</span>
+ 335     <span class="n">MaxPath</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;PathLength&quot;</span><span class="p">][</span><span class="s2">&quot;MaxPath&quot;</span><span class="p">]</span>
+ 336     <span class="n">FPSize</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;PathLength&quot;</span><span class="p">][</span><span class="s2">&quot;FPSize&quot;</span><span class="p">]</span>
+ 337     <span class="n">BitsPerHash</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;PathLength&quot;</span><span class="p">][</span><span class="s2">&quot;BitsPerHash&quot;</span><span class="p">]</span>
+ 338     <span class="n">UseHs</span> <span class="o">=</span> <span class="bp">False</span>
+ 339     <span class="n">TargetDensity</span> <span class="o">=</span> <span class="mf">0.3</span>
+ 340     <span class="n">MinSize</span> <span class="o">=</span> <span class="mi">54</span>
+ 341 
+ 342     <span class="c1"># Generate ExplicitBitVect fingerprints...</span>
+ 343     <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">FingerprintMols</span><span class="o">.</span><span class="n">FingerprintMol</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span> <span class="n">minPath</span> <span class="o">=</span> <span class="n">MinPath</span><span class="p">,</span> <span class="n">maxPath</span> <span class="o">=</span> <span class="n">MaxPath</span><span class="p">,</span> <span class="n">fpSize</span> <span class="o">=</span> <span class="n">FPSize</span><span class="p">,</span> <span class="n">bitsPerHash</span> <span class="o">=</span> <span class="n">BitsPerHash</span><span class="p">,</span> <span class="n">useHs</span> <span class="o">=</span> <span class="n">UseHs</span><span class="p">,</span> <span class="n">tgtDensity</span> <span class="o">=</span> <span class="n">TargetDensity</span><span class="p">,</span> <span class="n">minSize</span> <span class="o">=</span> <span class="n">MinSize</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 344 
+ 345     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 346 
+ 347 <span class="k">def</span> <span class="nf">GenerateTopologicalTorsionsFingerprints</span><span class="p">(</span><span class="n">Mols</span><span class="p">):</span>
+ 348     <span class="sd">&quot;&quot;&quot;Generate TopologicalTorsions fingerprints.&quot;&quot;&quot;</span>
+ 349 
+ 350     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating TopologicalTorsions fingerprints...&quot;</span><span class="p">)</span>
+ 351     
+ 352     <span class="n">UseChirality</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;TopologicalTorsions&quot;</span><span class="p">][</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">]</span>
+ 353 
+ 354     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GenerateBitVectFingerints&quot;</span><span class="p">]:</span>
+ 355         <span class="n">FPSize</span> <span class="o">=</span> <span class="mi">2048</span>
+ 356         <span class="n">BitsPerHash</span> <span class="o">=</span> <span class="mi">4</span>
+ 357         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetHashedTopologicalTorsionFingerprintAsBitVect</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span>  <span class="n">includeChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">,</span> <span class="n">nBits</span> <span class="o">=</span> <span class="n">FPSize</span><span class="p">,</span> <span class="n">nBitsPerEntry</span> <span class="o">=</span> <span class="n">BitsPerHash</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 358     <span class="k">else</span><span class="p">:</span>
+ 359         <span class="c1"># Generate LongSparseIntVect fingerprint...</span>
+ 360         <span class="n">MolsFingerprints</span> <span class="o">=</span> <span class="p">[</span><span class="n">rdMolDescriptors</span><span class="o">.</span><span class="n">GetTopologicalTorsionFingerprint</span><span class="p">(</span><span class="n">Mol</span><span class="p">,</span>  <span class="n">includeChirality</span> <span class="o">=</span> <span class="n">UseChirality</span><span class="p">)</span> <span class="k">for</span> <span class="n">Mol</span> <span class="ow">in</span> <span class="n">Mols</span><span class="p">]</span>
+ 361 
+ 362     <span class="k">return</span> <span class="n">MolsFingerprints</span>
+ 363 
+ 364 <span class="k">def</span> <span class="nf">GenerateLowerTriangularDistanceMatrix</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">):</span>
+ 365     <span class="sd">&quot;&quot;&quot;Generate a lower triangular distance matrix without the diagonal.&quot;&quot;&quot;</span>
+ 366 
+ 367     <span class="n">SimilarityFunction</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityFunction&quot;</span><span class="p">]</span>
+ 368 
+ 369     <span class="n">DistanceMatrix</span> <span class="o">=</span> <span class="p">[]</span>
+ 370     <span class="n">NumFPs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">)</span>
+ 371     <span class="k">for</span> <span class="n">Index1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">NumFPs</span><span class="p">):</span>
+ 372         <span class="k">for</span> <span class="n">Index2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Index1</span><span class="p">):</span>
+ 373             <span class="n">Distance</span> <span class="o">=</span>  <span class="mi">1</span> <span class="o">-</span> <span class="n">SimilarityFunction</span><span class="p">(</span><span class="n">MolsFingerprints</span><span class="p">[</span><span class="n">Index1</span><span class="p">],</span> <span class="n">MolsFingerprints</span><span class="p">[</span><span class="n">Index2</span><span class="p">],)</span>
+ 374             <span class="n">DistanceMatrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Distance</span><span class="p">)</span>
+ 375 
+ 376     <span class="k">return</span> <span class="n">DistanceMatrix</span>
+ 377 
+ 378 <span class="k">def</span> <span class="nf">SetupMoleculeWriters</span><span class="p">(</span><span class="n">ClustersCount</span><span class="p">):</span>
+ 379     <span class="sd">&quot;&quot;&quot;Set up molecule writers for SD and text files.&quot;&quot;&quot;</span>
+ 380     
+ 381     <span class="n">Writer</span> <span class="o">=</span> <span class="bp">None</span>
+ 382     <span class="n">ClustersOutfilesWriters</span> <span class="o">=</span> <span class="p">[]</span>
+ 383 
+ 384     <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileMode&quot;</span><span class="p">]</span>
+ 385     <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileDelim&quot;</span><span class="p">]</span>
+ 386     <span class="n">TextOutFileTitleLine</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileTitleLine&quot;</span><span class="p">]</span>
+ 387     
+ 388     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SingleOutFileMode&quot;</span><span class="p">]:</span>
+ 389         <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span>
+ 390         <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 391             <span class="n">Writer</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+ 392         <span class="k">else</span><span class="p">:</span>
+ 393             <span class="n">Writer</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 394         <span class="k">if</span> <span class="n">Writer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 395             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 396         
+ 397         <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 398             <span class="k">if</span> <span class="n">TextOutFileTitleLine</span><span class="p">:</span>
+ 399                 <span class="n">WriteTextFileHeaderLine</span><span class="p">(</span><span class="n">Writer</span><span class="p">,</span> <span class="n">TextOutFileDelim</span><span class="p">)</span>
+ 400         
+ 401         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating file </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 402     <span class="k">else</span><span class="p">:</span>
+ 403         <span class="k">for</span> <span class="n">ClusterIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ClustersCount</span><span class="p">):</span>
+ 404             <span class="n">Outfile</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClustersOutfiles&quot;</span><span class="p">][</span><span class="n">ClusterIndex</span><span class="p">]</span>
+ 405             <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 406                 <span class="n">ClusterWriter</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+ 407             <span class="k">else</span><span class="p">:</span>
+ 408                 <span class="n">ClusterWriter</span> <span class="o">=</span> <span class="n">RDKitUtil</span><span class="o">.</span><span class="n">MoleculesWriter</span><span class="p">(</span><span class="n">Outfile</span><span class="p">,</span> <span class="o">**</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">])</span>
+ 409             <span class="k">if</span> <span class="n">ClusterWriter</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+ 410                 <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Failed to setup a writer for output fie </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">Outfile</span><span class="p">)</span>
+ 411             
+ 412             <span class="k">if</span> <span class="n">TextOutFileMode</span><span class="p">:</span>
+ 413                 <span class="k">if</span> <span class="n">TextOutFileTitleLine</span><span class="p">:</span>
+ 414                     <span class="n">WriteTextFileHeaderLine</span><span class="p">(</span><span class="n">ClusterWriter</span><span class="p">,</span> <span class="n">TextOutFileDelim</span><span class="p">)</span>
+ 415         
+ 416             <span class="n">ClustersOutfilesWriters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ClusterWriter</span><span class="p">)</span>
+ 417         
+ 418         <span class="k">if</span> <span class="n">ClustersCount</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+ 419             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating </span><span class="si">%d</span><span class="s2"> output files with the following file name format: </span><span class="si">%s</span><span class="s2">_Cluster&lt;Num&gt;.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ClustersCount</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">],</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]))</span>
+ 420         <span class="k">else</span><span class="p">:</span>
+ 421             <span class="n">Delmiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span>
+ 422             <span class="n">OutfileNames</span> <span class="o">=</span> <span class="n">Delmiter</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClustersOutfiles&quot;</span><span class="p">])</span>
+ 423             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Generating </span><span class="si">%d</span><span class="s2"> output files: </span><span class="si">%s</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ClustersCount</span><span class="p">,</span> <span class="n">OutfileNames</span><span class="p">))</span>
+ 424         
+ 425     <span class="k">return</span> <span class="p">(</span><span class="n">Writer</span><span class="p">,</span> <span class="n">ClustersOutfilesWriters</span><span class="p">)</span>
+ 426 
+ 427 <span class="k">def</span> <span class="nf">WriteTextFileHeaderLine</span><span class="p">(</span><span class="n">Writer</span><span class="p">,</span> <span class="n">TextOutFileDelim</span><span class="p">):</span>
+ 428     <span class="sd">&quot;&quot;&quot;Write out a header line for text files including SMILEs file.&quot;&quot;&quot;</span>
+ 429     
+ 430     <span class="n">Line</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;SMILES&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="s2">&quot;ClusterNumber&quot;</span><span class="p">])</span>
+ 431     <span class="n">Writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">Line</span><span class="p">)</span>
+ 432 
+ 433 <span class="k">def</span> <span class="nf">SetupClustersOutFilesNames</span><span class="p">(</span><span class="n">ClustersCount</span><span class="p">):</span>
+ 434     <span class="sd">&quot;&quot;&quot;Set up out file names for clusters.&quot;&quot;&quot;</span>
+ 435 
+ 436     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClustersOutfiles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+ 437     <span class="k">if</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SingleOutFileMode&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">ClustersCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+ 438         <span class="c1"># Nothing to do...</span>
+ 439         <span class="k">return</span>
+ 440 
+ 441     <span class="n">OutfileBasename</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">]</span>
+ 442     <span class="n">OutfileExt</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]</span>
+ 443     
+ 444     <span class="n">ClusterOutfiles</span> <span class="o">=</span> <span class="p">[]</span>
+ 445     <span class="k">for</span> <span class="n">ClusterIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ClustersCount</span><span class="p">):</span>
+ 446         <span class="n">ClusterNum</span> <span class="o">=</span> <span class="n">ClusterIndex</span> <span class="o">+</span> <span class="mi">1</span>
+ 447         <span class="n">ClusterOutfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_Cluster</span><span class="si">%d</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OutfileBasename</span><span class="p">,</span> <span class="n">ClusterNum</span><span class="p">,</span> <span class="n">OutfileExt</span><span class="p">)</span>
+ 448         <span class="n">ClusterOutfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ClusterOutfile</span><span class="p">)</span>
+ 449     
+ 450     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClustersOutfiles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ClusterOutfiles</span>
+ 451     
+ 452 <span class="k">def</span> <span class="nf">ProcessFingerprintsParameters</span><span class="p">():</span>
+ 453     <span class="sd">&quot;&quot;&quot;Set up and process fingerprints parameters.&quot;&quot;&quot;</span>
+ 454 
+ 455     <span class="n">SetupFingerprintsNamesAndParameters</span><span class="p">()</span>
+ 456     <span class="n">ProcessSpecifiedFingerprintsName</span><span class="p">()</span>
+ 457     <span class="n">ProcessSpecifiedFingerprintsParameters</span><span class="p">()</span>
+ 458 
+ 459 <span class="k">def</span> <span class="nf">SetupFingerprintsNamesAndParameters</span><span class="p">():</span>
+ 460     <span class="sd">&quot;&quot;&quot;Set up fingerprints parameters.&quot;&quot;&quot;</span>
+ 461     
+ 462     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsNames&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AtomPairs&quot;</span><span class="p">,</span> <span class="s2">&quot;MACCS166Keys&quot;</span><span class="p">,</span> <span class="s2">&quot;Morgan&quot;</span><span class="p">,</span> <span class="s2">&quot;MorganFeatures&quot;</span><span class="p">,</span> <span class="s2">&quot;PathLength&quot;</span><span class="p">,</span> <span class="s2">&quot;TopologicalTorsions&quot;</span><span class="p">]</span>
+ 463     
+ 464     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+ 465     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;AtomPairs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MinLength&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;MaxLength&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">&quot;UseChirality&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+ 466     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;MACCS166Keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+ 467     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;Morgan&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Radius&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;UseChirality&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+ 468     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;MorganFeatures&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Radius&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;UseChirality&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+ 469     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;TopologicalTorsions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;UseChirality&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+ 470     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="s2">&quot;PathLength&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MinPath&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;MaxPath&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;FPSize&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">,</span> <span class="s2">&quot;BitsPerHash&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+ 471 
+ 472 <span class="k">def</span> <span class="nf">ProcessSpecifiedFingerprintsName</span><span class="p">():</span>
+ 473     <span class="sd">&quot;&quot;&quot;Process specified fingerprints name.&quot;&quot;&quot;</span>
+ 474 
+ 475     <span class="c1">#  Set up a canonical fingerprints name map...</span>
+ 476     <span class="n">CanonicalFingerprintsNamesMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 477     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsNames&quot;</span><span class="p">]:</span>
+ 478         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 479         <span class="n">CanonicalFingerprintsNamesMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span> <span class="o">=</span> <span class="n">Name</span>
+ 480 
+ 481     <span class="c1"># Validate specified fingerprints name...</span>
+ 482     <span class="n">CanonicalFingerprintsName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Fingerprints&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 483     <span class="k">if</span> <span class="n">CanonicalFingerprintsName</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CanonicalFingerprintsNamesMap</span><span class="p">:</span>
+ 484         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The fingerprints name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-f, --fingerprints</span><span class="se">\&quot;</span><span class="s2"> option is not a valid name.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Fingerprints&quot;</span><span class="p">]))</span>
+ 485     
+ 486     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFingerprints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CanonicalFingerprintsNamesMap</span><span class="p">[</span><span class="n">CanonicalFingerprintsName</span><span class="p">]</span>
+ 487 
+ 488 <span class="k">def</span> <span class="nf">ProcessSpecifiedFingerprintsParameters</span><span class="p">():</span>
+ 489     <span class="sd">&quot;&quot;&quot;Process specified fingerprints parameters.&quot;&quot;&quot;</span>
+ 490 
+ 491     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^auto$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ParamsFingerprints&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 492         <span class="c1"># Nothing to process...</span>
+ 493         <span class="k">return</span>
+ 494 
+ 495     <span class="n">SpecifiedFingerprintsName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedFingerprints&quot;</span><span class="p">]</span>
+ 496     
+ 497     <span class="c1"># Parse specified fingerprints parameters...</span>
+ 498     <span class="n">ParamsFingerprints</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ParamsFingerprints&quot;</span><span class="p">])</span>
+ 499     <span class="k">if</span> <span class="ow">not</span> <span class="n">ParamsFingerprints</span><span class="p">:</span>
+ 500         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;No valid parameter name and value pairs specified using </span><span class="se">\&quot;</span><span class="s2">-p, --paramsFingerprints</span><span class="se">\&quot;</span><span class="s2"> option corrresponding to fingerprints </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">SpecifiedFingerprintsName</span><span class="p">))</span>
+ 501 
+ 502     <span class="n">ParamsFingerprintsWords</span> <span class="o">=</span> <span class="n">ParamsFingerprints</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+ 503     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ParamsFingerprintsWords</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+ 504         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The number of comma delimited paramater names and values, </span><span class="si">%d</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-p, --paramsFingerprints</span><span class="se">\&quot;</span><span class="s2"> option must be an even number.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ParamsFingerprintsWords</span><span class="p">)))</span>
+ 505 
+ 506     <span class="c1"># Setup canonical parameter names for specified fingerprints...</span>
+ 507     <span class="n">ValidParamNames</span> <span class="o">=</span> <span class="p">[]</span>
+ 508     <span class="n">CanonicalParamNamesMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 509     <span class="k">for</span> <span class="n">ParamName</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="n">SpecifiedFingerprintsName</span><span class="p">]):</span>
+ 510         <span class="n">ValidParamNames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ParamName</span><span class="p">)</span>
+ 511         <span class="n">CanonicalParamNamesMap</span><span class="p">[</span><span class="n">ParamName</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">ParamName</span>
+ 512 
+ 513     <span class="c1"># Validate and set paramater names and value...</span>
+ 514     <span class="k">for</span> <span class="n">Index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ParamsFingerprintsWords</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+ 515         <span class="n">Name</span> <span class="o">=</span> <span class="n">ParamsFingerprintsWords</span><span class="p">[</span><span class="n">Index</span><span class="p">]</span>
+ 516         <span class="n">Value</span> <span class="o">=</span> <span class="n">ParamsFingerprintsWords</span><span class="p">[</span><span class="n">Index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+ 517 
+ 518         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 519         <span class="k">if</span>  <span class="ow">not</span> <span class="n">CanonicalName</span> <span class="ow">in</span> <span class="n">CanonicalParamNamesMap</span><span class="p">:</span>
+ 520             <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter name, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-p, --paramsFingerprints</span><span class="se">\&quot;</span><span class="s2"> option for fingerprints, </span><span class="si">%s</span><span class="s2">, is not a valid name. Supported parameter names: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Name</span><span class="p">,</span> <span class="n">SpecifiedFingerprintsName</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ValidParamNames</span><span class="p">)))</span>
+ 521 
+ 522         <span class="n">ParamName</span> <span class="o">=</span> <span class="n">CanonicalParamNamesMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span>
+ 523         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^UseChirality$&quot;</span><span class="p">,</span> <span class="n">ParamName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 524             <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|No|True|False)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 525                 <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-p, --paramsFingerprints</span><span class="se">\&quot;</span><span class="s2"> option for fingerprints, </span><span class="si">%s</span><span class="s2">, is not a valid value. Supported values: Yes No True False&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">SpecifiedFingerprintsName</span><span class="p">))</span>
+ 526             <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">False</span>
+ 527             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Yes|True)$&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 528                 <span class="n">ParamValue</span> <span class="o">=</span> <span class="bp">True</span>
+ 529         <span class="k">else</span><span class="p">:</span>
+ 530             <span class="n">ParamValue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+ 531             <span class="k">if</span> <span class="n">ParamValue</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+ 532                 <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The parameter value, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-p, --paramsFingerprints</span><span class="se">\&quot;</span><span class="s2"> option for fingerprints, </span><span class="si">%s</span><span class="s2">, is not a valid value. Supported values: &gt; 0&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Value</span><span class="p">,</span> <span class="n">SpecifiedFingerprintsName</span><span class="p">))</span>
+ 533         
+ 534         <span class="c1"># Set value...</span>
+ 535         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;FingerprintsParams&quot;</span><span class="p">][</span><span class="n">SpecifiedFingerprintsName</span><span class="p">][</span><span class="n">ParamName</span><span class="p">]</span> <span class="o">=</span> <span class="n">ParamValue</span>
+ 536 
+ 537 <span class="k">def</span> <span class="nf">ProcessSimilarityMetricParameter</span><span class="p">():</span>
+ 538     <span class="sd">&quot;&quot;&quot;Process specified similarity metric value.&quot;&quot;&quot;</span>
+ 539 
+ 540     <span class="n">SimilarityInfoMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 541     <span class="n">CanonicalNameMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 542     
+ 543     <span class="k">for</span> <span class="n">SimilarityFunctionInfo</span> <span class="ow">in</span> <span class="n">DataStructs</span><span class="o">.</span><span class="n">similarityFunctions</span><span class="p">:</span>
+ 544         <span class="n">Name</span> <span class="o">=</span> <span class="n">SimilarityFunctionInfo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+ 545         <span class="n">Function</span> <span class="o">=</span> <span class="n">SimilarityFunctionInfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+ 546         
+ 547         <span class="n">SimilarityInfoMap</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Function</span>
+ 548         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 549         <span class="n">CanonicalNameMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span> <span class="o">=</span> <span class="n">Name</span>
+ 550     
+ 551     <span class="n">SpecifiedCanonicalName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 552     <span class="n">SimilarityFunction</span> <span class="o">=</span> <span class="bp">None</span>
+ 553     <span class="k">if</span>  <span class="n">SpecifiedCanonicalName</span> <span class="ow">in</span> <span class="n">CanonicalNameMap</span><span class="p">:</span>
+ 554         <span class="n">SimilarityName</span> <span class="o">=</span> <span class="n">CanonicalNameMap</span><span class="p">[</span><span class="n">SpecifiedCanonicalName</span><span class="p">]</span>
+ 555         <span class="n">SimilarityFunction</span> <span class="o">=</span> <span class="n">SimilarityInfoMap</span><span class="p">[</span><span class="n">SimilarityName</span><span class="p">]</span>
+ 556     <span class="k">else</span><span class="p">:</span>
+ 557         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;Similarity metric name, </span><span class="si">%s</span><span class="s2">, is not a valid name. &quot;</span> <span class="o">%</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">])</span>
+ 558         
+ 559     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SimilarityName</span>
+ 560     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityFunction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SimilarityFunction</span>
+ 561 
+ 562     <span class="c1"># RDKit similarity functions, besides Dice and Tanimoto, are not able to handle int bit vectors...</span>
+ 563     <span class="n">GenerateBitVectFingerints</span> <span class="o">=</span> <span class="bp">False</span>
+ 564     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^(Tanimoto|Dice)$&quot;</span><span class="p">,</span> <span class="n">SimilarityName</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 565         <span class="n">GenerateBitVectFingerints</span> <span class="o">=</span> <span class="bp">True</span>
+ 566     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;GenerateBitVectFingerints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GenerateBitVectFingerints</span>
+ 567     
+ 568 <span class="k">def</span> <span class="nf">ProcessClusteringMethodParameter</span><span class="p">():</span>
+ 569     <span class="sd">&quot;&quot;&quot;Process specified clustering method parameter.&quot;&quot;&quot;</span>
+ 570 
+ 571     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 572     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethodID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 573     
+ 574     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Butina$&quot;</span><span class="p">,</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClusteringMethod&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 575         <span class="c1"># Nothing to process...</span>
+ 576         <span class="k">return</span>
+ 577 
+ 578     <span class="c1"># Setup a canonical cluster method name map..</span>
+ 579     <span class="n">ClusteringMethodInfoMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 580     <span class="n">CanonicalClusteringMethodNameMap</span> <span class="o">=</span> <span class="p">{}</span>
+ 581     <span class="k">for</span> <span class="n">Name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rdSimDivPickers</span><span class="o">.</span><span class="n">ClusterMethod</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+ 582         <span class="n">NameID</span> <span class="o">=</span>  <span class="n">rdSimDivPickers</span><span class="o">.</span><span class="n">ClusterMethod</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span>
+ 583         <span class="n">ClusteringMethodInfoMap</span><span class="p">[</span><span class="n">Name</span><span class="p">]</span> <span class="o">=</span> <span class="n">NameID</span>
+ 584         
+ 585         <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">Name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 586         <span class="n">CanonicalClusteringMethodNameMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span> <span class="o">=</span> <span class="n">Name</span>
+ 587 
+ 588     <span class="n">CanonicalName</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClusteringMethod&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+ 589     <span class="k">if</span> <span class="ow">not</span> <span class="n">CanonicalName</span> <span class="ow">in</span> <span class="n">CanonicalClusteringMethodNameMap</span><span class="p">:</span>
+ 590         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintError</span><span class="p">(</span><span class="s2">&quot;The clustering method, </span><span class="si">%s</span><span class="s2">, specified using </span><span class="se">\&quot;</span><span class="s2">-c, --clusteringMethod</span><span class="se">\&quot;</span><span class="s2"> option is not a valid name.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClusteringMethod&quot;</span><span class="p">]))</span>
+ 591 
+ 592     <span class="n">SpecifiedHierarchicalClusteringMethodName</span> <span class="o">=</span> <span class="n">CanonicalClusteringMethodNameMap</span><span class="p">[</span><span class="n">CanonicalName</span><span class="p">]</span>
+ 593     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecifiedHierarchicalClusteringMethodName</span>
+ 594     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SpecifiedHierarchicalClusteringMethodID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ClusteringMethodInfoMap</span><span class="p">[</span><span class="n">SpecifiedHierarchicalClusteringMethodName</span><span class="p">]</span> 
+ 595     
+ 596 <span class="k">def</span> <span class="nf">ProcessOptions</span><span class="p">():</span>
+ 597     <span class="sd">&quot;&quot;&quot;Process and validate command line arguments and options&quot;&quot;&quot;</span>
+ 598     
+ 599     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="s2">&quot;Processing options...&quot;</span><span class="p">)</span>
+ 600     
+ 601     <span class="c1"># Validate options...</span>
+ 602     <span class="n">ValidateOptions</span><span class="p">()</span>
+ 603     
+ 604     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ButinaSimilarityCutoff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--butinaSimilarityCutoff&quot;</span><span class="p">])</span>
+ 605     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ButinaReordering&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+ 606     <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^Yes$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--butinaReordering&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 607         <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ButinaReordering&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+ 608     
+ 609     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Fingerprints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--fingerprints&quot;</span><span class="p">]</span>
+ 610     
+ 611     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ClusteringMethod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--clusteringMethod&quot;</span><span class="p">]</span>
+ 612     <span class="n">ProcessClusteringMethodParameter</span><span class="p">()</span>
+ 613 
+ 614     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;NumClusters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--numClusters&quot;</span><span class="p">])</span>
+ 615     
+ 616     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Infile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">]</span>
+ 617     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;InfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionInfileParameters</span><span class="p">(</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 618     
+ 619     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Outfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">]</span>
+ 620     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ProcessOptionOutfileParameters</span><span class="p">(</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileParams&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 621     
+ 622     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;Overwrite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">]</span>
+ 623 
+ 624     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutFileMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileMode&quot;</span><span class="p">]</span>
+ 625     <span class="n">SingleOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 626     <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^SingleFile$&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileMode&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+ 627         <span class="n">SingleOutFileMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 628     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SingleOutFileMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SingleOutFileMode</span>
+ 629     
+ 630     <span class="n">FileDir</span><span class="p">,</span> <span class="n">FileName</span><span class="p">,</span> <span class="n">FileExt</span> <span class="o">=</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ParseFileName</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 631     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileBasename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FileName</span>
+ 632     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileExt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FileExt</span>
+ 633 
+ 634     <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">False</span>
+ 635     <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+ 636     <span class="n">TextOutFileTitleLine</span> <span class="o">=</span> <span class="bp">True</span>
+ 637     
+ 638     <span class="k">if</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;csv&quot;</span><span class="p">):</span>
+ 639         <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 640         <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span>
+ 641     <span class="k">elif</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;tsv txt&quot;</span><span class="p">):</span>
+ 642         <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 643         <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+ 644     <span class="k">elif</span> <span class="n">MiscUtil</span><span class="o">.</span><span class="n">CheckFileExt</span><span class="p">(</span><span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;smi&quot;</span><span class="p">):</span>
+ 645         <span class="n">TextOutFileMode</span> <span class="o">=</span> <span class="bp">True</span>
+ 646         <span class="n">TextOutFileDelim</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;SMILESDelimiter&quot;</span><span class="p">]</span>
+ 647         <span class="n">TextOutFileTitleLine</span> <span class="o">=</span> <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;OutfileParams&quot;</span><span class="p">][</span><span class="s2">&quot;SMILESTitleLine&quot;</span><span class="p">]</span>
+ 648         
+ 649     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TextOutFileMode</span>
+ 650     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileDelim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TextOutFileDelim</span>
+ 651     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;TextOutFileTitleLine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TextOutFileTitleLine</span>
+ 652     
+ 653     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;SimilarityMetric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--similarityMetric&quot;</span><span class="p">]</span>
+ 654     <span class="n">ProcessSimilarityMetricParameter</span><span class="p">()</span>
+ 655     
+ 656     <span class="n">OptionsInfo</span><span class="p">[</span><span class="s2">&quot;ParamsFingerprints&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--paramsFingerprints&quot;</span><span class="p">]</span>
+ 657     <span class="n">ProcessFingerprintsParameters</span><span class="p">()</span>
+ 658     
+ 659 <span class="k">def</span> <span class="nf">RetrieveOptions</span><span class="p">():</span>
+ 660     <span class="sd">&quot;&quot;&quot;Retrieve command line arguments and options&quot;&quot;&quot;</span>
+ 661     
+ 662     <span class="c1"># Get options...</span>
+ 663     <span class="k">global</span> <span class="n">Options</span>
+ 664     <span class="n">Options</span> <span class="o">=</span> <span class="n">docopt</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">)</span>
+ 665     
+ 666     <span class="c1"># Set current working directory to the specified directory...</span>
+ 667     <span class="n">WorkingDir</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--workingdir&quot;</span><span class="p">]</span>
+ 668     <span class="k">if</span> <span class="n">WorkingDir</span><span class="p">:</span>
+ 669         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">WorkingDir</span><span class="p">)</span>
+ 670     
+ 671     <span class="c1"># Handle examples option...</span>
+ 672     <span class="k">if</span> <span class="s2">&quot;--examples&quot;</span> <span class="ow">in</span> <span class="n">Options</span> <span class="ow">and</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--examples&quot;</span><span class="p">]:</span>
+ 673         <span class="n">MiscUtil</span><span class="o">.</span><span class="n">PrintInfo</span><span class="p">(</span><span class="n">MiscUtil</span><span class="o">.</span><span class="n">GetExamplesTextFromDocOptText</span><span class="p">(</span><span class="n">_docoptUsage_</span><span class="p">))</span>
+ 674         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 675 
+ 676 <span class="k">def</span> <span class="nf">ValidateOptions</span><span class="p">():</span>
+ 677     <span class="sd">&quot;&quot;&quot;Validate option values&quot;&quot;&quot;</span>
+ 678     
+ 679     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFloatValue</span><span class="p">(</span><span class="s2">&quot;-b, --butinaSimilarityCutoff&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--butinaSimilarityCutoff&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;&gt;&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;&lt;=&quot;</span> <span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+ 680     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--butinaReordering&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--butinaReordering&quot;</span><span class="p">],</span> <span class="s2">&quot;yes no&quot;</span><span class="p">)</span>
+ 681     
+ 682     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-c, --clusteringMethod&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--clusteringMethod&quot;</span><span class="p">],</span> <span class="s2">&quot;Butina Centroid CLink Gower McQuitty SLink UPGMA Ward&quot;</span><span class="p">)</span>
+ 683     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-f, --fingerprints&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--fingerprints&quot;</span><span class="p">],</span> <span class="s2">&quot;AtomPairs MACCS166Keys Morgan MorganFeatures PathLength TopologicalTorsions&quot;</span><span class="p">)</span>
+ 684     
+ 685     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionIntegerValue</span><span class="p">(</span><span class="s2">&quot;-n, --numClusters&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--numClusters&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;&gt;&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+ 686     
+ 687     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFilePath</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">])</span>
+ 688     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd mol smi csv tsv txt&quot;</span><span class="p">)</span>
+ 689     
+ 690     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionFileExt</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;sdf sd smi csv tsv txt&quot;</span><span class="p">)</span>
+ 691     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsOutputFileOverwrite</span><span class="p">(</span><span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">],</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--overwrite&quot;</span><span class="p">])</span>
+ 692     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionsDistinctFileNames</span><span class="p">(</span><span class="s2">&quot;-i, --infile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--infile&quot;</span><span class="p">],</span> <span class="s2">&quot;-o, --outfile&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfile&quot;</span><span class="p">])</span>
+ 693         
+ 694     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;--outfileMode&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--outfileMode&quot;</span><span class="p">],</span> <span class="s2">&quot;SingleFile MultipleFiles&quot;</span><span class="p">)</span>
+ 695     
+ 696     <span class="n">MiscUtil</span><span class="o">.</span><span class="n">ValidateOptionTextValue</span><span class="p">(</span><span class="s2">&quot;-s, --similarityMetric&quot;</span><span class="p">,</span> <span class="n">Options</span><span class="p">[</span><span class="s2">&quot;--similarityMetric&quot;</span><span class="p">],</span> <span class="s2">&quot;BraunBlanquet Cosine Dice Kulczynski RogotGoldberg Russel Sokal Tanimoto&quot;</span><span class="p">)</span>
+ 697     
+ 698 <span class="c1"># Setup a usage string for docopt...</span>
+ 699 <span class="n">_docoptUsage_</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+ 700 <span class="s2">RDKitClusterMolecules.py - Cluster molecules using 2D fingerprints</span>
+ 701 
+ 702 <span class="s2">Usage:</span>
+ 703 <span class="s2">    RDKitClusterMolecules.py [--butinaSimilarityCutoff &lt;number&gt;]  [--butinaReordering &lt;yes or no&gt;]</span>
+ 704 <span class="s2">                             [--clusteringMethod &lt;Butina, Centroid, CLink...&gt;]</span>
+ 705 <span class="s2">                             [--fingerprints &lt;MACCS166Keys, Morgan, PathLength...&gt; ] [--infileParams &lt;Name,Value,...&gt;]</span>
+ 706 <span class="s2">                             [--numClusters &lt;number&gt;] [--outfileMode &lt;SingleFile or MultipleFiles&gt;]</span>
+ 707 <span class="s2">                             [ --outfileParams &lt;Name,Value,...&gt; ] [--overwrite] [--paramsFingerprints &lt;Name,Value,...&gt;]</span>
+ 708 <span class="s2">                             [--similarityMetric &lt;Dice, Tanimoto...&gt;] [-w &lt;dir&gt;] -i &lt;infile&gt; -o &lt;outfile&gt; </span>
+ 709 <span class="s2">    RDKitClusterMolecules.py -h | --help | -e | --examples</span>
+ 710 
+ 711 <span class="s2">Description:</span>
+ 712 <span class="s2">    Cluster molecules based on a variety of 2D fingerprints using Butina [ Ref 136 ] or any</span>
+ 713 <span class="s2">    other available hierarchical clustering methodology and write them to output file(s).</span>
+ 714 
+ 715 <span class="s2">    The default fingerprints types for various fingerprints are shown below:</span>
+ 716 
+ 717 <span class="s2">        AtomPairs              IntSparseIntVect</span>
+ 718 <span class="s2">        MACCS166Keys           ExplicitBitVect</span>
+ 719 <span class="s2">        Morgan                 UIntSparseIntVect</span>
+ 720 <span class="s2">        MorganFeatures         UIntSparseIntVect</span>
+ 721 <span class="s2">        PathLength             ExplicitBitVect</span>
+ 722 <span class="s2">        TopologicalTorsions    LongSparseIntVect</span>
+ 723 <span class="s2"> </span>
+ 724 <span class="s2">    The Dice and Tanimoto similarity functions available in RDKit are able to</span>
+ 725 <span class="s2">    handle fingerprints corresponding to both IntVect and BitVect. All other</span>
+ 726 <span class="s2">    similarity functions, however, expect BitVect fingerprints to calculate</span>
+ 727 <span class="s2">    pairwise similarity. Consequently, ExplicitBitVect fingerprints, instead of</span>
+ 728 <span class="s2">    default IntVect fingerprints, are generated for AtomPairs, Morgan,</span>
+ 729 <span class="s2">    MorganFeatures, and TopologicalTorsions to calculate similarity.</span>
+ 730 
+ 731 <span class="s2">    The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi,</span>
+ 732 <span class="s2">    .txt, .csv, .tsv)</span>
+ 733 
+ 734 <span class="s2">    The supported output file formats are: SD (.sdf, .sd), SMILES (.smi), CSV/TSV</span>
+ 735 <span class="s2">    (.csv, .tsv, .txt)</span>
+ 736 
+ 737 <span class="s2">Options:</span>
+ 738 <span class="s2">    -b, --butinaSimilarityCutoff &lt;number&gt;  [default: 0.55]</span>
+ 739 <span class="s2">        Similarity cutoff to use during Butina clustering. The molecule pairs with</span>
+ 740 <span class="s2">        similarity value greater than specified value or distance less than &#39;1 - specified</span>
+ 741 <span class="s2">        value&#39; are considered neighbors. This value is only used during &#39;Butina&#39; value</span>
+ 742 <span class="s2">        of &#39;-c, --clusteringMethod&#39; option and determines the number of clusters</span>
+ 743 <span class="s2">        during the clustering of molecules. It is ignored for all other clustering methods.</span>
+ 744 <span class="s2">    --butinaReordering &lt;yes or no&gt;  [default: no]</span>
+ 745 <span class="s2">        Update number of neighbors for unassigned molecules after creating a new</span>
+ 746 <span class="s2">        cluster in order to insure that the molecule with the largest number of</span>
+ 747 <span class="s2">        unassigned neighbors is selected as the next cluster center.</span>
+ 748 <span class="s2">    -c, --clusteringMethod &lt;Butina, Centroid, CLink...&gt;  [default: Butina]</span>
+ 749 <span class="s2">        Clustering method to use for clustering molecules. Supported values:</span>
+ 750 <span class="s2">        Butina, Centroid, CLink, Gower, McQuitty, SLink, UPGMA, Ward.</span>
+ 751 <span class="s2">        Butina is an unsupervised database clustering method to automatically</span>
+ 752 <span class="s2">        cluster small and large data sets. All other clustering methods correspond</span>
+ 753 <span class="s2">        to hierarchical clustering and require a priori specification of number of</span>
+ 754 <span class="s2">        clusters to be generated.</span>
+ 755 <span class="s2">    -f, --fingerprints &lt;MACCS166Keys, Morgan, PathLength...&gt;  [default: Morgan]</span>
+ 756 <span class="s2">        Fingerprints to use for calculating similarity/distance between molecules.</span>
+ 757 <span class="s2">        Supported values: AtomPairs, MACCS166Keys, Morgan, MorganFeatures, PathLength,</span>
+ 758 <span class="s2">        TopologicalTorsions. The PathLength fingerprints are Daylight like fingerprints.</span>
+ 759 <span class="s2">        The Morgan and MorganFeature fingerprints are circular fingerprints, corresponding</span>
+ 760 <span class="s2">        Scitegic&#39;s Extended Connectivity Fingerprints (ECFP) and Features Connectivity</span>
+ 761 <span class="s2">        Fingerprints (FCFP). The values of default parameters for generating fingerprints</span>
+ 762 <span class="s2">        can be modified using &#39;-p, --paramsFingerprints&#39; option.</span>
+ 763 <span class="s2">    -e, --examples</span>
+ 764 <span class="s2">        Print examples.</span>
+ 765 <span class="s2">    -h, --help</span>
+ 766 <span class="s2">        Print this help message.</span>
+ 767 <span class="s2">    -i, --infile &lt;infile&gt;</span>
+ 768 <span class="s2">        Input file name.</span>
+ 769 <span class="s2">    --infileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 770 <span class="s2">        A comma delimited list of parameter name and value pairs for reading </span>
+ 771 <span class="s2">        molecules from files. The supported parameter names for different file</span>
+ 772 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 773 <span class="s2">            </span>
+ 774 <span class="s2">            SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes</span>
+ 775 <span class="s2">            SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,</span>
+ 776 <span class="s2">                smilesTitleLine,auto,sanitize,yes</span>
+ 777 <span class="s2">            </span>
+ 778 <span class="s2">        Possible values for smilesDelimiter: space, comma or tab.</span>
+ 779 <span class="s2">    -n, --numClusters &lt;number&gt;  [default: 10]</span>
+ 780 <span class="s2">        Number of clusters to generate during hierarchical clustering. This option is</span>
+ 781 <span class="s2">        ignored for &#39;Butina&#39; value of &#39;-c, --clusteringMethod&#39; option.</span>
+ 782 <span class="s2">    -o, --outfile &lt;outfile&gt;</span>
+ 783 <span class="s2">        Output file name.</span>
+ 784 <span class="s2">    --outfileMode &lt;SingleFile or MultipleFiles&gt;  [default: SingleFile]</span>
+ 785 <span class="s2">        Write out a single file containing molecule clusters or generate an individual file</span>
+ 786 <span class="s2">        for each cluster. Possible values: SingleFile or MultipleFiles. The molecules are</span>
+ 787 <span class="s2">        grouped for each cluster before they are written to output file(s) along with</span>
+ 788 <span class="s2">        appropriate cluster numbers. The cluster number is also appended to output</span>
+ 789 <span class="s2">        file names during generation of multiple output files.</span>
+ 790 <span class="s2">    --outfileParams &lt;Name,Value,...&gt;  [default: auto]</span>
+ 791 <span class="s2">        A comma delimited list of parameter name and value pairs for writing</span>
+ 792 <span class="s2">        molecules to files. The supported parameter names for different file</span>
+ 793 <span class="s2">        formats, along with their default values, are shown below:</span>
+ 794 <span class="s2">            </span>
+ 795 <span class="s2">            SD: compute2DCoords,auto,kekulize,no</span>
+ 796 <span class="s2">            SMILES: kekulize,no,smilesDelimiter,space, smilesIsomeric,yes,</span>
+ 797 <span class="s2">                smilesTitleLine,yes</span>
+ 798 <span class="s2">            </span>
+ 799 <span class="s2">        Default value for compute2DCoords: yes for SMILES input file; no for all other</span>
+ 800 <span class="s2">        file types. The kekulize and smilesIsomeric parameters are also used during</span>
+ 801 <span class="s2">        generation of SMILES strings for CSV/TSV files.</span>
+ 802 <span class="s2">    --overwrite</span>
+ 803 <span class="s2">        Overwrite existing files.</span>
+ 804 <span class="s2">    -p, --paramsFingerprints &lt;Name,Value,...&gt;  [default: auto]</span>
+ 805 <span class="s2">        Parameter values to use for generating fingerprints. The default values</span>
+ 806 <span class="s2">        are dependent on the value of &#39;-f, --fingerprints&#39; option. In general, it is a</span>
+ 807 <span class="s2">        comma delimited list of parameter name and value pairs for the name of</span>
+ 808 <span class="s2">        fingerprints specified using &#39;-f, --fingerprints&#39; option. The supported</span>
+ 809 <span class="s2">        parameter names along with their default values for valid fingerprints</span>
+ 810 <span class="s2">        names are shown below:</span>
+ 811 <span class="s2">            </span>
+ 812 <span class="s2">            AtomPairs: minLength,1 ,maxLength,30, useChirality,No</span>
+ 813 <span class="s2">            Morgan:   radius,2, useChirality,No</span>
+ 814 <span class="s2">            MorganFeatures:   radius,2, useChirality,No</span>
+ 815 <span class="s2">            PathLength: minPath,1, maxPath,7, fpSize, 2048, bitsPerHash,2</span>
+ 816 <span class="s2">            TopologicalTorsions: useChirality,No</span>
+ 817 <span class="s2">            </span>
+ 818 <span class="s2">    -s, --similarityMetric &lt;Dice, Tanimoto...&gt;  [default: Tanimoto]</span>
+ 819 <span class="s2">        Similarity metric to use for calculating similarity/distance between molecules.</span>
+ 820 <span class="s2">        Possible values: BraunBlanquet, Cosine, Dice, Kulczynski, RogotGoldberg,</span>
+ 821 <span class="s2">        Russel, Sokal, Tanimoto.</span>
+ 822 <span class="s2">    -w, --workingdir &lt;dir&gt;</span>
+ 823 <span class="s2">        Location of working directory which defaults to the current directory.</span>
+ 824 
+ 825 <span class="s2">Examples:</span>
+ 826 <span class="s2">    To cluster molecules using Butina methodology at a similarity cutoff of 0.55</span>
+ 827 <span class="s2">    with automatic determination of number of clusters, Tanimoto similarity</span>
+ 828 <span class="s2">    metric corresponding to Morgan fingerprints with radius of 2, and write out</span>
+ 829 <span class="s2">    a single SMILES file containing clustered molecules along with cluster number</span>
+ 830 <span class="s2">    for each molecule, type:</span>
+ 831 
+ 832 <span class="s2">        % RDKitClusterMolecules.py  -i Sample.smi -o SampleOut.smi</span>
+ 833 
+ 834 <span class="s2">    To cluster molecules using Butina methodology at similarity cutoff of 0.45</span>
+ 835 <span class="s2">    with automatic determination of number of clusters, Dice similarity metric</span>
+ 836 <span class="s2">    corresponding to Morgan fingerprints with radius of 2, and write out multiple</span>
+ 837 <span class="s2">    SD files containing clustered molecules for each cluster, type:</span>
+ 838 
+ 839 <span class="s2">        % RDKitClusterMolecules.py  -b 0.45 --outfileMode MultipleFiles</span>
+ 840 <span class="s2">          -i Sample.smi -o SampleOut.sdf</span>
+ 841 
+ 842 <span class="s2">    To cluster molecules using Ward hierarchical methodology to generate 15</span>
+ 843 <span class="s2">    clusters, Dice similarity metric corresponding to Pathlength fingerprints with </span>
+ 844 <span class="s2">    path length between 1 and 7,  and write out a single TSV file for clustered</span>
+ 845 <span class="s2">    molecules along with cluster numner for each molecule, type:</span>
+ 846 
+ 847 <span class="s2">        % RDKitClusterMolecules.py  -c Ward -f PathLength -n 15</span>
+ 848 <span class="s2">          -p &#39;minPath,1, maxPath,7&#39; -i Sample.sdf -o SampleOut.tsv</span>
+ 849 
+ 850 <span class="s2">    To cluster molecules using Centroid hierarchical methodology to generate 5</span>
+ 851 <span class="s2">    clusters, Dice similarity metric corresponding to MACCS166Keys fingerprints</span>
+ 852 <span class="s2">    for molecules in a SMILES CSV file, SMILES strings in column 1, name in</span>
+ 853 <span class="s2">    column 2, and write out a single SD file for clustered molecules along with</span>
+ 854 <span class="s2">    cluster numner for each molecule, type:</span>
+ 855 
+ 856 <span class="s2">        % RDKitClusterMolecules.py  -c Centroid -f MACCS166Keys --infileParams</span>
+ 857 <span class="s2">          &quot;smilesDelimiter,comma,smilesTitleLine,yes,smilesColumn,1,</span>
+ 858 <span class="s2">          smilesNameColumn,2&quot; --outfileParams &quot;compute2DCoords,yes&quot;</span>
+ 859 <span class="s2">          -i SampleSMILES.csv -o SampleOut.sdf</span>
+ 860 
+ 861 <span class="s2">Author:</span>
+ 862 <span class="s2">    Manish Sud(msud@san.rr.com)</span>
+ 863 
+ 864 <span class="s2">See also:</span>
+ 865 <span class="s2">    RDKitConvertFileFormat.py, RDKitPickDiverseMolecules.py, RDKitSearchFunctionalGroups.py,</span>
+ 866 <span class="s2">    RDKitSearchSMARTS.py</span>
+ 867 
+ 868 <span class="s2">Copyright:</span>
+ 869 <span class="s2">    Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+ 870 
+ 871 <span class="s2">    The functionality available in this script is implemented using RDKit, an</span>
+ 872 <span class="s2">    open source toolkit for cheminformatics developed by Greg Landrum.</span>
+ 873 
+ 874 <span class="s2">    This file is part of MayaChemTools.</span>
+ 875 
+ 876 <span class="s2">    MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+ 877 <span class="s2">    the terms of the GNU Lesser General Public License as published by the Free</span>
+ 878 <span class="s2">    Software Foundation; either version 3 of the License, or (at your option) any</span>
+ 879 <span class="s2">    later version.</span>
+ 880 
+ 881 <span class="s2">&quot;&quot;&quot;</span>
+ 882 
+ 883 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+ 884     <span class="n">main</span><span class="p">()</span>
+</pre>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

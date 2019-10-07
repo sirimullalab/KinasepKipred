@@ -1,0 +1,150 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:RDKitGenerateConformers.py</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitFilterPAINS.html" title="RDKitFilterPAINS.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitGenerateMolecularFrameworks.html" title="RDKitGenerateMolecularFrameworks.html">Next</a></td><td width="34%" align="middle"><strong>RDKitGenerateConformers.py</strong></td><td width="33%" align="right"><a href="././code/RDKitGenerateConformers.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/RDKitGenerateConformers.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/RDKitGenerateConformers.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/RDKitGenerateConformers.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/RDKitGenerateConformers.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>RDKitGenerateConformers.py - Generate molecular conformations</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>RDKitGenerateConformers.py [<b>--alignConformers</b> &lt;yes or no&gt;] [<b>--addHydrogens</b> &lt;yes or no&gt;] [<b>--conformerGenerator</b> &lt;SDG, ETDG, KDG, ETKDG&gt;] [<b>--embedRMSDCutoff</b> &lt;number&gt;] [<b>--enforceChirality</b> &lt;yes or no&gt;] [<b>--energyRMSDCutoff</b> &lt;number&gt;] [<b>--energyWindow</b> &lt;number&gt; ] [<b>--forceField</b> &lt;UFF, MMFF, None&gt;] [<b>--infileParams</b> &lt;Name,Value,...&gt;] [<b>--maxConfs</b> &lt;number&gt;] [<b>--maxIters</b> &lt;number&gt;] [ <b>--outfileParams</b> &lt;Name,Value,...&gt; ] [--overwrite] [ <b>--removeHydrogens</b> &lt;yes or no&gt;] [<b>--randomSeed</b> &lt;number&gt;] [<b>-w</b> &lt;dir&gt;] <b>-i</b> &lt;infile&gt; <b>-o</b> &lt;outfile&gt;</p>
+<p>RDKitGenerateConformers.py <b>-h</b> | <b>--help</b> | <b>-e</b> | <b>--examples</b></p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Generate molecular conformations using a combination of distance geometry and forcefield minimization. The forcefield minimization may be skipped to only generate conformations by available distance geometry based methodologies.</p>
+<p>The supported input file formats are: Mol (.mol), SD (.sdf, .sd), SMILES (.smi, .csv, .tcsv .txt)</p>
+<p>The supported output file format are: SD (.sdf, .sd)</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="a---addHydrogens-yes-or-no-default:-yes"><b>-a, --addHydrogens</b> &lt;yes or no&gt; [default: yes]</dt>
+<dd>
+<p>Add hydrogens before minimization.</p>
+</dd>
+<dt id="alignConformers-yes-or-no-default:-yes"><b>--alignConformers</b> &lt;yes or no&gt; [default: yes]</dt>
+<dd>
+<p>Align conformers for each molecule.</p>
+</dd>
+<dt id="c---conformerGenerator-SDG-ETDG-KDG-ETKDG-default:-ETKDG"><b>-c, --conformerGenerator</b> &lt;SDG, ETDG, KDG, ETKDG&gt; [default: ETKDG]</dt>
+<dd>
+<p>Conformation generation methodology for generating initial 3D coordinates of a molecule. Possible values: Standard Distance Geometry, (SDG), Experimental Torsion-angle preference with Distance Geometry (ETDG) [Ref 129] , basic Knowledge-terms with Distance Geometry (KDG), and Experimental Torsion-angle preference along with basic Knowledge-terms and Distance Geometry (ETKDG).</p>
+</dd>
+<dt id="embedRMSDCutoff-number-default:-none"><b>--embedRMSDCutoff</b> &lt;number&gt; [default: none]</dt>
+<dd>
+<p>RMSD cutoff for retaining conformations after embedding and before energy minimization. All embedded conformations are kept by default. Otherwise, only those conformations which are different from each other by the specified RMSD cutoff are kept. The first embedded conformation is always retained.</p>
+</dd>
+<dt id="enforceChirality-yes-or-no-default:-Yes"><b>--enforceChirality</b> &lt;yes or no&gt; [default: Yes]</dt>
+<dd>
+<p>Enforce chirality for defined chiral centers.</p>
+</dd>
+<dt id="energyRMSDCutoff-number-default:-none"><b>--energyRMSDCutoff</b> &lt;number&gt; [default: none]</dt>
+<dd>
+<p>RMSD cutoff for retaining conformations after energy minimization. By default, all minimized conformations with in the specified energy window from the lowest energy conformation are kept. Otherwise, only those conformations which are different from the lowest energy conformation by the specified RMSD cutoff and are with in the specified energy window are kept. The lowest energy conformation is always retained.</p>
+</dd>
+<dt id="energyWindow-number-default:-20"><b>--energyWindow</b> &lt;number&gt; [default: 20]</dt>
+<dd>
+<p>Energy window in kcal/mol for selecting conformers. This option is ignored during &#39;None&#39; value of &#39;-f, --forcefield&#39; option.</p>
+</dd>
+<dt id="e---examples"><b>-e, --examples</b></dt>
+<dd>
+<p>Print examples.</p>
+</dd>
+<dt id="f---forceField-UFF-MMFF-None-default:-MMFF"><b>-f, --forceField</b> &lt;UFF, MMFF, None&gt; [default: MMFF]</dt>
+<dd>
+<p>Forcefield method to use for energy minimization. Possible values: Universal Force Field (UFF) [Ref 81], Merck Molecular Mechanics Force Field (MMFF) [Ref 83-87] or None.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="i---infile-infile"><b>-i, --infile</b> &lt;infile&gt;</dt>
+<dd>
+<p>Input file name.</p>
+</dd>
+<dt id="infileParams-Name-Value-...-default:-auto"><b>--infileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for reading molecules from files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD, MOL: removeHydrogens,yes,sanitize,yes,strictParsing,yes
+<br/>    SMILES: smilesColumn,1,smilesNameColumn,2,smilesDelimiter,space,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;        smilesTitleLine,auto,sanitize,yes
+<br/>    </div>
+<p>Possible values for smilesDelimiter: space, comma or tab.</p>
+</dd>
+<dt id="maxConfs-number-default:-auto"><b>--maxConfs</b> &lt;number&gt; [default: auto]</dt>
+<dd>
+<p>Maximum number of conformations to generate for each molecule by conformation generation methodology. The conformations are minimized using the specified forcefield as needed and written to the output file. The default value for maximum number of conformations is dependent on the number of rotatable bonds in molecules: RotBonds &lt;= 5, maxConfs = 100; RotBonds &gt;=6 and &lt;= 10, MaxConfs = 200; RotBonds &gt;= 11, maxConfs = 300</p>
+</dd>
+<dt id="maxIters-number-default:-250"><b>--maxIters</b> &lt;number&gt; [default: 250]</dt>
+<dd>
+<p>Maximum number of iterations to perform for each molecule during forcefield minimization.</p>
+</dd>
+<dt id="o---outfile-outfile"><b>-o, --outfile</b> &lt;outfile&gt;</dt>
+<dd>
+<p>Output file name.</p>
+</dd>
+<dt id="outfileParams-Name-Value-...-default:-auto"><b>--outfileParams</b> &lt;Name,Value,...&gt; [default: auto]</dt>
+<dd>
+<p>A comma delimited list of parameter name and value pairs for writing molecules to files. The supported parameter names for different file formats, along with their default values, are shown below:</p>
+<div class="OptionsBox">    SD: kekulize,no
+<br/>    </div>
+</dd>
+<dt id="overwrite"><b>--overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="r---removeHydrogens-yes-or-no-default:-Yes"><b>-r, --removeHydrogens</b> &lt;yes or no&gt; [default: Yes]</dt>
+<dd>
+<p>Remove hydrogens after minimization.</p>
+</dd>
+<dt id="randomSeed-number-default:-auto"><b>--randomSeed</b> &lt;number&gt; [default: auto]</dt>
+<dd>
+<p>Seed for the random number generator for reproducing 3D coordinates. Default is to use a random seed.</p>
+</dd>
+<dt id="w---workingdir-dir"><b>-w, --workingdir</b> &lt;dir&gt;</dt>
+<dd>
+<p>Location of working directory which defaults to the current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To generate conformers using Experimental Torsion-angle preference along with basic Knowledge-terms and Distance Geometry (ETKDG) followed by MMFF minimization with automatic determination of maximum number of conformers for each molecule and write out a SD file, type:</p>
+<div class="ExampleBox">    % RDKitGenerateConformers.py  -i Sample.smi -o SampleOut.sdf</div>
+<p>To generate up to 150 conformers for each molecule using ETKDG and UFF forcefield minimization along with conformers within 25 kcal/mol energy window and write out a SD file, type:</p>
+<div class="ExampleBox">    % RDKitGenerateConformers.py  --energyWindow 25 -f UFF --maxConfs 150
+      -i Sample.smi -o SampleOut.sdf</div>
+<p>To generate up to 50 conformers for each molecule using KDG without any forcefield minimization and alignment of conformers and write out a SD file, type:</p>
+<div class="ExampleBox">    % RDKitGenerateConformers.py  -f none --maxConfs 50 --alignConformers no
+      -i Sample.sdf -o SampleOut.sdf</div>
+<p>To generate up to 50 conformers using SDG without any forcefield minimization and alignment of conformers for molecules in a CSV SMILES file, SMILES strings in column 1, name in column 2, and write out a SD file, type:</p>
+<div class="ExampleBox">    % RDKitGenerateConformers.py  --maxConfs 50  --maxIters 50 -c SDG
+      --alignConformers no -f none --infileParams &quot;smilesDelimiter,comma,
+      smilesTitleLine,yes, smilesColumn,1,smilesNameColumn,2&quot;
+      -i SampleSMILES.csv -o SampleOut.sdf</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./RDKitCalculateRMSD.html">RDKitCalculateRMSD.py</a>, <a href="./RDKitCalculateMolecularDescriptors.html">RDKitCalculateMolecularDescriptors.py</a>, <a href="./RDKitCompareMoleculeShapes.html">RDKitCompareMoleculeShapes.py</a>, <a href="./RDKitConvertFileFormat.html">RDKitConvertFileFormat.py</a>, <a href="./RDKitPerformMinimization.html">RDKitPerformMinimization.py</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>The functionality available in this script is implemented using RDKit, an open source toolkit for cheminformatics developed by Greg Landrum.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./RDKitFilterPAINS.html" title="RDKitFilterPAINS.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./RDKitGenerateMolecularFrameworks.html" title="RDKitGenerateMolecularFrameworks.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>RDKitGenerateConformers.py</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

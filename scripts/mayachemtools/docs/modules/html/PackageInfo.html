@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:PackageInfo.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ObjectProperty.html" title="ObjectProperty.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Lexer.html" title="Lexer.html">Next</a></td><td width="34%" align="middle"><strong>PackageInfo.pm</strong></td><td width="33%" align="right"><a href="././code/PackageInfo.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/PackageInfo.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/PackageInfo.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/PackageInfo.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/PackageInfo.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>PackageInfo</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use PackageInfo;</p>
+<p>use PackageInfo qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>PackageInfo</b> module provides the following functions:</p>
+<p>
+ <a href="#GetPackageKeyValue">GetPackageKeyValue</a>, <a href="#IsPackageKeyNameAvailable">IsPackageKeyNameAvailable</a>, <a href="#SetPackageKeyValue">SetPackageKeyValue</a>
+</p><p>The functions to set and get package keyvalues not explicitly defined in this module are implemented using Perl&#39;s AUTOLOAD functionality. These methods are generated on-the-fly for a specified key:</p>
+<div class="OptionsBox">    Set&lt;KeyName&gt;(&lt;KeyValue&gt;);
+<br/>    $KeyValue = Get&lt;KeyName&gt;();</div>
+<p><b>PackageInfo</b> module provides functionality to retrieve information about MayaChemTools package from PackagaInfo.csv which contains the following types key name and values:</p>
+<div class="OptionsBox">    &quot;KeyName&quot;,&quot;KeyValue&quot;
+<br/>    &quot;PackageName&quot;,&quot;MayaChemTools&quot;
+<br/>    &quot;ReleaseDate&quot;,&quot;Oct 21, 2010&quot;
+<br/>    &quot;VersionNumber&quot;,&quot;7.4&quot;
+<br/>    &quot;DevSoftwareEnvironment&quot;,&quot;Cygwin on Windows XP&quot;
+<br/>    ... ...
+<br/>    ... ...</div>
+<h1 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="GetPackageKeyValue"><b>GetPackageKeyValue</b></dt>
+<dd>
+<div class="OptionsBox">    $KeyValue = GetPackageKeyValue($KeyName);</div>
+<p>Returns <b>KeyValue</b> for a specified <i>KeyName</i>.</p>
+</dd>
+<dt id="IsPackageKeyNameAvailable"><b>IsPackageKeyNameAvailable</b></dt>
+<dd>
+<div class="OptionsBox">    $Status = IsPackageKeyNameAvailable($KeyName);</div>
+<p>Returns 1 or 0 based on whether <i>KeyName</i> is available in package info file.</p>
+</dd>
+<dt id="SetPackageKeyValue"><b>SetPackageKeyValue</b></dt>
+<dd>
+<div class="OptionsBox">    SetPackageKeyValue($KeyName, $KeyValue);</div>
+<p>Sets <i>KeyValue</i> for a <i>KeyName</i>. No data is written to package info file.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./ObjectProperty.html" title="ObjectProperty.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./Lexer.html" title="Lexer.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>PackageInfo.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

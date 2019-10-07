@@ -1,0 +1,95 @@
+NAME
+    SDToMolFiles.pl - Generate MDLMOL file(s) from SD file(s)
+
+SYNOPSIS
+    SDToMolFiles.pl SDFile(s)...
+
+    SDToMolFiles.pl [-d, --DataField DataFieldName] [-m, --mode DataField |
+    MolName | RootPrefix] [-h, --help] [-o, --overwrite] [-r, --root
+    rootname] [-w, --workingdir dirname] SDFile(s)...
+
+DESCRIPTION
+    Generate MDLMOL file(s) from *SDFile(s)*. All header data labels and
+    values in SDFile(s) are simply ignored; other appopriate data from
+    SDFile(s) is transferred to MDLMOL files. Multiple *SDFile(s)* names are
+    separated by spaces. The valid file extensions are *.sdf* and *.sd*. All
+    other file names are ignored. All the SD files in a current directory
+    can be specified either by **.sdf* or the current directory name.
+
+OPTIONS
+    -d, --DataField *DataFieldName*
+        Specify *SDFile(s)* datafield label name whose value is used for
+        generation of MDLMOL file names. Default value: *None*.
+
+    -h, --help
+        Print this help message.
+
+    -m, --mode *DataField | MolName | RootPrefix*
+        Specify how to generate MDLMOL file names: use a *SDFile(s)*
+        datafield value; use molname line from *SDFile(s)*; generate a
+        sequential ID using root prefix specified by -r, --root option.
+
+        Possible values: *DataField | MolName | RootPrefix | RootPrefix*.
+        Default: *RootPrefix*.
+
+        For empty *MolName* and *DataField* values during these specified
+        modes, file name is automatically generated using *RootPrefix*.
+
+        For *RootPrefix* value of -m, --mode option, MDLMOL file names are
+        generated using by appending compound record number to value of -r,
+        --root option. For example: *RootName*Cmd<RecordNumber>.mol.
+
+        Allowed characters in file names are: a-zA-Z0-9_. All other
+        characters in datafield values, molname line, and root prefix are
+        ignore during generation of file names.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    -r, --root *rootname*
+        Specify root name to used during *RootPrefix* -m, --mode option
+        value. New MDLMOL file names are generated using the root:
+        <Root>Cmpd<RecordNumber>.mol Default for new file names:
+        <InitialSDFileName>Cmpd<RecordNumber>.mol. This option is ignored
+        for multiple input files.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To generate MDLMOL files from Sample1*.sdf and Sample2*.sd files, type:
+
+        % SDToMolFiles.pl -o Sample1*.sdf Sample2*.sd
+
+    To generate Sample*.mol files from Sample1.sdf, type:
+
+        % SDToMolFiles.pl -r Sample -o Sample1.sdf
+
+    To generate MOL files from Sample1.sdf using molname line data for
+    generating MOL file names, type:
+
+        % SDToMolFiles.pl -m MolName -r Sample -o Sample1.sdf
+
+    To generate MOL files from Sample1.sdf using a specific data field
+    values for generating MOL file names, type:
+
+        % SDToMolFiles.pl -m DataField --DataField MolID -r Sample
+          -o Sample1.sdf
+
+AUTHOR
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    InfoSDFiles.pl, MolFilesToSD.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

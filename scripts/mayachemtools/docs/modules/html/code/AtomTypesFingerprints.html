@@ -1,0 +1,971 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Fingerprints/AtomTypesFingerprints.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-Fingerprints::AtomTypesFingerprints-"></a>   1 <span class="k">package </span><span class="i">Fingerprints::AtomTypesFingerprints</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: AtomTypesFingerprints.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Carp</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">Text::ParseWords</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">TextUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">FileUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">MathUtil</span> <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">Fingerprints::Fingerprints</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">Molecule</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">AtomTypes::AtomicInvariantsAtomTypes</span><span class="sc">;</span>
+  36 <span class="k">use</span> <span class="w">AtomTypes::DREIDINGAtomTypes</span><span class="sc">;</span>
+  37 <span class="k">use</span> <span class="w">AtomTypes::EStateAtomTypes</span><span class="sc">;</span>
+  38 <span class="k">use</span> <span class="w">AtomTypes::FunctionalClassAtomTypes</span><span class="sc">;</span>
+  39 <span class="k">use</span> <span class="w">AtomTypes::MMFF94AtomTypes</span><span class="sc">;</span>
+  40 <span class="k">use</span> <span class="w">AtomTypes::SLogPAtomTypes</span><span class="sc">;</span>
+  41 <span class="k">use</span> <span class="w">AtomTypes::SYBYLAtomTypes</span><span class="sc">;</span>
+  42 <span class="k">use</span> <span class="w">AtomTypes::TPSAAtomTypes</span><span class="sc">;</span>
+  43 <span class="k">use</span> <span class="w">AtomTypes::UFFAtomTypes</span><span class="sc">;</span>
+  44 
+  45 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  46 
+  47 <span class="i">@ISA</span> = <span class="q">qw(Fingerprints::Fingerprints Exporter)</span><span class="sc">;</span>
+  48 <span class="i">@EXPORT</span> = <span class="q">qw()</span><span class="sc">;</span>
+  49 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  50 
+  51 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span><span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span><span class="s">)</span><span class="sc">;</span>
+  52 
+  53 <span class="c"># Setup class variables...</span>
+  54 <span class="k">my</span><span class="s">(</span><span class="i">$ClassName</span><span class="s">)</span><span class="sc">;</span>
+  55 <span class="i">_InitializeClass</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  56 
+  57 <span class="c"># Overload Perl functions...</span>
+  58 <span class="k">use</span> <span class="w">overload</span> <span class="q">&#39;&quot;&quot;&#39;</span> <span class="cm">=&gt;</span> <span class="q">&#39;StringifyAtomTypesFingerprints&#39;</span><span class="sc">;</span>
+  59 
+  60 <span class="c"># Class constructor...</span>
+<a name="new-"></a>  61 <span class="k">sub </span><span class="m">new</span> <span class="s">{</span>
+  62   <span class="k">my</span><span class="s">(</span><span class="i">$Class</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  63 
+  64   <span class="c"># Initialize object...</span>
+  65   <span class="k">my</span> <span class="i">$This</span> = <span class="i">$Class</span><span class="i">-&gt;SUPER::new</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  66   <span class="k">bless</span> <span class="i">$This</span><span class="cm">,</span> <span class="k">ref</span><span class="s">(</span><span class="i">$Class</span><span class="s">)</span> || <span class="i">$Class</span><span class="sc">;</span>
+  67   <span class="i">$This</span><span class="i">-&gt;_InitializeAtomTypesFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  68 
+  69   <span class="i">$This</span><span class="i">-&gt;_InitializeAtomTypesFingerprintsProperties</span><span class="s">(</span><span class="i">%NamesAndValues</span><span class="s">)</span><span class="sc">;</span>
+  70 
+  71   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+  72 <span class="s">}</span>
+  73 
+  74 <span class="c"># Initialize object data...</span>
+  75 <span class="c">#</span>
+<a name="_InitializeAtomTypesFingerprints-"></a>  76 <span class="k">sub </span><span class="m">_InitializeAtomTypesFingerprints</span> <span class="s">{</span>
+  77   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  78 
+  79   <span class="c"># Type of atom type fingerprint to generate:</span>
+  80   <span class="c">#</span>
+  81   <span class="c"># AtomTypesCount - A vector containing count of atom types</span>
+  82   <span class="c"># AtomTypesBits - A bit vector indicating presence/absence of atom types</span>
+  83   <span class="c">#</span>
+  84   <span class="i">$This</span>-&gt;{<span class="w">Type</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  85 
+  86   <span class="c"># AtomTypes to use for generating fingerprints...</span>
+  87   <span class="c">#</span>
+  88   <span class="c"># Currently supported values are: AtomicInvariantsAtomTypes, DREIDINGAtomTypes,</span>
+  89   <span class="c"># EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes,</span>
+  90   <span class="c"># SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</span>
+  91   <span class="c">#</span>
+  92   <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+  93 
+  94   <span class="c"># AtomTypesSetToUse for AtomTypesCount:</span>
+  95   <span class="c">#</span>
+  96   <span class="c"># ArbitrarySize - Corrresponds to only AtomTypes atom types detected in molecule</span>
+  97   <span class="c"># FixedSize - Corresponds to fixed number of atom types previously defined for</span>
+  98   <span class="c">#             specific atom types.</span>
+  99   <span class="c">#</span>
+ 100   <span class="c"># The default AtomTypesSetToUse value for AtomTypesCount fingerprints type: ArbitrarySize.</span>
+ 101   <span class="c">#</span>
+ 102   <span class="c"># Possible values: ArbitrarySize or FixedSize. However, for AtomTypesBits fingerprints type, only FixedSize</span>
+ 103   <span class="c"># value is allowed.</span>
+ 104   <span class="c">#</span>
+ 105   <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 106 
+ 107   <span class="c"># By default, hydrogens are ignored during fingerprint generation...</span>
+ 108   <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} = <span class="n">1</span><span class="sc">;</span>
+ 109 
+ 110   <span class="c"># Assigned AtomTypes atom types...</span>
+ 111   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomTypes</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 112 
+ 113   <span class="c"># AtomTypes atom types count for generating atom types count and bits fingerprints...</span>
+ 114   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 115 <span class="s">}</span>
+ 116 
+ 117 <span class="c"># Initialize class ...</span>
+<a name="_InitializeClass-"></a> 118 <span class="k">sub </span><span class="m">_InitializeClass</span> <span class="s">{</span>
+ 119   <span class="c">#Class name...</span>
+ 120   <span class="i">$ClassName</span> = <span class="w">__PACKAGE__</span><span class="sc">;</span>
+ 121 <span class="s">}</span>
+ 122 
+ 123 <span class="c"># Initialize object properties....</span>
+<a name="_InitializeAtomTypesFingerprintsProperties-"></a> 124 <span class="k">sub </span><span class="m">_InitializeAtomTypesFingerprintsProperties</span> <span class="s">{</span>
+ 125   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">%NamesAndValues</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 126 
+ 127   <span class="k">my</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="cm">,</span> <span class="i">$MethodName</span><span class="s">)</span><span class="sc">;</span>
+ 128   <span class="k">while</span> <span class="s">(</span><span class="s">(</span><span class="i">$Name</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="k">each</span>  <span class="i">%NamesAndValues</span><span class="s">)</span> <span class="s">{</span>
+ 129     <span class="i">$MethodName</span> = <span class="q">&quot;Set${Name}&quot;</span><span class="sc">;</span>
+ 130     <span class="i">$This</span><span class="i">-&gt;$MethodName</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 131   <span class="s">}</span>
+ 132 
+ 133   <span class="c"># Make sure molecule object was specified...</span>
+ 134   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">Molecule</span>}<span class="s">)</span> <span class="s">{</span>
+ 135     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying molecule...&quot;</span><span class="sc">;</span>
+ 136   <span class="s">}</span>
+ 137 
+ 138   <span class="c"># Make sure type and identifier type were specified...</span>
+ 139   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">Type</span>}<span class="s">)</span> <span class="s">{</span>
+ 140     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying type...&quot;</span><span class="sc">;</span>
+ 141   <span class="s">}</span>
+ 142   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$NamesAndValues</span>{<span class="w">AtomIdentifierType</span>}<span class="s">)</span> <span class="s">{</span>
+ 143     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;New: Object can&#39;t be instantiated without specifying AtomIdentifierType...&quot;</span><span class="sc">;</span>
+ 144   <span class="s">}</span>
+ 145 
+ 146   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 147     <span class="i">$This</span><span class="i">-&gt;_InitializeAtomTypesCount</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 148   <span class="s">}</span>
+ 149   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesBits$/i</span><span class="s">)</span> <span class="s">{</span>
+ 150     <span class="i">$This</span><span class="i">-&gt;_InitializeAtomTypesBits</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 151   <span class="s">}</span>
+ 152   <span class="k">else</span> <span class="s">{</span>
+ 153     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_InitializeAtomTypesFingerprintsProperties: Unknown AtomTypes fingerprints type: $This-&gt;{Type}; Supported fingerprints types: AtomTypesCount or AtomTypesBits...&quot;</span><span class="sc">;</span>
+ 154   <span class="s">}</span>
+ 155 
+ 156   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 157 <span class="s">}</span>
+ 158 
+ 159 <span class="c"># Initialize atom type counts...</span>
+ 160 <span class="c">#</span>
+<a name="_InitializeAtomTypesCount-"></a> 161 <span class="k">sub </span><span class="m">_InitializeAtomTypesCount</span> <span class="s">{</span>
+ 162   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 163 
+ 164   <span class="c"># Set default AtomTypesSetToUse...</span>
+ 165   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>}<span class="s">)</span> <span class="s">{</span>
+ 166     <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} = <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^TPSAAtomTypes$/i</span><span class="s">)</span> ? <span class="q">&#39;FixedSize&#39;</span> <span class="co">:</span> <span class="q">&#39;ArbitrarySize&#39;</span><span class="sc">;</span>
+ 167   <span class="s">}</span>
+ 168 
+ 169   <span class="c"># Make sure AtomTypesSetToUse value is okay...</span>
+ 170   <span class="i">$This</span><span class="i">-&gt;_ValidateAtomTypesSetToUse</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>}<span class="s">)</span><span class="sc">;</span>
+ 171 
+ 172   <span class="c"># Vector type and type of values...</span>
+ 173   <span class="i">$This</span>-&gt;{<span class="w">VectorType</span>} = <span class="q">&#39;FingerprintsVector&#39;</span><span class="sc">;</span>
+ 174 
+ 175   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} =~ <span class="q">/^FixedSize$/i</span><span class="s">)</span> <span class="s">{</span>
+ 176     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorType</span>} = <span class="q">&#39;OrderedNumericalValues&#39;</span><span class="sc">;</span>
+ 177   <span class="s">}</span>
+ 178   <span class="k">else</span> <span class="s">{</span>
+ 179     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVectorType</span>} = <span class="q">&#39;NumericalValues&#39;</span><span class="sc">;</span>
+ 180   <span class="s">}</span>
+ 181 
+ 182   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsVector</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 183 
+ 184   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 185 <span class="s">}</span>
+ 186 
+ 187 <span class="c"># Initialize atom types bits...</span>
+ 188 <span class="c">#</span>
+<a name="_InitializeAtomTypesBits-"></a> 189 <span class="k">sub </span><span class="m">_InitializeAtomTypesBits</span> <span class="s">{</span>
+ 190   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 191 
+ 192   <span class="c"># Set default AtomTypesSetToUse...</span>
+ 193   <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} = <span class="q">&#39;FixedSize&#39;</span><span class="sc">;</span>
+ 194 
+ 195   <span class="c"># Make sure AtomTypesSetToUse value is okay...</span>
+ 196   <span class="i">$This</span><span class="i">-&gt;_ValidateAtomTypesSetToUse</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>}<span class="s">)</span><span class="sc">;</span>
+ 197 
+ 198   <span class="c"># Vector type...</span>
+ 199   <span class="i">$This</span>-&gt;{<span class="w">VectorType</span>} = <span class="q">&#39;FingerprintsBitVector&#39;</span><span class="sc">;</span>
+ 200 
+ 201   <span class="c"># Vector size...</span>
+ 202   <span class="i">$This</span>-&gt;{<span class="w">Size</span>} = <span class="i">$This</span><span class="i">-&gt;_GetFixedSizeAtomTypesSetSize</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 203 
+ 204   <span class="i">$This</span><span class="i">-&gt;_InitializeFingerprintsBitVector</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 205 
+ 206   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 207 <span class="s">}</span>
+ 208 
+ 209 <span class="c"># Set type...</span>
+ 210 <span class="c">#</span>
+<a name="SetType-"></a> 211 <span class="k">sub </span><span class="m">SetType</span> <span class="s">{</span>
+ 212   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Type</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 213 
+ 214   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>}<span class="s">)</span> <span class="s">{</span>
+ 215     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetType: Can&#39;t change type:  It&#39;s already set...&quot;</span><span class="sc">;</span>
+ 216   <span class="s">}</span>
+ 217 
+ 218   <span class="k">if</span> <span class="s">(</span><span class="i">$Type</span> =~ <span class="q">/^AtomTypesCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 219     <span class="i">$This</span>-&gt;{<span class="w">Type</span>} = <span class="q">&#39;AtomTypesCount&#39;</span><span class="sc">;</span><span class="sc">;</span>
+ 220   <span class="s">}</span>
+ 221   <span class="k">elsif</span> <span class="s">(</span><span class="i">$Type</span> =~ <span class="q">/^AtomTypesBits$/i</span><span class="s">)</span> <span class="s">{</span>
+ 222     <span class="i">$This</span>-&gt;{<span class="w">Type</span>} = <span class="q">&#39;AtomTypesBits&#39;</span><span class="sc">;</span><span class="sc">;</span>
+ 223   <span class="s">}</span>
+ 224   <span class="k">else</span> <span class="s">{</span>
+ 225     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetType: Unknown AtomTypes fingerprints type: $Type; Supported fingerprints types: AtomTypesCount or AtomTypesBit...&quot;</span><span class="sc">;</span>
+ 226   <span class="s">}</span>
+ 227   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 228 <span class="s">}</span>
+ 229 
+ 230 <span class="c"># Disable set size method...</span>
+ 231 <span class="c">#</span>
+<a name="SetSize-"></a> 232 <span class="k">sub </span><span class="m">SetSize</span> <span class="s">{</span>
+ 233   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Type</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 234 
+ 235   <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetSize: Can&#39;t change size:  It&#39;s not allowed...&quot;</span><span class="sc">;</span>
+ 236 <span class="s">}</span>
+ 237 
+ 238 <span class="c"># Set atom types set to use...</span>
+ 239 <span class="c">#</span>
+<a name="SetAtomTypesSetToUse-"></a> 240 <span class="k">sub </span><span class="m">SetAtomTypesSetToUse</span> <span class="s">{</span>
+ 241   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 242 
+ 243   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>}<span class="s">)</span> <span class="s">{</span>
+ 244     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomTypesSetToUse: Can&#39;t change size:  It&#39;s already set...&quot;</span><span class="sc">;</span>
+ 245   <span class="s">}</span>
+ 246 
+ 247   <span class="i">$This</span><span class="i">-&gt;_ValidateAtomTypesSetToUse</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 248 
+ 249   <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} = <span class="i">$Value</span><span class="sc">;</span>
+ 250 
+ 251   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 252 <span class="s">}</span>
+ 253 
+ 254 <span class="c"># Validate AtomTypesSetToUse value...</span>
+ 255 <span class="c">#</span>
+<a name="_ValidateAtomTypesSetToUse-"></a> 256 <span class="k">sub </span><span class="m">_ValidateAtomTypesSetToUse</span> <span class="s">{</span>
+ 257   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 258 
+ 259   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> !~ <span class="q">/^(ArbitrarySize|FixedSize)/i</span><span class="s">)</span> <span class="s">{</span>
+ 260     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateAtomTypesSetToUse: Unknown AtomTypesSetToUse value: $Value; Supported values: ArbitrarySize or FixedSize&quot;</span><span class="sc">;</span>
+ 261   <span class="s">}</span>
+ 262 
+ 263   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/^ArbitrarySize$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesBits$/i</span><span class="s">)</span> <span class="s">{</span>
+ 264     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateAtomTypesSetToUse: Specified AtomTypesSetToUse value, $Value, is not allowed for AtomTypesBits fingerprints...&quot;</span><span class="sc">;</span>
+ 265   <span class="s">}</span>
+ 266 
+ 267   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/^FixedSize$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 268     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateAtomTypesSetToUse: Specified AtomTypesSetToUse value, $Value, is not allowed for AtomicInvariantsAtomTypes fingerprints...&quot;</span><span class="sc">;</span>
+ 269   <span class="s">}</span>
+ 270 
+ 271   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/^FixedSize$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 272     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateAtomTypesSetToUse: Specified AtomTypesSetToUse value, $Value, is not allowed for FunctionalClassAtomTypes fingerprints...&quot;</span><span class="sc">;</span>
+ 273   <span class="s">}</span>
+ 274 
+ 275   <span class="k">if</span> <span class="s">(</span><span class="i">$Value</span> =~ <span class="q">/^ArbitrarySize$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^TPSAAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 276     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_ValidateAtomTypesSetToUse: Specified AtomTypesSetToUse value, $Value, is not allowed for TPSAAtomTypes fingerprints...&quot;</span><span class="sc">;</span>
+ 277   <span class="s">}</span>
+ 278 
+ 279   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 280 <span class="s">}</span>
+ 281 
+ 282 <span class="c"># Set atom identifier type...</span>
+ 283 <span class="c">#</span>
+<a name="SetAtomIdentifierType-"></a> 284 <span class="k">sub </span><span class="m">SetAtomIdentifierType</span> <span class="s">{</span>
+ 285   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">$IdentifierType</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 286 
+ 287   <span class="k">if</span> <span class="s">(</span><span class="i">$IdentifierType</span> !~ <span class="q">/^(AtomicInvariantsAtomTypes|DREIDINGAtomTypes|EStateAtomTypes|FunctionalClassAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 288     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Specified value, $IdentifierType, for AtomIdentifierType is not vaild. Supported types in current release of MayaChemTools: AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, FunctionalClassAtomTypes, MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, and UFFAtomTypes.&quot;</span><span class="sc">;</span>
+ 289   <span class="s">}</span>
+ 290 
+ 291   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>}<span class="s">)</span> <span class="s">{</span>
+ 292     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Can&#39;t change intial atom identifier type:  It&#39;s already set...&quot;</span><span class="sc">;</span>
+ 293   <span class="s">}</span>
+ 294 
+ 295   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} =~ <span class="q">/^FixedSize$/i</span><span class="s">)</span> <span class="s">{</span>
+ 296     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Specified AtomTypesSetToUse value, $IdentifierType, is not allowed for AtomicInvariantsAtomTypes fingerprints...&quot;</span><span class="sc">;</span>
+ 297   <span class="s">}</span>
+ 298 
+ 299   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} =~ <span class="q">/^FixedSize$/i</span><span class="s">)</span> <span class="s">{</span>
+ 300     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomIdentifierType: Specified AtomTypesSetToUse value, $IdentifierType, is not allowed for FunctionalClassAtomTypes fingerprints...&quot;</span><span class="sc">;</span>
+ 301   <span class="s">}</span>
+ 302 
+ 303   <span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} = <span class="i">$IdentifierType</span><span class="sc">;</span>
+ 304 
+ 305   <span class="c"># Initialize atom identifier type information...</span>
+ 306   <span class="i">$This</span><span class="i">-&gt;_InitializeAtomIdentifierTypeInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 307 
+ 308   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 309 <span class="s">}</span>
+ 310 
+ 311 <span class="c"># Generate fingerprints description...</span>
+ 312 <span class="c">#</span>
+<a name="GetDescription-"></a> 313 <span class="k">sub </span><span class="m">GetDescription</span> <span class="s">{</span>
+ 314   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 315 
+ 316   <span class="c"># Is description explicity set?</span>
+ 317   <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="w">Description</span>}<span class="s">)</span> <span class="s">{</span>
+ 318     <span class="k">return</span> <span class="i">$This</span>-&gt;{<span class="w">Description</span>}<span class="sc">;</span>
+ 319   <span class="s">}</span>
+ 320 
+ 321   <span class="c"># Generate fingerprints description...</span>
+ 322 
+ 323   <span class="k">return</span> <span class="q">&quot;$This-&gt;{Type}:$This-&gt;{AtomIdentifierType}:$This-&gt;{AtomTypesSetToUse}&quot;</span><span class="sc">;</span>
+ 324 <span class="s">}</span>
+ 325 
+ 326 <span class="c"># Generate atom types fingerprints...</span>
+ 327 <span class="c">#</span>
+ 328 <span class="c"># The current release of MayaChemTools supports generation of two types of AtomTypes</span>
+ 329 <span class="c"># fingerprints corresponding to non-hydrogen and/or hydrogen atoms:</span>
+ 330 <span class="c">#</span>
+ 331 <span class="c"># AtomTypesCount - A vector containing count of  atom types</span>
+ 332 <span class="c"># AtomTypesBits - A bit vector indicating presence/absence of atom types</span>
+ 333 <span class="c">#</span>
+ 334 <span class="c"># For AtomTypesCount fingerprints, two types of atom types set size is allowed:</span>
+ 335 <span class="c">#</span>
+ 336 <span class="c"># ArbitrarySize - Corrresponds to only atom types detected in molecule</span>
+ 337 <span class="c"># FixedSize - Corresponds to fixed number of atom types previously defined</span>
+ 338 <span class="c">#</span>
+ 339 <span class="c"># For AtomTypesBits fingeprints, only FixedSize atom type set is allowed.</span>
+ 340 <span class="c">#</span>
+ 341 <span class="c"># The fixed size atom type set size used during generation of fingerprints corresponding</span>
+ 342 <span class="c"># to FixedSize value of AtomTypesSetToUse contains all possible atom types in datafiles</span>
+ 343 <span class="c"># distributed with MayaChemTools release for each supported type.</span>
+ 344 <span class="c">#</span>
+ 345 <span class="c"># Combination of Type and AtomTypesSetToUse allow generation of 21 different types of</span>
+ 346 <span class="c"># AtomTypes fingerprints:</span>
+ 347 <span class="c">#</span>
+ 348 <span class="c"># Type                  AtomIdentifierType           AtomTypesSetToUse</span>
+ 349 <span class="c">#</span>
+ 350 <span class="c"># AtomTypesCount        AtomicInvariantsAtomTypes    ArbitrarySize</span>
+ 351 <span class="c">#</span>
+ 352 <span class="c"># AtomTypesCount        DREIDINGAtomTypes            ArbitrarySize</span>
+ 353 <span class="c"># AtomTypesCount        DREIDINGAtomTypes            FixedSize</span>
+ 354 <span class="c"># AtomTypesBits         DREIDINGAtomTypes            FixedSize</span>
+ 355 <span class="c">#</span>
+ 356 <span class="c"># AtomTypesCount        EStateAtomTypes              ArbitrarySize</span>
+ 357 <span class="c"># AtomTypesCount        EStateAtomTypes              FixedSize</span>
+ 358 <span class="c"># AtomTypesBits         EStateAtomTypes              FixedSize</span>
+ 359 <span class="c">#</span>
+ 360 <span class="c"># AtomTypesCount        FunctionalClassAtomTypes    ArbitrarySize</span>
+ 361 <span class="c">#</span>
+ 362 <span class="c"># AtomTypesCount        MMFF94AtomTypes              ArbitrarySize</span>
+ 363 <span class="c"># AtomTypesCount        MMFF94AtomTypes              FixedSize</span>
+ 364 <span class="c"># AtomTypesBits         MMFF94AtomTypes              FixedSize</span>
+ 365 <span class="c">#</span>
+ 366 <span class="c"># AtomTypesCount        SLogPAtomTypes               ArbitrarySize</span>
+ 367 <span class="c"># AtomTypesCount        SLogPAtomTypes               FixedSize</span>
+ 368 <span class="c"># AtomTypesBits         SLogPAtomTypes               FixedSize</span>
+ 369 <span class="c">#</span>
+ 370 <span class="c"># AtomTypesCount        SYBYLAtomTypes               ArbitrarySize</span>
+ 371 <span class="c"># AtomTypesCount        SYBYLAtomTypes               FixedSize</span>
+ 372 <span class="c"># AtomTypesBits         SYBYLAtomTypes               FixedSize</span>
+ 373 <span class="c">#</span>
+ 374 <span class="c"># AtomTypesCount        TPSAAtomTypes                 FixedSize</span>
+ 375 <span class="c"># AtomTypesBits         TPSAAtomTypes                 FixedSize</span>
+ 376 <span class="c">#</span>
+ 377 <span class="c"># AtomTypesCount        UFFAtomTypes                 ArbitrarySize</span>
+ 378 <span class="c"># AtomTypesCount        UFFAtomTypes                 FixedSize</span>
+ 379 <span class="c"># AtomTypesBits         UFFAtomTypes                 FixedSize</span>
+ 380 <span class="c">#</span>
+<a name="GenerateFingerprints-"></a> 381 <span class="k">sub </span><span class="m">GenerateFingerprints</span> <span class="s">{</span>
+ 382   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 383 
+ 384   <span class="c"># Cache appropriate molecule data...</span>
+ 385   <span class="i">$This</span><span class="i">-&gt;_SetupMoleculeDataCache</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 386 
+ 387   <span class="c"># Check and assign appropriate atom types...</span>
+ 388   <span class="k">if</span> <span class="s">(</span>!<span class="i">$This</span><span class="i">-&gt;_AssignAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 389     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;GenerateFingerprints: $This-&gt;{AtomIdentifierType} fingerprints generation didn&#39;t succeed: Couldn&#39;t assign valid $This-&gt;{AtomIdentifierType} to all atoms...&quot;</span><span class="sc">;</span>
+ 390     <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 391   <span class="s">}</span>
+ 392 
+ 393   <span class="c"># Count atom types...</span>
+ 394   <span class="i">$This</span><span class="i">-&gt;_CountAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 395 
+ 396   <span class="c"># Set final fingerprints...</span>
+ 397   <span class="i">$This</span><span class="i">-&gt;_SetFinalFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 398 
+ 399   <span class="c"># Clear cached molecule data...</span>
+ 400   <span class="i">$This</span><span class="i">-&gt;_ClearMoleculeDataCache</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 401 
+ 402   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 403 <span class="s">}</span>
+ 404 
+ 405 <span class="c"># Assign appropriate atom types...</span>
+ 406 <span class="c">#</span>
+<a name="_AssignAtomTypes-"></a> 407 <span class="k">sub </span><span class="m">_AssignAtomTypes</span> <span class="s">{</span>
+ 408   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 409   <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedAtomTypes</span><span class="cm">,</span> <span class="i">$Atom</span><span class="cm">,</span> <span class="i">$AtomID</span><span class="s">)</span><span class="sc">;</span>
+ 410 
+ 411   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomTypes</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 412   <span class="i">$SpecifiedAtomTypes</span> = <span class="k">undef</span><span class="sc">;</span>
+ 413 
+ 414   <span class="j">IDENTIFIERTYPE:</span> <span class="s">{</span>
+ 415     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 416       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::AtomicInvariantsAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="cm">,</span> <span class="q">&#39;AtomicInvariantsToUse&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}<span class="s">)</span><span class="sc">;</span>
+ 417       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 418     <span class="s">}</span>
+ 419 
+ 420     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^DREIDINGAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 421       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::DREIDINGAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 422       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 423     <span class="s">}</span>
+ 424 
+ 425     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^EStateAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 426       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::EStateAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 427       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 428     <span class="s">}</span>
+ 429 
+ 430     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 431       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::FunctionalClassAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="cm">,</span> <span class="q">&#39;FunctionalClassesToUse&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}<span class="s">)</span><span class="sc">;</span>
+ 432       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 433     <span class="s">}</span>
+ 434 
+ 435     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^MMFF94AtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 436       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::MMFF94AtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 437       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 438     <span class="s">}</span>
+ 439 
+ 440     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SLogPAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 441       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::SLogPAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 442       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 443     <span class="s">}</span>
+ 444     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SYBYLAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 445       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::SYBYLAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 446       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 447     <span class="s">}</span>
+ 448 
+ 449     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^TPSAAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 450       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::TPSAAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnorePhosphorus&#39;</span> <span class="cm">=&gt;</span> <span class="n">0</span><span class="cm">,</span> <span class="q">&#39;IgnoreSulfur&#39;</span> <span class="cm">=&gt;</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+ 451       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 452     <span class="s">}</span>
+ 453 
+ 454     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^UFFAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 455       <span class="i">$SpecifiedAtomTypes</span> = <span class="i">new</span> <span class="i">AtomTypes::UFFAtomTypes</span><span class="s">(</span><span class="q">&#39;Molecule&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">Molecule</span>}<span class="cm">,</span> <span class="q">&#39;IgnoreHydrogens&#39;</span> <span class="cm">=&gt;</span> <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span><span class="sc">;</span>
+ 456       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 457     <span class="s">}</span>
+ 458 
+ 459     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_AssignAtomTypes: Unknown atom indentifier type $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 460   <span class="s">}</span>
+ 461 
+ 462   <span class="c"># Assign atom types...</span>
+ 463   <span class="i">$SpecifiedAtomTypes</span><span class="i">-&gt;AssignAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 464 
+ 465   <span class="c"># Make sure atom types assignment is successful...</span>
+ 466   <span class="k">if</span> <span class="s">(</span>!<span class="i">$SpecifiedAtomTypes</span><span class="i">-&gt;IsAtomTypesAssignmentSuccessful</span><span class="s">(</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 467     <span class="k">return</span> <span class="k">undef</span><span class="sc">;</span>
+ 468   <span class="s">}</span>
+ 469 
+ 470   <span class="c"># Collect assigned atom types...</span>
+ 471   <span class="k">for</span> <span class="i">$Atom</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">Atoms</span>}}<span class="s">)</span> <span class="s">{</span>
+ 472     <span class="i">$AtomID</span> = <span class="i">$Atom</span><span class="i">-&gt;GetID</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 473     <span class="i">$This</span>-&gt;{<span class="w">AtomTypes</span>}{<span class="i">$AtomID</span>} = <span class="i">$SpecifiedAtomTypes</span><span class="i">-&gt;GetAtomType</span><span class="s">(</span><span class="i">$Atom</span><span class="s">)</span><span class="sc">;</span>
+ 474   <span class="s">}</span>
+ 475 
+ 476   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 477 <span class="s">}</span>
+ 478 
+ 479 <span class="c"># Count atom types...</span>
+ 480 <span class="c">#</span>
+<a name="_CountAtomTypes-"></a> 481 <span class="k">sub </span><span class="m">_CountAtomTypes</span> <span class="s">{</span>
+ 482   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 483   <span class="k">my</span><span class="s">(</span><span class="i">$Atom</span><span class="cm">,</span> <span class="i">$AtomID</span><span class="cm">,</span> <span class="i">$AtomType</span><span class="s">)</span><span class="sc">;</span>
+ 484 
+ 485   <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 486 
+ 487   <span class="k">for</span> <span class="i">$Atom</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">Atoms</span>}}<span class="s">)</span> <span class="s">{</span>
+ 488     <span class="i">$AtomID</span> = <span class="i">$Atom</span><span class="i">-&gt;GetID</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 489     <span class="i">$AtomType</span> = <span class="i">$This</span>-&gt;{<span class="w">AtomTypes</span>}{<span class="i">$AtomID</span>}<span class="sc">;</span>
+ 490 
+ 491     <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>}<span class="s">)</span> <span class="s">{</span>
+ 492       <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>} = <span class="n">0</span><span class="sc">;</span>
+ 493     <span class="s">}</span>
+ 494 
+ 495     <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>} += <span class="n">1</span><span class="sc">;</span>
+ 496   <span class="s">}</span>
+ 497   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 498 <span class="s">}</span>
+ 499 
+ 500 <span class="c"># Set final fingerprints...</span>
+ 501 <span class="c">#</span>
+<a name="_SetFinalFingerprints-"></a> 502 <span class="k">sub </span><span class="m">_SetFinalFingerprints</span> <span class="s">{</span>
+ 503   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 504 
+ 505   <span class="c"># Mark successful generation of fingerprints...</span>
+ 506   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsGenerated</span>} = <span class="n">1</span><span class="sc">;</span>
+ 507 
+ 508   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 509     <span class="i">$This</span><span class="i">-&gt;_SetFinalAtomTypesCountFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 510   <span class="s">}</span>
+ 511   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesBits$/i</span><span class="s">)</span> <span class="s">{</span>
+ 512     <span class="i">$This</span><span class="i">-&gt;_SetFinalAtomTypesBitsFingerprints</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 513   <span class="s">}</span>
+ 514   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 515 <span class="s">}</span>
+ 516 
+ 517 <span class="c"># Set final final fingerpritns for atom types count...</span>
+ 518 <span class="c">#</span>
+<a name="_SetFinalAtomTypesCountFingerprints-"></a> 519 <span class="k">sub </span><span class="m">_SetFinalAtomTypesCountFingerprints</span> <span class="s">{</span>
+ 520   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 521   <span class="k">my</span><span class="s">(</span><span class="i">$AtomType</span><span class="cm">,</span> <span class="i">@Values</span><span class="cm">,</span> <span class="i">@IDs</span><span class="s">)</span><span class="sc">;</span>
+ 522 
+ 523   <span class="i">@Values</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 524   <span class="i">@IDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 525 
+ 526   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesSetToUse</span>} =~ <span class="q">/^FixedSize$/i</span><span class="s">)</span> <span class="s">{</span>
+ 527     <span class="k">for</span> <span class="i">$AtomType</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span><span class="i">-&gt;_GetFixedSizeAtomTypesSet</span><span class="s">(</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 528       <span class="k">push</span> <span class="i">@IDs</span><span class="cm">,</span> <span class="i">$AtomType</span><span class="sc">;</span>
+ 529       <span class="k">push</span> <span class="i">@Values</span><span class="cm">,</span> <span class="k">exists</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>}<span class="s">)</span> ? <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 530     <span class="s">}</span>
+ 531   <span class="s">}</span>
+ 532   <span class="k">else</span> <span class="s">{</span>
+ 533     <span class="k">for</span> <span class="i">$AtomType</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}}<span class="s">)</span> <span class="s">{</span>
+ 534       <span class="k">push</span> <span class="i">@IDs</span><span class="cm">,</span> <span class="i">$AtomType</span><span class="sc">;</span>
+ 535       <span class="k">push</span> <span class="i">@Values</span><span class="cm">,</span> <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>}<span class="sc">;</span>
+ 536     <span class="s">}</span>
+ 537   <span class="s">}</span>
+ 538 
+ 539   <span class="c"># Add IDs and values to fingerprint vector...</span>
+ 540   <span class="k">if</span> <span class="s">(</span><span class="i">@IDs</span><span class="s">)</span> <span class="s">{</span>
+ 541     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVector</span>}<span class="i">-&gt;AddValueIDs</span><span class="s">(</span>\<span class="i">@IDs</span><span class="s">)</span><span class="sc">;</span>
+ 542   <span class="s">}</span>
+ 543   <span class="i">$This</span>-&gt;{<span class="w">FingerprintsVector</span>}<span class="i">-&gt;AddValues</span><span class="s">(</span>\<span class="i">@Values</span><span class="s">)</span><span class="sc">;</span>
+ 544 
+ 545   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 546 <span class="s">}</span>
+ 547 
+ 548 <span class="c"># Set final final fingerpritns for atom types count bits...</span>
+ 549 <span class="c">#</span>
+<a name="_SetFinalAtomTypesBitsFingerprints-"></a> 550 <span class="k">sub </span><span class="m">_SetFinalAtomTypesBitsFingerprints</span> <span class="s">{</span>
+ 551   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 552   <span class="k">my</span><span class="s">(</span><span class="i">$AtomType</span><span class="cm">,</span> <span class="i">$SkipPosCheck</span><span class="cm">,</span> <span class="i">$AtomTypeNum</span><span class="cm">,</span> <span class="i">$AtomTypeBitIndex</span><span class="s">)</span><span class="sc">;</span>
+ 553 
+ 554   <span class="i">$SkipPosCheck</span> = <span class="n">1</span><span class="sc">;</span>
+ 555   <span class="i">$AtomTypeNum</span> = <span class="n">0</span><span class="sc">;</span>
+ 556 
+ 557   <span class="j">ATOMTYPE:</span> <span class="k">for</span> <span class="i">$AtomType</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$This</span><span class="i">-&gt;_GetFixedSizeAtomTypesSet</span><span class="s">(</span><span class="s">)</span>}<span class="s">)</span> <span class="s">{</span>
+ 558     <span class="i">$AtomTypeNum</span>++<span class="sc">;</span>
+ 559     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>}<span class="s">)</span> &amp;&amp; <span class="i">$This</span>-&gt;{<span class="w">AtomTypesCount</span>}{<span class="i">$AtomType</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 560       <span class="k">next</span> <span class="j">ATOMTYPE</span><span class="sc">;</span>
+ 561     <span class="s">}</span>
+ 562     <span class="i">$AtomTypeBitIndex</span> = <span class="i">$AtomTypeNum</span> - <span class="n">1</span><span class="sc">;</span>
+ 563     <span class="i">$This</span>-&gt;{<span class="w">FingerprintsBitVector</span>}<span class="i">-&gt;SetBit</span><span class="s">(</span><span class="i">$AtomTypeBitIndex</span><span class="cm">,</span> <span class="i">$SkipPosCheck</span><span class="s">)</span><span class="sc">;</span>
+ 564   <span class="s">}</span>
+ 565 
+ 566   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 567 <span class="s">}</span>
+ 568 
+ 569 <span class="c"># Cache  appropriate molecule data...</span>
+ 570 <span class="c">#</span>
+<a name="_SetupMoleculeDataCache-"></a> 571 <span class="k">sub </span><span class="m">_SetupMoleculeDataCache</span> <span class="s">{</span>
+ 572   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 573 
+ 574   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>}<span class="s">)</span> <span class="s">{</span>
+ 575     <span class="c"># Get all non-hydrogen atoms...</span>
+ 576     <span class="k">my</span><span class="s">(</span><span class="i">$NegateAtomCheckMethod</span><span class="s">)</span><span class="sc">;</span>
+ 577     <span class="i">$NegateAtomCheckMethod</span> = <span class="n">1</span><span class="sc">;</span>
+ 578 
+ 579     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">Atoms</span>}} = <span class="i">$This</span><span class="i">-&gt;GetMolecule</span><span class="s">(</span><span class="s">)</span><span class="i">-&gt;GetAtoms</span><span class="s">(</span><span class="q">&quot;IsHydrogen&quot;</span><span class="cm">,</span> <span class="i">$NegateAtomCheckMethod</span><span class="s">)</span><span class="sc">;</span>
+ 580   <span class="s">}</span>
+ 581   <span class="k">else</span> <span class="s">{</span>
+ 582     <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">Atoms</span>}} = <span class="i">$This</span><span class="i">-&gt;GetMolecule</span><span class="s">(</span><span class="s">)</span><span class="i">-&gt;GetAtoms</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 583   <span class="s">}</span>
+ 584 
+ 585   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 586 <span class="s">}</span>
+ 587 
+ 588 <span class="c"># Clear cached molecule data...</span>
+ 589 <span class="c">#</span>
+<a name="_ClearMoleculeDataCache-"></a> 590 <span class="k">sub </span><span class="m">_ClearMoleculeDataCache</span> <span class="s">{</span>
+ 591   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 592 
+ 593   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">Atoms</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 594 
+ 595   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 596 <span class="s">}</span>
+ 597 
+ 598 <span class="c"># Get fixed size atom types set size...</span>
+ 599 <span class="c">#</span>
+<a name="_GetFixedSizeAtomTypesSetSize-"></a> 600 <span class="k">sub </span><span class="m">_GetFixedSizeAtomTypesSetSize</span> <span class="s">{</span>
+ 601   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 602   <span class="k">my</span><span class="s">(</span><span class="i">$Size</span><span class="s">)</span><span class="sc">;</span>
+ 603 
+ 604   <span class="i">$Size</span> = <span class="n">0</span><span class="sc">;</span>
+ 605 
+ 606   <span class="j">IDENTIFIERTYPE:</span> <span class="s">{</span>
+ 607     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^DREIDINGAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 608       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::DREIDINGAtomTypes::GetAllPossibleDREIDINGNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::DREIDINGAtomTypes::GetAllPossibleDREIDINGAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 609       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 610     <span class="s">}</span>
+ 611 
+ 612     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^EStateAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 613       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::EStateAtomTypes::GetAllPossibleEStateNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::EStateAtomTypes::GetAllPossibleEStateAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 614       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 615     <span class="s">}</span>
+ 616 
+ 617     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^MMFF94AtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 618       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::MMFF94AtomTypes::GetAllPossibleMMFF94NonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::MMFF94AtomTypes::GetAllPossibleMMFF94AtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 619       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 620     <span class="s">}</span>
+ 621 
+ 622     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SLogPAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 623       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::SLogPAtomTypes::GetAllPossibleSLogPNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::SLogPAtomTypes::GetAllPossibleSLogPAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 624       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 625     <span class="s">}</span>
+ 626 
+ 627     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SYBYLAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 628       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::SYBYLAtomTypes::GetAllPossibleSYBYLNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::SYBYLAtomTypes::GetAllPossibleSYBYLAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 629       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 630     <span class="s">}</span>
+ 631 
+ 632     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^TPSAAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 633       <span class="i">$Size</span> =  <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::TPSAAtomTypes::GetAllPossibleTPSAAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 634       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 635     <span class="s">}</span>
+ 636 
+ 637     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^UFFAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 638       <span class="i">$Size</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::UFFAtomTypes::GetAllPossibleUFFNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span>} <span class="co">:</span> <span class="k">scalar</span> <span class="i">@</span>{<span class="i">AtomTypes::UFFAtomTypes::GetAllPossibleUFFAtomTypes</span><span class="s">(</span><span class="s">)</span>}<span class="sc">;</span>
+ 639       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 640     <span class="s">}</span>
+ 641 
+ 642     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_GetFixedSizeAtomTypesSetSize: Atom types set size for atom indentifier type, $This-&gt;{AtomIdentifierType}, is not available...&quot;</span><span class="sc">;</span>
+ 643   <span class="s">}</span>
+ 644 
+ 645   <span class="k">return</span> <span class="i">$Size</span><span class="sc">;</span>
+ 646 <span class="s">}</span>
+ 647 
+ 648 <span class="c"># Get fixed size atom types set...</span>
+ 649 <span class="c">#</span>
+<a name="_GetFixedSizeAtomTypesSet-"></a> 650 <span class="k">sub </span><span class="m">_GetFixedSizeAtomTypesSet</span> <span class="s">{</span>
+ 651   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 652   <span class="k">my</span><span class="s">(</span><span class="i">$AtomTypesRef</span><span class="s">)</span><span class="sc">;</span>
+ 653 
+ 654   <span class="i">$AtomTypesRef</span> = <span class="k">undef</span><span class="sc">;</span>
+ 655 
+ 656   <span class="j">IDENTIFIERTYPE:</span> <span class="s">{</span>
+ 657     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^DREIDINGAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 658       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::DREIDINGAtomTypes::GetAllPossibleDREIDINGNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::DREIDINGAtomTypes::GetAllPossibleDREIDINGAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 659       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 660     <span class="s">}</span>
+ 661 
+ 662     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^EStateAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 663       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::EStateAtomTypes::GetAllPossibleEStateNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::EStateAtomTypes::GetAllPossibleEStateAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 664       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 665     <span class="s">}</span>
+ 666 
+ 667     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^MMFF94AtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 668       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::MMFF94AtomTypes::GetAllPossibleMMFF94NonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::MMFF94AtomTypes::GetAllPossibleMMFF94AtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 669       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 670     <span class="s">}</span>
+ 671 
+ 672     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SLogPAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 673       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::SLogPAtomTypes::GetAllPossibleSLogPNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::SLogPAtomTypes::GetAllPossibleSLogPAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 674       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 675     <span class="s">}</span>
+ 676 
+ 677     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^SYBYLAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 678       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::SYBYLAtomTypes::GetAllPossibleSYBYLNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::SYBYLAtomTypes::GetAllPossibleSYBYLAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 679       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 680     <span class="s">}</span>
+ 681 
+ 682     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^TPSAAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 683       <span class="i">$AtomTypesRef</span> = <span class="i">AtomTypes::TPSAAtomTypes::GetAllPossibleTPSAAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 684       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 685     <span class="s">}</span>
+ 686 
+ 687     <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^UFFAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 688       <span class="i">$AtomTypesRef</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="i">AtomTypes::UFFAtomTypes::GetAllPossibleUFFNonHydrogenAtomTypes</span><span class="s">(</span><span class="s">)</span> <span class="co">:</span> <span class="i">AtomTypes::UFFAtomTypes::GetAllPossibleUFFAtomTypes</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 689       <span class="k">last</span> <span class="j">IDENTIFIERTYPE</span><span class="sc">;</span>
+ 690     <span class="s">}</span>
+ 691 
+ 692     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_GetFixedSizeAtomTypesSet: Atom types set for atom indentifier type, $This-&gt;{AtomIdentifierType}, is not available...&quot;</span><span class="sc">;</span>
+ 693   <span class="s">}</span>
+ 694 
+ 695   <span class="k">return</span> <span class="i">$AtomTypesRef</span><span class="sc">;</span>
+ 696 <span class="s">}</span>
+ 697 
+ 698 <span class="c"># Initialize atom indentifier type information...</span>
+ 699 <span class="c">#</span>
+ 700 <span class="c"># Current supported values:</span>
+ 701 <span class="c">#</span>
+ 702 <span class="c"># AtomicInvariantsAtomTypes, DREIDINGAtomTypes, EStateAtomTypes, FunctionalClassAtomTypes,</span>
+ 703 <span class="c"># MMFF94AtomTypes, SLogPAtomTypes, SYBYLAtomTypes, TPSAAtomTypes, UFFAtomTypes</span>
+ 704 <span class="c">#</span>
+<a name="_InitializeAtomIdentifierTypeInformation-"></a> 705 <span class="k">sub </span><span class="m">_InitializeAtomIdentifierTypeInformation</span> <span class="s">{</span>
+ 706   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 707 
+ 708   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 709     <span class="i">$This</span><span class="i">-&gt;_InitializeAtomicInvariantsAtomTypesInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 710   <span class="s">}</span>
+ 711   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 712     <span class="i">$This</span><span class="i">-&gt;_InitializeFunctionalClassAtomTypesInformation</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 713   <span class="s">}</span>
+ 714   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^(DREIDINGAtomTypes|EStateAtomTypes|MMFF94AtomTypes|SLogPAtomTypes|SYBYLAtomTypes|TPSAAtomTypes|UFFAtomTypes)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 715     <span class="c"># Nothing to do for now...</span>
+ 716   <span class="s">}</span>
+ 717   <span class="k">else</span> <span class="s">{</span>
+ 718     <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;_InitializeAtomIdentifierTypeInformation: Unknown atom indentifier type $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 719   <span class="s">}</span>
+ 720 
+ 721   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 722 <span class="s">}</span>
+ 723 
+ 724 <span class="c"># Initialize atomic invariants atom types to use for generating atom IDs in atom pairs...</span>
+ 725 <span class="c">#</span>
+ 726 <span class="c"># Let:</span>
+ 727 <span class="c">#   AS = Atom symbol corresponding to element symbol</span>
+ 728 <span class="c">#</span>
+ 729 <span class="c">#   X&lt;n&gt;   = Number of non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 730 <span class="c">#   BO&lt;n&gt; = Sum of bond orders to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 731 <span class="c">#   LBO&lt;n&gt; = Largest bond order of non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 732 <span class="c">#   SB&lt;n&gt; = Number of single bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 733 <span class="c">#   DB&lt;n&gt; = Number of double bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 734 <span class="c">#   TB&lt;n&gt; = Number of triple bonds to non-hydrogen atom neighbors or heavy atoms attached to atom</span>
+ 735 <span class="c">#   H&lt;n&gt;   = Number of implicit and explicit hydrogens for atom</span>
+ 736 <span class="c">#   Ar     = Aromatic annotation indicating whether atom is aromatic</span>
+ 737 <span class="c">#   RA     = Ring atom annotation indicating whether atom is a ring</span>
+ 738 <span class="c">#   FC&lt;+n/-n&gt; = Formal charge assigned to atom</span>
+ 739 <span class="c">#   MN&lt;n&gt; = Mass number indicating isotope other than most abundant isotope</span>
+ 740 <span class="c">#   SM&lt;n&gt; = Spin multiplicity of atom. Possible values: 1 (singlet), 2 (doublet) or 3 (triplet)</span>
+ 741 <span class="c">#</span>
+ 742 <span class="c">#   AtomTypeIDx = Atomic invariants atom type for atom x</span>
+ 743 <span class="c">#   AtomTypeIDy = Atomic invariants atom type for atom y</span>
+ 744 <span class="c">#   Dn   = Topological distance between atom x and y</span>
+ 745 <span class="c">#</span>
+ 746 <span class="c"># Then:</span>
+ 747 <span class="c">#</span>
+ 748 <span class="c">#   AtomID generated by AtomTypes::AtomicInvariantsAtomTypes class corresponds to:</span>
+ 749 <span class="c">#</span>
+ 750 <span class="c">#     AS.X&lt;n&gt;.BO&lt;n&gt;.LBO&lt;n&gt;.&lt;SB&gt;&lt;n&gt;.&lt;DB&gt;&lt;n&gt;.&lt;TB&gt;&lt;n&gt;.H&lt;n&gt;.Ar.RA.FC&lt;+n/-n&gt;.MN&lt;n&gt;.SM&lt;n&gt;</span>
+ 751 <span class="c">#</span>
+ 752 <span class="c"># Except for AS which is a required atomic invariant atom types AtomIDs, all other atomic invariants are</span>
+ 753 <span class="c"># optional. Default atomic invariants used for AtomID are: AS, X&lt;n&gt;, BO&lt;n&gt;, H&lt;n&gt;, FC&lt;+n/-n&gt;.</span>
+ 754 <span class="c"># AtomID specification doesn&#39;t include atomic invariants with zero or undefined values.</span>
+ 755 <span class="c">#</span>
+ 756 <span class="c"># Examples of  AtomIDs:</span>
+ 757 <span class="c">#</span>
+ 758 <span class="c">#   O.X1.BO1.H1 - Hydroxyl oxygen in carboxylate with attached hydrogen and no explicit charge</span>
+ 759 <span class="c">#   O.X1.BO1.FC-1 - Hydroxyl ozygen in carboxylate with explicit negative charge</span>
+ 760 <span class="c">#   O.X1.BO2 - Carbonyl oxygen in carboxylate with double bond to carbon</span>
+ 761 <span class="c">#   O.X2.BO2 - Hydroxyl ozygen in carboxylate attached to carbonyl carbon and another heavy atom</span>
+ 762 <span class="c">#</span>
+ 763 <span class="c">#   C.X2.BO3.H1.Ar - Aromatic carbon</span>
+ 764 <span class="c">#</span>
+<a name="_InitializeAtomicInvariantsAtomTypesInformation-"></a> 765 <span class="k">sub </span><span class="m">_InitializeAtomicInvariantsAtomTypesInformation</span> <span class="s">{</span>
+ 766   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 767 
+ 768   <span class="c"># Default atomic invariants to use for generating atom pair atom IDs: AS, X, BO, H, FC</span>
+ 769   <span class="c">#</span>
+ 770   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 771   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="q">&#39;AS&#39;</span><span class="cm">,</span> <span class="q">&#39;X&#39;</span><span class="cm">,</span> <span class="q">&#39;BO&#39;</span><span class="cm">,</span> <span class="q">&#39;H&#39;</span><span class="cm">,</span> <span class="q">&#39;FC&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 772 
+ 773   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 774 <span class="s">}</span>
+ 775 
+ 776 <span class="c"># Initialize functional class atom types, generated by AtomTypes::FunctionalClassAtomTypes</span>
+ 777 <span class="c"># class, to use for generating atom identifiers...</span>
+ 778 <span class="c">#</span>
+ 779 <span class="c"># Let:</span>
+ 780 <span class="c">#   HBD: HydrogenBondDonor</span>
+ 781 <span class="c">#   HBA: HydrogenBondAcceptor</span>
+ 782 <span class="c">#   PI :  PositivelyIonizable</span>
+ 783 <span class="c">#   NI : NegativelyIonizable</span>
+ 784 <span class="c">#   Ar : Aromatic</span>
+ 785 <span class="c">#   Hal : Halogen</span>
+ 786 <span class="c">#   H : Hydrophobic</span>
+ 787 <span class="c">#   RA : RingAtom</span>
+ 788 <span class="c">#   CA : ChainAtom</span>
+ 789 <span class="c">#</span>
+ 790 <span class="c"># Then:</span>
+ 791 <span class="c">#</span>
+ 792 <span class="c">#   Functiononal class atom type specification for an atom corresponds to:</span>
+ 793 <span class="c">#</span>
+ 794 <span class="c">#     Ar.CA.H.HBA.HBD.Hal.NI.PI.RA</span>
+ 795 <span class="c">#</span>
+ 796 <span class="c">#   Default functional classes used are: HBD, HBA, PI, NI, Ar, Hal</span>
+ 797 <span class="c">#</span>
+ 798 <span class="c">#   FunctionalAtomTypes are assigned using the following definitions [ Ref 60-61, Ref 65-66 ]:</span>
+ 799 <span class="c">#</span>
+ 800 <span class="c">#     HydrogenBondDonor: NH, NH2, OH</span>
+ 801 <span class="c">#     HydrogenBondAcceptor: N[!H], O</span>
+ 802 <span class="c">#     PositivelyIonizable: +, NH2</span>
+ 803 <span class="c">#     NegativelyIonizable: -, C(=O)OH, S(=O)OH, P(=O)OH</span>
+ 804 <span class="c">#</span>
+<a name="_InitializeFunctionalClassAtomTypesInformation-"></a> 805 <span class="k">sub </span><span class="m">_InitializeFunctionalClassAtomTypesInformation</span> <span class="s">{</span>
+ 806   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 807 
+ 808   <span class="c"># Default functional class atom typess to use for generating atom identifiers</span>
+ 809   <span class="c"># are: HBD, HBA, PI, NI, Ar, Hal</span>
+ 810   <span class="c">#</span>
+ 811   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 812   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="q">&#39;HBD&#39;</span><span class="cm">,</span> <span class="q">&#39;HBA&#39;</span><span class="cm">,</span> <span class="q">&#39;PI&#39;</span><span class="cm">,</span> <span class="q">&#39;NI&#39;</span><span class="cm">,</span> <span class="q">&#39;Ar&#39;</span><span class="cm">,</span> <span class="q">&#39;Hal&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 813 
+ 814   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 815 <span class="s">}</span>
+ 816 
+ 817 <span class="c"># Set atomic invariants to use for atom IDs...</span>
+ 818 <span class="c">#</span>
+<a name="SetAtomicInvariantsToUse-"></a> 819 <span class="k">sub </span><span class="m">SetAtomicInvariantsToUse</span> <span class="s">{</span>
+ 820   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 821   <span class="k">my</span><span class="s">(</span><span class="i">$FirstValue</span><span class="cm">,</span> <span class="i">$TypeOfFirstValue</span><span class="cm">,</span> <span class="i">$AtomicInvariant</span><span class="cm">,</span> <span class="i">$SpecifiedAtomicInvariant</span><span class="cm">,</span> <span class="i">$AtomicInvariantValue</span><span class="cm">,</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@AtomicInvariantsToUse</span><span class="s">)</span><span class="sc">;</span>
+ 822 
+ 823   <span class="k">if</span> <span class="s">(</span>!<span class="i">@Values</span><span class="s">)</span> <span class="s">{</span>
+ 824     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetAtomicInvariantsToUse: No values specified...&quot;</span><span class="sc">;</span>
+ 825     <span class="k">return</span><span class="sc">;</span>
+ 826   <span class="s">}</span>
+ 827 
+ 828   <span class="i">$FirstValue</span> = <span class="i">$Values</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 829   <span class="i">$TypeOfFirstValue</span> = <span class="k">ref</span> <span class="i">$FirstValue</span><span class="sc">;</span>
+ 830 
+ 831   <span class="i">@SpecifiedAtomicInvariants</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 832   <span class="i">@AtomicInvariantsToUse</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 833 
+ 834   <span class="k">if</span> <span class="s">(</span><span class="i">$TypeOfFirstValue</span> =~ <span class="q">/^ARRAY/</span><span class="s">)</span> <span class="s">{</span>
+ 835     <span class="k">push</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$FirstValue</span>}<span class="sc">;</span>
+ 836   <span class="s">}</span>
+ 837   <span class="k">else</span> <span class="s">{</span>
+ 838     <span class="k">push</span> <span class="i">@SpecifiedAtomicInvariants</span><span class="cm">,</span> <span class="i">@Values</span><span class="sc">;</span>
+ 839   <span class="s">}</span>
+ 840 
+ 841   <span class="c"># Make sure specified AtomicInvariants are valid...</span>
+ 842   <span class="k">for</span> <span class="i">$SpecifiedAtomicInvariant</span> <span class="s">(</span><span class="i">@SpecifiedAtomicInvariants</span><span class="s">)</span> <span class="s">{</span>
+ 843     <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::AtomicInvariantsAtomTypes::IsAtomicInvariantAvailable</span><span class="s">(</span><span class="i">$SpecifiedAtomicInvariant</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 844       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetAtomicInvariantsToUse: Specified atomic invariant, $SpecifiedAtomicInvariant, is not supported...\n &quot;</span><span class="sc">;</span>
+ 845     <span class="s">}</span>
+ 846     <span class="i">$AtomicInvariant</span> = <span class="i">$SpecifiedAtomicInvariant</span><span class="sc">;</span>
+ 847     <span class="k">push</span> <span class="i">@AtomicInvariantsToUse</span><span class="cm">,</span> <span class="i">$AtomicInvariant</span><span class="sc">;</span>
+ 848   <span class="s">}</span>
+ 849 
+ 850   <span class="c"># Set atomic invariants to use...</span>
+ 851   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 852   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}}<span class="cm">,</span> <span class="i">@AtomicInvariantsToUse</span><span class="sc">;</span>
+ 853 
+ 854   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 855 <span class="s">}</span>
+ 856 
+ 857 <span class="c"># Set functional classes to use for generation of intial atom indentifiers...</span>
+ 858 <span class="c">#</span>
+<a name="SetFunctionalClassesToUse-"></a> 859 <span class="k">sub </span><span class="m">SetFunctionalClassesToUse</span> <span class="s">{</span>
+ 860   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="cm">,</span> <span class="i">@Values</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 861   <span class="k">my</span><span class="s">(</span><span class="i">$FirstValue</span><span class="cm">,</span> <span class="i">$TypeOfFirstValue</span><span class="cm">,</span> <span class="i">$FunctionalClass</span><span class="cm">,</span> <span class="i">$SpecifiedFunctionalClass</span><span class="cm">,</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@FunctionalClassesToUse</span><span class="s">)</span><span class="sc">;</span>
+ 862 
+ 863   <span class="k">if</span> <span class="s">(</span>!<span class="i">@Values</span><span class="s">)</span> <span class="s">{</span>
+ 864     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetFunctionalClassesToUse: No values specified...&quot;</span><span class="sc">;</span>
+ 865     <span class="k">return</span><span class="sc">;</span>
+ 866   <span class="s">}</span>
+ 867 
+ 868   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} !~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 869     <span class="w">carp</span> <span class="q">&quot;Warning: ${ClassName}-&gt;SetFunctionalClassesToUse: FunctionalClassesToUse can&#39;t be set for InitialAtomIdentifierType of $This-&gt;{AtomIdentifierType}...&quot;</span><span class="sc">;</span>
+ 870     <span class="k">return</span><span class="sc">;</span>
+ 871   <span class="s">}</span>
+ 872 
+ 873   <span class="i">$FirstValue</span> = <span class="i">$Values</span>[<span class="n">0</span>]<span class="sc">;</span>
+ 874   <span class="i">$TypeOfFirstValue</span> = <span class="k">ref</span> <span class="i">$FirstValue</span><span class="sc">;</span>
+ 875 
+ 876   <span class="i">@SpecifiedFunctionalClasses</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 877   <span class="i">@FunctionalClassesToUse</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 878 
+ 879   <span class="k">if</span> <span class="s">(</span><span class="i">$TypeOfFirstValue</span> =~ <span class="q">/^ARRAY/</span><span class="s">)</span> <span class="s">{</span>
+ 880     <span class="k">push</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$FirstValue</span>}<span class="sc">;</span>
+ 881   <span class="s">}</span>
+ 882   <span class="k">else</span> <span class="s">{</span>
+ 883     <span class="k">push</span> <span class="i">@SpecifiedFunctionalClasses</span><span class="cm">,</span> <span class="i">@Values</span><span class="sc">;</span>
+ 884   <span class="s">}</span>
+ 885 
+ 886   <span class="c"># Make sure specified FunctionalClasses are valid...</span>
+ 887   <span class="k">for</span> <span class="i">$SpecifiedFunctionalClass</span> <span class="s">(</span><span class="i">@SpecifiedFunctionalClasses</span><span class="s">)</span> <span class="s">{</span>
+ 888     <span class="k">if</span> <span class="s">(</span>!<span class="i">AtomTypes::FunctionalClassAtomTypes::IsFunctionalClassAvailable</span><span class="s">(</span><span class="i">$SpecifiedFunctionalClass</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 889       <span class="w">croak</span> <span class="q">&quot;Error: ${ClassName}-&gt;SetFunctionalClassesToUse: Specified functional class, $SpecifiedFunctionalClass, is not supported...\n &quot;</span><span class="sc">;</span>
+ 890     <span class="s">}</span>
+ 891     <span class="k">push</span> <span class="i">@FunctionalClassesToUse</span><span class="cm">,</span> <span class="i">$SpecifiedFunctionalClass</span><span class="sc">;</span>
+ 892   <span class="s">}</span>
+ 893 
+ 894   <span class="c"># Set functional classes to use...</span>
+ 895   <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 896   <span class="k">push</span> <span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="cm">,</span> <span class="i">@FunctionalClassesToUse</span><span class="sc">;</span>
+ 897 
+ 898   <span class="k">return</span> <span class="i">$This</span><span class="sc">;</span>
+ 899 <span class="s">}</span>
+ 900 
+ 901 <span class="c"># Return a string containg data for AtomTypesFingerprints object...</span>
+<a name="StringifyAtomTypesFingerprints-"></a> 902 <span class="k">sub </span><span class="m">StringifyAtomTypesFingerprints</span> <span class="s">{</span>
+ 903   <span class="k">my</span><span class="s">(</span><span class="i">$This</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 904   <span class="k">my</span><span class="s">(</span><span class="i">$FingerprintsString</span><span class="cm">,</span> <span class="i">$IgnoreHydrogens</span><span class="s">)</span><span class="sc">;</span>
+ 905 
+ 906   <span class="i">$FingerprintsString</span> = <span class="q">&quot;Type: $This-&gt;{Type}; AtomIdentifierType: $This-&gt;{AtomIdentifierType}; AtomTypesSetToUse: $This-&gt;{AtomTypesSetToUse}&quot;</span><span class="sc">;</span>
+ 907 
+ 908   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^AtomicInvariantsAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 909     <span class="k">my</span><span class="s">(</span><span class="i">$AtomicInvariant</span><span class="cm">,</span> <span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="i">@AtomicInvariantsOrder</span><span class="cm">,</span> <span class="i">%AvailableAtomicInvariants</span><span class="s">)</span><span class="sc">;</span>
+ 910 
+ 911     <span class="i">@AtomicInvariantsOrder</span> = <span class="i">AtomTypes::AtomicInvariantsAtomTypes::GetAtomicInvariantsOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 912     <span class="i">%AvailableAtomicInvariants</span> = <span class="i">AtomTypes::AtomicInvariantsAtomTypes::GetAvailableAtomicInvariants</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 913 
+ 914     <span class="k">for</span> <span class="i">$AtomicInvariant</span> <span class="s">(</span><span class="i">@AtomicInvariantsOrder</span><span class="s">)</span> <span class="s">{</span>
+ 915       <span class="k">push</span> <span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="q">&quot;$AtomicInvariant: $AvailableAtomicInvariants{$AtomicInvariant}&quot;</span><span class="sc">;</span>
+ 916     <span class="s">}</span>
+ 917 
+ 918     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; AtomicInvariantsToUse: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">AtomicInvariantsToUse</span>}}<span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 919     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; AtomicInvariantsOrder: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@AtomicInvariantsOrder</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 920     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; AvailableAtomicInvariants: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@AtomicInvariants</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 921   <span class="s">}</span>
+ 922   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">AtomIdentifierType</span>} =~ <span class="q">/^FunctionalClassAtomTypes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 923     <span class="k">my</span><span class="s">(</span><span class="i">$FunctionalClass</span><span class="cm">,</span> <span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="i">@FunctionalClassesOrder</span><span class="cm">,</span> <span class="i">%AvailableFunctionalClasses</span><span class="s">)</span><span class="sc">;</span>
+ 924 
+ 925     <span class="i">@FunctionalClassesOrder</span> = <span class="i">AtomTypes::FunctionalClassAtomTypes::GetFunctionalClassesOrder</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 926     <span class="i">%AvailableFunctionalClasses</span> = <span class="i">AtomTypes::FunctionalClassAtomTypes::GetAvailableFunctionalClasses</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 927 
+ 928     <span class="k">for</span> <span class="i">$FunctionalClass</span> <span class="s">(</span><span class="i">@FunctionalClassesOrder</span><span class="s">)</span> <span class="s">{</span>
+ 929       <span class="k">push</span> <span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="q">&quot;$FunctionalClass: $AvailableFunctionalClasses{$FunctionalClass}&quot;</span><span class="sc">;</span>
+ 930     <span class="s">}</span>
+ 931 
+ 932     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; FunctionalClassesToUse: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@</span>{<span class="i">$This</span>-&gt;{<span class="w">FunctionalClassesToUse</span>}}<span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 933     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; FunctionalClassesOrder: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@FunctionalClassesOrder</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 934     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; AvailableFunctionalClasses: &lt;&quot;</span> . <span class="i">TextUtil::JoinWords</span><span class="s">(</span>\<span class="i">@FunctionalClasses</span><span class="cm">,</span> <span class="q">&quot;, &quot;</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;&gt;&quot;</span><span class="sc">;</span>
+ 935   <span class="s">}</span>
+ 936 
+ 937 
+ 938   <span class="i">$IgnoreHydrogens</span> = <span class="i">$This</span>-&gt;{<span class="w">IgnoreHydrogens</span>} ? <span class="q">&quot;Yes&quot;</span> <span class="co">:</span> <span class="q">&quot;No&quot;</span><span class="sc">;</span>
+ 939   <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; IgnoreHydrogens: $IgnoreHydrogens&quot;</span><span class="sc">;</span>
+ 940 
+ 941   <span class="k">if</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesCount$/i</span><span class="s">)</span> <span class="s">{</span>
+ 942     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; FingerprintsVector: &lt; $This-&gt;{FingerprintsVector} &gt;&quot;</span><span class="sc">;</span>
+ 943   <span class="s">}</span>
+ 944   <span class="k">elsif</span> <span class="s">(</span><span class="i">$This</span>-&gt;{<span class="w">Type</span>} =~ <span class="q">/^AtomTypesBits$/i</span><span class="s">)</span> <span class="s">{</span>
+ 945     <span class="i">$FingerprintsString</span> .= <span class="q">&quot;; FingerprintsBitVector: &lt; $This-&gt;{FingerprintsBitVector} &gt;&quot;</span><span class="sc">;</span>
+ 946   <span class="s">}</span>
+ 947 
+ 948   <span class="k">return</span> <span class="i">$FingerprintsString</span><span class="sc">;</span>
+ 949 <span class="s">}</span>
+ 950 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

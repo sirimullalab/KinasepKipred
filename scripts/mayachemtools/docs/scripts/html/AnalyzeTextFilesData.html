@@ -1,0 +1,176 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:AnalyzeTextFilesData.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AnalyzeSequenceFilesData.html" title="AnalyzeSequenceFilesData.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AssignAtomTypes.html" title="AssignAtomTypes.html">Next</a></td><td width="34%" align="middle"><strong>AnalyzeTextFilesData.pl</strong></td><td width="33%" align="right"><a href="././code/AnalyzeTextFilesData.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/AnalyzeTextFilesData.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/AnalyzeTextFilesData.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/AnalyzeTextFilesData.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/AnalyzeTextFilesData.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>AnalyzeTextFilesData.pl - Analyze numerical coulmn data in TextFile(s)</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>AnalyzeTextFilesData.pl TextFile(s)...</p>
+<p>AnalyzeTextFilesData.pl [<b>-c, --colmode</b> colnum | collabel] [<b>--columns</b> &quot;colnum,[colnum,...]&quot; | &quot;collabel,[collabel,...]&quot; | All] [<b>--columnpairs</b> &quot;colnum,colnum,[colnum,colnum]...&quot; | &quot;collabel,collabel,[collabel,collabel]...&quot; | AllPairs] [<b>-d, --detail</b> infolevel] [<b>-f, --fast</b>] [<b>--frequencybins</b> number | &quot;number,number,[number,...]&quot;] [<b>-h, --help</b>] [<b>--indelim</b> comma | semicolon] [<b>--klargest</b> number] [<b>--ksmallest</b> number] [<b>-m, --mode</b> DescriptiveStatisticsBasic | DescriptiveStatisticsAll | All | &quot;function1, [function2,...]&quot;] [<b>-o, --overwrite</b>] [<b>--outdelim</b> comma | tab | semicolon] [<b>-p, --precision</b> number] [<b>-q, --quote</b> yes | no] [<b>-r, --root</b> rootname] [<b>--trimfraction</b> number] [<b>-w, --workingdir</b> dirname] TextFiles(s)...</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p>Anaylze numerical column data in <i>TextFile(s)</i> using a combination of various statistical functions; Non-numerical values are simply ignored. For <i>Correlation, RSquare, and Covariance</i> analysis, the count of valid values in specifed column pair must be same; otherwise, column pair is ignored. The file names are separated by space. The valid file extensions are <i>.csv</i> and <i>.tsv</i> for comma/semicolon and tab delimited text files respectively. All other file names are ignored. All the text files in a current directory can be specified by <i>*.csv</i>, <i>*.tsv</i>, or the current directory name. The <b>--indelim</b> option determines the format of <i>TextFile(s)</i>. Any file which doesn&#39;t correspond to the format indicated by <b>--indelim</b> option is ignored.</p>
+<h1 id="OPTIONS">OPTIONS</h2>
+<dl>
+<dt id="c---colmode-colnum-collabel"><b>-c, --colmode</b> <i>colnum | collabel</i></dt>
+<dd>
+<p>Specify how columns are identified in TextFile(s): using column number or column label. Possible values: <i>colnum or collabel</i>. Default value: <i>colnum</i>.</p>
+</dd>
+<dt id="columns-colnum-colnum-...-collabel-collabel-...-All"><b>--columns</b> <i>&quot;colnum,[colnum,...]&quot; | &quot;collabel,[collabel]...&quot; | All</i></dt>
+<dd>
+<p>This value is mode specific. It&#39;s a list of comma delimited columns to use for data analysis. Default value: <i>First column</i>.</p>
+<p>This value is ignored during <i>Correlation/Pearson Correlation</i> and <i>Covariance</i> data analysis; <b>-coulmnparis</b> option is used instead.</p>
+<p>For <i>colnum</i> value of <b>-c, --colmode</b> option, input values format is: <i>colnum,colnum,...</i>. Example:</p>
+<div class="OptionsBox">   1,3,5</div>
+<p>For <i>collabel</i> value of <b>-c, --colmode</b> option, input values format is: <i>collabel,collabel,..</i>. Example:</p>
+<div class="OptionsBox">    ALogP,MolWeight,EC50</div>
+</dd>
+<dt id="columnpairs-colnum-colnum-colnum-colnum-...-collabel-collabel-collabel-collabel-...-AllPairs"><b>--columnpairs</b> <i>&quot;colnum,colnum,[colnum,colnum,...]&quot; | &quot;collabel,collabel,[collabel,collabel,...]&quot; | AllPairs</i></dt>
+<dd>
+<p>This value is mode specific and is only used for <i>Correlation, PearsonCorrelation, or Covariance</i> value of <b>-m, --mode</b> option. It is a comma delimited list of column pairs to use for data analysis during <i>Correlation</i> and <i>Covariance</i> calculations. Default value: <i>First column, Second column</i>.</p>
+<p>For <i>colnum</i> value of <b>-c, --colmode</b> option, input values format is: <i>colnum,colnum,[colnum,colnum]...</i>. Example:</p>
+<div class="OptionsBox">    1,3,5,6,1,6</div>
+<p>For <i>collabel</i> value of <b>-c, --colmode</b> option, input values format is: <i>collabel,collabel,[collabel,collabel]..</i>. Example:</p>
+<div class="OptionsBox">    MolWeight,EC50,NumN+O,PSA</div>
+<p>For <i>AllPairs</i> value of <b>--columnparis</b> option, all column pairs are used for <i>Correlation</i> and <i>Covariance</i> calculations.</p>
+</dd>
+<dt id="d---detail-infolevel"><b>-d, --detail</b> <i>infolevel</i></dt>
+<dd>
+<p>Level of information to print about column values being ignored. Default: <i>1</i>. Possible values: 1, 2, 3, or 4.</p>
+</dd>
+<dt id="f---fast"><b>-f, --fast</b></dt>
+<dd>
+<p>In this mode, all the columns specified for analysis are assumed to contain numerical data and no checking is performed before analysis. By default, only numerical data is used for analysis; other types of column data is ignored.</p>
+</dd>
+<dt id="frequencybins-number-number-number-number"><b>--frequencybins</b> <i>number | &quot;number,number,[number,...]&quot;</i></dt>
+<dd>
+<p>Specify number of bins or bin range to use for frequency analysis. Default value: <i>10</i></p>
+<p>Number of bins value along with the smallest and largest value for a column is used to group the column values into different groups.</p>
+<p>The bin range list is used to group values for a column into different groups; It must contain values in ascending order. Examples:</p>
+<div class="OptionsBox">    10,20,30
+<br/>    0.1,0.2,0.3,0.4,0.5</div>
+<p>The frequency value calculated for a specific bin corresponds to all the column values which are greater than the previous bin value and less than or equal to the current bin value.</p>
+</dd>
+<dt id="h---help"><b>-h, --help</b></dt>
+<dd>
+<p>Print this help message.</p>
+</dd>
+<dt id="indelim-comma-semicolon"><b>--indelim</b> <i>comma | semicolon</i></dt>
+<dd>
+<p>Input delimiter for CSV <i>TextFile(s)</i>. Possible values: <i>comma or semicolon</i>. Default value: <i>comma</i>. For TSV files, this option is ignored and <i>tab</i> is used as a delimiter.</p>
+</dd>
+<dt id="klargest-number"><b>--klargest</b> <i>number</i></dt>
+<dd>
+<p>Kth largest value to find by <i>KLargest</i> function. Default value: <i>2</i> Valid values: positive integers.</p>
+</dd>
+<dt id="ksmallest-number"><b>--ksmallest</b> <i>number</i></dt>
+<dd>
+<p>Kth smallest value to find by <i>KSmallest</i> function. Default value: <i>2</i>. Valid values: positive integers.</p>
+</dd>
+<dt id="m---mode-DescriptiveStatisticsBasic-DescriptiveStatisticsAll-All-function1-function2"><b>-m, --mode</b> <i>DescriptiveStatisticsBasic | DescriptiveStatisticsAll | All | &quot;function1, [function2,...]&quot;</i></dt>
+<dd>
+<p>Specify how to analyze data in TextFile(s): calculate basic or all descriptive statistics; or use a comma delimited list of supported statistical functions. Possible values: <i>DescriptiveStatisticsBasic | DescriptiveStatisticsAll | &quot;function1,[function2]...&quot;</i>. Default value: <i>DescriptiveStatisticsBasic</i></p>
+<p><i>DescriptiveStatisticsBasic</i> includes these functions: <i>Count, Maximum, Minimum, Mean, Median, Sum, StandardDeviation, StandardError, Variance</i>.</p>
+<p><i>DescriptiveStatisticsAll</i>, in addition to <i>DescriptiveStatisticsBasic</i> functions, includes: <i>GeometricMean, Frequency, HarmonicMean, KLargest, KSmallest, Kurtosis, Mode, RSquare, Skewness, TrimMean</i>.</p>
+<p><i>All</i> uses complete list of supported functions: <i>Average, AverageDeviation, Correlation, Count, Covariance, GeometricMean, Frequency, HarmonicMean, KLargest, KSmallest, Kurtosis, Maximum, Minimum, Mean, Median, Mode, RSquare, Skewness, Sum, SumOfSquares, StandardDeviation, StandardDeviationN, StandardError, StandardScores, StandardScoresN, TrimMean, Variance, VarianceN</i>. The function names ending with N calculate corresponding values assuming an entire population instead of a population sample.</p>
+<p>Here are the formulas for these functions:</p>
+<p>Average: See Mean</p>
+<p>AverageDeviation: SUM( ABS(x[i] - Xmean) ) / n</p>
+<p>Correlation: See Pearson Correlation</p>
+<p>Covariance: SUM( (x[i] - Xmean)(y[i] - Ymean) ) / n</p>
+<p>GeometricMean: NthROOT( PRODUCT(x[i]) )</p>
+<p>HarmonicMean: 1 / ( SUM(1/x[i]) / n )</p>
+<p>Mean: SUM( x[i] ) / n</p>
+<p>Median: Xsorted[(n - 1)/2 + 1] for even values of n; (Xsorted[n/2] + Xsorted[n/2 + 1])/2 for odd values of n.</p>
+<p>Kurtosis: [ {n(n + 1)/(n - 1)(n - 2)(n - 3)} SUM{ ((x[i] - Xmean)/STDDEV)^4 } ] - {3((n - 1)^2)}/{(n - 2)(n-3)}</p>
+<p>PearsonCorrelation: SUM( (x[i] - Xmean)(y[i] - Ymean) ) / SQRT( SUM( (x[i] - Xmean)^2 ) (SUM( (y[i] - Ymean)^2 )) )</p>
+<p>RSquare: PearsonCorrelation^2</p>
+<p>Skewness: {n/(n - 1)(n - 2)} SUM{ ((x[i] - Xmean)/STDDEV)^3 }</p>
+<p>StandardDeviation: SQRT ( SUM( (x[i] - Mean)^2 ) / (n - 1) )</p>
+<p>StandardDeviationN: SQRT ( SUM( (x[i] - Mean)^2 ) / n )</p>
+<p>StandardError: StandardDeviation / SQRT( n )</p>
+<p>StandardScore: (x[i] - Mean) / (n - 1)</p>
+<p>StandardScoreN: (x[i] - Mean) / n</p>
+<p>Variance: SUM( (x[i] - Xmean)^2 / (n - 1) )</p>
+<p>VarianceN: SUM( (x[i] - Xmean)^2 / n )</p>
+</dd>
+<dt id="o---overwrite"><b>-o, --overwrite</b></dt>
+<dd>
+<p>Overwrite existing files.</p>
+</dd>
+<dt id="outdelim-comma-tab-semicolon"><b>--outdelim</b> <i>comma | tab | semicolon</i></dt>
+<dd>
+<p>Output text file delimiter. Possible values: <i>comma, tab, or semicolon</i> Default value: <i>comma</i>.</p>
+</dd>
+<dt id="p---precision-number"><b>-p, --precision</b> <i>number</i></dt>
+<dd>
+<p>Precision of calculated values in the output file. Default: up to <i>2</i> decimal places. Valid values: positive integers.</p>
+</dd>
+<dt id="q---quote-yes-no"><b>-q, --quote</b> <i>yes | no</i></dt>
+<dd>
+<p>Put quotes around column values in output text file. Possible values: <i>yes or no</i>. Default value: <i>yes</i>.</p>
+</dd>
+<dt id="r---root-rootname"><b>-r, --root</b> <i>rootname</i></dt>
+<dd>
+<p>New text file name is generated using the root: &lt;Root&gt;.&lt;Ext&gt;. Default new file name: &lt;InitialTextFileName&gt;&lt;Mode&gt;.&lt;Ext&gt;. Based on the specified analysis, &lt;Mode&gt; corresponds to one of these values: DescriptiveStatisticsBasic, DescriptiveStatisticsAll, AllStatistics, SpecifiedStatistics, Covariance, Correlation, Frequency, or StandardScores. The csv, and tsv &lt;Ext&gt; values are used for comma/semicolon, and tab delimited text files respectively. This option is ignored for multiple input files.</p>
+</dd>
+<dt id="trimfraction-number"><b>--trimfraction</b> <i>number</i></dt>
+<dd>
+<p>Fraction of data to exclude from the top and bottom of the data set during <i>TrimMean</i> calculation. Default value: <i>0.1</i>. Valid values: &gt; 0 and &lt; 1.</p>
+</dd>
+<dt id="w---workingdir-text"><b>-w --workingdir</b> <i>text</i></dt>
+<dd>
+<p>Location of working directory. Default: current directory.</p>
+</dd>
+</dl>
+<h1 id="EXAMPLES">EXAMPLES</h2>
+<p>To calculate basic statistics for data in first column and generate a NewSample1DescriptiveStatisticsBasic.csv file, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -o -r NewSample1 Sample1.csv</div>
+<p>To calculate basic statistics for data in third column and generate a NewSample1DescriptiveStatisticsBasic.csv file, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl --columns 3 -o -r NewSample1 Sample1.csv</div>
+<p>To calculate basic statistics for data in MolWeight column and generate a NewSample1DescriptiveStatisticsBasic.csv file, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -colmode collabel --columns MolWeight -o
+    -r NewSample1 Sample1.csv</div>
+<p>To calculate all available statistics for data in third column and all column pairs, and generate NewSample1DescriptiveStatisticsAll.csv, NewSample1CorrelationMatrix.csv, NewSample1CorrelationMatrix.csv, and NewSample1MolWeightFrequencyAnalysis.csv files, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -m DescriptiveStatisticsAll --columns 3 -o
+    --columnpairs AllPairs -r NewSample1 Sample1.csv</div>
+<p>To compute frequency distribution of data in third column into five bins and generate NewSample1MolWeightFrequencyAnalysis.csv, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -m Frequency --frequencybins 5 --columns 3
+    -o -r NewSample1 Sample1.csv</div>
+<p>To compute frequency distribution of data in third column into specified bin range values, and generate NewSample1MolWeightFrequencyAnalysis.csv, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -m Frequency --frequencybins &quot;100,200,400&quot;
+    --columns 3 -o -r NewSample1 Sample1.csv</div>
+<p>To calculate all available statistics for data in all columns and column pairs, type:</p>
+<div class="ExampleBox">    % AnalyzeTextFilesData.pl -m All --columns  All --columnpairs
+    AllPairs -o -r NewSample1 Sample1.csv</div>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="SEE-ALSO">SEE ALSO</h2>
+<p><a href="./JoinTextFiles.html">JoinTextFiles.pl</a>, <a href="./MergeTextFilesWithSD.html">MergeTextFilesWithSD.pl</a>, <a href="./ModifyTextFilesFormat.html">ModifyTextFilesFormat.pl</a>, <a href="./SplitTextFiles.html">SplitTextFiles.pl</a>, <a href="./TextFilesToHTML.html">TextFilesToHTML.pl</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./AnalyzeSequenceFilesData.html" title="AnalyzeSequenceFilesData.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./AssignAtomTypes.html" title="AssignAtomTypes.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>AnalyzeTextFilesData.pl</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

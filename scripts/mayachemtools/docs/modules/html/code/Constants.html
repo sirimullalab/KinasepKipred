@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>MayaChemTools:Code:Constants.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+<a name="package-Constants-"></a>   1 <span class="k">package </span><span class="i">Constants</span><span class="sc">;</span>
+   2 <span class="c">#</span>
+   3 <span class="c"># File: Constants.pm</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">Exporter</span><span class="sc">;</span>
+  28 
+  29 <span class="k">use</span> <span class="w">vars</span> <span class="q">qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS)</span><span class="sc">;</span>
+  30 
+  31 <span class="i">@ISA</span> = <span class="q">qw(Exporter)</span><span class="sc">;</span>
+  32 
+  33 <span class="c"># Groups of constants...</span>
+  34 <span class="k">my</span><span class="s">(</span><span class="i">@MathConstants</span><span class="s">)</span> = <span class="q">qw(Pi TwoPi PiByTwo PiByFour InversePi OneByPi SqrtTwoPi OneBySqrtTwoPi InverseSqrtTwoPi Phi E BigNumber)</span><span class="sc">;</span>
+  35 
+  36 <span class="c"># Export all constants...</span>
+  37 <span class="i">@EXPORT</span> = <span class="s">(</span><span class="i">@MathConstants</span><span class="s">)</span><span class="sc">;</span>
+  38 <span class="i">@EXPORT_OK</span> = <span class="q">qw()</span><span class="sc">;</span>
+  39 
+  40 <span class="c"># Tags to export individual groups of constants...</span>
+  41 <span class="i">%EXPORT_TAGS</span> = <span class="s">(</span>
+  42                 <span class="w">math</span> <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@MathConstants</span><span class="s">]</span><span class="cm">,</span>
+  43                 <span class="w">all</span>  <span class="cm">=&gt;</span> <span class="s">[</span><span class="i">@EXPORT</span><span class="cm">,</span> <span class="i">@EXPORT_OK</span><span class="s">]</span>
+  44                <span class="s">)</span><span class="sc">;</span>
+  45 
+  46 <span class="c"># Math constants..</span>
+  47 <span class="k">use</span> <span class="w">constant</span> <span class="s">{</span>
+  48   <span class="w">Pi</span> <span class="cm">=&gt;</span> <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="cm">,</span>
+  49   <span class="w">TwoPi</span> <span class="cm">=&gt;</span> <span class="n">2</span> * <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="cm">,</span>
+  50   <span class="w">PiByTwo</span> <span class="cm">=&gt;</span> <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">1</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="cm">,</span>
+  51   <span class="w">PiByFour</span> <span class="cm">=&gt;</span> <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">1</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="cm">,</span>
+  52   <span class="w">OneByPi</span> <span class="cm">=&gt;</span> <span class="n">1.0</span> / <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="cm">,</span>
+  53   <span class="w">InversePi</span> <span class="cm">=&gt;</span> <span class="n">1.0</span> / <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="cm">,</span>
+  54   <span class="w">SqrtTwoPi</span> <span class="cm">=&gt;</span> <span class="i">CORE::</span><span class="k">sqrt</span><span class="s">(</span><span class="n">2</span> * <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="s">)</span><span class="cm">,</span>
+  55   <span class="w">OneBySqrtTwoPi</span> <span class="cm">=&gt;</span> <span class="n">1</span> / <span class="i">CORE::</span><span class="k">sqrt</span><span class="s">(</span><span class="n">2</span> * <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="s">)</span><span class="cm">,</span>
+  56   <span class="w">InverseSqrtTwoPi</span> <span class="cm">=&gt;</span> <span class="n">1</span> / <span class="i">CORE::</span><span class="k">sqrt</span><span class="s">(</span><span class="n">2</span> * <span class="i">CORE::</span><span class="k">atan2</span><span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">-1</span><span class="s">)</span><span class="s">)</span><span class="cm">,</span>
+  57 
+  58   <span class="w">Phi</span> <span class="cm">=&gt;</span> <span class="s">(</span><span class="n">1</span> + <span class="i">CORE::</span><span class="k">sqrt</span><span class="s">(</span><span class="n">5</span><span class="s">)</span><span class="s">)</span>/<span class="n">2</span><span class="cm">,</span> <span class="c"># Golden ratio...</span>
+  59 
+  60   <span class="w">E</span> <span class="cm">=&gt;</span> <span class="i">CORE::</span><span class="k">exp</span><span class="s">(</span><span class="n">1</span><span class="s">)</span><span class="cm">,</span>
+  61 
+  62   <span class="w">BigNumber</span> <span class="cm">=&gt;</span> <span class="n">2</span>**<span class="n">31</span> - <span class="n">1</span><span class="cm">,</span> <span class="c"># Unsigned 31 bit number</span>
+  63 
+  64 <span class="s">}</span><span class="sc">;</span>
+  65 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

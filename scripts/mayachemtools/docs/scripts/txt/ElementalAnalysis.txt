@@ -1,0 +1,158 @@
+NAME
+    ElementalAnalysis.pl - Perform elemental analysis using specified
+    formulas
+
+SYNOPSIS
+    ElementalAnalysis.pl Formula(s)...
+
+    ElementalAnalysis.pl [-h, --help] [-m, --mode All | "ElementalAnalysis,
+    [MolecularWeight, ExactMass]"] [--outdelim comma | tab | semicolon]
+    [--output STDOUT | File] [--outputstyle FormulaBlock | FormulaRows] [-o,
+    --overwrite] [--precision number] [-q, --quote yes | no] [-r, --root
+    rootname] [-v --valuelabels [Name, Label, [Name, Label,...]] [-w,
+    --workingdir dirname] Formula(s)...
+
+DESCRIPTION
+    Perform elemental analysis using molecular formula(s) specified on the
+    command line.
+
+    In addition to straightforward molecular formulas - H2O, HCl, C3H7O2N -
+    other supported variations are: Ca3(PO4)2, [PCl4]+, [Fe(CN)6]4-,
+    C37H42N2O6+2, Na2CO3.10H2O, 8H2S.46H2O, and so on. Charges are simply
+    ignored. Isotope symbols in formulas specification, including D and T,
+    are not supported.
+
+PARAMETERS
+    Formulas *Formula1 [Formula2...]*
+        *Formulas* is a space delimited list of molecular formulas to use
+        for elemental analysis.
+
+        Input value format is: *Formula1 [Formula2 Formula3...]*. Default:
+        *H2O*. Examples:
+
+            HCl
+            HCl, C3H7O2N
+            H2O2 Ca3(PO4)2 [PCl4]+
+
+OPTIONS
+    -h, --help
+        Print this help message.
+
+    --fast
+        In this mode, the specified formulas are considered valid and
+        initial formula validation check is skipped.
+
+    -m, --mode *All | "ElementalAnalysis,[MolecularWeight,ExactMass]"*
+        Specify what values to calculate using molecular formulas specified
+        on command line: calculate all supported values or specify a comma
+        delimited list of values. Possible values: *All |
+        "ElementalAnalysis, [MolecularWeight, ExactMass]"*. Default: *All*.
+
+    --outdelim *comma | tab | semicolon*
+        Output text file delimiter. Possible values: *comma, tab, or
+        semicolon* Default value: *comma*.
+
+    --output *STDOUT | File*
+        List information at STDOUT or write it to a file. Possible values:
+        *STDOUT or File*. Default: *STDOUT*. -r, --root option is used to
+        generate output file name.
+
+    --outputstyle *FormulaBlock | FormulaRows*
+        Specify how to list calculated values: add a new line for each
+        property and present it as a block for each formula; or include all
+        properties in one line and show it as a single line.
+
+        Possible values: *FormulaBlock | FormulaRows*. Default:
+        *FormulaBlock*
+
+        An example for *FormulaBlock* output style:
+
+            Formula: H2O
+            ElementalAnalysis: H: H: 11.1898%; O: 88.8102%
+            MolecularWeight: 18.0153
+            ExactMass: 18.0106
+            ... ...
+            ... ...
+            ... ...
+
+            Formula: H2O2
+            ElementalAnalysis: H: 5.9265%; O: 94.0735%
+            MolecularWeight: 34.0147
+            ExactMass: 34.0055
+            ... ...
+            ... ...
+            ... ...
+
+        An example for *FormulaRows* output style:
+
+            Formula,ElementalAnalysis,MolecularWeight,ExactMass
+            H2O,H: 11.1898%; O: 88.8102%,18.0153,18.0106
+            H2O2,H: 5.9265%; O: 94.0735%,34.0147,34.0055
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    --precision *number*
+        Precision for listing numerical values. Default: up to *4* decimal
+        places. Valid values: positive integers.
+
+    -r, --root *rootname*
+        New text file name is generated using the root: <Root>.<Ext>. File
+        name is only used during *File* value of -o, --output option.
+
+        Default file name: FormulsElementalAnalysis.<Ext>. The csv, and tsv
+        <Ext> values are used for comma/semicolon, and tab delimited text
+        files respectively.
+
+    -v --valuelabels *Name,Label,[Name,Label,...]*
+        Specify labels to use for calculated values. In general, it's a
+        comma delimited list of value name and column label pairs. Supported
+        value names: *ElementalAnalysis, MolecularWeight, and ExactMass*.
+        Default labels: *ElementalAnalysis, MolecularWeight, and ExactMass*.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To perform elemental analysis, calculate molecular weight and exact mass
+    for H2O, type:
+
+        % ElementalAnalysis.pl
+
+    To perform elemental analysis, calculate molecular weight and exact mass
+    for Ca3(PO4)2 and [PCl4]+, type:
+
+        % ElementalAnalysis.pl "Ca3(PO4)2" "[PCl4]+"
+
+    To perform elemental analysis, use label analysis for calculated data,
+    and generate a new CSV file ElementalAnalysis.csv for H2O and H2O2,
+    type:
+
+        % ElementalAnalysis.pl --m ElementalAnalysis --output File
+          --valuelabels "ElementalAnalysis,Analysis" -o -r ElementalAnalysis.csv
+          H2O H2O2
+
+    To calculate molecular weight and exact mass with four decimal precision
+    and generate a new CSV file WeightAndMass.csv with data rows for H2O and
+    H2O2, type:
+
+        % ElementalAnalysis.pl --m "MolecularWeight,ExactMass" --output File
+          --outputstyle FormulaRows -o -r WeightAndMass.csv
+          H2O H2O2
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    ElementalAnalysisSDFiles.pl, ElementalAnalysisTextFiles.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

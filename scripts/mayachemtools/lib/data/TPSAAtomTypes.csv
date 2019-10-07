@@ -1,0 +1,104 @@
+#
+# File: TPSAAtomTypes.csv
+# Author: Manish Sud <msud@san.rr.com>
+#
+# Copyright (C) 2018 Manish Sud. All rights reserved.
+#
+# This file is part of MayaChemTools.
+#
+# MayaChemTools is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option) any
+# later version.
+#
+# MayaChemTools is distributed in the hope that it will be useful, but without
+# any warranty; without even the implied warranty of merchantability of fitness
+# for a particular purpose.  See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with MayaChemTools; if not, see <http://www.gnu.org/licenses/> or
+# write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,
+# Boston, MA, 02111-1307, USA.
+#
+#
+# Original data source:
+#     o Table 1, Ertl et al. [ Ref 90 ]
+#
+# Notes:
+#     o 47 TPSA atom types are listed
+#     o AtomTypes::TPSAAtomTypes.pm module is used to assign TPSA atom types using
+#       an internal atom environment detection methodology. SMARTS strings are listed for
+#       reference purposed and are not used by TPSAAtomTypes.pm module.
+#     o AtomType symbols were not used in publication by Ertl et al; these are assigned and
+#       used only by MayaChemTools.
+#         o Number in AtomType symbol for an element simply correspond to its order of
+#            appearance in Table 1 [ Ref 90-91 ]
+#
+#     o N, O, P and S are used to indicate atom environments not explicitly defined in Table1.
+#        And their TPSA contributions are dynamically calculated using formulas from TPSA.c
+#        code developed by Peter Ertl :
+#
+#         o N = 30.5 - X*8.2 + H*1.5 or 0.0 for negative value
+#         o O = 28.5 - X*8.6 + H*1.5 or 0.0 for negative value
+#       
+#         where X = Number of heavy atom neighbors; H = Number of implicit and explicit
+#         hydrogen atom neighbors
+#  
+#         o P = 0.0
+#         o O = 0.0
+#
+#     o Number of atom type symbols for:
+#         o N: 27
+#         o O: 7
+#         o P: 5
+#         o S: 8
+#
+"AtomType","SMARTS","TPSAContribution","Comments"
+"N1","[N](-*)(-*)-*","3.24",""
+"N2","[N](-*)=*","12.36",""
+"N3","[N]#*","23.79",""
+"N4","[N](-*)(=*)=*","11.68","As in nitro group"
+"N5","[N](=*)#*","13.60","Middle nitrogen in azide group"
+"N6","[N]1(-*)-*-*-1","3.01","Atom in a 3 membered ring"
+"N7","[NH](-*)-*","12.03",""
+"N8","[NH]1-*-*-1","21.94","Atom in a 3 membered ring"
+"N9","[NH]=*","23.85",""
+"N10","[NH2]-*","26.02",""
+"N11","[N+](-*)(-*)(-*)-*","0.00",""
+"N12","[N+](-*)(-*)=*","3.01",""
+"N13","[N+](-*)#*","4.36","Nitrogen in isocyano group"
+"N14","[NH+](-*)(-*)-*","4.44",""
+"N15","[NH+](-*)=*","13.97",""
+"N16","[NH2+](-*)-*","16.61",""
+"N17","[NH2+]=*","25.59",""
+"N18","[NH3+]-*","27.64",""
+"N19","[n](:*):*","12.89",""
+"N20","[n](:*)(:*):*","4.41",""
+"N21","[n](-*)(:*):*","4.93",""
+"N22","[n](=*)(:*):*","8.39","As in pyridine N-oxide"
+"N23","[nH](:*):*","15.79",""
+"N24","[n+](:*)(:*):*","4.10",""
+"N25","[n+](-*)(:*):*","3.88",""
+"N26","[nH+](:*):*","14.14",""
+"N","[#7]","0.00","Any other Nitrogen; Contribution: 30.5 - X*8.2 + H*1.5 or 0.0 for negative value"
+"O1","[O](-*)-*","9.23",""
+"O2","[O]1-*-*-1","12.53","Atom in a 3 membered ring"
+"O3","[O]=*","17.07",""
+"O4","[OH]-*","20.23",""
+"O5","[O-]-*","23.06",""
+"O6","[o](:*):*","13.14",""
+"O","[#8]","0.00","Any other Oxygen; Contribution: 28.5 - X*8.6 + H*1.5 or 0.0 for negative value"
+"S1","[S](-*)-*","25.30",""
+"S2","[S]=*","32.09",""
+"S3","[S](-*)(-*)=*","19.21",""
+"S4","[S](-*)(-*)(=*)=*","8.38",""
+"S5","[SH]-*","38.80",""
+"S6","[s](:*):*","28.24",""
+"S7","[s](=*)(:*):*","21.70",""
+"S","[#16]","0.00","Any other Sulfur"
+"P1","[P](-*)(-*)-*","13.59",""
+"P2","[P](-*)=*","34.14",""
+"P3","[P](-*)(-*)(-*)=*","9.81",""
+"P4","[PH](-*)(-*)=*","23.47",""
+"P","[#15]","0.00","Any other Phosphorus"

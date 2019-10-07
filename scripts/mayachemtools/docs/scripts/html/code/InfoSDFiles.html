@@ -1,0 +1,563 @@
+<html>
+<head>
+<title>MayaChemTools:Code:InfoSDFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 #!/usr/bin/perl -w
+   2 <span class="c">#</span>
+   3 <span class="c"># File: InfoSDFiles.pl</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">FindBin</span><span class="sc">;</span> <span class="k">use</span> <span class="w">lib</span> <span class="q">&quot;$FindBin::Bin/../lib&quot;</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Getopt::Long</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">File::Basename</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">SDFileUtil</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">TextUtil</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">FileUtil</span><span class="sc">;</span>
+  34 
+  35 <span class="k">my</span><span class="s">(</span><span class="i">$ScriptName</span><span class="cm">,</span> <span class="i">%Options</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="cm">,</span> <span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$TotalTime</span><span class="s">)</span><span class="sc">;</span>
+  36 
+  37 <span class="c"># Autoflush STDOUT</span>
+  38 <span class="i">$|</span> = <span class="n">1</span><span class="sc">;</span>
+  39 
+  40 <span class="c"># Starting message...</span>
+  41 <span class="i">$ScriptName</span> = <span class="w">basename</span> <span class="i">$0</span><span class="sc">;</span>
+  42 <span class="k">print</span> <span class="q">&quot;\n$ScriptName:Starting...\n\n&quot;</span><span class="sc">;</span>
+  43 <span class="i">$StartTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  44 
+  45 <span class="c"># Get the options and setup script...</span>
+  46 <span class="i">SetupScriptUsage</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  47 <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">help</span>} || <span class="i">@ARGV</span> &lt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  48   <span class="k">die</span> <span class="i">GetUsageFromPod</span><span class="s">(</span><span class="q">&quot;$FindBin::Bin/$ScriptName&quot;</span><span class="s">)</span><span class="sc">;</span>
+  49 <span class="s">}</span>
+  50 
+  51 <span class="k">my</span><span class="s">(</span><span class="i">@SDFilesList</span><span class="s">)</span><span class="sc">;</span>
+  52 <span class="i">@SDFilesList</span> = <span class="i">ExpandFileNames</span><span class="s">(</span>\<span class="i">@ARGV</span><span class="cm">,</span> <span class="q">&quot;sdf sd&quot;</span><span class="s">)</span><span class="sc">;</span>
+  53 
+  54 <span class="c"># Process options...</span>
+  55 <span class="k">print</span> <span class="q">&quot;Processing options...\n&quot;</span><span class="sc">;</span>
+  56 <span class="k">my</span><span class="s">(</span><span class="i">%OptionsInfo</span><span class="s">)</span><span class="sc">;</span>
+  57 <span class="i">ProcessOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  58 
+  59 <span class="c"># Setup information about input files...</span>
+  60 <span class="k">print</span> <span class="q">&quot;Checking input SD file(s)...\n&quot;</span><span class="sc">;</span>
+  61 <span class="k">my</span><span class="s">(</span><span class="i">%SDFilesInfo</span><span class="cm">,</span> <span class="i">%SDCmpdsInfo</span><span class="s">)</span><span class="sc">;</span>
+  62 <span class="i">RetrieveSDFilesInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  63 <span class="i">InitializeSDCmpdsInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  64 
+  65 <span class="c"># Process input files..</span>
+  66 <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  67 <span class="k">if</span> <span class="s">(</span><span class="i">@SDFilesList</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  68   <span class="k">print</span> <span class="q">&quot;\nProcessing SD files...\n&quot;</span><span class="sc">;</span>
+  69 <span class="s">}</span>
+  70 <span class="k">for</span> <span class="i">$FileIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+  71   <span class="k">if</span> <span class="s">(</span><span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$FileIndex</span>]<span class="s">)</span> <span class="s">{</span>
+  72     <span class="k">print</span> <span class="q">&quot;\nProcessing file $SDFilesList[$FileIndex]...\n&quot;</span><span class="sc">;</span>
+  73     <span class="i">ListSDFileInfo</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  74   <span class="s">}</span>
+  75 <span class="s">}</span>
+  76 <span class="i">ListTotalSizeOfFiles</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  77 
+  78 <span class="k">print</span> <span class="q">&quot;\n$ScriptName:Done...\n\n&quot;</span><span class="sc">;</span>
+  79 
+  80 <span class="i">$EndTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  81 <span class="i">$TotalTime</span> = <span class="w">timediff</span> <span class="s">(</span><span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="s">)</span><span class="sc">;</span>
+  82 <span class="k">print</span> <span class="q">&quot;Total time: &quot;</span><span class="cm">,</span> <span class="i">timestr</span><span class="s">(</span><span class="i">$TotalTime</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+  83 
+  84 <span class="c">###############################################################################</span>
+  85 
+  86 <span class="c"># List appropriate information...</span>
+<a name="ListSDFileInfo-"></a>  87 <span class="k">sub </span><span class="m">ListSDFileInfo</span> <span class="s">{</span>
+  88   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  89   <span class="k">my</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+  90 
+  91   <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+  92 
+  93   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ProcessCmpdInfo</span>}<span class="s">)</span> <span class="s">{</span>
+  94     <span class="i">ListCompoundDetailsInfo</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span><span class="sc">;</span>
+  95   <span class="s">}</span>
+  96   <span class="k">else</span> <span class="s">{</span>
+  97     <span class="i">ListCompoundCountInfo</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span><span class="sc">;</span>
+  98   <span class="s">}</span>
+  99 
+ 100   <span class="c"># File size and modification information...</span>
+ 101   <span class="k">print</span> <span class="q">&quot;\nFile size: &quot;</span><span class="cm">,</span> <span class="i">FormatFileSize</span><span class="s">(</span><span class="i">$SDFilesInfo</span>{<span class="w">FileSize</span>}[<span class="i">$Index</span>]<span class="s">)</span><span class="cm">,</span> <span class="q">&quot; \n&quot;</span><span class="sc">;</span>
+ 102   <span class="k">print</span> <span class="q">&quot;Last modified: &quot;</span><span class="cm">,</span> <span class="i">$SDFilesInfo</span>{<span class="w">FileLastModified</span>}[<span class="i">$Index</span>]<span class="cm">,</span> <span class="q">&quot; \n&quot;</span><span class="sc">;</span>
+ 103 <span class="s">}</span>
+ 104 
+ 105 <span class="c"># List number of compounds in SD file...</span>
+<a name="ListCompoundCountInfo-"></a> 106 <span class="k">sub </span><span class="m">ListCompoundCountInfo</span> <span class="s">{</span>
+ 107   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 108   <span class="k">my</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="s">)</span><span class="sc">;</span>
+ 109 
+ 110   <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 111 
+ 112   <span class="i">$CmpdCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 113 
+ 114   <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $SDFile: $! \n&quot;</span><span class="sc">;</span>
+ 115   <span class="k">while</span> <span class="s">(</span><span class="q">&lt;SDFILE&gt;</span><span class="s">)</span> <span class="s">{</span>
+ 116     <span class="k">if</span> <span class="s">(</span><span class="q">/^\$\$\$\$/</span><span class="s">)</span> <span class="s">{</span>
+ 117       <span class="i">$CmpdCount</span>++<span class="sc">;</span>
+ 118     <span class="s">}</span>
+ 119   <span class="s">}</span>
+ 120   <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 121 
+ 122   <span class="i">$SDCmpdsInfo</span>{<span class="w">TotalCmpdCount</span>} += <span class="i">$CmpdCount</span><span class="sc">;</span>
+ 123 
+ 124   <span class="k">print</span> <span class="q">&quot;\nNumber of compounds: $CmpdCount\n&quot;</span><span class="sc">;</span>
+ 125 <span class="s">}</span>
+ 126 
+ 127 <span class="c"># List detailed compound information...</span>
+<a name="ListCompoundDetailsInfo-"></a> 128 <span class="k">sub </span><span class="m">ListCompoundDetailsInfo</span> <span class="s">{</span>
+ 129   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 130   <span class="k">my</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$EmptyCtabBlocksCount</span><span class="cm">,</span> <span class="i">$MismatchCtabBlockCount</span><span class="cm">,</span> <span class="i">$ChiralCtabBlockCount</span><span class="cm">,</span> <span class="i">$UnknownAtomsCtabBlockCount</span><span class="cm">,</span> <span class="i">$InvalidAtomNumbersCtabBlockCount</span><span class="cm">,</span> <span class="i">$SaltsCtabBlockCount</span><span class="cm">,</span> <span class="i">$CtabLinesCount</span><span class="cm">,</span> <span class="i">$PrintCmpdCounterHeader</span><span class="cm">,</span> <span class="i">$ProblematicCmpdData</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="cm">,</span> <span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 131 
+ 132   <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 133 
+ 134   <span class="s">(</span><span class="i">$CmpdCount</span><span class="cm">,</span> <span class="i">$EmptyCtabBlocksCount</span><span class="cm">,</span> <span class="i">$MismatchCtabBlockCount</span><span class="cm">,</span> <span class="i">$ChiralCtabBlockCount</span><span class="cm">,</span> <span class="i">$UnknownAtomsCtabBlockCount</span><span class="cm">,</span> <span class="i">$InvalidAtomNumbersCtabBlockCount</span><span class="cm">,</span> <span class="i">$SaltsCtabBlockCount</span><span class="s">)</span> = <span class="s">(</span><span class="n">0</span><span class="s">)</span> x <span class="n">7</span><span class="sc">;</span>
+ 135 
+ 136   <span class="i">InitializeSDCmpdsInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 137 
+ 138   <span class="i">$PrintCmpdCounterHeader</span> = <span class="n">1</span><span class="sc">;</span>
+ 139 
+ 140   <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Couldn&#39;t open $SDFile: $! \n&quot;</span><span class="sc">;</span>
+ 141   <span class="k">while</span> <span class="s">(</span><span class="i">$CmpdString</span> = <span class="i">ReadCmpdString</span><span class="s">(</span>\<span class="i">*SDFILE</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 142     <span class="i">$CmpdCount</span>++<span class="sc">;</span>
+ 143     <span class="i">$ProblematicCmpdData</span> = <span class="n">0</span><span class="sc">;</span>
+ 144     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &lt;= <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 145       <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">$CmpdCount</span> % <span class="n">5000</span><span class="s">)</span> == <span class="n">0</span><span class="s">)</span> <span class="s">{</span>
+ 146         <span class="k">if</span> <span class="s">(</span><span class="i">$PrintCmpdCounterHeader</span><span class="s">)</span> <span class="s">{</span>
+ 147           <span class="i">$PrintCmpdCounterHeader</span> = <span class="n">0</span><span class="sc">;</span>
+ 148           <span class="k">print</span> <span class="q">&quot;Processing compounds:&quot;</span><span class="sc">;</span>
+ 149         <span class="s">}</span>
+ 150         <span class="k">print</span> <span class="q">&quot;$CmpdCount...&quot;</span><span class="sc">;</span>
+ 151       <span class="s">}</span>
+ 152     <span class="s">}</span>
+ 153     <span class="i">@CmpdLines</span> = <span class="k">split</span> <span class="q">&quot;\n&quot;</span><span class="cm">,</span> <span class="i">$CmpdString</span><span class="sc">;</span>
+ 154     <span class="i">$CtabLinesCount</span> = <span class="i">GetCtabLinesCount</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 155     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Empty</span>}<span class="s">)</span> <span class="s">{</span>
+ 156       <span class="k">if</span> <span class="s">(</span><span class="i">$CtabLinesCount</span> &lt;= <span class="n">0</span><span class="s">)</span> <span class="s">{</span>
+ 157         <span class="i">$EmptyCtabBlocksCount</span>++<span class="sc">;</span>
+ 158         <span class="i">$ProblematicCmpdData</span> = <span class="n">1</span><span class="sc">;</span>
+ 159       <span class="s">}</span>
+ 160     <span class="s">}</span>
+ 161     <span class="k">if</span> <span class="s">(</span><span class="i">$CtabLinesCount</span> &gt; <span class="n">0</span><span class="s">)</span> <span class="s">{</span>
+ 162       <span class="k">my</span> <span class="s">(</span><span class="i">$AtomCount</span><span class="cm">,</span> <span class="i">$BondCount</span><span class="cm">,</span> <span class="i">$ChiralFlag</span><span class="s">)</span> = <span class="i">ParseCmpdCountsLine</span><span class="s">(</span><span class="i">$CmpdLines</span>[<span class="n">3</span>]<span class="s">)</span><span class="sc">;</span>
+ 163       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Mismatch</span>}<span class="s">)</span> <span class="s">{</span>
+ 164         <span class="k">if</span> <span class="s">(</span><span class="i">$CtabLinesCount</span> != <span class="s">(</span><span class="i">$AtomCount</span> + <span class="i">$BondCount</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 165           <span class="i">$MismatchCtabBlockCount</span>++<span class="sc">;</span>
+ 166           <span class="i">$ProblematicCmpdData</span> = <span class="n">1</span><span class="sc">;</span>
+ 167           <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 168             <span class="k">print</span> <span class="q">&quot;\nMismatch found: Ctab lines count: $CtabLinesCount;  Atoms count: $AtomCount; Bond count: $BondCount\n&quot;</span><span class="sc">;</span>
+ 169           <span class="s">}</span>
+ 170         <span class="s">}</span>
+ 171       <span class="s">}</span>
+ 172       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Chiral</span>}<span class="s">)</span> <span class="s">{</span>
+ 173         <span class="k">if</span> <span class="s">(</span><span class="i">$ChiralFlag</span> == <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 174           <span class="i">$ChiralCtabBlockCount</span>++<span class="sc">;</span>
+ 175         <span class="s">}</span>
+ 176       <span class="s">}</span>
+ 177       <span class="k">if</span> <span class="s">(</span><span class="i">$CtabLinesCount</span> == <span class="s">(</span><span class="i">$AtomCount</span> + <span class="i">$BondCount</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 178         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">UnknownAtoms</span>}<span class="s">)</span> <span class="s">{</span>
+ 179           <span class="k">my</span><span class="s">(</span><span class="i">$UnknownAtomCount</span><span class="cm">,</span> <span class="i">$UnknownAtoms</span><span class="cm">,</span> <span class="i">$UnknownAtomLines</span><span class="s">)</span> = <span class="i">GetUnknownAtoms</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 180           <span class="k">if</span> <span class="s">(</span><span class="i">$UnknownAtomCount</span><span class="s">)</span> <span class="s">{</span>
+ 181             <span class="i">$UnknownAtomsCtabBlockCount</span>++<span class="sc">;</span>
+ 182             <span class="i">$ProblematicCmpdData</span> = <span class="n">1</span><span class="sc">;</span>
+ 183             <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 184               <span class="k">print</span> <span class="q">&quot;\nUnknown atom(s) found: $UnknownAtomCount\nUnknown atom(s) symbols:$UnknownAtoms\nUnknown atom(s) data lines:\n$UnknownAtomLines\n&quot;</span><span class="sc">;</span>
+ 185             <span class="s">}</span>
+ 186           <span class="s">}</span>
+ 187         <span class="s">}</span>
+ 188         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">InvalidAtomNumbers</span>}<span class="s">)</span> <span class="s">{</span>
+ 189           <span class="k">my</span><span class="s">(</span><span class="i">$InvalidAtomNumbersCount</span><span class="cm">,</span> <span class="i">$InvalidAtomNumbers</span><span class="cm">,</span> <span class="i">$InvalidAtomNumberLines</span><span class="s">)</span> = <span class="i">GetInvalidAtomNumbers</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 190           <span class="k">if</span> <span class="s">(</span><span class="i">$InvalidAtomNumbersCount</span><span class="s">)</span> <span class="s">{</span>
+ 191             <span class="i">$InvalidAtomNumbersCtabBlockCount</span>++<span class="sc">;</span>
+ 192             <span class="i">$ProblematicCmpdData</span> = <span class="n">1</span><span class="sc">;</span>
+ 193             <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 194               <span class="k">print</span> <span class="q">&quot;\nInvalid atom number(s) found: $InvalidAtomNumbersCount\nInvalid atom number(s):$InvalidAtomNumbers\nInvalid atom number(s) data lines:\n$InvalidAtomNumberLines\n&quot;</span><span class="sc">;</span>
+ 195             <span class="s">}</span>
+ 196           <span class="s">}</span>
+ 197         <span class="s">}</span>
+ 198         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Salts</span>}<span class="s">)</span> <span class="s">{</span>
+ 199           <span class="k">my</span><span class="s">(</span><span class="i">$FragmentsCount</span><span class="cm">,</span> <span class="i">$Fragments</span><span class="s">)</span> = <span class="i">GetCmpdFragments</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="s">)</span><span class="sc">;</span>
+ 200           <span class="k">if</span> <span class="s">(</span><span class="i">$FragmentsCount</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 201             <span class="i">$SaltsCtabBlockCount</span>++<span class="sc">;</span>
+ 202             <span class="i">$ProblematicCmpdData</span> = <span class="n">1</span><span class="sc">;</span>
+ 203             <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 204               <span class="k">print</span> <span class="q">&quot;\nSalts found: $FragmentsCount\nSalts atom numbers:\n$Fragments\n&quot;</span><span class="sc">;</span>
+ 205             <span class="s">}</span>
+ 206           <span class="s">}</span>
+ 207         <span class="s">}</span>
+ 208       <span class="s">}</span>
+ 209     <span class="s">}</span>
+ 210     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ProcessCmpdData</span>}<span class="s">)</span> <span class="s">{</span>
+ 211       <span class="i">ProcessCmpdInfo</span><span class="s">(</span>\<span class="i">@CmpdLines</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="s">)</span><span class="sc">;</span>
+ 212     <span class="s">}</span>
+ 213     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &gt;= <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 214       <span class="k">if</span> <span class="s">(</span><span class="i">$ProblematicCmpdData</span><span class="s">)</span> <span class="s">{</span>
+ 215         <span class="k">print</span> <span class="q">&quot;\nCompound data:\n$CmpdString\n\n&quot;</span><span class="sc">;</span>
+ 216       <span class="s">}</span>
+ 217     <span class="s">}</span>
+ 218   <span class="s">}</span>
+ 219   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} &lt;= <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 220     <span class="k">if</span> <span class="s">(</span>!<span class="i">$PrintCmpdCounterHeader</span><span class="s">)</span> <span class="s">{</span>
+ 221       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 222     <span class="s">}</span>
+ 223   <span class="s">}</span>
+ 224   <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 225 
+ 226   <span class="i">$SDCmpdsInfo</span>{<span class="w">TotalCmpdCount</span>} += <span class="i">$CmpdCount</span><span class="sc">;</span>
+ 227 
+ 228   <span class="k">print</span> <span class="q">&quot;\nNumber of compounds: $CmpdCount\n&quot;</span><span class="sc">;</span>
+ 229 
+ 230   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Empty</span>}<span class="s">)</span> <span class="s">{</span>
+ 231     <span class="k">print</span> <span class="q">&quot;Number of empty atom/bond blocks: $EmptyCtabBlocksCount\n&quot;</span><span class="sc">;</span>
+ 232   <span class="s">}</span>
+ 233   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Mismatch</span>}<span class="s">)</span> <span class="s">{</span>
+ 234     <span class="k">print</span> <span class="q">&quot;Number of mismatched atom/bond blocks: $MismatchCtabBlockCount\n&quot;</span><span class="sc">;</span>
+ 235   <span class="s">}</span>
+ 236   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">UnknownAtoms</span>}<span class="s">)</span> <span class="s">{</span>
+ 237     <span class="k">print</span> <span class="q">&quot;Number of atom blocks with unknown atom labels: $UnknownAtomsCtabBlockCount\n&quot;</span><span class="sc">;</span>
+ 238   <span class="s">}</span>
+ 239   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">InvalidAtomNumbers</span>}<span class="s">)</span> <span class="s">{</span>
+ 240     <span class="k">print</span> <span class="q">&quot;Number of bond blocks and atom property blocks with invalid atom numbers: $InvalidAtomNumbersCtabBlockCount\n&quot;</span><span class="sc">;</span>
+ 241   <span class="s">}</span>
+ 242   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Salts</span>}<span class="s">)</span> <span class="s">{</span>
+ 243     <span class="k">print</span> <span class="q">&quot;Number of atom blocks containing salts: $SaltsCtabBlockCount\n&quot;</span><span class="sc">;</span>
+ 244   <span class="s">}</span>
+ 245   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">All</span>} || <span class="i">$OptionsInfo</span>{<span class="w">Chiral</span>}<span class="s">)</span> <span class="s">{</span>
+ 246     <span class="k">print</span> <span class="q">&quot;Number of chiral atom/bond blocks: $ChiralCtabBlockCount\n&quot;</span><span class="sc">;</span>
+ 247   <span class="s">}</span>
+ 248   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ProcessCmpdData</span>}<span class="s">)</span> <span class="s">{</span>
+ 249     <span class="i">PrintCmpdInfoSummary</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 250   <span class="s">}</span>
+ 251 
+ 252 <span class="s">}</span>
+ 253 
+ 254 <span class="c"># Initialize compound data information for a SD file...</span>
+<a name="InitializeSDCmpdsInfo-"></a> 255 <span class="k">sub </span><span class="m">InitializeSDCmpdsInfo</span> <span class="s">{</span>
+ 256 
+ 257   <span class="k">if</span> <span class="s">(</span>!<span class="k">exists</span> <span class="i">$SDCmpdsInfo</span>{<span class="w">TotalCmpdCount</span>}<span class="s">)</span> <span class="s">{</span>
+ 258     <span class="i">$SDCmpdsInfo</span>{<span class="w">TotalCmpdCount</span>} = <span class="n">0</span><span class="sc">;</span>
+ 259   <span class="s">}</span>
+ 260 
+ 261   <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 262   <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 263   <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 264   <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 265   <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 266   <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 267 <span class="s">}</span>
+ 268 
+ 269 <span class="c"># Process compound data header labels and figure out which ones are present for</span>
+ 270 <span class="c"># all the compounds...</span>
+<a name="ProcessCmpdInfo-"></a> 271 <span class="k">sub </span><span class="m">ProcessCmpdInfo</span> <span class="s">{</span>
+ 272   <span class="k">my</span><span class="s">(</span><span class="i">$CmpdLinesRef</span><span class="cm">,</span> <span class="i">$CmpdCount</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 273   <span class="k">my</span><span class="s">(</span><span class="i">$Label</span><span class="s">)</span><span class="sc">;</span>
+ 274 
+ 275   <span class="k">if</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 276     <span class="k">my</span> <span class="s">(</span><span class="i">@CmpdFieldLabels</span><span class="s">)</span> = <span class="i">GetCmpdDataHeaderLabels</span><span class="s">(</span><span class="i">$CmpdLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 277     <span class="k">my</span><span class="s">(</span><span class="i">%CmpdFieldLabelsMap</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 278     <span class="c"># Setup a map for the current labels...</span>
+ 279     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@CmpdFieldLabels</span><span class="s">)</span> <span class="s">{</span>
+ 280       <span class="i">$CmpdFieldLabelsMap</span>{<span class="i">$Label</span>} = <span class="q">&quot;PresentInSome&quot;</span><span class="sc">;</span>
+ 281     <span class="s">}</span>
+ 282     <span class="c"># Check the presence old labels for this compound; otherwise, mark &#39;em new...</span>
+ 283     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 284       <span class="k">if</span> <span class="s">(</span>!<span class="i">$CmpdFieldLabelsMap</span>{<span class="i">$Label</span>}<span class="s">)</span> <span class="s">{</span>
+ 285         <span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} = <span class="q">&quot;PresentInSome&quot;</span><span class="sc">;</span>
+ 286       <span class="s">}</span>
+ 287     <span class="s">}</span>
+ 288     <span class="c"># Check the presence this compound in the old labels; otherwise, add &#39;em...</span>
+ 289     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@CmpdFieldLabels</span> <span class="s">)</span> <span class="s">{</span>
+ 290       <span class="k">if</span> <span class="s">(</span>!<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>}<span class="s">)</span> <span class="s">{</span>
+ 291         <span class="c"># It&#39;s a new label...</span>
+ 292         <span class="k">push</span> <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="cm">,</span> <span class="i">$Label</span><span class="sc">;</span>
+ 293         <span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} = <span class="q">&quot;PresentInSome&quot;</span><span class="sc">;</span>
+ 294       <span class="s">}</span>
+ 295     <span class="s">}</span>
+ 296   <span class="s">}</span>
+ 297   <span class="k">else</span> <span class="s">{</span>
+ 298     <span class="c"># Get the initial label set and set up a map...</span>
+ 299     <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}} = <span class="i">GetCmpdDataHeaderLabels</span><span class="s">(</span><span class="i">$CmpdLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 300     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 301       <span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} = <span class="q">&quot;PresentInAll&quot;</span><span class="sc">;</span>
+ 302     <span class="s">}</span>
+ 303   <span class="s">}</span>
+ 304   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CountEmptyData</span>} || <span class="i">$OptionsInfo</span>{<span class="w">CheckData</span>}<span class="s">)</span> <span class="s">{</span>
+ 305     <span class="c"># Count empty data field values...</span>
+ 306     <span class="k">my</span><span class="s">(</span><span class="i">%DataFieldAndValues</span><span class="cm">,</span> <span class="i">$Label</span><span class="cm">,</span> <span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+ 307 
+ 308     <span class="i">%DataFieldAndValues</span> = <span class="i">GetCmpdDataHeaderLabelsAndValues</span><span class="s">(</span><span class="i">$CmpdLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 309     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="k">keys</span> <span class="i">%DataFieldAndValues</span><span class="s">)</span> <span class="s">{</span>
+ 310       <span class="i">$Value</span> = <span class="i">$DataFieldAndValues</span>{<span class="i">$Label</span>}<span class="sc">;</span>
+ 311       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CountEmptyData</span>}<span class="s">)</span> <span class="s">{</span>
+ 312         <span class="k">if</span> <span class="s">(</span><span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 313           <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 314             <span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>} += <span class="n">1</span><span class="sc">;</span>
+ 315           <span class="s">}</span>
+ 316           <span class="k">else</span> <span class="s">{</span>
+ 317             <span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>} = <span class="n">1</span><span class="sc">;</span>
+ 318           <span class="s">}</span>
+ 319         <span class="s">}</span>
+ 320         <span class="k">else</span> <span class="s">{</span>
+ 321           <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">detail</span>} &gt;= <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 322             <span class="k">print</span> <span class="q">&quot;Compound record $CmpdCount: Empty data field &lt;$Label&gt;\n&quot;</span><span class="sc">;</span>
+ 323           <span class="s">}</span>
+ 324           <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 325             <span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>} += <span class="n">1</span><span class="sc">;</span>
+ 326           <span class="s">}</span>
+ 327           <span class="k">else</span> <span class="s">{</span>
+ 328             <span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}{<span class="i">$Label</span>} = <span class="n">1</span><span class="sc">;</span>
+ 329           <span class="s">}</span>
+ 330         <span class="s">}</span>
+ 331       <span class="s">}</span>
+ 332       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CheckData</span>}<span class="s">)</span> <span class="s">{</span>
+ 333         <span class="k">if</span> <span class="s">(</span><span class="i">IsNumerical</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 334           <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 335             <span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>} += <span class="n">1</span><span class="sc">;</span>
+ 336           <span class="s">}</span>
+ 337           <span class="k">else</span> <span class="s">{</span>
+ 338             <span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>} = <span class="n">1</span><span class="sc">;</span>
+ 339           <span class="s">}</span>
+ 340         <span class="s">}</span>
+ 341         <span class="k">else</span> <span class="s">{</span>
+ 342           <span class="k">if</span> <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 343             <span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>} += <span class="n">1</span><span class="sc">;</span>
+ 344           <span class="s">}</span>
+ 345           <span class="k">else</span> <span class="s">{</span>
+ 346             <span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}{<span class="i">$Label</span>} = <span class="n">1</span><span class="sc">;</span>
+ 347           <span class="s">}</span>
+ 348         <span class="s">}</span>
+ 349       <span class="s">}</span>
+ 350     <span class="s">}</span>
+ 351   <span class="s">}</span>
+ 352 <span class="s">}</span>
+ 353 
+ 354 <span class="c"># Print compound summary...</span>
+<a name="PrintCmpdInfoSummary-"></a> 355 <span class="k">sub </span><span class="m">PrintCmpdInfoSummary</span> <span class="s">{</span>
+ 356   <span class="k">if</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 357     <span class="k">my</span><span class="s">(</span><span class="i">$PresentInAllCount</span><span class="cm">,</span> <span class="i">$Label</span><span class="cm">,</span> <span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> <span class="i">@FieldLabelsPresentInAll</span><span class="s">)</span><span class="sc">;</span>
+ 358 
+ 359     <span class="i">@FieldLabelsPresentInSome</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 360     <span class="i">@FieldLabelsPresentInAll</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 361 
+ 362     <span class="i">$PresentInAllCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 363     <span class="k">print</span> <span class="q">&quot;\nNumber of data fields: &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 364     <span class="k">print</span> <span class="q">&quot;All data field labels: &quot;</span><span class="sc">;</span>
+ 365     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 366       <span class="k">print</span> <span class="q">&quot;&lt;$Label&gt; &quot;</span><span class="sc">;</span>
+ 367     <span class="s">}</span>
+ 368     <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 369     <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 370       <span class="k">if</span> <span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} <span class="k">eq</span> <span class="q">&quot;PresentInAll&quot;</span><span class="s">)</span> <span class="s">{</span>
+ 371         <span class="i">$PresentInAllCount</span>++<span class="sc">;</span>
+ 372         <span class="k">push</span> <span class="i">@FieldLabelsPresentInAll</span><span class="cm">,</span> <span class="i">$Label</span><span class="sc">;</span>
+ 373       <span class="s">}</span>
+ 374     <span class="s">}</span>
+ 375     <span class="k">if</span> <span class="s">(</span><span class="i">$PresentInAllCount</span> != <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 376       <span class="k">print</span> <span class="q">&quot;Data field labels present in all compounds: &quot;</span><span class="sc">;</span>
+ 377       <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 378         <span class="k">if</span> <span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} <span class="k">eq</span> <span class="q">&quot;PresentInAll&quot;</span><span class="s">)</span> <span class="s">{</span>
+ 379           <span class="k">print</span> <span class="q">&quot;&lt;$Label&gt; &quot;</span><span class="sc">;</span>
+ 380         <span class="s">}</span>
+ 381       <span class="s">}</span>
+ 382       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 383       <span class="k">print</span> <span class="q">&quot;Data field labels present in some compounds: &quot;</span><span class="sc">;</span>
+ 384       <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="k">sort</span> <span class="k">keys</span> <span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}}<span class="s">)</span> <span class="s">{</span>
+ 385         <span class="k">if</span> <span class="s">(</span><span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabelsMap</span>}{<span class="i">$Label</span>} <span class="k">eq</span> <span class="q">&quot;PresentInSome&quot;</span><span class="s">)</span> <span class="s">{</span>
+ 386           <span class="k">print</span> <span class="q">&quot;&lt;$Label&gt; &quot;</span><span class="sc">;</span>
+ 387           <span class="k">push</span> <span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> <span class="i">$Label</span><span class="sc">;</span>
+ 388         <span class="s">}</span>
+ 389       <span class="s">}</span>
+ 390       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 391     <span class="s">}</span>
+ 392     <span class="c"># List empty data field values count...</span>
+ 393     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CountEmptyData</span>}<span class="s">)</span> <span class="s">{</span>
+ 394       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 395       <span class="k">if</span> <span class="s">(</span><span class="i">$PresentInAllCount</span> == <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 396         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-empty values for data field(s)&quot;</span><span class="cm">,</span> \<span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 397         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of empty values for data field(s)&quot;</span><span class="cm">,</span> \<span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 398       <span class="s">}</span>
+ 399       <span class="k">else</span> <span class="s">{</span>
+ 400         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-empty values for data field(s) present in all compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInAll</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 401         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of empty values for data field(s) present in all compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInAll</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 402         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-empty values for data field(s) present in some compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonEmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 403         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of empty values for data field(s) present in some compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">EmptyFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 404       <span class="s">}</span>
+ 405       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 406     <span class="s">}</span>
+ 407     <span class="c"># List numerical data values count...</span>
+ 408     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CheckData</span>}<span class="s">)</span> <span class="s">{</span>
+ 409       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 410       <span class="k">if</span> <span class="s">(</span><span class="i">$PresentInAllCount</span> == <span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="s">)</span> <span class="s">{</span>
+ 411         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-numerical values for data field(s)&quot;</span><span class="cm">,</span> \<span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 412         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of numerical values for data field(s)&quot;</span><span class="cm">,</span> \<span class="i">@</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">FieldLabels</span>}}<span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 413       <span class="s">}</span>
+ 414       <span class="k">else</span> <span class="s">{</span>
+ 415         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-numerical values for data field(s) present in all compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInAll</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 416         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of numerical values for data field(s) present in all compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInAll</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 417         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of non-numerical values for data field(s) present in some compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NonNumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 418         <span class="i">PrintDataInformation</span><span class="s">(</span><span class="q">&quot;Number of numerical values for data field(s) present in some compounds&quot;</span><span class="cm">,</span> \<span class="i">@FieldLabelsPresentInSome</span><span class="cm">,</span> \<span class="i">%</span>{<span class="i">$SDCmpdsInfo</span>{<span class="w">NumericalFieldValuesCountMap</span>}}<span class="s">)</span><span class="sc">;</span>
+ 419       <span class="s">}</span>
+ 420       <span class="k">print</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 421     <span class="s">}</span>
+ 422   <span class="s">}</span>
+ 423   <span class="k">else</span> <span class="s">{</span>
+ 424     <span class="k">print</span> <span class="q">&quot;\nNumber of data fields: 0\n&quot;</span><span class="sc">;</span>
+ 425   <span class="s">}</span>
+ 426 <span class="s">}</span>
+ 427 <span class="c"># List data information...</span>
+<a name="PrintDataInformation-"></a> 428 <span class="k">sub </span><span class="m">PrintDataInformation</span> <span class="s">{</span>
+ 429   <span class="k">my</span><span class="s">(</span><span class="i">$InfoLabel</span><span class="cm">,</span> <span class="i">$DataLabelRef</span><span class="cm">,</span> <span class="i">$DataLabelToValueMapRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 430   <span class="k">my</span><span class="s">(</span><span class="i">$Line</span><span class="cm">,</span> <span class="i">$Label</span><span class="s">)</span><span class="sc">;</span>
+ 431 
+ 432   <span class="i">$Line</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+ 433   <span class="k">for</span> <span class="i">$Label</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$DataLabelRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 434     <span class="i">$Line</span> .= <span class="q">&quot; &lt;$Label&gt; - &quot;</span> . <span class="s">(</span><span class="k">exists</span><span class="s">(</span><span class="i">$DataLabelToValueMapRef</span>-&gt;{<span class="i">$Label</span>}<span class="s">)</span> ? <span class="i">$DataLabelToValueMapRef</span>-&gt;{<span class="i">$Label</span>} <span class="co">:</span> <span class="n">0</span><span class="s">)</span> . <span class="q">&quot;,&quot;</span><span class="sc">;</span>
+ 435   <span class="s">}</span>
+ 436   <span class="i">$Line</span> =~ <span class="q">s/\,$//g</span><span class="sc">;</span>
+ 437   <span class="k">print</span> <span class="q">&quot;$InfoLabel: $Line\n&quot;</span><span class="sc">;</span>
+ 438 <span class="s">}</span>
+ 439 
+ 440 <span class="c"># Total size of all the files...</span>
+<a name="ListTotalSizeOfFiles-"></a> 441 <span class="k">sub </span><span class="m">ListTotalSizeOfFiles</span> <span class="s">{</span>
+ 442   <span class="k">my</span><span class="s">(</span><span class="i">$FileOkayCount</span><span class="cm">,</span> <span class="i">$TotalSize</span><span class="cm">,</span> <span class="i">$Index</span><span class="s">)</span><span class="sc">;</span>
+ 443 
+ 444   <span class="i">$FileOkayCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 445   <span class="i">$TotalSize</span> = <span class="n">0</span><span class="sc">;</span>
+ 446 
+ 447   <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+ 448     <span class="k">if</span> <span class="s">(</span><span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>]<span class="s">)</span> <span class="s">{</span>
+ 449       <span class="i">$FileOkayCount</span>++<span class="sc">;</span>
+ 450       <span class="i">$TotalSize</span> += <span class="i">$SDFilesInfo</span>{<span class="w">FileSize</span>}[<span class="i">$Index</span>]<span class="sc">;</span>
+ 451     <span class="s">}</span>
+ 452   <span class="s">}</span>
+ 453   <span class="k">if</span> <span class="s">(</span><span class="i">$FileOkayCount</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 454     <span class="k">print</span> <span class="q">&quot;\nTotal number of compounds in  $FileOkayCount SD files: $SDCmpdsInfo{TotalCmpdCount}\n&quot;</span><span class="sc">;</span>
+ 455     <span class="k">print</span> <span class="q">&quot;\nTotal size of $FileOkayCount SD files: &quot;</span><span class="cm">,</span> <span class="i">FormatFileSize</span><span class="s">(</span><span class="i">$TotalSize</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 456   <span class="s">}</span>
+ 457 
+ 458 <span class="s">}</span>
+ 459 
+ 460 <span class="c"># Retrieve information about SD files...</span>
+<a name="RetrieveSDFilesInfo-"></a> 461 <span class="k">sub </span><span class="m">RetrieveSDFilesInfo</span> <span class="s">{</span>
+ 462   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$SDFile</span><span class="cm">,</span> <span class="i">$ModifiedTimeString</span><span class="cm">,</span> <span class="i">$ModifiedDateString</span><span class="s">)</span><span class="sc">;</span>
+ 463 
+ 464   <span class="i">%SDCmpdsInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 465 
+ 466   <span class="i">%SDFilesInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 467   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 468   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">FileSize</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 469   <span class="i">@</span>{<span class="i">$SDFilesInfo</span>{<span class="w">FileLastModified</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 470 
+ 471   <span class="j">FILELIST:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#SDFilesList</span><span class="s">)</span> <span class="s">{</span>
+ 472     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">0</span><span class="sc">;</span>
+ 473     <span class="i">$SDFilesInfo</span>{<span class="w">FileSize</span>}[<span class="i">$Index</span>] = <span class="n">0</span><span class="sc">;</span>
+ 474     <span class="i">$SDFilesInfo</span>{<span class="w">FileLastModified</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 475 
+ 476     <span class="i">$SDFile</span> = <span class="i">$SDFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+ 477     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">-e</span> <span class="i">$SDFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 478       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It doesn&#39;t exist\n&quot;</span><span class="sc">;</span>
+ 479       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 480     <span class="s">}</span>
+ 481     <span class="k">if</span> <span class="s">(</span>!<span class="i">CheckFileType</span><span class="s">(</span><span class="i">$SDFile</span><span class="cm">,</span> <span class="q">&quot;sdf sd&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 482       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: It&#39;s not a SD file\n&quot;</span><span class="sc">;</span>
+ 483       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 484     <span class="s">}</span>
+ 485     <span class="k">if</span> <span class="s">(</span>! <span class="k">open</span> <span class="w">SDFILE</span><span class="cm">,</span> <span class="q">&quot;$SDFile&quot;</span><span class="s">)</span> <span class="s">{</span>
+ 486       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $SDFile: Couldn&#39;t open it: $! \n&quot;</span><span class="sc">;</span>
+ 487       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+ 488     <span class="s">}</span>
+ 489     <span class="k">close</span> <span class="w">SDFILE</span><span class="sc">;</span>
+ 490 
+ 491     <span class="i">$SDFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">1</span><span class="sc">;</span>
+ 492     <span class="i">$SDFilesInfo</span>{<span class="w">FileSize</span>}[<span class="i">$Index</span>] = <span class="i">FileSize</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+ 493     <span class="s">(</span><span class="i">$ModifiedTimeString</span><span class="cm">,</span> <span class="i">$ModifiedDateString</span><span class="s">)</span> = <span class="i">FormattedFileModificationTimeAndDate</span><span class="s">(</span><span class="i">$SDFile</span><span class="s">)</span><span class="sc">;</span>
+ 494     <span class="i">$SDFilesInfo</span>{<span class="w">FileLastModified</span>}[<span class="i">$Index</span>] = <span class="q">&quot;$ModifiedTimeString; $ModifiedDateString&quot;</span><span class="sc">;</span>
+ 495   <span class="s">}</span>
+ 496 <span class="s">}</span>
+ 497 
+ 498 <span class="c"># Process option values...</span>
+<a name="ProcessOptions-"></a> 499 <span class="k">sub </span><span class="m">ProcessOptions</span> <span class="s">{</span>
+ 500   <span class="i">%OptionsInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 501 
+ 502   <span class="i">$OptionsInfo</span>{<span class="w">All</span>} = <span class="i">$Options</span>{<span class="w">all</span>} ? <span class="i">$Options</span>{<span class="w">all</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 503   <span class="i">$OptionsInfo</span>{<span class="w">Chiral</span>} = <span class="i">$Options</span>{<span class="w">chiral</span>} ? <span class="i">$Options</span>{<span class="w">chiral</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 504   <span class="i">$OptionsInfo</span>{<span class="w">Count</span>} = <span class="i">$Options</span>{<span class="w">count</span>} ? <span class="i">$Options</span>{<span class="w">count</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 505   <span class="i">$OptionsInfo</span>{<span class="w">DataCheck</span>} = <span class="i">$Options</span>{<span class="w">datacheck</span>} ? <span class="i">$Options</span>{<span class="w">datacheck</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 506   <span class="i">$OptionsInfo</span>{<span class="w">Empty</span>} = <span class="i">$Options</span>{<span class="w">empty</span>} ? <span class="i">$Options</span>{<span class="w">empty</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 507   <span class="i">$OptionsInfo</span>{<span class="w">Fields</span>} = <span class="i">$Options</span>{<span class="w">fields</span>} ? <span class="i">$Options</span>{<span class="w">fields</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 508   <span class="i">$OptionsInfo</span>{<span class="w">InvalidAtomNumbers</span>} = <span class="i">$Options</span>{<span class="w">invalidatomnumbers</span>} ? <span class="i">$Options</span>{<span class="w">invalidatomnumbers</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 509   <span class="i">$OptionsInfo</span>{<span class="w">Mismatch</span>} = <span class="i">$Options</span>{<span class="w">mismatch</span>} ? <span class="i">$Options</span>{<span class="w">mismatch</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 510   <span class="i">$OptionsInfo</span>{<span class="w">Salts</span>} = <span class="i">$Options</span>{<span class="w">salts</span>} ? <span class="i">$Options</span>{<span class="w">salts</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 511   <span class="i">$OptionsInfo</span>{<span class="w">UnknownAtoms</span>} = <span class="i">$Options</span>{<span class="w">unknownatoms</span>} ? <span class="i">$Options</span>{<span class="w">unknownatoms</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 512 
+ 513   <span class="i">$OptionsInfo</span>{<span class="w">Detail</span>} = <span class="i">$Options</span>{<span class="w">detail</span>}<span class="sc">;</span>
+ 514 
+ 515   <span class="i">$OptionsInfo</span>{<span class="w">ProcessCmpdInfo</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">all</span>} ||  <span class="i">$Options</span>{<span class="w">chiral</span>} || <span class="i">$Options</span>{<span class="w">empty</span>} || <span class="i">$Options</span>{<span class="w">fields</span>} || <span class="i">$Options</span>{<span class="w">invalidatomnumbers</span>}  || <span class="i">$Options</span>{<span class="w">mismatch</span>} || <span class="i">$Options</span>{<span class="w">salts</span>} || <span class="i">$Options</span>{<span class="w">unknownatoms</span>} || <span class="i">$Options</span>{<span class="w">datacheck</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 516 
+ 517   <span class="i">$OptionsInfo</span>{<span class="w">ProcessCmpdData</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">all</span>} || <span class="i">$Options</span>{<span class="w">fields</span>} || <span class="i">$Options</span>{<span class="w">empty</span>} || <span class="i">$Options</span>{<span class="w">datacheck</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 518 
+ 519   <span class="i">$OptionsInfo</span>{<span class="w">CountEmptyData</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">all</span>} || <span class="i">$Options</span>{<span class="w">empty</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 520   <span class="i">$OptionsInfo</span>{<span class="w">CheckData</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">all</span>} || <span class="i">$Options</span>{<span class="w">datacheck</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 521 <span class="s">}</span>
+ 522 
+ 523 <span class="c"># Setup script usage  and retrieve command line arguments specified using various options...</span>
+<a name="SetupScriptUsage-"></a> 524 <span class="k">sub </span><span class="m">SetupScriptUsage</span> <span class="s">{</span>
+ 525 
+ 526   <span class="c"># Setup default and retrieve all the options...</span>
+ 527   <span class="i">%Options</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 528   <span class="i">$Options</span>{<span class="w">detail</span>} = <span class="n">1</span><span class="sc">;</span>
+ 529   <span class="k">if</span> <span class="s">(</span>!<span class="i">GetOptions</span><span class="s">(</span>\<span class="i">%Options</span><span class="cm">,</span> <span class="q">&quot;all|a&quot;</span><span class="cm">,</span> <span class="q">&quot;count|c&quot;</span><span class="cm">,</span> <span class="q">&quot;chiral&quot;</span><span class="cm">,</span> <span class="q">&quot;datacheck&quot;</span><span class="cm">,</span> <span class="q">&quot;detail|d:i&quot;</span><span class="cm">,</span> <span class="q">&quot;empty|e&quot;</span><span class="cm">,</span> <span class="q">&quot;fields|f&quot;</span><span class="cm">,</span> <span class="q">&quot;help|h&quot;</span><span class="cm">,</span> <span class="q">&quot;invalidatomnumbers|i&quot;</span><span class="cm">,</span> <span class="q">&quot;mismatch|m&quot;</span><span class="cm">,</span> <span class="q">&quot;salts|s&quot;</span><span class="cm">,</span> <span class="q">&quot;unknownatoms|u&quot;</span><span class="cm">,</span> <span class="q">&quot;workingdir|w=s&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 530     <span class="k">die</span> <span class="q">&quot;\nTo get a list of valid options and their values, use \&quot;$ScriptName -h\&quot; or\n\&quot;perl -S $ScriptName -h\&quot; command and try again...\n&quot;</span><span class="sc">;</span>
+ 531   <span class="s">}</span>
+ 532   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+ 533     <span class="k">if</span> <span class="s">(</span>! <span class="k">-d</span> <span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+ 534       <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{workingdir}, for option \&quot;-w --workingdir\&quot; is not a directory name.\n&quot;</span><span class="sc">;</span>
+ 535     <span class="s">}</span>
+ 536     <span class="k">chdir</span> <span class="i">$Options</span>{<span class="w">workingdir</span>} <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t chdir $Options{workingdir}: $! \n&quot;</span><span class="sc">;</span>
+ 537   <span class="s">}</span>
+ 538   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">detail</span>} &lt;= <span class="n">0</span> || <span class="i">$Options</span>{<span class="w">detail</span>} &gt; <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 539     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{detail}, for option \&quot;-d --detail\&quot; is not valid. Possible values: 1 to 3\n&quot;</span><span class="sc">;</span>
+ 540   <span class="s">}</span>
+ 541 <span class="s">}</span>
+ 542 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

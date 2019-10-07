@@ -1,0 +1,1374 @@
+<html>
+<head>
+<title>MayaChemTools:Code:ExtractFromPDBFiles.pl</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../../css/MayaChemToolsCode.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<pre>
+   1 #!/usr/bin/perl -w
+   2 <span class="c">#</span>
+   3 <span class="c"># File: ExtractFromPDBFiles.pl</span>
+   4 <span class="c"># Author: Manish Sud &lt;msud@san.rr.com&gt;</span>
+   5 <span class="c">#</span>
+   6 <span class="c"># Copyright (C) 2018 Manish Sud. All rights reserved.</span>
+   7 <span class="c">#</span>
+   8 <span class="c"># This file is part of MayaChemTools.</span>
+   9 <span class="c">#</span>
+  10 <span class="c"># MayaChemTools is free software; you can redistribute it and/or modify it under</span>
+  11 <span class="c"># the terms of the GNU Lesser General Public License as published by the Free</span>
+  12 <span class="c"># Software Foundation; either version 3 of the License, or (at your option) any</span>
+  13 <span class="c"># later version.</span>
+  14 <span class="c">#</span>
+  15 <span class="c"># MayaChemTools is distributed in the hope that it will be useful, but without</span>
+  16 <span class="c"># any warranty; without even the implied warranty of merchantability of fitness</span>
+  17 <span class="c"># for a particular purpose.  See the GNU Lesser General Public License for more</span>
+  18 <span class="c"># details.</span>
+  19 <span class="c">#</span>
+  20 <span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+  21 <span class="c"># along with MayaChemTools; if not, see &lt;http://www.gnu.org/licenses/&gt; or</span>
+  22 <span class="c"># write to the Free Software Foundation Inc., 59 Temple Place, Suite 330,</span>
+  23 <span class="c"># Boston, MA, 02111-1307, USA.</span>
+  24 <span class="c">#</span>
+  25 
+  26 <span class="k">use</span> <span class="w">strict</span><span class="sc">;</span>
+  27 <span class="k">use</span> <span class="w">FindBin</span><span class="sc">;</span> <span class="k">use</span> <span class="w">lib</span> <span class="q">&quot;$FindBin::Bin/../lib&quot;</span><span class="sc">;</span>
+  28 <span class="k">use</span> <span class="w">Getopt::Long</span><span class="sc">;</span>
+  29 <span class="k">use</span> <span class="w">File::Basename</span><span class="sc">;</span>
+  30 <span class="k">use</span> <span class="w">Text::ParseWords</span><span class="sc">;</span>
+  31 <span class="k">use</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  32 <span class="k">use</span> <span class="w">FileUtil</span><span class="sc">;</span>
+  33 <span class="k">use</span> <span class="w">TextUtil</span><span class="sc">;</span>
+  34 <span class="k">use</span> <span class="w">PDBFileUtil</span><span class="sc">;</span>
+  35 <span class="k">use</span> <span class="w">AminoAcids</span><span class="sc">;</span>
+  36 <span class="k">use</span> <span class="w">SequenceFileUtil</span><span class="sc">;</span>
+  37 
+  38 <span class="k">my</span><span class="s">(</span><span class="i">$ScriptName</span><span class="cm">,</span> <span class="i">%Options</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="cm">,</span> <span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$TotalTime</span><span class="s">)</span><span class="sc">;</span>
+  39 
+  40 <span class="c"># Autoflush STDOUT</span>
+  41 <span class="i">$|</span> = <span class="n">1</span><span class="sc">;</span>
+  42 
+  43 <span class="c"># Starting message...</span>
+  44 <span class="i">$ScriptName</span> = <span class="i">basename</span><span class="s">(</span><span class="i">$0</span><span class="s">)</span><span class="sc">;</span>
+  45 <span class="k">print</span> <span class="q">&quot;\n$ScriptName: Starting...\n\n&quot;</span><span class="sc">;</span>
+  46 <span class="i">$StartTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  47 
+  48 <span class="c"># Get the options and setup script...</span>
+  49 <span class="i">SetupScriptUsage</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  50 <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">help</span>} || <span class="i">@ARGV</span> &lt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  51   <span class="k">die</span> <span class="i">GetUsageFromPod</span><span class="s">(</span><span class="q">&quot;$FindBin::Bin/$ScriptName&quot;</span><span class="s">)</span><span class="sc">;</span>
+  52 <span class="s">}</span>
+  53 
+  54 <span class="k">my</span><span class="s">(</span><span class="i">@PDBFilesList</span><span class="s">)</span><span class="sc">;</span>
+  55 <span class="i">@PDBFilesList</span> = <span class="i">ExpandFileNames</span><span class="s">(</span>\<span class="i">@ARGV</span><span class="cm">,</span> <span class="q">&quot;pdb&quot;</span><span class="s">)</span><span class="sc">;</span>
+  56 
+  57 <span class="c"># Process options...</span>
+  58 <span class="k">print</span> <span class="q">&quot;Processing options...\n&quot;</span><span class="sc">;</span>
+  59 <span class="k">my</span><span class="s">(</span><span class="i">%OptionsInfo</span><span class="s">)</span><span class="sc">;</span>
+  60 <span class="i">ProcessOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  61 
+  62 <span class="c"># Setup information about input files...</span>
+  63 <span class="k">print</span> <span class="q">&quot;Checking input PDB file(s)...\n&quot;</span><span class="sc">;</span>
+  64 <span class="k">my</span><span class="s">(</span><span class="i">%PDBFilesInfo</span><span class="s">)</span><span class="sc">;</span>
+  65 <span class="i">RetrievePDBFilesInfo</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+  66 
+  67 <span class="c"># Process input files..</span>
+  68 <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  69 <span class="k">if</span> <span class="s">(</span><span class="i">@PDBFilesList</span> &gt; <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+  70   <span class="k">print</span> <span class="q">&quot;\nProcessing PDB files...\n&quot;</span><span class="sc">;</span>
+  71 <span class="s">}</span>
+  72 <span class="k">for</span> <span class="i">$FileIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#PDBFilesList</span><span class="s">)</span> <span class="s">{</span>
+  73   <span class="k">if</span> <span class="s">(</span><span class="i">$PDBFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$FileIndex</span>]<span class="s">)</span> <span class="s">{</span>
+  74     <span class="k">print</span> <span class="q">&quot;\nProcessing file $PDBFilesList[$FileIndex]...\n&quot;</span><span class="sc">;</span>
+  75     <span class="i">ExtractFromPDBFiles</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span><span class="sc">;</span>
+  76   <span class="s">}</span>
+  77 <span class="s">}</span>
+  78 <span class="k">print</span> <span class="q">&quot;\n$ScriptName:Done...\n\n&quot;</span><span class="sc">;</span>
+  79 
+  80 <span class="i">$EndTime</span> = <span class="w">new</span> <span class="w">Benchmark</span><span class="sc">;</span>
+  81 <span class="i">$TotalTime</span> = <span class="w">timediff</span> <span class="s">(</span><span class="i">$EndTime</span><span class="cm">,</span> <span class="i">$StartTime</span><span class="s">)</span><span class="sc">;</span>
+  82 <span class="k">print</span> <span class="q">&quot;Total time: &quot;</span><span class="cm">,</span> <span class="i">timestr</span><span class="s">(</span><span class="i">$TotalTime</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+  83 
+  84 <span class="c">###############################################################################</span>
+  85 
+  86 <span class="c"># Extract appropriate information...</span>
+<a name="ExtractFromPDBFiles-"></a>  87 <span class="k">sub </span><span class="m">ExtractFromPDBFiles</span> <span class="s">{</span>
+  88   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+  89   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFile</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+  90 
+  91   <span class="c"># Get PDB data...</span>
+  92   <span class="i">$PDBFile</span> = <span class="i">$PDBFilesList</span>[<span class="i">$FileIndex</span>]<span class="sc">;</span>
+  93   <span class="i">$PDBRecordLinesRef</span> = <span class="i">ReadPDBFile</span><span class="s">(</span><span class="i">$PDBFile</span><span class="s">)</span><span class="sc">;</span>
+  94 
+  95   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/Chains/i</span><span class="s">)</span> <span class="s">{</span>
+  96     <span class="i">ExtractChains</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+  97   <span class="s">}</span>
+  98   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/Sequences/i</span><span class="s">)</span> <span class="s">{</span>
+  99     <span class="i">ExtractSequences</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 100   <span class="s">}</span>
+ 101   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^(Atoms|CAlphas|AtomNums|AtomsRange|AtomNames)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 102     <span class="i">ExtractByAtoms</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 103   <span class="s">}</span>
+ 104   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^(ResidueNums|ResiduesRange|ResidueNames)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 105     <span class="i">ExtractByResidues</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 106   <span class="s">}</span>
+ 107   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/Distance/i</span><span class="s">)</span> <span class="s">{</span>
+ 108     <span class="i">ExtractByDistance</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 109   <span class="s">}</span>
+ 110   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/NonWater/i</span><span class="s">)</span> <span class="s">{</span>
+ 111     <span class="i">ExtractNonWaterRecords</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 112   <span class="s">}</span>
+ 113   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/NonHydrogens/i</span><span class="s">)</span> <span class="s">{</span>
+ 114     <span class="i">ExtractNonHydrogenRecords</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 115   <span class="s">}</span>
+ 116 <span class="s">}</span>
+ 117 
+ 118 <span class="c"># Extract chains and generate new PDB files...</span>
+ 119 <span class="c">#</span>
+<a name="ExtractChains-"></a> 120 <span class="k">sub </span><span class="m">ExtractChains</span> <span class="s">{</span>
+ 121   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 122   <span class="k">my</span><span class="s">(</span><span class="i">$ChainIndex</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ChainLabel</span><span class="cm">,</span> <span class="i">$PDBFileName</span><span class="cm">,</span> <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$ChainsAndResiduesInfoRef</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$AtomChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">$CollectChainResiduesBeyondTER</span><span class="cm">,</span> <span class="i">%ChainAtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 123 
+ 124   <span class="i">$CollectChainResiduesBeyondTER</span> = <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ChainsRecordMode</span>} =~ <span class="q">/^AcrossTER$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 125 
+ 126   <span class="c"># Get chains and residues data...</span>
+ 127   <span class="i">$ChainsAndResiduesInfoRef</span> = <span class="i">GetChainsAndResidues</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> <span class="q">&#39;AtomAndHetatm&#39;</span><span class="cm">,</span> <span class="i">$CollectChainResiduesBeyondTER</span><span class="cm">,</span> <span class="n">1</span><span class="s">)</span><span class="sc">;</span>
+ 128 
+ 129   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CombineChains</span>}<span class="s">)</span> <span class="s">{</span>
+ 130     <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 131     <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 132 
+ 133     <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 134 
+ 135     <span class="c"># Write out header and other older records...</span>
+ 136     <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 137   <span class="s">}</span>
+ 138 
+ 139   <span class="k">for</span> <span class="i">$ChainIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>]}<span class="s">)</span> <span class="s">{</span>
+ 140     <span class="i">$ChainID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 141     <span class="i">$ChainLabel</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">ChainLabels</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 142 
+ 143     <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">CombineChains</span>}<span class="s">)</span> <span class="s">{</span>
+ 144       <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 145       <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 146 
+ 147       <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 148 
+ 149       <span class="c"># Write out header and other older recors...</span>
+ 150       <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 151     <span class="s">}</span>
+ 152 
+ 153     <span class="c"># Write out ATOM/HETATM line for chain and collect all ATOM/HETATM serial numbers</span>
+ 154     <span class="c"># for writing out appropriate CONECT records...</span>
+ 155     <span class="i">%ChainAtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 156     <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">Lines</span>}{<span class="i">$ChainID</span>}}<span class="s">)</span> <span class="s">{</span>
+ 157       <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 158         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 159         <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$AtomChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 160         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 161         <span class="i">$ChainAtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 162       <span class="s">}</span>
+ 163     <span class="s">}</span>
+ 164     <span class="c"># Write out TER record using information from last chain record...</span>
+ 165     <span class="i">$AtomNumber</span> += <span class="n">1</span><span class="sc">;</span>
+ 166     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$AtomChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 167 
+ 168     <span class="c"># Write out CONECT records...</span>
+ 169     <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%ChainAtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 170 
+ 171     <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 172       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 173     <span class="s">}</span>
+ 174 
+ 175     <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">CombineChains</span>}<span class="s">)</span> <span class="s">{</span>
+ 176       <span class="c"># Write out END record...</span>
+ 177       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 178 
+ 179       <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 180     <span class="s">}</span>
+ 181   <span class="s">}</span>
+ 182 
+ 183   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CombineChains</span>}<span class="s">)</span> <span class="s">{</span>
+ 184     <span class="c"># Write out END record...</span>
+ 185     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 186 
+ 187     <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 188   <span class="s">}</span>
+ 189 
+ 190 <span class="s">}</span>
+ 191 
+ 192 <span class="c"># Extract sequences for individual chains or combine all the chains...</span>
+<a name="ExtractSequences-"></a> 193 <span class="k">sub </span><span class="m">ExtractSequences</span> <span class="s">{</span>
+ 194   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 195   <span class="k">my</span><span class="s">(</span><span class="i">$ChainIndex</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ChainLabel</span><span class="cm">,</span> <span class="i">$SequenceFileName</span><span class="cm">,</span> <span class="i">$Residue</span><span class="cm">,</span> <span class="i">$ResidueCode</span><span class="cm">,</span> <span class="i">$StandardResidue</span><span class="cm">,</span> <span class="i">$ChainSequence</span><span class="cm">,</span> <span class="i">$WrappedChainSequence</span><span class="cm">,</span> <span class="i">$ChainSequenceID</span><span class="cm">,</span> <span class="i">$ChainsAndResiduesInfoRef</span><span class="cm">,</span> <span class="i">$ChainResiduesRef</span><span class="cm">,</span> <span class="i">%ChainSequencesDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 196 
+ 197   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SequenceRecordSource</span>} =~ <span class="q">/^SeqRes$/i</span><span class="s">)</span> <span class="s">{</span>
+ 198     <span class="i">$ChainsAndResiduesInfoRef</span> = <span class="i">GetChainsAndResidues</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> <span class="q">&#39;SeqRes&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 199   <span class="s">}</span>
+ 200   <span class="k">else</span> <span class="s">{</span>
+ 201     <span class="i">$ChainsAndResiduesInfoRef</span> = <span class="i">GetChainsAndResidues</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 202   <span class="s">}</span>
+ 203 
+ 204   <span class="c"># Generate sequence data for all the chains...</span>
+ 205   <span class="i">%ChainSequencesDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 206   <span class="i">@</span>{<span class="i">$ChainSequencesDataMap</span>{<span class="w">IDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 207   <span class="i">%</span>{<span class="i">$ChainSequencesDataMap</span>{<span class="w">Sequence</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 208   <span class="i">%</span>{<span class="i">$ChainSequencesDataMap</span>{<span class="w">Description</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 209 
+ 210   <span class="k">for</span> <span class="i">$ChainIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>]}<span class="s">)</span> <span class="s">{</span>
+ 211     <span class="i">$ChainID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 212     <span class="i">$ChainLabel</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">ChainLabels</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 213 
+ 214     <span class="c"># Setup sequence ID...</span>
+ 215     <span class="i">$ChainSequenceID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDs</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 216     <span class="k">push</span> <span class="i">@</span>{<span class="i">$ChainSequencesDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$ChainSequenceID</span><span class="sc">;</span>
+ 217     <span class="i">$ChainSequencesDataMap</span>{<span class="w">Description</span>}{<span class="i">$ChainID</span>} = <span class="i">$ChainSequenceID</span><span class="sc">;</span>
+ 218 
+ 219     <span class="c"># Collect sequence data for the chain...</span>
+ 220     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SequenceRecordSource</span>} =~ <span class="q">/^SeqRes/i</span><span class="s">)</span> <span class="s">{</span>
+ 221       <span class="i">$ChainResiduesRef</span> = \<span class="i">@</span>{<span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">Residues</span>}{<span class="i">$ChainID</span>}}<span class="sc">;</span>
+ 222     <span class="s">}</span>
+ 223     <span class="k">else</span> <span class="s">{</span>
+ 224       <span class="i">$ChainResiduesRef</span> = \<span class="i">@</span>{<span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">Residues</span>}{<span class="i">$ChainID</span>}}<span class="sc">;</span>
+ 225     <span class="s">}</span>
+ 226     <span class="c"># Setup sequence data...</span>
+ 227     <span class="i">$ChainSequence</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 228     <span class="j">RESIDUE:</span> <span class="k">for</span> <span class="i">$Residue</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ChainResiduesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 229       <span class="s">(</span><span class="i">$ResidueCode</span><span class="cm">,</span> <span class="i">$StandardResidue</span><span class="s">)</span> = <span class="i">GetResidueCode</span><span class="s">(</span><span class="i">$Residue</span><span class="s">)</span><span class="sc">;</span>
+ 230       <span class="k">if</span> <span class="s">(</span>!<span class="i">$StandardResidue</span><span class="s">)</span> <span class="s">{</span>
+ 231         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">KeepNonStandardSequences</span>}<span class="s">)</span> <span class="s">{</span>
+ 232           <span class="i">$ResidueCode</span> = <span class="i">$OptionsInfo</span>{<span class="w">NonStandardSequenceCode</span>}<span class="sc">;</span>
+ 233           <span class="k">warn</span> <span class="q">&quot;Warning: Keeping nonstandard residue $Residue in $ChainLabel...\n&quot;</span><span class="sc">;</span>
+ 234         <span class="s">}</span>
+ 235         <span class="k">else</span> <span class="s">{</span>
+ 236           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring nonstandard residue $Residue in $ChainLabel...\n&quot;</span><span class="sc">;</span>
+ 237           <span class="k">next</span> <span class="j">RESIDUE</span><span class="sc">;</span>
+ 238         <span class="s">}</span>
+ 239       <span class="s">}</span>
+ 240       <span class="i">$ChainSequence</span> .= <span class="i">$ResidueCode</span><span class="sc">;</span>
+ 241     <span class="s">}</span>
+ 242     <span class="i">$ChainSequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ChainID</span>} = <span class="i">$ChainSequence</span><span class="sc">;</span>
+ 243 
+ 244   <span class="s">}</span>
+ 245 
+ 246   <span class="c"># Write out the sequence files...</span>
+ 247   <span class="k">my</span><span class="s">(</span><span class="i">$SequenceID</span><span class="cm">,</span> <span class="i">$SequenceDescription</span><span class="cm">,</span> <span class="i">$Sequence</span><span class="cm">,</span> <span class="i">%SequencesDataMap</span> <span class="s">)</span><span class="sc">;</span>
+ 248   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CombineChainSequences</span>}<span class="s">)</span> <span class="s">{</span>
+ 249     <span class="c"># Combine all the chain sequences...</span>
+ 250     <span class="i">$Sequence</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 251     <span class="k">for</span> <span class="i">$ChainIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>]}<span class="s">)</span> <span class="s">{</span>
+ 252       <span class="i">$ChainID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 253 
+ 254       <span class="i">$Sequence</span> .= <span class="i">$ChainSequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ChainID</span>}<span class="sc">;</span>
+ 255     <span class="s">}</span>
+ 256     <span class="i">$SequenceID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDsPrefix</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>] . <span class="q">&quot;_CombinedChains|PDB&quot;</span><span class="sc">;</span><span class="sc">;</span>
+ 257     <span class="i">$SequenceDescription</span> = <span class="i">$SequenceID</span><span class="sc">;</span>
+ 258     <span class="i">$SequenceFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 259 
+ 260     <span class="k">print</span> <span class="q">&quot;Generating sequence file $SequenceFileName...\n&quot;</span><span class="sc">;</span>
+ 261     <span class="i">%SequencesDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 262     <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 263     <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 264     <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 265 
+ 266     <span class="k">push</span> <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$SequenceID</span><span class="sc">;</span>
+ 267     <span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}{<span class="i">$SequenceID</span>} = <span class="i">$SequenceDescription</span><span class="sc">;</span>
+ 268     <span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$SequenceID</span>} = <span class="i">$Sequence</span><span class="sc">;</span>
+ 269 
+ 270     <span class="i">WritePearsonFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFileName</span><span class="cm">,</span> \<span class="i">%SequencesDataMap</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">MaxSequenceLength</span>}<span class="s">)</span><span class="sc">;</span>
+ 271   <span class="s">}</span>
+ 272   <span class="k">else</span> <span class="s">{</span>
+ 273     <span class="c"># For each specifed chain, write out the sequences...</span>
+ 274     <span class="k">for</span> <span class="i">$ChainIndex</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>]}<span class="s">)</span> <span class="s">{</span>
+ 275       <span class="i">$ChainID</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 276 
+ 277       <span class="i">$SequenceFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 278 
+ 279       <span class="i">$SequenceID</span> = <span class="i">$ChainSequencesDataMap</span>{<span class="w">IDs</span>}[<span class="i">$ChainIndex</span>]<span class="sc">;</span>
+ 280       <span class="i">$SequenceDescription</span> = <span class="i">$ChainSequencesDataMap</span>{<span class="w">Description</span>}{<span class="i">$ChainID</span>}<span class="sc">;</span>
+ 281       <span class="i">$Sequence</span> = <span class="i">$ChainSequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$ChainID</span>}<span class="sc">;</span>
+ 282 
+ 283       <span class="k">print</span> <span class="q">&quot;Generating sequence file $SequenceFileName...\n&quot;</span><span class="sc">;</span>
+ 284       <span class="i">%SequencesDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 285       <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 286       <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 287       <span class="i">%</span>{<span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 288 
+ 289       <span class="k">push</span> <span class="i">@</span>{<span class="i">$SequencesDataMap</span>{<span class="w">IDs</span>}}<span class="cm">,</span> <span class="i">$SequenceID</span><span class="sc">;</span>
+ 290       <span class="i">$SequencesDataMap</span>{<span class="w">Description</span>}{<span class="i">$SequenceID</span>} = <span class="i">$SequenceDescription</span><span class="sc">;</span>
+ 291       <span class="i">$SequencesDataMap</span>{<span class="w">Sequence</span>}{<span class="i">$SequenceID</span>} = <span class="i">$Sequence</span><span class="sc">;</span>
+ 292 
+ 293       <span class="i">WritePearsonFastaSequenceFile</span><span class="s">(</span><span class="i">$SequenceFileName</span><span class="cm">,</span> \<span class="i">%SequencesDataMap</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">MaxSequenceLength</span>}<span class="s">)</span><span class="sc">;</span>
+ 294     <span class="s">}</span>
+ 295   <span class="s">}</span>
+ 296 <span class="s">}</span>
+ 297 
+ 298 <span class="c"># Extract atoms...</span>
+<a name="ExtractByAtoms-"></a> 299 <span class="k">sub </span><span class="m">ExtractByAtoms</span> <span class="s">{</span>
+ 300   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 301   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFileName</span><span class="cm">,</span>  <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$ChainRecordCount</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$IgnoreRecord</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 302 
+ 303   <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 304   <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 305   <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 306 
+ 307   <span class="c"># Write out header and other older recors...</span>
+ 308   <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 309 
+ 310   <span class="c"># Write out all ATOM records along with TER and model records to indicate</span>
+ 311   <span class="c"># chains and multiple models..</span>
+ 312   <span class="i">%AtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 313   <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 314   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 315     <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 316       <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 317 
+ 318       <span class="c"># Check atoms...</span>
+ 319       <span class="i">$IgnoreRecord</span> = <span class="n">1</span><span class="sc">;</span>
+ 320       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^Atoms$/i</span><span class="s">)</span> <span class="s">{</span>
+ 321         <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 322       <span class="s">}</span>
+ 323       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^(CAlphas|AtomNames)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 324         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesMap</span>}{<span class="k">lc</span> <span class="i">$AtomName</span>}<span class="s">)</span> <span class="s">{</span>
+ 325           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 326         <span class="s">}</span>
+ 327       <span class="s">}</span>
+ 328       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^AtomNums$/i</span><span class="s">)</span> <span class="s">{</span>
+ 329         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsMap</span>}{<span class="i">$AtomNumber</span>}<span class="s">)</span> <span class="s">{</span>
+ 330           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 331         <span class="s">}</span>
+ 332       <span class="s">}</span>
+ 333       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^AtomsRange$/i</span><span class="s">)</span> <span class="s">{</span>
+ 334         <span class="k">if</span> <span class="s">(</span><span class="i">$AtomNumber</span> &gt;= <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedStartAtomNum</span>} &amp;&amp; <span class="i">$AtomNumber</span> &lt;= <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedEndAtomNum</span>}<span class="s">)</span> <span class="s">{</span>
+ 335           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 336         <span class="s">}</span>
+ 337       <span class="s">}</span>
+ 338 
+ 339       <span class="k">if</span> <span class="s">(</span>!<span class="i">$IgnoreRecord</span><span class="s">)</span> <span class="s">{</span>
+ 340         <span class="i">$ChainRecordCount</span>++<span class="sc">;</span>
+ 341         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 342 
+ 343         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 344         <span class="i">$AtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 345       <span class="s">}</span>
+ 346     <span class="s">}</span>
+ 347     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsTerRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 348       <span class="k">if</span> <span class="s">(</span><span class="i">$ChainRecordCount</span><span class="s">)</span> <span class="s">{</span>
+ 349         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 350       <span class="s">}</span>
+ 351       <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 352     <span class="s">}</span>
+ 353     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsEndmdlRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 354       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 355     <span class="s">}</span>
+ 356   <span class="s">}</span>
+ 357 
+ 358   <span class="c"># Write out appropriate CONECT records...</span>
+ 359   <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 360   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 361     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 362   <span class="s">}</span>
+ 363 
+ 364   <span class="c"># Write out END record...</span>
+ 365   <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 366 
+ 367   <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 368 <span class="s">}</span>
+ 369 
+ 370 <span class="c"># Extract residues...</span>
+<a name="ExtractByResidues-"></a> 371 <span class="k">sub </span><span class="m">ExtractByResidues</span> <span class="s">{</span>
+ 372   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 373   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFileName</span><span class="cm">,</span>  <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$ChainRecordCount</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">$IgnoreRecord</span><span class="cm">,</span> <span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 374 
+ 375   <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 376   <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 377   <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 378 
+ 379   <span class="c"># Write out header and other older recors...</span>
+ 380   <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 381 
+ 382   <span class="c"># Write out all ATOM records for specified residues with TER and model records to indicate</span>
+ 383   <span class="c"># chains and multiple models...</span>
+ 384   <span class="i">%AtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 385   <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 386   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 387     <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 388       <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 389 
+ 390       <span class="c"># Check residues...</span>
+ 391       <span class="i">$IgnoreRecord</span> = <span class="n">1</span><span class="sc">;</span>
+ 392       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^ResidueNums$/i</span><span class="s">)</span> <span class="s">{</span>
+ 393         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsMap</span>}{<span class="i">$ResidueNumber</span>}<span class="s">)</span> <span class="s">{</span>
+ 394           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 395         <span class="s">}</span>
+ 396       <span class="s">}</span>
+ 397       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^ResiduesRange$/i</span><span class="s">)</span> <span class="s">{</span>
+ 398         <span class="k">if</span> <span class="s">(</span><span class="i">$ResidueNumber</span> &gt;= <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedStartResidueNum</span>} &amp;&amp; <span class="i">$ResidueNumber</span> &lt;= <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedEndResidueNum</span>}<span class="s">)</span> <span class="s">{</span>
+ 399           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 400         <span class="s">}</span>
+ 401       <span class="s">}</span>
+ 402       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^ResidueNames$/i</span><span class="s">)</span> <span class="s">{</span>
+ 403         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesMap</span>}{<span class="k">lc</span> <span class="i">$ResidueName</span>}<span class="s">)</span> <span class="s">{</span>
+ 404           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 405         <span class="s">}</span>
+ 406       <span class="s">}</span>
+ 407       <span class="k">if</span> <span class="s">(</span>!<span class="i">$IgnoreRecord</span><span class="s">)</span> <span class="s">{</span>
+ 408         <span class="i">$ChainRecordCount</span>++<span class="sc">;</span>
+ 409         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 410         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 411         <span class="i">$AtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 412       <span class="s">}</span>
+ 413     <span class="s">}</span>
+ 414     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsTerRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 415       <span class="k">if</span> <span class="s">(</span><span class="i">$ChainRecordCount</span><span class="s">)</span> <span class="s">{</span>
+ 416         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 417       <span class="s">}</span>
+ 418       <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 419     <span class="s">}</span>
+ 420     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsEndmdlRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 421       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 422     <span class="s">}</span>
+ 423   <span class="s">}</span>
+ 424 
+ 425   <span class="c"># Write out appropriate CONECT records...</span>
+ 426   <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 427   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 428     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 429   <span class="s">}</span>
+ 430   <span class="c"># Write out END record...</span>
+ 431   <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 432 
+ 433   <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 434 <span class="s">}</span>
+ 435 
+ 436 <span class="c"># Extract non water records...</span>
+<a name="ExtractNonWaterRecords-"></a> 437 <span class="k">sub </span><span class="m">ExtractNonWaterRecords</span> <span class="s">{</span>
+ 438   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 439   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFileName</span><span class="cm">,</span>  <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$ChainRecordCount</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 440 
+ 441   <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 442   <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 443   <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 444 
+ 445   <span class="c"># Write out header and other older recors...</span>
+ 446   <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 447 
+ 448   <span class="c"># Write out all ATOM/HETATM non water records along with TER and model records to indicate</span>
+ 449   <span class="c"># chains and multiple models..</span>
+ 450   <span class="i">%AtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 451   <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 452   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 453     <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 454       <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 455       <span class="k">if</span> <span class="s">(</span>! <span class="k">exists</span> <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedWaterResiduesMap</span>}{<span class="i">$ResidueName</span>} <span class="s">)</span> <span class="s">{</span>
+ 456         <span class="i">$ChainRecordCount</span>++<span class="sc">;</span>
+ 457         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 458         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 459         <span class="i">$AtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 460       <span class="s">}</span>
+ 461     <span class="s">}</span>
+ 462     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsTerRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 463       <span class="k">if</span> <span class="s">(</span><span class="i">$ChainRecordCount</span><span class="s">)</span> <span class="s">{</span>
+ 464         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 465       <span class="s">}</span>
+ 466       <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 467     <span class="s">}</span>
+ 468     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsEndmdlRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 469       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 470     <span class="s">}</span>
+ 471   <span class="s">}</span>
+ 472 
+ 473   <span class="c"># Write out appropriate CONECT records...</span>
+ 474   <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 475   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 476     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 477   <span class="s">}</span>
+ 478   <span class="c"># Write out END record...</span>
+ 479   <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 480 
+ 481   <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 482 <span class="s">}</span>
+ 483 
+ 484 <span class="c"># Extract non hydrogen records...</span>
+<a name="ExtractNonHydrogenRecords-"></a> 485 <span class="k">sub </span><span class="m">ExtractNonHydrogenRecords</span> <span class="s">{</span>
+ 486   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 487   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFileName</span><span class="cm">,</span>  <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$ChainRecordCount</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$Occupancy</span><span class="cm">,</span> <span class="i">$TemperatureFactor</span><span class="cm">,</span> <span class="i">$SegmentID</span><span class="cm">,</span> <span class="i">$ElementSymbol</span><span class="cm">,</span> <span class="i">$AtomCharge</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 488 
+ 489   <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 490   <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 491   <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 492 
+ 493   <span class="c"># Write out header and other older recors...</span>
+ 494   <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 495 
+ 496   <span class="c"># Write out all ATOM/HETATM non hydrogen records along with TER and model records to indicate</span>
+ 497   <span class="c"># chains and multiple models..</span>
+ 498   <span class="i">%AtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 499   <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 500   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 501     <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 502       <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$Occupancy</span><span class="cm">,</span> <span class="i">$TemperatureFactor</span><span class="cm">,</span> <span class="i">$SegmentID</span><span class="cm">,</span> <span class="i">$ElementSymbol</span><span class="cm">,</span> <span class="i">$AtomCharge</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 503       <span class="k">if</span> <span class="s">(</span><span class="i">$ElementSymbol</span> !~ <span class="q">/^H$/i</span><span class="s">)</span> <span class="s">{</span>
+ 504         <span class="i">$ChainRecordCount</span>++<span class="sc">;</span>
+ 505         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 506         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 507         <span class="i">$AtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 508       <span class="s">}</span>
+ 509     <span class="s">}</span>
+ 510     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsTerRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 511       <span class="k">if</span> <span class="s">(</span><span class="i">$ChainRecordCount</span><span class="s">)</span> <span class="s">{</span>
+ 512         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 513       <span class="s">}</span>
+ 514       <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 515     <span class="s">}</span>
+ 516     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsEndmdlRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 517       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 518     <span class="s">}</span>
+ 519   <span class="s">}</span>
+ 520 
+ 521   <span class="c"># Write out appropriate CONECT records...</span>
+ 522   <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 523   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 524     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 525   <span class="s">}</span>
+ 526   <span class="c"># Write out END record...</span>
+ 527   <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 528 
+ 529   <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 530 <span class="s">}</span>
+ 531 
+ 532 <span class="c"># Extract ATOM/HETATM records by distance...</span>
+<a name="ExtractByDistance-"></a> 533 <span class="k">sub </span><span class="m">ExtractByDistance</span> <span class="s">{</span>
+ 534   <span class="k">my</span><span class="s">(</span><span class="i">$FileIndex</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 535   <span class="k">my</span><span class="s">(</span><span class="i">$PDBFileName</span><span class="cm">,</span>  <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$RecordLineNum</span><span class="cm">,</span> <span class="i">$ChainRecordCount</span><span class="cm">,</span> <span class="i">$ConectRecordLinesRef</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$IgnoreRecord</span><span class="cm">,</span> <span class="i">$ResidueID</span><span class="cm">,</span> <span class="i">@OriginCoords</span><span class="cm">,</span> <span class="i">@Coords</span><span class="cm">,</span> <span class="i">%AtomNumbersMap</span><span class="cm">,</span> <span class="i">%ResiduesDataMap</span><span class="s">)</span><span class="sc">;</span>
+ 536 
+ 537   <span class="i">$PDBFileName</span> = <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$FileIndex</span>][<span class="n">0</span>]<span class="sc">;</span>
+ 538   <span class="k">print</span> <span class="q">&quot;Generating PDBFileName file $PDBFileName...\n&quot;</span><span class="sc">;</span>
+ 539   <span class="k">open</span> <span class="w">OUTFILE</span><span class="cm">,</span> <span class="q">&quot;&gt;$PDBFileName&quot;</span> <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Can&#39;t open $PDBFileName: $! \n&quot;</span><span class="sc">;</span>
+ 540 
+ 541   <span class="c"># Write out header and other older recors...</span>
+ 542   <span class="i">WriteHeaderAndOlderRecords</span><span class="s">(</span>\<span class="i">*OUTFILE</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 543 
+ 544   <span class="c"># Setup coordinates of origin to calculate distance...</span>
+ 545   <span class="i">@OriginCoords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 546   <span class="k">push</span> <span class="i">@OriginCoords</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">DistanceOrigin</span>}[<span class="i">$FileIndex</span>]}<span class="sc">;</span>
+ 547 
+ 548   <span class="c"># Write out all ATOM records for which meet specified criteria along with TER and model records to indicate</span>
+ 549   <span class="c"># chains and multiple models...</span>
+ 550   <span class="i">%AtomNumbersMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 551 
+ 552   <span class="i">%ResiduesDataMap</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 553   <span class="i">%</span>{<span class="i">$ResiduesDataMap</span>{<span class="w">ID</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 554   <span class="i">%</span>{<span class="i">$ResiduesDataMap</span>{<span class="w">Status</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 555 
+ 556   <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 557   <span class="i">$RecordLineNum</span> = <span class="n">0</span><span class="sc">;</span>
+ 558 
+ 559   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 560     <span class="i">$RecordLineNum</span>++<span class="sc">;</span>
+ 561     <span class="k">if</span> <span class="s">(</span><span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 562       <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 563       <span class="i">@Coords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span> <span class="k">push</span> <span class="i">@Coords</span><span class="cm">,</span> <span class="s">(</span><span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span><span class="sc">;</span>
+ 564 
+ 565       <span class="i">$IgnoreRecord</span> = <span class="n">1</span><span class="sc">;</span>
+ 566       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DistanceSelectionMode</span>} =~ <span class="q">/^ByResidue$/i</span><span class="s">)</span> <span class="s">{</span>
+ 567         <span class="i">$ResidueID</span> = <span class="q">&quot;${ResidueName}_${ResidueNumber}_${ChainID}&quot;</span><span class="sc">;</span>
+ 568         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$ResiduesDataMap</span>{<span class="w">ID</span>}{<span class="i">$ResidueID</span>}<span class="s">)</span> <span class="s">{</span>
+ 569           <span class="c"># Residue data has been processed; check its selection status...</span>
+ 570           <span class="k">if</span> <span class="s">(</span><span class="i">$ResiduesDataMap</span>{<span class="w">Status</span>}{<span class="i">$ResidueID</span>}<span class="s">)</span> <span class="s">{</span>
+ 571             <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 572           <span class="s">}</span>
+ 573         <span class="s">}</span>
+ 574         <span class="k">else</span> <span class="s">{</span>
+ 575           <span class="c"># Residue hasn&#39;t been processed...</span>
+ 576           <span class="i">$ResiduesDataMap</span>{<span class="w">ID</span>}{<span class="i">$ResidueID</span>} = <span class="i">$ResidueID</span><span class="sc">;</span>
+ 577           <span class="i">$ResiduesDataMap</span>{<span class="w">Status</span>}{<span class="i">$ResidueID</span>} = <span class="n">0</span><span class="sc">;</span>
+ 578           <span class="k">if</span> <span class="s">(</span><span class="i">CheckResidueDistance</span><span class="s">(</span><span class="i">$ResidueID</span><span class="cm">,</span> <span class="i">$RecordLineNum</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">@OriginCoords</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 579             <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 580             <span class="i">$ResiduesDataMap</span>{<span class="w">Status</span>}{<span class="i">$ResidueID</span>} = <span class="n">1</span><span class="sc">;</span>
+ 581           <span class="s">}</span>
+ 582         <span class="s">}</span>
+ 583       <span class="s">}</span>
+ 584       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">DistanceSelectionMode</span>} =~ <span class="q">/^ByAtom$/i</span><span class="s">)</span> <span class="s">{</span>
+ 585         <span class="k">if</span> <span class="s">(</span><span class="i">CheckDistance</span><span class="s">(</span>\<span class="i">@Coords</span><span class="cm">,</span> \<span class="i">@OriginCoords</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 586           <span class="i">$IgnoreRecord</span> = <span class="n">0</span><span class="sc">;</span>
+ 587         <span class="s">}</span>
+ 588       <span class="s">}</span>
+ 589 
+ 590       <span class="k">if</span> <span class="s">(</span>!<span class="i">$IgnoreRecord</span><span class="s">)</span> <span class="s">{</span>
+ 591         <span class="i">$ChainRecordCount</span>++<span class="sc">;</span>
+ 592         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 593         <span class="i">$AtomNumber</span> = <span class="k">int</span> <span class="i">$AtomNumber</span><span class="sc">;</span>
+ 594         <span class="i">$AtomNumbersMap</span>{<span class="i">$AtomNumber</span>} = <span class="i">$AtomName</span><span class="sc">;</span>
+ 595       <span class="s">}</span>
+ 596     <span class="s">}</span>
+ 597     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsTerRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 598       <span class="k">if</span> <span class="s">(</span><span class="i">$ChainRecordCount</span><span class="s">)</span> <span class="s">{</span>
+ 599         <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateTerRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 600       <span class="s">}</span>
+ 601       <span class="i">$ChainRecordCount</span> = <span class="n">0</span><span class="sc">;</span>
+ 602     <span class="s">}</span>
+ 603     <span class="k">elsif</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsEndmdlRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 604       <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 605     <span class="s">}</span>
+ 606   <span class="s">}</span>
+ 607 
+ 608   <span class="c"># Write out appropriate CONECT records...</span>
+ 609   <span class="i">$ConectRecordLinesRef</span> = <span class="i">GetConectRecordLines</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> \<span class="i">%AtomNumbersMap</span><span class="s">)</span><span class="sc">;</span>
+ 610   <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$ConectRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 611     <span class="k">print</span> <span class="i">OUTFILE</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 612   <span class="s">}</span>
+ 613 
+ 614   <span class="c"># Write out END record...</span>
+ 615   <span class="k">print</span> <span class="i">OUTFILE</span> <span class="i">GenerateEndRecordLine</span><span class="s">(</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 616 
+ 617   <span class="k">close</span> <span class="w">OUTFILE</span><span class="sc">;</span>
+ 618 <span class="s">}</span>
+ 619 
+ 620 <span class="c"># Does record type correspond to the specified record type?</span>
+<a name="CheckRecordType-"></a> 621 <span class="k">sub </span><span class="m">CheckRecordType</span> <span class="s">{</span>
+ 622   <span class="k">my</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 623   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="s">)</span><span class="sc">;</span>
+ 624 
+ 625   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 626   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RecordMode</span>} =~ <span class="q">/^Atom$/i</span><span class="s">)</span> <span class="s">{</span>
+ 627     <span class="i">$Status</span> = <span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 628   <span class="s">}</span>
+ 629   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RecordMode</span>} =~ <span class="q">/^Hetatm$/i</span><span class="s">)</span> <span class="s">{</span>
+ 630     <span class="i">$Status</span> = <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 631   <span class="s">}</span>
+ 632   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">RecordMode</span>} =~ <span class="q">/^AtomAndHetatm$/i</span><span class="s">)</span> <span class="s">{</span>
+ 633     <span class="i">$Status</span> = <span class="s">(</span><span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 634   <span class="s">}</span>
+ 635 
+ 636   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 637 <span class="s">}</span>
+ 638 
+ 639 <span class="c"># Does record meets distance citerion specified by the user?</span>
+<a name="CheckResidueDistance-"></a> 640 <span class="k">sub </span><span class="m">CheckResidueDistance</span> <span class="s">{</span>
+ 641   <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedResidueID</span><span class="cm">,</span> <span class="i">$StartingLineNum</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> <span class="i">$OriginCoordsRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 642   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$RecordLine</span><span class="cm">,</span> <span class="i">$RecordLineIndex</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$ResidueID</span><span class="cm">,</span> <span class="i">@Coords</span><span class="s">)</span><span class="sc">;</span>
+ 643 
+ 644   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 645 
+ 646   <span class="j">RECORDLINE:</span> <span class="k">for</span> <span class="i">$RecordLineIndex</span> <span class="s">(</span><span class="s">(</span><span class="i">$StartingLineNum</span> - <span class="n">1</span><span class="s">)</span> .. <span class="i">$#</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 647     <span class="i">$RecordLine</span> = <span class="i">$PDBRecordLinesRef</span>-&gt;[<span class="i">$RecordLineIndex</span>]<span class="sc">;</span>
+ 648     <span class="k">if</span> <span class="s">(</span>!<span class="i">CheckRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 649       <span class="k">next</span> <span class="j">RECORDLINE</span><span class="sc">;</span>
+ 650     <span class="s">}</span>
+ 651     <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 652     <span class="i">$ResidueID</span> = <span class="q">&quot;${ResidueName}_${ResidueNumber}_${ChainID}&quot;</span><span class="sc">;</span>
+ 653 
+ 654     <span class="k">if</span> <span class="s">(</span><span class="i">$ResidueID</span> !~ <span class="q">/^$SpecifiedResidueID$/i</span><span class="s">)</span> <span class="s">{</span>
+ 655       <span class="c"># It&#39;s a new residue line...</span>
+ 656       <span class="k">last</span> <span class="j">RECORDLINE</span><span class="sc">;</span>
+ 657     <span class="s">}</span>
+ 658 
+ 659     <span class="c"># Check distance...</span>
+ 660     <span class="i">@Coords</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span> <span class="k">push</span> <span class="i">@Coords</span><span class="cm">,</span> <span class="s">(</span><span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span><span class="sc">;</span>
+ 661     <span class="k">if</span> <span class="s">(</span><span class="i">CheckDistance</span><span class="s">(</span>\<span class="i">@Coords</span><span class="cm">,</span> <span class="i">$OriginCoordsRef</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 662       <span class="c"># Distance criterion is met for at least one record in the residue...</span>
+ 663       <span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span>
+ 664       <span class="k">last</span> <span class="j">RECORDLINE</span><span class="sc">;</span>
+ 665     <span class="s">}</span>
+ 666   <span class="s">}</span>
+ 667   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 668 <span class="s">}</span>
+ 669 
+ 670 <span class="c"># Does record meets distance citerion specified by the user?</span>
+<a name="CheckDistance-"></a> 671 <span class="k">sub </span><span class="m">CheckDistance</span> <span class="s">{</span>
+ 672   <span class="k">my</span><span class="s">(</span><span class="i">$CoordsRef</span><span class="cm">,</span> <span class="i">$OriginCoordsRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 673   <span class="k">my</span><span class="s">(</span><span class="i">$Status</span><span class="cm">,</span> <span class="i">$Index</span><span class="cm">,</span> <span class="i">$Distance</span><span class="cm">,</span> <span class="i">$DistanceSquare</span><span class="s">)</span><span class="sc">;</span>
+ 674 
+ 675   <span class="i">$Status</span> = <span class="n">0</span><span class="sc">;</span>
+ 676 
+ 677   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Residue$/i</span><span class="s">)</span> <span class="s">{</span>
+ 678     <span class="c"># Go over coordinates of all the atoms in the residue...</span>
+ 679     <span class="k">my</span><span class="s">(</span><span class="i">$ResidueCoordsCount</span><span class="s">)</span> = <span class="k">scalar</span> <span class="i">@</span>{<span class="i">$OriginCoordsRef</span>}<span class="sc">;</span>
+ 680     <span class="j">INDEX:</span> <span class="k">for</span> <span class="s">(</span><span class="i">$Index</span> = <span class="n">0</span><span class="sc">;</span> <span class="i">$Index</span> &lt; <span class="i">$ResidueCoordsCount</span><span class="sc">;</span> <span class="i">$Index</span> += <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 681       <span class="i">$DistanceSquare</span> = <span class="s">(</span><span class="i">$CoordsRef</span>-&gt;[<span class="n">0</span>] - <span class="i">$OriginCoordsRef</span>-&gt;[<span class="i">$Index</span>]<span class="s">)</span>**<span class="n">2</span> + <span class="s">(</span><span class="i">$CoordsRef</span>-&gt;[<span class="n">1</span>] - <span class="i">$OriginCoordsRef</span>-&gt;[<span class="i">$Index</span> + <span class="n">1</span>]<span class="s">)</span>**<span class="n">2</span> + <span class="s">(</span><span class="i">$CoordsRef</span>-&gt;[<span class="n">2</span>] - <span class="i">$OriginCoordsRef</span>-&gt;[<span class="i">$Index</span> + <span class="n">2</span>]<span class="s">)</span>**<span class="n">2</span><span class="sc">;</span>
+ 682       <span class="i">$Distance</span> = <span class="k">sqrt</span> <span class="i">$DistanceSquare</span><span class="sc">;</span>
+ 683       <span class="k">if</span> <span class="s">(</span><span class="i">$Distance</span> &lt;= <span class="i">$OptionsInfo</span>{<span class="w">MaxExtractionDistance</span>}<span class="s">)</span> <span class="s">{</span>
+ 684         <span class="i">$Status</span> = <span class="n">1</span><span class="sc">;</span>
+ 685         <span class="k">last</span> <span class="j">INDEX</span><span class="sc">;</span>
+ 686       <span class="s">}</span>
+ 687     <span class="s">}</span>
+ 688   <span class="s">}</span>
+ 689   <span class="k">else</span> <span class="s">{</span>
+ 690     <span class="i">$DistanceSquare</span> = <span class="n">0</span><span class="sc">;</span>
+ 691     <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 692       <span class="i">$DistanceSquare</span> += <span class="s">(</span><span class="i">$CoordsRef</span>-&gt;[<span class="i">$Index</span>] - <span class="i">$OriginCoordsRef</span>-&gt;[<span class="i">$Index</span>]<span class="s">)</span>**<span class="n">2</span><span class="sc">;</span>
+ 693     <span class="s">}</span>
+ 694     <span class="i">$Distance</span> = <span class="k">sqrt</span> <span class="i">$DistanceSquare</span><span class="sc">;</span>
+ 695     <span class="i">$Status</span> = <span class="s">(</span><span class="i">$Distance</span> &lt;= <span class="i">$OptionsInfo</span>{<span class="w">MaxExtractionDistance</span>}<span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 696   <span class="s">}</span>
+ 697 
+ 698   <span class="k">return</span> <span class="i">$Status</span><span class="sc">;</span>
+ 699 <span class="s">}</span>
+ 700 
+ 701 <span class="c"># Write out modifed header and other older records...</span>
+<a name="WriteHeaderAndOlderRecords-"></a> 702 <span class="k">sub </span><span class="m">WriteHeaderAndOlderRecords</span> <span class="s">{</span>
+ 703   <span class="k">my</span><span class="s">(</span><span class="i">$OutFileRef</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 704 
+ 705   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ModifyHeaderRecord</span>}<span class="s">)</span> <span class="s">{</span>
+ 706     <span class="c"># Write out modified HEADER record...</span>
+ 707     <span class="k">my</span><span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="s">)</span> = <span class="i">GetHeaderRecordInformation</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+ 708     <span class="i">$Classification</span> = <span class="q">&#39;Data extracted using MayaChemTools&#39;</span><span class="sc">;</span>
+ 709     <span class="k">print</span> <span class="i">$OutFileRef</span> <span class="i">GenerateHeaderRecordLine</span><span class="s">(</span><span class="i">$IDCode</span><span class="cm">,</span> <span class="i">$Classification</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 710   <span class="s">}</span>
+ 711   <span class="k">else</span> <span class="s">{</span>
+ 712     <span class="k">print</span> <span class="i">$OutFileRef</span> <span class="i">$PDBRecordLinesRef</span>-&gt;[<span class="n">0</span>]<span class="cm">,</span> <span class="q">&quot;\n&quot;</span><span class="sc">;</span>
+ 713   <span class="s">}</span>
+ 714 
+ 715   <span class="c"># Write out any old records...</span>
+ 716   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">KeepOldRecords</span>}<span class="s">)</span> <span class="s">{</span>
+ 717     <span class="k">my</span><span class="s">(</span><span class="i">$RecordLineIndex</span><span class="cm">,</span> <span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 718     <span class="c"># Skip HEADER record and write out older records all the way upto first MODEL/ATOM/HETATM records from input file...</span>
+ 719     <span class="j">RECORDLINE:</span> <span class="k">for</span> <span class="i">$RecordLineIndex</span> <span class="s">(</span><span class="n">1</span> .. <span class="i">$#</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+ 720       <span class="i">$RecordLine</span> = <span class="i">$PDBRecordLinesRef</span>-&gt;[<span class="i">$RecordLineIndex</span>]<span class="sc">;</span>
+ 721       <span class="k">if</span> <span class="s">(</span><span class="i">IsModelRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 722         <span class="k">last</span> <span class="j">RECORDLINE</span><span class="sc">;</span>
+ 723       <span class="s">}</span>
+ 724       <span class="k">print</span> <span class="i">$OutFileRef</span> <span class="q">&quot;$RecordLine\n&quot;</span><span class="sc">;</span>
+ 725     <span class="s">}</span>
+ 726   <span class="s">}</span>
+ 727 <span class="s">}</span>
+ 728 
+ 729 <span class="c"># Get header record information assuming it&#39;s the first record...</span>
+<a name="GetHeaderRecordInformation-"></a> 730 <span class="k">sub </span><span class="m">GetHeaderRecordInformation</span> <span class="s">{</span>
+ 731   <span class="k">my</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 732   <span class="k">my</span><span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="cm">,</span> <span class="i">$HeaderRecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 733 
+ 734   <span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="s">)</span> = <span class="s">(</span><span class="q">&#39;&#39;</span><span class="s">)</span> x <span class="n">3</span><span class="sc">;</span>
+ 735   <span class="i">$HeaderRecordLine</span> = <span class="i">$PDBRecordLinesRef</span>-&gt;[<span class="n">0</span>]<span class="sc">;</span>
+ 736   <span class="k">if</span> <span class="s">(</span><span class="i">IsHeaderRecordType</span><span class="s">(</span><span class="i">$HeaderRecordLine</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 737     <span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="s">)</span> = <span class="i">ParseHeaderRecordLine</span><span class="s">(</span><span class="i">$HeaderRecordLine</span><span class="s">)</span><span class="sc">;</span>
+ 738   <span class="s">}</span>
+ 739   <span class="k">return</span> <span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="s">)</span><span class="sc">;</span>
+ 740 <span class="s">}</span>
+ 741 
+ 742 <span class="c"># Get one letter residue code...</span>
+<a name="GetResidueCode-"></a> 743 <span class="k">sub </span><span class="m">GetResidueCode</span> <span class="s">{</span>
+ 744   <span class="k">my</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span> = <span class="i">@_</span><span class="sc">;</span>
+ 745   <span class="k">my</span><span class="s">(</span><span class="i">$ResidueCode</span><span class="cm">,</span> <span class="i">$StandardResidue</span><span class="s">)</span><span class="sc">;</span>
+ 746 
+ 747   <span class="i">$ResidueCode</span> = <span class="i">$OptionsInfo</span>{<span class="w">NonStandardSequenceCode</span>}<span class="sc">;</span>
+ 748   <span class="i">$StandardResidue</span> = <span class="n">0</span><span class="sc">;</span>
+ 749 
+ 750   <span class="k">if</span> <span class="s">(</span><span class="k">length</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span> == <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 751     <span class="c"># Assume it&#39;s an amino acid...</span>
+ 752     <span class="k">if</span> <span class="s">(</span><span class="i">AminoAcids::IsAminoAcid</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 753       <span class="c"># Standard amino acid...</span>
+ 754       <span class="i">$ResidueCode</span> = <span class="i">AminoAcids::GetAminoAcidOneLetterCode</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span><span class="sc">;</span>
+ 755       <span class="i">$StandardResidue</span> = <span class="n">1</span><span class="sc">;</span>
+ 756     <span class="s">}</span>
+ 757   <span class="s">}</span>
+ 758   <span class="k">elsif</span> <span class="s">(</span><span class="k">length</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span> == <span class="n">1</span><span class="s">)</span> <span class="s">{</span>
+ 759     <span class="c"># Assume it&#39;s a nucleic acid...</span>
+ 760     <span class="k">if</span> <span class="s">(</span><span class="i">$ResidueName</span> =~ <span class="q">/^(A|G|T|U|C)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 761       <span class="i">$ResidueCode</span> = <span class="i">$ResidueName</span><span class="sc">;</span>
+ 762       <span class="i">$StandardResidue</span> = <span class="n">1</span><span class="sc">;</span>
+ 763     <span class="s">}</span>
+ 764   <span class="s">}</span>
+ 765 
+ 766   <span class="k">return</span> <span class="s">(</span><span class="i">$ResidueCode</span><span class="cm">,</span> <span class="i">$StandardResidue</span><span class="s">)</span><span class="sc">;</span>
+ 767 <span class="s">}</span>
+ 768 
+ 769 <span class="c"># Process option values...</span>
+<a name="ProcessOptions-"></a> 770 <span class="k">sub </span><span class="m">ProcessOptions</span> <span class="s">{</span>
+ 771   <span class="i">%OptionsInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 772   <span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} = <span class="i">$Options</span>{<span class="w">mode</span>}<span class="sc">;</span>
+ 773 
+ 774   <span class="k">my</span><span class="s">(</span><span class="i">@SpecifiedChains</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 775   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">chains</span>} =~ <span class="q">/^(First|All)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 776     <span class="i">$OptionsInfo</span>{<span class="w">ChainsToExtract</span>} = <span class="i">$Options</span>{<span class="w">chains</span>}<span class="sc">;</span>
+ 777   <span class="s">}</span>
+ 778   <span class="k">else</span> <span class="s">{</span>
+ 779     <span class="i">@SpecifiedChains</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">chains</span>}<span class="sc">;</span>
+ 780     <span class="i">$OptionsInfo</span>{<span class="w">ChainsToExtract</span>} = <span class="q">&#39;Specified&#39;</span><span class="sc">;</span>
+ 781   <span class="s">}</span>
+ 782   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedChains</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 783   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedChains</span>}}<span class="cm">,</span> <span class="i">@SpecifiedChains</span><span class="sc">;</span>
+ 784 
+ 785   <span class="i">$OptionsInfo</span>{<span class="w">ChainsRecordMode</span>} = <span class="i">$Options</span>{<span class="w">chainsrecordmode</span>}<span class="sc">;</span>
+ 786 
+ 787   <span class="i">$OptionsInfo</span>{<span class="w">CombineChains</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">combinechains</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 788 
+ 789   <span class="i">$OptionsInfo</span>{<span class="w">CombineChainSequences</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">combinechains</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 790 
+ 791   <span class="i">ProcessResiduesOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 792   <span class="i">ProcessAtomsOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 793   <span class="i">ProcessDistanceOptions</span><span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 794 
+ 795   <span class="i">$OptionsInfo</span>{<span class="w">WaterResidueNames</span>} = <span class="i">$Options</span>{<span class="w">waterresiduenames</span>}<span class="sc">;</span>
+ 796   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedWaterResiduesList</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 797   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedWaterResiduesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 798 
+ 799   <span class="k">my</span><span class="s">(</span><span class="i">@SpecifiedWaterResiduesList</span><span class="s">)</span><span class="sc">;</span>
+ 800   <span class="i">@SpecifiedWaterResiduesList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 801 
+ 802   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^NonWater$/i</span><span class="s">)</span> <span class="s">{</span>
+ 803     <span class="k">my</span><span class="s">(</span><span class="i">$WaterResidueName</span><span class="s">)</span><span class="sc">;</span>
+ 804     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">WaterResidueNames</span>} =~ <span class="q">/Automatic/i</span><span class="s">)</span> <span class="s">{</span>
+ 805       <span class="k">push</span> <span class="i">@SpecifiedWaterResiduesList</span><span class="cm">,</span> <span class="s">(</span><span class="q">&#39;HOH&#39;</span><span class="cm">,</span> <span class="q">&#39;WAT&#39;</span><span class="cm">,</span> <span class="q">&#39;H2O&#39;</span><span class="s">)</span><span class="sc">;</span>
+ 806     <span class="s">}</span>
+ 807     <span class="k">else</span> <span class="s">{</span>
+ 808       <span class="i">@SpecifiedWaterResiduesList</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">waterresiduenames</span>}<span class="sc">;</span>
+ 809     <span class="s">}</span>
+ 810     <span class="k">for</span> <span class="i">$WaterResidueName</span> <span class="s">(</span><span class="i">@SpecifiedWaterResiduesList</span><span class="s">)</span> <span class="s">{</span>
+ 811       <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedWaterResiduesMap</span>}{<span class="i">$WaterResidueName</span>} = <span class="i">$WaterResidueName</span><span class="sc">;</span>
+ 812     <span class="s">}</span>
+ 813   <span class="s">}</span>
+ 814   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedWaterResiduesList</span>}}<span class="cm">,</span> <span class="i">@SpecifiedWaterResiduesList</span><span class="sc">;</span>
+ 815 
+ 816   <span class="i">$OptionsInfo</span>{<span class="w">RecordMode</span>} = <span class="i">$Options</span>{<span class="w">recordmode</span>} ? <span class="i">$Options</span>{<span class="w">recordmode</span>} <span class="co">:</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} =~ <span class="q">/^(Atoms|CAlphas|AtomNums|AtomsRange|AtomNames)$/i</span> ? <span class="q">&quot;Atom&quot;</span> <span class="co">:</span> <span class="q">&quot;AtomAndHetatm&quot;</span><span class="s">)</span><span class="sc">;</span>
+ 817 
+ 818   <span class="i">$OptionsInfo</span>{<span class="w">KeepOldRecords</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">keepoldrecords</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 819 
+ 820   <span class="i">$OptionsInfo</span>{<span class="w">ModifyHeaderRecord</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">modifyheader</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 821 
+ 822   <span class="i">$OptionsInfo</span>{<span class="w">KeepNonStandardSequences</span>} = <span class="s">(</span><span class="i">$Options</span>{<span class="w">nonstandardkeep</span>} =~ <span class="q">/^Yes$/i</span><span class="s">)</span> ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 823   <span class="i">$OptionsInfo</span>{<span class="w">NonStandardSequenceCode</span>} = <span class="i">$Options</span>{<span class="w">nonstandardcode</span>}<span class="sc">;</span>
+ 824   <span class="i">$OptionsInfo</span>{<span class="w">MaxSequenceLength</span>} = <span class="i">$Options</span>{<span class="w">sequencelength</span>}<span class="sc">;</span>
+ 825   <span class="i">$OptionsInfo</span>{<span class="w">SequenceRecordSource</span>} = <span class="i">$Options</span>{<span class="w">sequencerecords</span>}<span class="sc">;</span>
+ 826   <span class="i">$OptionsInfo</span>{<span class="w">SequenceIDPrefixSource</span>} = <span class="i">$Options</span>{<span class="w">sequenceidprefix</span>}<span class="sc">;</span>
+ 827 
+ 828   <span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>} = <span class="i">$Options</span>{<span class="w">overwrite</span>} ? <span class="n">1</span> <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 829   <span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>} = <span class="i">$Options</span>{<span class="w">root</span>} ? <span class="i">$Options</span>{<span class="w">root</span>} <span class="co">:</span> <span class="n">0</span><span class="sc">;</span>
+ 830 <span class="s">}</span>
+ 831 
+ 832 <span class="c"># Process specified residue options...</span>
+<a name="ProcessResiduesOptions-"></a> 833 <span class="k">sub </span><span class="m">ProcessResiduesOptions</span> <span class="s">{</span>
+ 834   <span class="k">my</span><span class="s">(</span><span class="i">$ResidueNum</span><span class="cm">,</span> <span class="i">$StartResidueNum</span><span class="cm">,</span> <span class="i">$EndResNum</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">@SpecifiedResidueNumsList</span><span class="cm">,</span> <span class="i">@SpecifiedResidueNamesList</span><span class="s">)</span><span class="sc">;</span>
+ 835 
+ 836   <span class="i">@SpecifiedResidueNumsList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 837   <span class="s">(</span><span class="i">$StartResidueNum</span><span class="cm">,</span> <span class="i">$EndResNum</span><span class="s">)</span> = <span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+ 838 
+ 839   <span class="i">@SpecifiedResidueNamesList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 840 
+ 841   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^(ResidueNums|ResiduesRange|ResidueNames)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 842     <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">residues</span>}<span class="s">)</span> <span class="s">{</span>
+ 843       <span class="k">die</span> <span class="q">&quot;Error: You must specify a value for \&quot;--Residues\&quot; option in \&quot;ResidueNums, ResiduesRange, or ResidueNames\&quot; \&quot;-m, --mode\&quot;. \n&quot;</span><span class="sc">;</span>
+ 844     <span class="s">}</span>
+ 845     <span class="i">$OptionsInfo</span>{<span class="w">Residues</span>} = <span class="i">$Options</span>{<span class="w">residues</span>}<span class="sc">;</span>
+ 846     <span class="i">$OptionsInfo</span>{<span class="w">Residues</span>} =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 847 
+ 848     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^ResidueNames$/i</span><span class="s">)</span> <span class="s">{</span>
+ 849       <span class="i">@SpecifiedResidueNamesList</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">Residues</span>}<span class="sc">;</span>
+ 850     <span class="s">}</span>
+ 851     <span class="k">else</span> <span class="s">{</span>
+ 852       <span class="i">@SpecifiedResidueNumsList</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">Residues</span>}<span class="sc">;</span>
+ 853       <span class="k">for</span> <span class="i">$ResidueNum</span> <span class="s">(</span><span class="i">@SpecifiedResidueNumsList</span><span class="s">)</span> <span class="s">{</span>
+ 854         <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$ResidueNum</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 855           <span class="k">die</span> <span class="q">&quot;Error: Invalid residue number value, $ResidueNum, for \&quot;--Residues\&quot; option during \&quot;ResidueNumes\&quot; or \&quot;ResiduesRange\&quot;value of \&quot;-m --mode\&quot; option: Residue number must be a positive integer.\n&quot;</span><span class="sc">;</span>
+ 856         <span class="s">}</span>
+ 857       <span class="s">}</span>
+ 858       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^ResiduesRange$/i</span><span class="s">)</span> <span class="s">{</span>
+ 859         <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedResidueNumsList</span> != <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 860           <span class="k">die</span> <span class="q">&quot;Error: Invalid number of residue number values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedResidueNumsList</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;, for \&quot;--Residues\&quot; option during \&quot;ResiduesRange\&quot; value of \&quot;-m --mode\&quot; option: The number of values must be 2 corresponding to start and end residue numbers.\n&quot;</span><span class="sc">;</span>
+ 861         <span class="s">}</span>
+ 862         <span class="k">if</span> <span class="s">(</span><span class="i">$SpecifiedResidueNumsList</span>[<span class="n">0</span>] &gt; <span class="i">$SpecifiedResidueNumsList</span>[<span class="n">1</span>]<span class="s">)</span> <span class="s">{</span>
+ 863           <span class="k">die</span> <span class="q">&quot;Error: Invalid residue number values, @SpecifiedResidueNumsList, for \&quot;--Residues\&quot; option during \&quot;ResiduesRange\&quot; value of \&quot;-m --mode\&quot; option: The start residue number must be less than end residue number.\n&quot;</span><span class="sc">;</span>
+ 864         <span class="s">}</span>
+ 865         <span class="s">(</span><span class="i">$StartResidueNum</span><span class="cm">,</span> <span class="i">$EndResNum</span><span class="s">)</span> = <span class="i">@SpecifiedResidueNumsList</span><span class="sc">;</span>
+ 866       <span class="s">}</span>
+ 867     <span class="s">}</span>
+ 868   <span class="s">}</span>
+ 869 
+ 870   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsList</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 871   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsList</span>}}<span class="cm">,</span> <span class="i">@SpecifiedResidueNumsList</span><span class="sc">;</span>
+ 872 
+ 873   <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedStartResidueNum</span>} = <span class="i">$StartResidueNum</span><span class="sc">;</span>
+ 874   <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedEndResidueNum</span>} = <span class="i">$EndResNum</span><span class="sc">;</span>
+ 875 
+ 876   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesList</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 877   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesList</span>}}<span class="cm">,</span> <span class="i">@SpecifiedResidueNamesList</span><span class="sc">;</span>
+ 878 
+ 879   <span class="c"># Set up a specified residue numbers map...</span>
+ 880   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 881   <span class="k">for</span> <span class="i">$ResidueNum</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsList</span>}}<span class="s">)</span> <span class="s">{</span>
+ 882     <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNumsMap</span>}{<span class="i">$ResidueNum</span>} = <span class="i">$ResidueNum</span><span class="sc">;</span>
+ 883   <span class="s">}</span>
+ 884 
+ 885   <span class="c"># Set up a specified residue names map...</span>
+ 886   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 887   <span class="k">for</span> <span class="i">$ResidueName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesList</span>}}<span class="s">)</span> <span class="s">{</span>
+ 888     <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedResidueNamesMap</span>}{<span class="k">lc</span> <span class="i">$ResidueName</span>} = <span class="k">lc</span> <span class="i">$ResidueName</span><span class="sc">;</span>
+ 889   <span class="s">}</span>
+ 890 
+ 891 <span class="s">}</span>
+ 892 
+ 893 <span class="c"># Process specified atom options...</span>
+<a name="ProcessAtomsOptions-"></a> 894 <span class="k">sub </span><span class="m">ProcessAtomsOptions</span> <span class="s">{</span>
+ 895   <span class="k">my</span><span class="s">(</span><span class="i">$AtomNum</span><span class="cm">,</span> <span class="i">$StartAtomNum</span><span class="cm">,</span> <span class="i">$EndAtomNum</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">@SpecifiedAtomNumsList</span><span class="cm">,</span> <span class="i">@SpecifiedAtomNamesList</span><span class="s">)</span><span class="sc">;</span>
+ 896 
+ 897   <span class="i">@SpecifiedAtomNumsList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 898   <span class="s">(</span><span class="i">$StartAtomNum</span><span class="cm">,</span> <span class="i">$EndAtomNum</span><span class="s">)</span> = <span class="s">(</span><span class="n">0</span><span class="cm">,</span> <span class="n">0</span><span class="s">)</span><span class="sc">;</span>
+ 899 
+ 900   <span class="i">@SpecifiedAtomNamesList</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 901 
+ 902   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^(AtomNums|AtomsRange|AtomNames)$/i</span><span class="s">)</span> <span class="s">{</span>
+ 903     <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">atoms</span>}<span class="s">)</span> <span class="s">{</span>
+ 904       <span class="k">die</span> <span class="q">&quot;Error: You must specify a value for \&quot;--Atoms\&quot; option in \&quot;AtomNums, AtomsRange, or AtomNames\&quot; \&quot;-m, --mode\&quot;. \n&quot;</span><span class="sc">;</span>
+ 905     <span class="s">}</span>
+ 906     <span class="i">$OptionsInfo</span>{<span class="w">Atoms</span>} = <span class="i">$Options</span>{<span class="w">atoms</span>}<span class="sc">;</span>
+ 907     <span class="i">$OptionsInfo</span>{<span class="w">Atoms</span>} =~ <span class="q">s/ //g</span><span class="sc">;</span>
+ 908 
+ 909     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^AtomNames$/i</span><span class="s">)</span> <span class="s">{</span>
+ 910       <span class="i">@SpecifiedAtomNamesList</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">Atoms</span>}<span class="sc">;</span>
+ 911     <span class="s">}</span>
+ 912     <span class="k">else</span> <span class="s">{</span>
+ 913       <span class="i">@SpecifiedAtomNumsList</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$OptionsInfo</span>{<span class="w">Atoms</span>}<span class="sc">;</span>
+ 914       <span class="k">for</span> <span class="i">$AtomNum</span> <span class="s">(</span><span class="i">@SpecifiedAtomNumsList</span><span class="s">)</span> <span class="s">{</span>
+ 915         <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$AtomNum</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 916           <span class="k">die</span> <span class="q">&quot;Error: Invalid atom number value, $AtomNum, for \&quot;--Atoms\&quot; option during \&quot;AtomNums\&quot; or \&quot;AtomsRange\&quot;value of \&quot;-m --mode\&quot; option: Atom number must be a positive integer.\n&quot;</span><span class="sc">;</span>
+ 917         <span class="s">}</span>
+ 918       <span class="s">}</span>
+ 919       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^AtomsRange$/i</span><span class="s">)</span> <span class="s">{</span>
+ 920         <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedAtomNumsList</span> != <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 921           <span class="k">die</span> <span class="q">&quot;Error: Invalid number of atom number values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedAtomNumsList</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot;, for \&quot;--Atoms\&quot; option during \&quot;AtomsRange\&quot; value of \&quot;-m --mode\&quot; option: The number of values must be 2 corresponding to start and end atom numbers.\n&quot;</span><span class="sc">;</span>
+ 922         <span class="s">}</span>
+ 923         <span class="k">if</span> <span class="s">(</span><span class="i">$SpecifiedAtomNumsList</span>[<span class="n">0</span>] &gt; <span class="i">$SpecifiedAtomNumsList</span>[<span class="n">1</span>]<span class="s">)</span> <span class="s">{</span>
+ 924           <span class="k">die</span> <span class="q">&quot;Error: Invalid atom number values, @SpecifiedAtomNumsList, for \&quot;--Atoms\&quot; option during \&quot;AtomsRange\&quot; value of \&quot;-m --mode\&quot; option: The start atom number must be less than end atom number.\n&quot;</span><span class="sc">;</span>
+ 925         <span class="s">}</span>
+ 926         <span class="s">(</span><span class="i">$StartAtomNum</span><span class="cm">,</span> <span class="i">$EndAtomNum</span><span class="s">)</span> = <span class="i">@SpecifiedAtomNumsList</span><span class="sc">;</span>
+ 927       <span class="s">}</span>
+ 928     <span class="s">}</span>
+ 929   <span class="s">}</span>
+ 930   <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^CAlphas$/i</span><span class="s">)</span> <span class="s">{</span>
+ 931     <span class="i">@SpecifiedAtomNamesList</span> = <span class="s">(</span><span class="q">&quot;CA&quot;</span><span class="s">)</span><span class="sc">;</span>
+ 932   <span class="s">}</span>
+ 933 
+ 934   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsList</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 935   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsList</span>}}<span class="cm">,</span> <span class="i">@SpecifiedAtomNumsList</span><span class="sc">;</span>
+ 936 
+ 937   <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedStartAtomNum</span>} = <span class="i">$StartAtomNum</span><span class="sc">;</span>
+ 938   <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedEndAtomNum</span>} = <span class="i">$EndAtomNum</span><span class="sc">;</span>
+ 939 
+ 940   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesList</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 941   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesList</span>}}<span class="cm">,</span> <span class="i">@SpecifiedAtomNamesList</span><span class="sc">;</span>
+ 942 
+ 943   <span class="c"># Set up a specified residue numbers map...</span>
+ 944   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 945   <span class="k">for</span> <span class="i">$AtomNum</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsList</span>}}<span class="s">)</span> <span class="s">{</span>
+ 946     <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNumsMap</span>}{<span class="i">$AtomNum</span>} = <span class="i">$AtomNum</span><span class="sc">;</span>
+ 947   <span class="s">}</span>
+ 948 
+ 949   <span class="c"># Set up a specified residue names map...</span>
+ 950   <span class="i">%</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesMap</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 951   <span class="k">for</span> <span class="i">$AtomName</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesList</span>}}<span class="s">)</span> <span class="s">{</span>
+ 952     <span class="i">$OptionsInfo</span>{<span class="w">SpecifiedAtomNamesMap</span>}{<span class="k">lc</span> <span class="i">$AtomName</span>} = <span class="k">lc</span> <span class="i">$AtomName</span><span class="sc">;</span>
+ 953   <span class="s">}</span>
+ 954 
+ 955 <span class="s">}</span>
+ 956 
+ 957 <span class="c"># Process specified distance options...</span>
+<a name="ProcessDistanceOptions-"></a> 958 <span class="k">sub </span><span class="m">ProcessDistanceOptions</span> <span class="s">{</span>
+ 959   <span class="k">my</span><span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+ 960 
+ 961   <span class="i">$OptionsInfo</span>{<span class="w">MaxExtractionDistance</span>} = <span class="i">$Options</span>{<span class="w">distance</span>}<span class="sc">;</span>
+ 962   <span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} = <span class="i">$Options</span>{<span class="w">distancemode</span>}<span class="sc">;</span>
+ 963   <span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceOrigin</span>} = <span class="i">$Options</span>{<span class="w">distanceorigin</span>} ? <span class="i">$Options</span>{<span class="w">distanceorigin</span>} <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+ 964   <span class="i">$OptionsInfo</span>{<span class="w">DistanceSelectionMode</span>} = <span class="i">$Options</span>{<span class="w">distanceselectionmode</span>}<span class="sc">;</span>
+ 965 
+ 966   <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^Distance$/i</span><span class="s">)</span> <span class="s">{</span>
+ 967     <span class="k">if</span> <span class="s">(</span>!<span class="i">$Options</span>{<span class="w">distanceorigin</span>}<span class="s">)</span> <span class="s">{</span>
+ 968       <span class="k">die</span> <span class="q">&quot;Error: You must specify a value for \&quot;--distanceorigin\&quot; option in \&quot;Distance\&quot; \&quot;-m, --mode\&quot;. \n&quot;</span><span class="sc">;</span>
+ 969     <span class="s">}</span>
+ 970     <span class="i">@SpecifiedDistanceOrigin</span> = <span class="k">split</span> <span class="q">/\,/</span><span class="cm">,</span> <span class="i">$Options</span>{<span class="w">distanceorigin</span>}<span class="sc">;</span>
+ 971     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Atom$/i</span><span class="s">)</span> <span class="s">{</span>
+ 972       <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span> != <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 973         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot; for option \&quot;distanceorigin\&quot; option during \&quot;Atom\&quot; value of \&quot;--distancemode\&quot; : The number of values must be 2.\n&quot;</span><span class="sc">;</span>
+ 974       <span class="s">}</span>
+ 975       <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 976         <span class="k">die</span> <span class="q">&quot;Error: Invalid atom number value, &quot;</span><span class="cm">,</span> <span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="cm">,</span> <span class="q">&quot;, for option \&quot;distanceorigin\&quot; option during \&quot;Atom\&quot; value of \&quot;--distancemode\&quot;. Allowed values: &gt; 0\n&quot;</span><span class="sc">;</span>
+ 977       <span class="s">}</span>
+ 978     <span class="s">}</span>
+ 979     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Hetatm$/i</span><span class="s">)</span> <span class="s">{</span>
+ 980       <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span> != <span class="n">2</span><span class="s">)</span> <span class="s">{</span>
+ 981         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot; for option \&quot;distanceorigin\&quot; option during \&quot;Hetatm\&quot; value of \&quot;--distancemode\&quot; : The number of values must be 2.\n&quot;</span><span class="sc">;</span>
+ 982       <span class="s">}</span>
+ 983       <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 984         <span class="k">die</span> <span class="q">&quot;Error: Invalid hetatm number value, &quot;</span><span class="cm">,</span> <span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="cm">,</span> <span class="q">&quot;, for option \&quot;distanceorigin\&quot; option during \&quot;Hetatm\&quot; value of \&quot;--distancemode\&quot;. Allowed values: &gt; 0\n&quot;</span><span class="sc">;</span>
+ 985       <span class="s">}</span>
+ 986     <span class="s">}</span>
+ 987     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Residue$/i</span><span class="s">)</span> <span class="s">{</span>
+ 988       <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span> == <span class="n">2</span> || <span class="i">@SpecifiedDistanceOrigin</span> == <span class="n">3</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 989         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot; for option \&quot;distanceorigin\&quot; option during \&quot;Residue\&quot; value of \&quot;--distancemode\&quot; : The number of values must be either 2 or 3.\n&quot;</span><span class="sc">;</span>
+ 990       <span class="s">}</span>
+ 991       <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+ 992         <span class="k">die</span> <span class="q">&quot;Error: Invalid residue number value, &quot;</span><span class="cm">,</span> <span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="cm">,</span> <span class="q">&quot;, for option \&quot;distanceorigin\&quot; option during \&quot;Residue\&quot; value of \&quot;--distancemode\&quot;. Allowed values: &gt; 0\n&quot;</span><span class="sc">;</span>
+ 993       <span class="s">}</span>
+ 994     <span class="s">}</span>
+ 995     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^XYZ$/i</span><span class="s">)</span> <span class="s">{</span>
+ 996       <span class="k">if</span> <span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span> != <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+ 997         <span class="k">die</span> <span class="q">&quot;Error: Invalid number of values, &quot;</span><span class="cm">,</span> <span class="k">scalar</span><span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot; for option \&quot;distanceorigin\&quot; option during \&quot;XYZ\&quot; value of \&quot;--distancemode\&quot; : The number of values must be 3.\n&quot;</span><span class="sc">;</span>
+ 998       <span class="s">}</span>
+ 999       <span class="k">my</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="sc">;</span>
+1000       <span class="k">for</span> <span class="i">$Value</span> <span class="s">(</span><span class="i">@SpecifiedDistanceOrigin</span><span class="s">)</span> <span class="s">{</span>
+1001         <span class="k">if</span> <span class="s">(</span>!<span class="i">IsNumerical</span><span class="s">(</span><span class="i">$Value</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1002           <span class="k">die</span> <span class="q">&quot;Error: Invalid coordinate value, &quot;</span><span class="cm">,</span> <span class="i">$SpecifiedDistanceOrigin</span>[<span class="n">0</span>]<span class="cm">,</span> <span class="q">&quot;, for option \&quot;distanceorigin\&quot; option during \&quot;XYZ\&quot; value of \&quot;--distancemode\&quot;. Allowed values: numerical\n&quot;</span><span class="sc">;</span>
+1003         <span class="s">}</span>
+1004       <span class="s">}</span>
+1005     <span class="s">}</span>
+1006   <span class="s">}</span>
+1007   <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1008   <span class="k">push</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}}<span class="cm">,</span> <span class="i">@SpecifiedDistanceOrigin</span><span class="sc">;</span>
+1009 
+1010 <span class="s">}</span>
+1011 
+1012 <span class="c"># Retrieve information about PDB files...</span>
+<a name="RetrievePDBFilesInfo-"></a>1013 <span class="k">sub </span><span class="m">RetrievePDBFilesInfo</span> <span class="s">{</span>
+1014   <span class="k">my</span><span class="s">(</span><span class="i">$Index</span><span class="cm">,</span> <span class="i">$PDBFile</span><span class="cm">,</span> <span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ChainLabel</span><span class="cm">,</span> <span class="i">$ChainsAndResiduesInfoRef</span><span class="cm">,</span> <span class="i">$Mode</span><span class="cm">,</span> <span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="cm">,</span> <span class="i">$OutFileName</span><span class="cm">,</span> <span class="i">$OutFileRoot</span><span class="cm">,</span> <span class="i">@SpecifiedChains</span><span class="cm">,</span> <span class="i">@DistanceOrigin</span><span class="cm">,</span> <span class="i">@OutFileNames</span><span class="cm">,</span> <span class="i">@ChainLabels</span><span class="cm">,</span> <span class="i">@ChainSequenceIDs</span><span class="cm">,</span> <span class="i">@ChainSequenceIDsPrefix</span><span class="s">)</span><span class="sc">;</span>
+1015 
+1016   <span class="i">%PDBFilesInfo</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1017   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">FileOkay</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1018   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">OutFileRoot</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1019   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1020   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainLabels</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1021   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDs</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1022   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDsPrefix</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1023   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1024   <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">DistanceOrigin</span>}} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1025 
+1026   <span class="j">FILELIST:</span> <span class="k">for</span> <span class="i">$Index</span> <span class="s">(</span><span class="n">0</span> .. <span class="i">$#PDBFilesList</span><span class="s">)</span> <span class="s">{</span>
+1027     <span class="i">$PDBFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">0</span><span class="sc">;</span>
+1028 
+1029     <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileRoot</span>}[<span class="i">$Index</span>] = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1030     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1031     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1032     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainLabels</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1033     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDs</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1034     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDsPrefix</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1035     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1036     <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">DistanceOrigin</span>}[<span class="i">$Index</span>]} = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1037 
+1038     <span class="i">$PDBFile</span> = <span class="i">$PDBFilesList</span>[<span class="i">$Index</span>]<span class="sc">;</span>
+1039     <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="k">-e</span> <span class="i">$PDBFile</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1040       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: It doesn&#39;t exist\n&quot;</span><span class="sc">;</span>
+1041       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1042     <span class="s">}</span>
+1043     <span class="k">if</span> <span class="s">(</span>!<span class="i">CheckFileType</span><span class="s">(</span><span class="i">$PDBFile</span><span class="cm">,</span> <span class="q">&quot;pdb&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1044       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: It&#39;s not a PDB file\n&quot;</span><span class="sc">;</span>
+1045       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1046     <span class="s">}</span>
+1047     <span class="k">if</span> <span class="s">(</span>! <span class="k">open</span> <span class="w">PDBFILE</span><span class="cm">,</span> <span class="q">&quot;$PDBFile&quot;</span><span class="s">)</span> <span class="s">{</span>
+1048       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: Couldn&#39;t open it: $! \n&quot;</span><span class="sc">;</span>
+1049       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1050     <span class="s">}</span>
+1051     <span class="k">close</span> <span class="w">PDBFILE</span><span class="sc">;</span>
+1052 
+1053     <span class="c"># Get PDB data...</span>
+1054     <span class="i">$PDBRecordLinesRef</span> = <span class="i">ReadPDBFile</span><span class="s">(</span><span class="i">$PDBFile</span><span class="s">)</span><span class="sc">;</span>
+1055     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^Sequences$/i</span> &amp;&amp; <span class="i">$OptionsInfo</span>{<span class="w">SequenceRecordSource</span>} =~ <span class="q">/^SeqRes$/i</span><span class="s">)</span> <span class="s">{</span>
+1056       <span class="i">$ChainsAndResiduesInfoRef</span> = <span class="i">GetChainsAndResidues</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="cm">,</span> <span class="q">&#39;SeqRes&#39;</span><span class="s">)</span><span class="sc">;</span>
+1057     <span class="s">}</span>
+1058     <span class="k">else</span> <span class="s">{</span>
+1059       <span class="i">$ChainsAndResiduesInfoRef</span> = <span class="i">GetChainsAndResidues</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+1060     <span class="s">}</span>
+1061     <span class="k">if</span> <span class="s">(</span>!<span class="k">scalar</span> <span class="i">@</span>{<span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">ChainIDs</span>}}<span class="s">)</span> <span class="s">{</span>
+1062       <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: No chains found \n&quot;</span><span class="sc">;</span>
+1063       <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1064     <span class="s">}</span>
+1065 
+1066     <span class="c"># Make sure specified chains exist in PDB file...</span>
+1067     <span class="i">@SpecifiedChains</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1068     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ChainsToExtract</span>} =~ <span class="q">/^Specified$/i</span><span class="s">)</span> <span class="s">{</span>
+1069       <span class="k">for</span> <span class="i">$ChainID</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedChains</span>}}<span class="s">)</span> <span class="s">{</span>
+1070         <span class="k">if</span> <span class="s">(</span><span class="k">exists</span> <span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">Residues</span>}{<span class="i">$ChainID</span>}<span class="s">)</span> <span class="s">{</span>
+1071           <span class="k">push</span> <span class="i">@SpecifiedChains</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="sc">;</span>
+1072         <span class="s">}</span>
+1073         <span class="k">else</span> <span class="s">{</span>
+1074           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: Specified chain, $ChainID, in \&quot;-c, --chains\&quot; option doesn&#39;t exist.\n&quot;</span><span class="sc">;</span>
+1075           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1076         <span class="s">}</span>
+1077       <span class="s">}</span>
+1078     <span class="s">}</span>
+1079     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ChainsToExtract</span>} =~ <span class="q">/^First$/i</span><span class="s">)</span> <span class="s">{</span>
+1080       <span class="k">push</span> <span class="i">@SpecifiedChains</span><span class="cm">,</span> <span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">ChainIDs</span>}[<span class="n">0</span>]<span class="sc">;</span>
+1081     <span class="s">}</span>
+1082     <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ChainsToExtract</span>} =~ <span class="q">/^All$/i</span><span class="s">)</span> <span class="s">{</span>
+1083       <span class="k">push</span> <span class="i">@SpecifiedChains</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$ChainsAndResiduesInfoRef</span>-&gt;{<span class="w">ChainIDs</span>}}<span class="sc">;</span>
+1084     <span class="s">}</span>
+1085     <span class="c"># Setup chain labels to use for sequence IDs and generating output files...</span>
+1086     <span class="i">@ChainLabels</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1087     <span class="k">for</span> <span class="i">$ChainID</span> <span class="s">(</span><span class="i">@SpecifiedChains</span><span class="s">)</span> <span class="s">{</span>
+1088       <span class="i">$ChainLabel</span> = <span class="i">$ChainID</span><span class="sc">;</span> <span class="i">$ChainLabel</span> =~ <span class="q">s/^None//ig</span><span class="sc">;</span>
+1089       <span class="i">$ChainLabel</span> = <span class="q">&quot;Chain${ChainLabel}&quot;</span><span class="sc">;</span>
+1090       <span class="k">push</span> <span class="i">@ChainLabels</span><span class="cm">,</span> <span class="i">$ChainLabel</span><span class="sc">;</span>
+1091     <span class="s">}</span>
+1092 
+1093     <span class="c"># Make sure specified distance origin is valid...</span>
+1094     <span class="i">@DistanceOrigin</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1095     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">Mode</span>} =~ <span class="q">/^Distance$/i</span><span class="s">)</span> <span class="s">{</span>
+1096       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^(Atom|Hetatm)$/i</span><span class="s">)</span> <span class="s">{</span>
+1097         <span class="k">my</span><span class="s">(</span><span class="i">$RecordType</span><span class="cm">,</span> <span class="i">$SpecifiedAtomName</span><span class="cm">,</span> <span class="i">$SpecifiedAtomNumber</span><span class="cm">,</span> <span class="i">$RecordFound</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+1098         <span class="i">$RecordType</span> = <span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>}<span class="sc">;</span>
+1099         <span class="s">(</span><span class="i">$SpecifiedAtomNumber</span><span class="cm">,</span> <span class="i">$SpecifiedAtomName</span><span class="s">)</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}}<span class="sc">;</span>
+1100         <span class="i">$RecordFound</span> = <span class="n">0</span><span class="sc">;</span>
+1101         <span class="j">LINE:</span> <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+1102           <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1103             <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+1104           <span class="s">}</span>
+1105           <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+1106           <span class="i">$AtomName</span> = <span class="i">RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$AtomName</span><span class="s">)</span><span class="sc">;</span>
+1107           <span class="k">if</span> <span class="s">(</span><span class="s">(</span><span class="i">$RecordType</span> =~ <span class="q">/^Atom$/i</span> &amp;&amp; <span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span> || <span class="s">(</span><span class="i">$RecordType</span> =~ <span class="q">/^Hetatm$/i</span> &amp;&amp; <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1108             <span class="k">if</span> <span class="s">(</span><span class="i">$AtomNumber</span> == <span class="i">$SpecifiedAtomNumber</span> &amp;&amp; <span class="i">$AtomName</span> <span class="k">eq</span> <span class="i">$SpecifiedAtomName</span><span class="s">)</span> <span class="s">{</span>
+1109               <span class="i">$RecordFound</span> = <span class="n">1</span><span class="sc">;</span>
+1110               <span class="k">last</span> <span class="j">LINE</span><span class="sc">;</span>
+1111             <span class="s">}</span>
+1112           <span class="s">}</span>
+1113         <span class="s">}</span>
+1114         <span class="k">if</span> <span class="s">(</span>!<span class="i">$RecordFound</span><span class="s">)</span> <span class="s">{</span>
+1115           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: &quot;</span><span class="cm">,</span> <span class="k">uc</span><span class="s">(</span><span class="i">$RecordType</span><span class="s">)</span><span class="cm">,</span> <span class="q">&quot; record corresponding to \&quot;--distanceorigin\&quot; option value, $OptionsInfo{ExtractionDistanceOrigin}, doesn&#39;t exist.\n&quot;</span><span class="sc">;</span>
+1116           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1117         <span class="s">}</span>
+1118         <span class="k">push</span> <span class="i">@DistanceOrigin</span><span class="cm">,</span> <span class="s">(</span><span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span><span class="sc">;</span>
+1119       <span class="s">}</span>
+1120       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Residue$/i</span><span class="s">)</span> <span class="s">{</span>
+1121         <span class="k">my</span><span class="s">(</span><span class="i">$SpecifiedResidueNumber</span><span class="cm">,</span> <span class="i">$SpecifiedResidueName</span><span class="cm">,</span> <span class="i">$SpecifiedChainID</span><span class="cm">,</span> <span class="i">$RecordFound</span><span class="cm">,</span> <span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="cm">,</span> <span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+1122         <span class="i">$SpecifiedChainID</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1123         <span class="k">if</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}} == <span class="n">3</span><span class="s">)</span> <span class="s">{</span>
+1124           <span class="s">(</span><span class="i">$SpecifiedResidueNumber</span><span class="cm">,</span> <span class="i">$SpecifiedResidueName</span><span class="cm">,</span> <span class="i">$SpecifiedChainID</span><span class="s">)</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}}<span class="sc">;</span>
+1125         <span class="s">}</span>
+1126         <span class="k">else</span> <span class="s">{</span>
+1127           <span class="s">(</span><span class="i">$SpecifiedResidueNumber</span><span class="cm">,</span> <span class="i">$SpecifiedResidueName</span><span class="s">)</span> = <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}}<span class="sc">;</span>
+1128         <span class="s">}</span>
+1129         <span class="i">$RecordFound</span> = <span class="n">0</span><span class="sc">;</span>
+1130         <span class="j">LINE:</span> <span class="k">for</span> <span class="i">$RecordLine</span> <span class="s">(</span><span class="i">@</span>{<span class="i">$PDBRecordLinesRef</span>}<span class="s">)</span> <span class="s">{</span>
+1131           <span class="k">if</span> <span class="s">(</span>!<span class="s">(</span><span class="i">IsAtomRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span> || <span class="i">IsHetatmRecordType</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1132             <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+1133           <span class="s">}</span>
+1134           <span class="s">(</span><span class="i">$AtomNumber</span><span class="cm">,</span> <span class="i">$AtomName</span><span class="cm">,</span> <span class="i">$AlternateLocation</span><span class="cm">,</span> <span class="i">$ResidueName</span><span class="cm">,</span> <span class="i">$ChainID</span><span class="cm">,</span> <span class="i">$ResidueNumber</span><span class="cm">,</span> <span class="i">$InsertionCode</span><span class="cm">,</span> <span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span> = <span class="i">ParseAtomRecordLine</span><span class="s">(</span><span class="i">$RecordLine</span><span class="s">)</span><span class="sc">;</span>
+1135           <span class="i">$ResidueName</span> = <span class="i">RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$ResidueName</span><span class="s">)</span><span class="sc">;</span>
+1136           <span class="i">$ChainID</span> = <span class="i">RemoveLeadingAndTrailingWhiteSpaces</span><span class="s">(</span><span class="i">$ChainID</span><span class="s">)</span><span class="sc">;</span>
+1137           <span class="k">if</span> <span class="s">(</span><span class="i">$SpecifiedChainID</span> &amp;&amp; <span class="s">(</span><span class="i">$SpecifiedChainID</span> <span class="k">ne</span> <span class="i">$ChainID</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1138             <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+1139           <span class="s">}</span>
+1140           <span class="k">if</span> <span class="s">(</span><span class="i">$ResidueNumber</span> == <span class="i">$SpecifiedResidueNumber</span> &amp;&amp; <span class="i">$ResidueName</span> <span class="k">eq</span> <span class="i">$SpecifiedResidueName</span><span class="s">)</span> <span class="s">{</span>
+1141             <span class="c"># Store coordinates for all the atoms...</span>
+1142             <span class="i">$RecordFound</span> = <span class="n">1</span><span class="sc">;</span>
+1143             <span class="k">push</span> <span class="i">@DistanceOrigin</span><span class="cm">,</span> <span class="s">(</span><span class="i">$X</span><span class="cm">,</span> <span class="i">$Y</span><span class="cm">,</span> <span class="i">$Z</span><span class="s">)</span><span class="sc">;</span>
+1144             <span class="k">next</span> <span class="j">LINE</span><span class="sc">;</span>
+1145           <span class="s">}</span>
+1146         <span class="s">}</span>
+1147         <span class="k">if</span> <span class="s">(</span>!<span class="i">$RecordFound</span><span class="s">)</span> <span class="s">{</span>
+1148           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: ATOM/HETATM record corresponding to \&quot;--distanceorigin\&quot; option value, $OptionsInfo{ExtractionDistanceOrigin}, doesn&#39;t exist.\n&quot;</span><span class="sc">;</span>
+1149           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1150         <span class="s">}</span>
+1151       <span class="s">}</span>
+1152       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^XYZ$/i</span><span class="s">)</span> <span class="s">{</span>
+1153         <span class="k">push</span> <span class="i">@DistanceOrigin</span><span class="cm">,</span> <span class="i">@</span>{<span class="i">$OptionsInfo</span>{<span class="w">SpecifiedExtractionDistanceOrigin</span>}}<span class="sc">;</span>
+1154       <span class="s">}</span>
+1155     <span class="s">}</span>
+1156     <span class="c"># Setup output file names...</span>
+1157     <span class="i">@OutFileNames</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1158     <span class="i">$FileDir</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileName</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span> <span class="i">$FileExt</span> = <span class="q">&quot;&quot;</span><span class="sc">;</span>
+1159     <span class="s">(</span><span class="i">$FileDir</span><span class="cm">,</span> <span class="i">$FileName</span><span class="cm">,</span> <span class="i">$FileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$PDBFile</span><span class="s">)</span><span class="sc">;</span>
+1160     <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>} &amp;&amp; <span class="s">(</span><span class="i">@PDBFilesList</span> == <span class="n">1</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1161       <span class="k">my</span> <span class="s">(</span><span class="i">$RootFileDir</span><span class="cm">,</span> <span class="i">$RootFileName</span><span class="cm">,</span> <span class="i">$RootFileExt</span><span class="s">)</span> = <span class="i">ParseFileName</span><span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>}<span class="s">)</span><span class="sc">;</span>
+1162       <span class="k">if</span> <span class="s">(</span><span class="i">$RootFileName</span> &amp;&amp; <span class="i">$RootFileExt</span><span class="s">)</span> <span class="s">{</span>
+1163         <span class="i">$FileName</span> = <span class="i">$RootFileName</span><span class="sc">;</span>
+1164       <span class="s">}</span>
+1165       <span class="k">else</span> <span class="s">{</span>
+1166         <span class="i">$FileName</span> = <span class="i">$OptionsInfo</span>{<span class="w">OutFileRoot</span>}<span class="sc">;</span>
+1167       <span class="s">}</span>
+1168       <span class="i">$OutFileRoot</span> = <span class="i">$FileName</span><span class="sc">;</span>
+1169     <span class="s">}</span>
+1170     <span class="k">else</span> <span class="s">{</span>
+1171       <span class="i">$OutFileRoot</span> = <span class="i">$FileName</span><span class="sc">;</span>
+1172     <span class="s">}</span>
+1173     <span class="i">$Mode</span> = <span class="i">$OptionsInfo</span>{<span class="w">Mode</span>}<span class="sc">;</span>
+1174     <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^(Atoms|CAlphas|AtomNums|AtomsRange|AtomNames|ResidueNums|ResiduesRange|ResidueNames|Distance|NonWater|NonHydrogens)$/i</span><span class="s">)</span> <span class="s">{</span>
+1175       <span class="i">$OutFileName</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1176       <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^CAlphas$/i</span><span class="s">)</span> <span class="s">{</span>
+1177         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}CAlphas.pdb&quot;</span><span class="sc">;</span>
+1178       <span class="s">}</span>
+1179       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Atoms$/i</span><span class="s">)</span> <span class="s">{</span>
+1180         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}Atoms.pdb&quot;</span><span class="sc">;</span>
+1181       <span class="s">}</span>
+1182       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^AtomNums$/i</span><span class="s">)</span> <span class="s">{</span>
+1183         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}AtomNums.pdb&quot;</span><span class="sc">;</span>
+1184       <span class="s">}</span>
+1185       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^AtomsRange$/i</span><span class="s">)</span> <span class="s">{</span>
+1186         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}AtomsRange.pdb&quot;</span><span class="sc">;</span>
+1187       <span class="s">}</span>
+1188       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^AtomNames$/i</span><span class="s">)</span> <span class="s">{</span>
+1189         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}AtomNames.pdb&quot;</span><span class="sc">;</span>
+1190       <span class="s">}</span>
+1191       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^ResidueNums$/i</span><span class="s">)</span> <span class="s">{</span>
+1192         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}ResidueNums.pdb&quot;</span><span class="sc">;</span>
+1193       <span class="s">}</span>
+1194       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^ResiduesRange$/i</span><span class="s">)</span> <span class="s">{</span>
+1195         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}ResiduesRange.pdb&quot;</span><span class="sc">;</span>
+1196       <span class="s">}</span>
+1197       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^ResidueNames$/i</span><span class="s">)</span> <span class="s">{</span>
+1198         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}ResidueNames.pdb&quot;</span><span class="sc">;</span>
+1199       <span class="s">}</span>
+1200       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^NonWater$/i</span><span class="s">)</span> <span class="s">{</span>
+1201         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}NonWater.pdb&quot;</span><span class="sc">;</span>
+1202       <span class="s">}</span>
+1203       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^NonHydrogens$/i</span><span class="s">)</span> <span class="s">{</span>
+1204         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}NonHydrogens.pdb&quot;</span><span class="sc">;</span>
+1205       <span class="s">}</span>
+1206       <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Distance$/i</span><span class="s">)</span> <span class="s">{</span>
+1207         <span class="k">my</span><span class="s">(</span><span class="i">$DistanceMode</span><span class="s">)</span> = <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1208         <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Atom$/i</span><span class="s">)</span> <span class="s">{</span>
+1209           <span class="i">$DistanceMode</span> = <span class="q">&#39;Atom&#39;</span><span class="sc">;</span>
+1210         <span class="s">}</span>
+1211         <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Hetatm$/i</span><span class="s">)</span> <span class="s">{</span>
+1212           <span class="i">$DistanceMode</span> = <span class="q">&#39;Hetatm&#39;</span><span class="sc">;</span>
+1213         <span class="s">}</span>
+1214         <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^Residue$/i</span><span class="s">)</span> <span class="s">{</span>
+1215           <span class="i">$DistanceMode</span> = <span class="q">&#39;Residue&#39;</span><span class="sc">;</span>
+1216         <span class="s">}</span>
+1217         <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">ExtractionDistanceMode</span>} =~ <span class="q">/^XYZ$/i</span><span class="s">)</span> <span class="s">{</span>
+1218           <span class="i">$DistanceMode</span> = <span class="q">&#39;XYZ&#39;</span><span class="sc">;</span>
+1219         <span class="s">}</span>
+1220         <span class="i">$OutFileName</span> = <span class="q">&quot;${OutFileRoot}DistanceBy${DistanceMode}.pdb&quot;</span><span class="sc">;</span>
+1221       <span class="s">}</span>
+1222       <span class="k">push</span> <span class="i">@OutFileNames</span><span class="cm">,</span> <span class="i">$OutFileName</span><span class="sc">;</span>
+1223       <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>} &amp;&amp; <span class="s">(</span><span class="k">-e</span> <span class="i">$OutFileName</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1224         <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: The file $OutFileName already exists\n&quot;</span><span class="sc">;</span>
+1225         <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1226       <span class="s">}</span>
+1227     <span class="s">}</span>
+1228     <span class="k">elsif</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^(Chains|Sequences)$/i</span><span class="s">)</span> <span class="s">{</span>
+1229       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">CombineChainSequences</span>}<span class="s">)</span> <span class="s">{</span>
+1230         <span class="i">$OutFileName</span> = <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Chains$/i</span><span class="s">)</span> ? <span class="q">&quot;${OutFileRoot}ExtractedChains.pdb&quot;</span> <span class="co">:</span> <span class="q">&quot;${OutFileRoot}SequencesChainsCombined.fasta&quot;</span><span class="sc">;</span>
+1231         <span class="k">push</span> <span class="i">@OutFileNames</span><span class="cm">,</span> <span class="i">$OutFileName</span><span class="sc">;</span>
+1232         <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>} &amp;&amp; <span class="s">(</span><span class="k">-e</span> <span class="i">$OutFileName</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1233           <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: The file $OutFileName already exists\n&quot;</span><span class="sc">;</span>
+1234           <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1235         <span class="s">}</span>
+1236       <span class="s">}</span>
+1237       <span class="k">else</span> <span class="s">{</span>
+1238         <span class="k">for</span> <span class="i">$ChainLabel</span> <span class="s">(</span><span class="i">@ChainLabels</span><span class="s">)</span> <span class="s">{</span>
+1239           <span class="i">$OutFileName</span> = <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Chains$/i</span><span class="s">)</span> ? <span class="q">&quot;${OutFileRoot}${ChainLabel}.pdb&quot;</span> <span class="co">:</span> <span class="q">&quot;${OutFileRoot}Sequences${ChainLabel}.fasta&quot;</span><span class="sc">;</span>
+1240           <span class="k">push</span> <span class="i">@OutFileNames</span><span class="cm">,</span> <span class="i">$OutFileName</span><span class="sc">;</span>
+1241           <span class="k">if</span> <span class="s">(</span>!<span class="i">$OptionsInfo</span>{<span class="w">OverwriteFiles</span>} &amp;&amp; <span class="s">(</span><span class="k">-e</span> <span class="i">$OutFileName</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1242             <span class="k">warn</span> <span class="q">&quot;Warning: Ignoring file $PDBFile: The file $OutFileName already exists\n&quot;</span><span class="sc">;</span>
+1243             <span class="k">next</span> <span class="j">FILELIST</span><span class="sc">;</span>
+1244           <span class="s">}</span>
+1245         <span class="s">}</span>
+1246       <span class="s">}</span>
+1247     <span class="s">}</span>
+1248     <span class="i">@ChainSequenceIDs</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1249     <span class="i">@ChainSequenceIDsPrefix</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1250     <span class="k">if</span> <span class="s">(</span><span class="i">$Mode</span> =~ <span class="q">/^Sequences$/i</span><span class="s">)</span> <span class="s">{</span>
+1251       <span class="k">my</span><span class="s">(</span><span class="i">$HeaderRecordLine</span><span class="cm">,</span> <span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="cm">,</span> <span class="i">$IDPrefix</span><span class="s">)</span><span class="sc">;</span>
+1252       <span class="s">(</span><span class="i">$Classification</span><span class="cm">,</span> <span class="i">$DepositionDate</span><span class="cm">,</span> <span class="i">$IDCode</span><span class="s">)</span> = <span class="i">GetHeaderRecordInformation</span><span class="s">(</span><span class="i">$PDBRecordLinesRef</span><span class="s">)</span><span class="sc">;</span>
+1253 
+1254       <span class="k">if</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SequenceIDPrefixSource</span>} =~ <span class="q">/^FileName$/i</span><span class="s">)</span> <span class="s">{</span>
+1255         <span class="i">$IDPrefix</span> = <span class="i">$FileName</span><span class="sc">;</span>
+1256       <span class="s">}</span>
+1257       <span class="k">elsif</span> <span class="s">(</span><span class="i">$OptionsInfo</span>{<span class="w">SequenceIDPrefixSource</span>} =~ <span class="q">/^HeaderRecord$/i</span><span class="s">)</span> <span class="s">{</span>
+1258         <span class="i">$IDPrefix</span> = <span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$IDCode</span><span class="s">)</span> ? <span class="i">$IDCode</span> <span class="co">:</span> <span class="q">&#39;&#39;</span><span class="sc">;</span>
+1259       <span class="s">}</span>
+1260       <span class="k">else</span> <span class="s">{</span>
+1261         <span class="i">$IDPrefix</span> = <span class="i">IsNotEmpty</span><span class="s">(</span><span class="i">$IDCode</span><span class="s">)</span> ? <span class="i">$IDCode</span> <span class="co">:</span> <span class="i">$FileName</span><span class="sc">;</span>
+1262       <span class="s">}</span>
+1263 
+1264       <span class="k">for</span> <span class="i">$ChainLabel</span> <span class="s">(</span><span class="i">@ChainLabels</span><span class="s">)</span> <span class="s">{</span>
+1265         <span class="k">push</span> <span class="i">@ChainSequenceIDsPrefix</span><span class="cm">,</span> <span class="i">$IDPrefix</span><span class="sc">;</span>
+1266         <span class="k">push</span> <span class="i">@ChainSequenceIDs</span><span class="cm">,</span> <span class="q">&quot;${IDPrefix}_${ChainLabel}|PDB&quot;</span><span class="sc">;</span>
+1267       <span class="s">}</span>
+1268     <span class="s">}</span>
+1269 
+1270     <span class="i">$PDBFilesInfo</span>{<span class="w">FileOkay</span>}[<span class="i">$Index</span>] = <span class="n">1</span><span class="sc">;</span>
+1271     <span class="i">$PDBFilesInfo</span>{<span class="w">OutFileRoot</span>}[<span class="i">$Index</span>] = <span class="i">$OutFileRoot</span><span class="sc">;</span>
+1272 
+1273     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">OutFileNames</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@OutFileNames</span><span class="sc">;</span>
+1274     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainLabels</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@ChainLabels</span><span class="sc">;</span>
+1275     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDsPrefix</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@ChainSequenceIDsPrefix</span><span class="sc">;</span>
+1276     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">ChainSequenceIDs</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@ChainSequenceIDs</span><span class="sc">;</span>
+1277     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">SpecifiedChains</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@SpecifiedChains</span><span class="sc">;</span>
+1278     <span class="k">push</span> <span class="i">@</span>{<span class="i">$PDBFilesInfo</span>{<span class="w">DistanceOrigin</span>}[<span class="i">$Index</span>]}<span class="cm">,</span> <span class="i">@DistanceOrigin</span><span class="sc">;</span>
+1279   <span class="s">}</span>
+1280 <span class="s">}</span>
+1281 
+1282 
+1283 <span class="c"># Setup script usage  and retrieve command line arguments specified using various options...</span>
+<a name="SetupScriptUsage-"></a>1284 <span class="k">sub </span><span class="m">SetupScriptUsage</span> <span class="s">{</span>
+1285 
+1286   <span class="c"># Retrieve all the options...</span>
+1287   <span class="i">%Options</span> = <span class="s">(</span><span class="s">)</span><span class="sc">;</span>
+1288   <span class="i">$Options</span>{<span class="w">chains</span>} = <span class="q">&#39;First&#39;</span><span class="sc">;</span>
+1289   <span class="i">$Options</span>{<span class="w">chainsrecordmode</span>} = <span class="q">&#39;NotAcrossTER&#39;</span><span class="sc">;</span>
+1290   <span class="i">$Options</span>{<span class="w">combinechains</span>} = <span class="q">&#39;no&#39;</span><span class="sc">;</span>
+1291   <span class="i">$Options</span>{<span class="w">distance</span>} = <span class="n">10.0</span><span class="sc">;</span>
+1292   <span class="i">$Options</span>{<span class="w">distancemode</span>} = <span class="q">&#39;XYZ&#39;</span><span class="sc">;</span>
+1293   <span class="i">$Options</span>{<span class="w">distanceselectionmode</span>} = <span class="q">&#39;ByAtom&#39;</span><span class="sc">;</span>
+1294   <span class="i">$Options</span>{<span class="w">keepoldrecords</span>} = <span class="q">&#39;no&#39;</span><span class="sc">;</span>
+1295   <span class="i">$Options</span>{<span class="w">mode</span>} = <span class="q">&#39;NonWater&#39;</span><span class="sc">;</span>
+1296   <span class="i">$Options</span>{<span class="w">modifyheader</span>} = <span class="q">&#39;yes&#39;</span><span class="sc">;</span>
+1297   <span class="i">$Options</span>{<span class="w">nonstandardkeep</span>} = <span class="q">&#39;yes&#39;</span><span class="sc">;</span>
+1298   <span class="i">$Options</span>{<span class="w">nonstandardcode</span>} = <span class="q">&#39;X&#39;</span><span class="sc">;</span>
+1299   <span class="i">$Options</span>{<span class="w">sequencelength</span>} = <span class="n">80</span><span class="sc">;</span>
+1300   <span class="i">$Options</span>{<span class="w">sequenceidprefix</span>} = <span class="q">&#39;Automatic&#39;</span><span class="sc">;</span>
+1301   <span class="i">$Options</span>{<span class="w">sequencerecords</span>} = <span class="q">&#39;Atom&#39;</span><span class="sc">;</span>
+1302   <span class="i">$Options</span>{<span class="w">waterresiduenames</span>} = <span class="q">&#39;Automatic&#39;</span><span class="sc">;</span>
+1303 
+1304   <span class="k">if</span> <span class="s">(</span>!<span class="i">GetOptions</span><span class="s">(</span>\<span class="i">%Options</span><span class="cm">,</span> <span class="q">&quot;atoms|a=s&quot;</span><span class="cm">,</span> <span class="q">&quot;chains|c=s&quot;</span><span class="cm">,</span> <span class="q">&quot;chainsrecordmode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;combinechains=s&quot;</span><span class="cm">,</span> <span class="q">&quot;distance|d=f&quot;</span><span class="cm">,</span> <span class="q">&quot;distancemode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;distanceorigin=s&quot;</span><span class="cm">,</span> <span class="q">&quot;distanceselectionmode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;help|h&quot;</span><span class="cm">,</span> <span class="q">&quot;keepoldrecords|k=s&quot;</span><span class="cm">,</span> <span class="q">&quot;mode|m=s&quot;</span><span class="cm">,</span> <span class="q">&quot;modifyheader=s&quot;</span><span class="cm">,</span> <span class="q">&quot;nonstandardkeep=s&quot;</span><span class="cm">,</span> <span class="q">&quot;nonstandardcode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;overwrite|o&quot;</span><span class="cm">,</span> <span class="q">&quot;root|r=s&quot;</span><span class="cm">,</span> <span class="q">&quot;recordmode=s&quot;</span><span class="cm">,</span> <span class="q">&quot;residues=s&quot;</span><span class="cm">,</span> <span class="q">&quot;sequencelength=i&quot;</span><span class="cm">,</span> <span class="q">&quot;sequenceidprefix=s&quot;</span><span class="cm">,</span> <span class="q">&quot;sequencerecords=s&quot;</span><span class="cm">,</span> <span class="q">&quot;waterresiduenames=s&quot;</span><span class="cm">,</span> <span class="q">&quot;workingdir|w=s&quot;</span><span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1305     <span class="k">die</span> <span class="q">&quot;\nTo get a list of valid options and their values, use \&quot;$ScriptName -h\&quot; or\n\&quot;perl -S $ScriptName -h\&quot; command and try again...\n&quot;</span><span class="sc">;</span>
+1306   <span class="s">}</span>
+1307   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+1308     <span class="k">if</span> <span class="s">(</span>! <span class="k">-d</span> <span class="i">$Options</span>{<span class="w">workingdir</span>}<span class="s">)</span> <span class="s">{</span>
+1309       <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{workingdir}, for option \&quot;-w --workingdir\&quot; is not a directory name.\n&quot;</span><span class="sc">;</span>
+1310     <span class="s">}</span>
+1311     <span class="k">chdir</span> <span class="i">$Options</span>{<span class="w">workingdir</span>} <span class="k">or</span> <span class="k">die</span> <span class="q">&quot;Error: Couldn&#39;t chdir $Options{workingdir}: $! \n&quot;</span><span class="sc">;</span>
+1312   <span class="s">}</span>
+1313   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">combinechains</span>} !~ <span class="q">/^(yes|no)$/i</span><span class="s">)</span> <span class="s">{</span>
+1314     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{combinechains}, for option \&quot;--CombineChains\&quot; is not valid. Allowed values: yes or no\n&quot;</span><span class="sc">;</span>
+1315   <span class="s">}</span>
+1316   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">chainsrecordmode</span>} !~ <span class="q">/^(AcrossTER|NotAcrossTER)$/i</span><span class="s">)</span> <span class="s">{</span>
+1317     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{chainsrecordmode}, for option \&quot;--ChainsRecordMode\&quot; is not valid. Allowed values: AcrossTER or NotAcrossTER\n&quot;</span><span class="sc">;</span>
+1318   <span class="s">}</span>
+1319   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">distancemode</span>} !~ <span class="q">/^(Atom|Hetatm|Residue|XYZ)$/i</span><span class="s">)</span> <span class="s">{</span>
+1320     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{distancemode}, for option \&quot;--DistanceMode\&quot; is not valid. Allowed values: Atom, Hetatm, Residue, or XYZ\n&quot;</span><span class="sc">;</span>
+1321   <span class="s">}</span>
+1322   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">distanceselectionmode</span>} !~ <span class="q">/^(ByAtom|ByResidue)$/i</span><span class="s">)</span> <span class="s">{</span>
+1323     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{distanceselectionmode}, for option \&quot;--DistanceSelectionMode\&quot; is not valid. Allowed values: ByAtom or ByResidue\n&quot;</span><span class="sc">;</span>
+1324   <span class="s">}</span>
+1325   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">keepoldrecords</span>} !~ <span class="q">/^(yes|no)$/i</span><span class="s">)</span> <span class="s">{</span>
+1326     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{keepoldrecords}, for option \&quot;--KeepOldRecords\&quot; is not valid. Allowed values: yes or no\n&quot;</span><span class="sc">;</span>
+1327   <span class="s">}</span>
+1328   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">mode</span>} !~ <span class="q">/^(Chains|Sequences|Atoms|CAlphas|AtomNums|AtomsRange|AtomNames|ResidueNums|ResidueNames|ResiduesRange|Distance|NonWater|NonHydrogens)$/i</span><span class="s">)</span> <span class="s">{</span>
+1329     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{mode}, for option \&quot;m, --mode\&quot; is not valid. Allowed values: Chains, Sequences, Atoms, CAlphas, AtomNums, AtomsRange, AtomNames, ResidueNums, ResiduesRange, ResidueNames, Distance, NonWater, NonHydrogens\n&quot;</span><span class="sc">;</span>
+1330   <span class="s">}</span>
+1331   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">modifyheader</span>} !~ <span class="q">/^(yes|no)$/i</span><span class="s">)</span> <span class="s">{</span>
+1332     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{modifyheader}, for option \&quot;--ModifyHeader\&quot; is not valid. Allowed values: yes or no\n&quot;</span><span class="sc">;</span>
+1333   <span class="s">}</span>
+1334   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">nonstandardkeep</span>} !~ <span class="q">/^(yes|no)$/i</span><span class="s">)</span> <span class="s">{</span>
+1335     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{nonstandardkeep}, for option \&quot;--NonStandardKeep\&quot; is not valid. Allowed values: yes or no\n&quot;</span><span class="sc">;</span>
+1336   <span class="s">}</span>
+1337   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">nonstandardcode</span>} !~ <span class="q">/^(\?|\-|X)$/i</span><span class="s">)</span> <span class="s">{</span>
+1338     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{nonstandardcode}, for option \&quot;--NonStandardCode\&quot; is not valid. Allowed values: ?, -, or X\n&quot;</span><span class="sc">;</span>
+1339   <span class="s">}</span>
+1340   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">recordmode</span>} &amp;&amp; <span class="i">$Options</span>{<span class="w">recordmode</span>} !~ <span class="q">/^(Atom|Hetatm|AtomAndHetatm)$/i</span><span class="s">)</span> <span class="s">{</span>
+1341     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{recordmode}, for option \&quot;--RecordMode\&quot; is not valid. Allowed values: Atom, Hetatm, AtomAndHetatm\n&quot;</span><span class="sc">;</span>
+1342   <span class="s">}</span>
+1343   <span class="k">if</span> <span class="s">(</span>!<span class="i">IsPositiveInteger</span><span class="s">(</span><span class="i">$Options</span>{<span class="w">sequencelength</span>}<span class="s">)</span><span class="s">)</span> <span class="s">{</span>
+1344     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{sequencelength}, for option \&quot;--SequenceLength\&quot; is not valid. Allowed values: &gt;0\n&quot;</span><span class="sc">;</span>
+1345   <span class="s">}</span>
+1346   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">sequencerecords</span>} !~ <span class="q">/^(Atom|SeqRes)$/i</span><span class="s">)</span> <span class="s">{</span>
+1347     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{sequencerecords}, for option \&quot;--SequenceRecords\&quot; is not valid. Allowed values: Atom or SeqRes\n&quot;</span><span class="sc">;</span>
+1348   <span class="s">}</span>
+1349   <span class="k">if</span> <span class="s">(</span><span class="i">$Options</span>{<span class="w">sequenceidprefix</span>} !~ <span class="q">/^(FileName|HeaderRecord|Automatic)$/i</span><span class="s">)</span> <span class="s">{</span>
+1350     <span class="k">die</span> <span class="q">&quot;Error: The value specified, $Options{sequenceidprefix}, for option \&quot;--SequenceIDPrefix\&quot; is not valid. Allowed values: FileName, HeaderRecord, or AutomaticAtom\n&quot;</span><span class="sc">;</span>
+1351   <span class="s">}</span>
+1352 <span class="s">}</span>
+1353 
+<a name="EOF-"></a></pre>
+<p>&nbsp;</p>
+<br />
+<center>
+<img src="../../../images/h2o2.png">
+</center>
+</body>
+</html>

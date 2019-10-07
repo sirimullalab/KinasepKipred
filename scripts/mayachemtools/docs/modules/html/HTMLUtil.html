@@ -1,0 +1,213 @@
+<html>
+<head>
+<title>MayaChemTools:Documentation:HTMLUtil.pm</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<link rel="stylesheet" type="text/css" href="../../css/MayaChemTools.css">
+</head>
+<body leftmargin="20" rightmargin="20" topmargin="10" bottommargin="10">
+<br/>
+<center>
+<a href="http://www.mayachemtools.org" title="MayaChemTools Home"><img src="../../images/MayaChemToolsLogo.gif" border="0" alt="MayaChemTools"></a>
+</center>
+<br/>
+<div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./Graph.html" title="Graph.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MathUtil.html" title="MathUtil.html">Next</a></td><td width="34%" align="middle"><strong>HTMLUtil.pm</strong></td><td width="33%" align="right"><a href="././code/HTMLUtil.html" title="View source code">Code</a>&nbsp;|&nbsp;<a href="./../pdf/HTMLUtil.pdf" title="PDF US Letter Size">PDF</a>&nbsp;|&nbsp;<a href="./../pdfgreen/HTMLUtil.pdf" title="PDF US Letter Size with narrow margins: www.changethemargins.com">PDFGreen</a>&nbsp;|&nbsp;<a href="./../pdfa4/HTMLUtil.pdf" title="PDF A4 Size">PDFA4</a>&nbsp;|&nbsp;<a href="./../pdfa4green/HTMLUtil.pdf" title="PDF A4 Size with narrow margins: www.changethemargins.com">PDFA4Green</a></td></tr>
+</table>
+</div>
+<h1 id="NAME">NAME</h2>
+<p>HTMLUtil</p>
+<h1 id="SYNOPSIS">SYNOPSIS</h2>
+<p>use HTMLUtil;</p>
+<p>use HTMLUtil qw(:all);</p>
+<h1 id="DESCRIPTION">DESCRIPTION</h2>
+<p><b>HTMLUtil</b> module provides the following functions:</p>
+<p>
+ <a href="#InsertHTMLTags">InsertHTMLTags</a>, <a href="#SetupHTMLAlignmentBegin">SetupHTMLAlignmentBegin</a>, <a href="#SetupHTMLAlignmentEnd">SetupHTMLAlignmentEnd</a>, <a href="#SetupHTMLButtonRef">SetupHTMLButtonRef</a>, <a href="#SetupHTMLDivBegin">SetupHTMLDivBegin</a>, <a href="#SetupHTMLDivEnd">SetupHTMLDivEnd</a>, <a href="#SetupHTMLEmptyLines">SetupHTMLEmptyLines</a>, <a href="#SetupHTMLHRef">SetupHTMLHRef</a>, <a href="#SetupHTMLPageEnd">SetupHTMLPageEnd</a>, <a href="#SetupHTMLPageHeader">SetupHTMLPageHeader</a>, <a href="#SetupHTMLPageTitle">SetupHTMLPageTitle</a>, <a href="#SetupHTMLStyleSheetTags">SetupHTMLStyleSheetTags</a>, <a href="#SetupHTMLTableColumnEnd">SetupHTMLTableColumnEnd</a>, <a href="#SetupHTMLTableColumnHeader">SetupHTMLTableColumnHeader</a>, <a href="#SetupHTMLTableEnd">SetupHTMLTableEnd</a>, <a href="#SetupHTMLTableHeader">SetupHTMLTableHeader</a>, <a href="#SetupHTMLTableRowDataValue">SetupHTMLTableRowDataValue</a>, <a href="#SetupHTMLTableRowEnd">SetupHTMLTableRowEnd</a>, <a href="#SetupHTMLTableRowHeader">SetupHTMLTableRowHeader</a>, <a href="#SetupHTMLTableRowHeaderValue">SetupHTMLTableRowHeaderValue</a>, <a href="#SetupJavaScriptCmds">SetupJavaScriptCmds</a>, <a href="#SetupStrViewerAccelrysActiveX">SetupStrViewerAccelrysActiveX</a>, <a href="#SetupStrViewerChem3DActiveX">SetupStrViewerChem3DActiveX</a>, <a href="#SetupStrViewerChemDrawActiveX">SetupStrViewerChemDrawActiveX</a>, <a href="#SetupStrViewerChemDrawPlugIn">SetupStrViewerChemDrawPlugIn</a>, <a href="#SetupStrViewerChimePlugIn">SetupStrViewerChimePlugIn</a>, <a href="#SetupStrViewerJMEApplet">SetupStrViewerJMEApplet</a>, <a href="#SetupStrViewerJSInitCmd">SetupStrViewerJSInitCmd</a>, <a href="#SetupStrViewerJmolApplet">SetupStrViewerJmolApplet</a>, <a href="#SetupStrViewerMarvinViewApplet">SetupStrViewerMarvinViewApplet</a>
+</p><h2 id="FUNCTIONS">FUNCTIONS</h2>
+<dl>
+<dt id="InsertHTMLTags"><b>InsertHTMLTags</b></dt>
+<dd>
+<div class="OptionsBox">    $NewTag = InsertHTMLTags($Tag, @TagsNameValue);</div>
+<p>Inserts tag name and value pair from <i>TagsNameValue</i> into a exisiting <i>Tag</i> as <i>TagName = &quot;TagValue&quot;</i> and returns <b>NewTag</b> string.</p>
+</dd>
+<dt id="SetupHTMLAlignmentBegin"><b>SetupHTMLAlignmentBegin</b></dt>
+<dd>
+<div class="OptionsBox">    $AlignmentTag = SetupHTMLAlignmentBegin([$Alignment]);</div>
+<p>Returns an alignment begin tag string. Possible <i>Alignment</i> values: <i>left, center, or right</i>. Default: <i>left</i>.</p>
+</dd>
+<dt id="SetupHTMLAlignmentEnd"><b>SetupHTMLAlignmentEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $AlignmentTag = SetupHTMLAlignmentBegin([$Alignment]);</div>
+<p>Returns an alignment end tag string.</p>
+</dd>
+<dt id="SetupHTMLButtonRef"><b>SetupHTMLButtonRef</b></dt>
+<dd>
+<div class="OptionsBox">    $ButtonTag = SetupHTMLButtonRef($ButtonLabel, $FileName);</div>
+<p>Returns a button tag string for associating <b>onClick</b> button event of a button with label <i>ButtonLabel</i> to open a file <i>FileName</i>.</p>
+</dd>
+<dt id="SetupHTMLDivBegin"><b>SetupHTMLDivBegin</b></dt>
+<dd>
+<div class="OptionsBox">    $DivTag = SetupHTMLDivBegin($ID);</div>
+<p>Returns a div begin tag string for div <i>ID</i>.</p>
+</dd>
+<dt id="SetupHTMLDivEnd"><b>SetupHTMLDivEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $DivTag = SetupHTMLDivEnd();</div>
+<p>Returns a div end tag string.</p>
+</dd>
+<dt id="SetupHTMLTableEnd"><b>SetupHTMLTableEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $TableEndTag = SetupHTMLTableEnd();</div>
+<p>Returns a table end tag string.</p>
+</dd>
+<dt id="SetupHTMLEmptyLines"><b>SetupHTMLEmptyLines</b></dt>
+<dd>
+<div class="OptionsBox">    $EmptyLineTags = SetupHTMLEmptyLines([$LineCount]);</div>
+<p>Returns an empty lines tag string for empty <i>LineCount</i>. Default line count: <i>1</i>.</p>
+</dd>
+<dt id="SetupHTMLPageHeader"><b>SetupHTMLPageHeader</b></dt>
+<dd>
+<div class="OptionsBox">    $PageHeaderTag = SetupHTMLPageHeader($HeaderTitle, [$Stylesheet,
+                     $JavaScript]);</div>
+<p>Returns a page header tag string using <i>HeaderTitle</i> and using optionally specifed values for <i>Stylesheet</i> and <i>JavaScript</i>.</p>
+</dd>
+<dt id="SetupHTMLHRef"><b>SetupHTMLHRef</b></dt>
+<dd>
+<div class="OptionsBox">    $HRef = SetupHTMLHRef($Label, $URL, [$Title]);</div>
+<p>Returns a HRef tag string for setting up a URL with <i>Label</i> and <i>URL</i> with optional <i>Title</i>.</p>
+</dd>
+<dt id="SetupHTMLPageEnd"><b>SetupHTMLPageEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $PageEndTag = SetupHTMLPageEnd([$FooterMsg]);</div>
+<p>Returns a page end tag string conating optional <i>FooterMsg</i>.</p>
+</dd>
+<dt id="SetupHTMLPageTitle"><b>SetupHTMLPageTitle</b></dt>
+<dd>
+<div class="OptionsBox">    $PageTitleTag = SetupHTMLPageTitle($Title, [$Alignment]);</div>
+<p>Returns a page title tag string with optional alignment. Valid alignment value: <i>left, center, right</i> Default alignment: <i>center</i>.</p>
+</dd>
+<dt id="SetupHTMLStyleSheetTags"><b>SetupHTMLStyleSheetTags</b></dt>
+<dd>
+<div class="OptionsBox">    $StyleSheetTags = SetupHTMLStyleSheetTags();</div>
+<p>Returns a default style sheet tag string to be used for HTML files generated by MayaChemTools.</p>
+</dd>
+<dt id="SetupHTMLTableHeader"><b>SetupHTMLTableHeader</b></dt>
+<dd>
+<div class="OptionsBox">    $TableHeaderTags = SetupHTMLTableHeader([$BorderWidth,
+                       $CellPadding, $CellSpacing, $Width, $Height]);</div>
+<p>Returns a table header tag string containing specified values for <i>BorderWidth, CellPadding, CellSpacing, Width, and Height</i>. Default values: <i>BorderWidth = 1; CellPadding = 2; CellSpacing = 0; Width = NotUsed; Height = NotUsed</i>.</p>
+</dd>
+<dt id="SetupHTMLTableEnd1">&lt;SetupHTMLTableEnd&gt;</dt>
+<dd>
+<div class="OptionsBox">    $TableEndTag = SetupHTMLTableEnd();</div>
+<p>Returns a table end tag string.</p>
+</dd>
+<dt id="SetupHTMLTableColumnHeader"><b>SetupHTMLTableColumnHeader</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnHeaderTag = SetupHTMLTableColumnHeader([$BgColor, $Width]);</div>
+<p>Returns a table column header tag string containing specified values for <i>BgColor, Width</i>. Default values: <i>BgColor = NotUsed; Width = NotUsed</i>.</p>
+</dd>
+<dt id="SetupHTMLTableColumnEnd"><b>SetupHTMLTableColumnEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $ColumnEndTag = SetupHTMLTableColumnEnd();</div>
+<p>Returns a table column end tag string.</p>
+</dd>
+<dt id="SetupHTMLTableRowHeader"><b>SetupHTMLTableRowHeader</b></dt>
+<dd>
+<div class="OptionsBox">    $RowHeaderTag = SetupHTMLTableRowHeader([$HAlignment, $BgColor,
+                    $VAlignment]);</div>
+<p>Returns a table row header tag string containing specified values for <i>HAlignment, BgColor, and VAlignment</i>. Default values: <i>HAlignment = center; $BgColor = NotUsed; $VAlignment = top</i>.</p>
+</dd>
+<dt id="SetupHTMLTableRowEnd"><b>SetupHTMLTableRowEnd</b></dt>
+<dd>
+<div class="OptionsBox">    $RowEndTag = SetupHTMLTableRowEnd();</div>
+<p>Returns a table row end tag string.</p>
+</dd>
+<dt id="SetupHTMLTableRowHeaderValue"><b>SetupHTMLTableRowHeaderValue</b></dt>
+<dd>
+<div class="OptionsBox">    $HeaderValueTag = SetupHTMLTableRowHeaderValue([$Value]);</div>
+<p>Returns a table header row tag string using specifed <i>Value</i>. Default value: <i>EmptySpace</i>.</p>
+</dd>
+<dt id="SetupHTMLTableRowDataValue"><b>SetupHTMLTableRowDataValue</b></dt>
+<dd>
+<div class="OptionsBox">    $RowValueTag = SetupHTMLTableRowDataValue([$Value, $BgColor,
+                   $FontColor, $FontBold]);</div>
+<p>Returns a table row column value tag string using specified values for <i>Value, BgColor, FontColor, and FontBold</i>. Default values: <i>Value = EmptySpace; BgColor = NotUsed; FontColor = NotUsed; $FontBold = NotUsed</i>.</p>
+</dd>
+<dt id="SetupJavaScriptCmds"><b>SetupJavaScriptCmds</b></dt>
+<dd>
+<div class="OptionsBox">   $JSTag = SetupJavaScriptCmds(@JSCmdList);</div>
+<p>Returns a Java script tag string using java script commands specified in <i>JSCmdList</i>.</p>
+</dd>
+<dt id="SetupStrViewerJSInitCmd"><b>SetupStrViewerJSInitCmd</b></dt>
+<dd>
+<div class="OptionsBox">   $JSTag = SetupStrViewerJSInitCmd($StrViewerType, $CodeBase);</div>
+<p>Returns a Java script command tag string for intializing structure viewers with specified <i>CodeBase</i> location for viewers to be invoked as Java Applets. Supported values for <i>StrViewerType</i>: <i>Jmol, ChemDrawPlugIn, ChemDrawActiveX, Chem3DActiveX</i>.</p>
+</dd>
+<dt id="SetupStrViewerJMEApplet"><b>SetupStrViewerJMEApplet</b></dt>
+<dd>
+<div class="OptionsBox">    $JMEAppletTag = SetupStrViewerJMEApplet($MolString, $CodeBase,
+                    [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a JME tag string for displaying molecule using <i>MolString</i> along with valid optional applet parameters specified as name and value pairs. Defaul JME parameter values: <i>name = JME; id = JME; width = 250; height = 170</i>.</p>
+</dd>
+<dt id="SetupStrViewerJmolApplet"><b>SetupStrViewerJmolApplet</b></dt>
+<dd>
+<div class="OptionsBox">    $JmolAppletTag = SetupStrViewerJmolApplet($MolString, $CodeBase,
+                     [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a JMol tag string for displaying molecule using <i>MolString</i> along with valid optional applet parameters specified as name and value pairs. Defaul JMol parameter values: <i>name = Jmol; id = Jmol; width = 250; height = 170; progressbar = true; progresscolor = 0000ff; bgcolor = 000000; JMolScript = select *; set frank off; wireframe on; spacefill off</i>.</p>
+</dd>
+<dt id="SetupStrViewerMarvinViewApplet"><b>SetupStrViewerMarvinViewApplet</b></dt>
+<dd>
+<div class="OptionsBox">    $MarvinAppletTag = SetupStrViewerMarvinViewApplet($MolString,
+                       $CodeBase, [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a MarvinView tag string for displaying molecule using <i>MolString</i> along with valid optional applet parameters specified as name and value pairs. Defaul MarvinView parameter values: <i>name = MView; id = MView; width = 250; height = 170; navmode = zoom</i>.</p>
+</dd>
+<dt id="SetupStrViewerChimePlugIn"><b>SetupStrViewerChimePlugIn</b></dt>
+<dd>
+<div class="OptionsBox">    $ChimePlugInTag = SetupStrViewerChimePlugIn($MolFile,
+                      [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a MDL Chime tag string for displaying molecule using <i>MolFile</i> along with valid optional parameters specified as name and value pairs. Defaul Chime parameter values: <i>width = 250; height = 170; display2d = true</i>.</p>
+</dd>
+<dt id="SetupStrViewerChem3DActiveX"><b>SetupStrViewerChem3DActiveX</b></dt>
+<dd>
+<div class="OptionsBox">    $ChemDraw3DActiveXTags = SetupStrViewerChemDrawActiveX($MolFile,
+                             [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a CambridgeSoft Chem3D tag string for displaying molecule using <i>MolFile</i> along with valid optional parameters specified as name and value pairs. Defaul Chime parameter values: <i>width = 250; height = 170; displaytype = BallAndStick; rotationbars = false; moviecontroller = false</i>.</p>
+</dd>
+<dt id="SetupStrViewerChemDrawActiveX"><b>SetupStrViewerChemDrawActiveX</b></dt>
+<dd>
+<div class="OptionsBox">    $ChemDrawActiveXTags = SetupStrViewerChem3DActiveX($MolFile,
+                           [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a CambridgeSoft ChemDraw ActiveX tag string for displaying molecule using <i>MolFile</i> along with valid optional parameters specified as name and value pairs. Defaul ChemDraw ActiveX parameter values: <i>width = 250; height = 170; ViewOnly = 1; ShrinkToFit = 1; ShowToolsWhenVisible = 1</i>.</p>
+</dd>
+<dt id="SetupStrViewerChemDrawPlugIn"><b>SetupStrViewerChemDrawPlugIn</b></dt>
+<dd>
+<div class="OptionsBox">    $ChemDrawPlugInTag = SetupStrViewerChemDrawPlugIn($MolFile,
+                         [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a CambridgeSoft ChemDraw PlugIn tag string for displaying molecule using <i>MolFile</i> along with valid optional parameters specified as name and value pairs. Defaul ChemDraw PlugIn parameter values: <i>width = 250; height = 170; ViewOnly = 1; ShrinkToFit = 1; ShowToolsWhenVisible = 1</i>.</p>
+</dd>
+<dt id="SetupStrViewerAccelrysActiveX"><b>SetupStrViewerAccelrysActiveX</b></dt>
+<dd>
+<div class="OptionsBox">    $AccelrysActiveXTags = SetupStrViewerAccelrysActiveX($MolFile,
+                           [{param =&gt; &quot;value&quot;}]);</div>
+<p>Returns a Accelrys ViewerActiveX tag string for displaying molecule using <i>MolFile</i> along with valid optional parameters specified as name and value pairs. Defaul ViewerActiveX parameter values: <i>width = 250; height = 170; Convert2Dto3D = 0; Mouse = 4</i>.</p>
+</dd>
+</dl>
+<h1 id="AUTHOR">AUTHOR</h2>
+<p><a href="mailto:msud@san.rr.com">Manish Sud</a></p>
+<h1 id="COPYRIGHT">COPYRIGHT</h2>
+<p>Copyright (C) 2018 Manish Sud. All rights reserved.</p>
+<p>This file is part of MayaChemTools.</p>
+<p>MayaChemTools is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+<p>&nbsp</p><p>&nbsp</p><div class="DocNav">
+<table width="100%" border=0 cellpadding=0 cellspacing=2>
+<tr align="left" valign="top"><td width="33%" align="left"><a href="./Graph.html" title="Graph.html">Previous</a>&nbsp;&nbsp;<a href="./index.html" title="Table of Contents">TOC</a>&nbsp;&nbsp;<a href="./MathUtil.html" title="MathUtil.html">Next</a></td><td width="34%" align="middle"><strong>May 15, 2018</strong></td><td width="33%" align="right"><strong>HTMLUtil.pm</strong></td></tr>
+</table>
+</div>
+<br />
+<center>
+<img src="../../images/h2o2.png">
+</center>
+</body>
+</html>

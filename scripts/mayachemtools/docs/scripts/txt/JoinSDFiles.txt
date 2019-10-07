@@ -1,0 +1,57 @@
+NAME
+    JoinSDFiles.pl - Join multiple SDFiles into a single SDFile
+
+SYNOPSIS
+    JoinSDFiles.pl SDFiles...
+
+    JoinSDFiles.pl [-h, --help] [-o, --overwrite] [-r, --root rootname] [-w,
+    --workingdir dirname] SDFiles...
+
+DESCRIPTION
+    Multiple *SDFiles* are joined to generate a single SDFile. The file
+    names are separated by spaces. The valid file extensions are *.sdf* and
+    *.sd*. All other file names are ignored. All the SD files in a current
+    directory can be specified either by **.sdf* or the current directory
+    name.
+
+OPTIONS
+    -h, --help
+        Print this help message.
+
+    -o, --overwrite
+        Overwrite existing files.
+
+    -r, --root *rootname*
+        New SD file name is generated using the root: <Root>.sdf. Default
+        file name:<FirstSDFileName>1To<Count>Joined.sdf.
+
+    -w, --workingdir *dirname*
+        Location of working directory. Default: current directory.
+
+EXAMPLES
+    To join SD files, type:
+
+        % JoinSDFiles.pl -o Sample1.sdf Sample2.sdf
+        % JoinSDFiles.pl -o *.sdf
+
+    To join all Sample*.sdf files in a directory, SomeDir, and generate a
+    new file NewSample.sdf, type:
+
+        % JoinSDFiles.pl -r NewSample -w SomeDir -o *.sdf
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    InfoSDFiles.pl, MolFilesToSD.pl, SDToMolFiles.pl, SplitSDFiles.pl
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+

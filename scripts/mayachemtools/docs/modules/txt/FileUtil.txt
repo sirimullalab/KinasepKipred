@@ -1,0 +1,120 @@
+NAME
+    FileUtil
+
+SYNOPSIS
+    use FileUtil;
+
+    use FileUtil qw(:all);
+
+DESCRIPTION
+    FileUtil module provides the following functions:
+
+    CheckFileType, ConvertCygwinPath, ExpandFileNames,
+    FileModificationTimeAndDate, FileSize, FormatFileSize,
+    FormattedFileModificationTimeAndDate, GetMayaChemToolsLibDirName,
+    GetUsageFromPod, ParseFileName
+
+FUNCTIONS
+    CheckFileType
+            $Status = CheckFileType($FileName, $FileExts);
+
+        Based on *FileExts*, decides type of *FileName* and return 1 or 0.
+
+    ConvertCygwinPath
+            $NewPath = ConvertCygwinPath($Path);
+
+        Check to see whether *Path* contains any Cygwin drive specification
+        and convert it into Windows path.
+
+    ExpandFileNames
+            @FilesList = ExpandFileNames(\@Files, $FileExts);
+            @FilesList = ExpandFileNames(\@Files, $FileExts, $IncludeDirName);
+
+        For each directory name or wild card file name in *Files*, generate
+        all file names which correspond to the specification along with
+        match to any extensions in *FileExts* and return an array FileList
+        containing these file names and other names. *IncludeDirName*
+        controls controls whether directory prefixes are included in
+        expanded file names. Default is to always append directory name
+        before expanded file name.
+
+        Notes:
+
+            . Multiple file extensions are delimited by spaces.
+            . Wild card, *, is supported in directory and file names along with file
+              extensions.
+            . For a specified directory name in the files list, all the files in the
+              directory are retrieved using Perl opendir function and files filtered using file
+              extensions. The file names "." and ".." returned by opendir are ignored.
+            . For file names containing wild cards with and without any explicit file
+              extension specification in the file name, all the files in the directory are retrieved
+              using Perl opendir function and files filtered using file name along with any
+              file extension. The file names "." and ".." returned by opendir are ignored.
+
+    FormattedFileModificationTimeAndDate
+            ($TimeString, $DateString) =
+                 FormattedFileModificationTimeAndDate($FileName);
+
+        Returns a formatted time and date string corresponding to *FileName*
+        modification time.
+
+    FileModificationTimeAndDate
+            ($Hours, $Mins, $Secs, $DayName, $MonthName, $Month, $Year) =
+                 FileModificationTimeAndDate($FileName);
+
+        Returns file modification time and date values for specified
+        *FileName*.
+
+    FormatFileSize
+            $FormattedSize= FormatFileSize($Size, [$Precision]);
+
+        Formats the file size in bytes to human readable value and returns a
+        formatted file size string.
+
+    FileSize
+            $Size= FileSize($FileName);
+
+        Returns size of *FileName* in bytes
+
+    GetMayaChemToolsLibDirName
+            $MayaChemToolsLibDir = GetMayaChemToolsLibDirName();
+
+        Returns MayaChemTools lib directory name by parsing INC values to
+        extract MAYACHEMTOOLS/lib directory location: first entry in INC
+        path should contain MayaChemTools lib location.
+
+    GetUsageFromPod
+            $ScriptUsage = GetUsageFromPod($AbsoluteScriptPath);
+
+        Generates a ScriptUsage string from pod documentation in the script
+        file using pod2text or perdoc.bat Perl utitities.
+
+    ParseFileName
+            ($FileDir, $FileName, $FileExt) = ParseFileName($FullFileName);
+
+        Splits *FullFileName* into directory name, file name, and extension.
+        FileDir is set to current directory for absent directory name in
+        *FullFileName*. And *FileExt* is set to NULL string for
+        *FullFileName* without any extension.
+
+        This function doesn't perform checking ragarding the presence of the
+        directory *FileDir* and *FullFileName* and the *FullFileName*
+        without any extension is assumed to be a file instead of a
+        directory.
+
+AUTHOR
+    Manish Sud <msud@san.rr.com>
+
+SEE ALSO
+    TextUtil.pm, TimeUtil.pm
+
+COPYRIGHT
+    Copyright (C) 2018 Manish Sud. All rights reserved.
+
+    This file is part of MayaChemTools.
+
+    MayaChemTools is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or (at
+    your option) any later version.
+
