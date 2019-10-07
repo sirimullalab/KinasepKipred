@@ -31,8 +31,4 @@ We have used TPATPF fingerprints. 'generate_ligand_fp.py' can be used to generat
 * pip install docopt
 
 ## Usage:
-How to predict the ligand kinase pKi:
-```
-python get_kinase_pki.py protein_kinase_sequence "SMILE_pattern"
-```
-(You can use 'test_protein_sequence.txt' and 'smiles.txt' as test files)
+Run `./test.sh`. It basically runs the python script `get_kinase_pki.py`
