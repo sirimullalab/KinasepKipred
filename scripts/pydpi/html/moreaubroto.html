@@ -1,0 +1,128 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module moreaubroto</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>moreaubroto</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/drug/moreaubroto.py">/home/orient/pydpi/drug/moreaubroto.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+&nbsp;<br>
+The&nbsp;calculation&nbsp;of&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors.&nbsp;You&nbsp;can&nbsp;get&nbsp;32<br>
+&nbsp;<br>
+molecular&nbsp;decriptors.&nbsp;You&nbsp;can&nbsp;freely&nbsp;use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;<br>
+&nbsp;<br>
+any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+&nbsp;<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateMoreauBrotoAutoElectronegativity"><strong>CalculateMoreauBrotoAutoElectronegativity</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;based&nbsp;on&nbsp;<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;Sanderson&nbsp;electronegativity.<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;<br>
+res=<a href="#-CalculateMoreauBrotoAutoElectronegativity">CalculateMoreauBrotoAutoElectronegativity</a>(mol)<br>
+&nbsp;<br>
+Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molcule&nbsp;object.<br>
+&nbsp;<br>
+Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;eight&nbsp;moreau&nbsp;broto&nbsp;autocorrealtion<br>
+&nbsp;<br>
+descriptors.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMoreauBrotoAutoMass"><strong>CalculateMoreauBrotoAutoMass</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;based&nbsp;on&nbsp;<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;mass.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+res=<a href="#-CalculateMoreauBrotoAutoMass">CalculateMoreauBrotoAutoMass</a>(mol)<br>
+&nbsp;<br>
+Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;eight&nbsp;moreau&nbsp;broto&nbsp;autocorrealtion<br>
+&nbsp;<br>
+descriptors.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMoreauBrotoAutoPolarizability"><strong>CalculateMoreauBrotoAutoPolarizability</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;based&nbsp;on&nbsp;<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;polarizability.<br>
+&nbsp;<br>
+res=<a href="#-CalculateMoreauBrotoAutoPolarizability">CalculateMoreauBrotoAutoPolarizability</a>(mol)<br>
+&nbsp;<br>
+Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molcule&nbsp;object.<br>
+&nbsp;<br>
+Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;eight&nbsp;moreau&nbsp;broto&nbsp;autocorrealtion<br>
+&nbsp;<br>
+descriptors.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMoreauBrotoAutoVolume"><strong>CalculateMoreauBrotoAutoVolume</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors&nbsp;based&nbsp;on&nbsp;<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;van&nbsp;der&nbsp;Waals&nbsp;volume.<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;<br>
+res=<a href="#-CalculateMoreauBrotoAutoVolume">CalculateMoreauBrotoAutoVolume</a>(mol)<br>
+&nbsp;<br>
+Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molcule&nbsp;object.<br>
+&nbsp;<br>
+Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;eight&nbsp;moreau&nbsp;broto&nbsp;autocorrealtion<br>
+&nbsp;<br>
+descriptors.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetMoreauBrotoAuto"><strong>GetMoreauBrotoAuto</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calcualate&nbsp;all&nbsp;Moreau-Broto&nbsp;autocorrelation&nbsp;descriptors.&nbsp;<br>
+&nbsp;<br>
+(carbon-scaled&nbsp;atomic&nbsp;mass,&nbsp;carbon-scaled&nbsp;atomic&nbsp;van&nbsp;der&nbsp;Waals&nbsp;volume,<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;Sanderson&nbsp;electronegativity,<br>
+&nbsp;<br>
+carbon-scaled&nbsp;atomic&nbsp;polarizability)<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;<br>
+res=<a href="#-GetMoreauBrotoAuto">GetMoreauBrotoAuto</a>(mol)<br>
+&nbsp;<br>
+Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;<br>
+Output:&nbsp;res&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;moreau&nbsp;broto&nbsp;autocorrelation<br>
+&nbsp;<br>
+descriptors.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0</td></tr></table>
+</body></html>

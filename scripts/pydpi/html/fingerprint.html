@@ -1,0 +1,187 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module fingerprint</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>fingerprint</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/src/pydpi/drug/fingerprint.py">/home/orient/pydpi/src/pydpi/drug/fingerprint.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+This&nbsp;module&nbsp;is&nbsp;to&nbsp;compute&nbsp;the&nbsp;various&nbsp;fingerprints&nbsp;&nbsp;based&nbsp;on&nbsp;the&nbsp;provided&nbsp;<br>
+&nbsp;<br>
+fingerprint&nbsp;system.&nbsp;If&nbsp;you&nbsp;have&nbsp;any&nbsp;question&nbsp;please&nbsp;contact&nbsp;me&nbsp;via&nbsp;email.<br>
+&nbsp;<br>
+My&nbsp;email&nbsp;adress&nbsp;is&nbsp;:&nbsp;orientalcds@gmail.com<br>
+&nbsp;<br>
+2012.09.25<br>
+&nbsp;<br>
+@author:&nbsp;Dongsheng&nbsp;Cao<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.AllChem.html">rdkit.Chem.AllChem</a><br>
+<a href="rdkit.Chem.html">rdkit.Chem</a><br>
+</td><td width="25%" valign=top><a href="rdkit.DataStructs.html">rdkit.DataStructs</a><br>
+<a href="rdkit.Chem.Fingerprints.FingerprintMols.html">rdkit.Chem.Fingerprints.FingerprintMols</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.MACCSkeys.html">rdkit.Chem.MACCSkeys</a><br>
+<a href="rdkit.Chem.AtomPairs.Pairs.html">rdkit.Chem.AtomPairs.Pairs</a><br>
+</td><td width="25%" valign=top><a href="rdkit.Chem.AtomPairs.Torsions.html">rdkit.Chem.AtomPairs.Torsions</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateAtomPairsFingerprint"><strong>CalculateAtomPairsFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;atom&nbsp;pairs&nbsp;fingerprints<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateAtomPairsFingerprint">CalculateAtomPairsFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDaylightFingerprint"><strong>CalculateDaylightFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;Daylight-like&nbsp;fingerprint&nbsp;or&nbsp;topological&nbsp;fingerprint<br>
+&nbsp;<br>
+(2048&nbsp;bits).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDaylightFingerprint">CalculateDaylightFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateEstateFingerprint"><strong>CalculateEstateFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;E-state&nbsp;fingerprints&nbsp;(79&nbsp;bits).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateEstateFingerprint">CalculateEstateFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateFP4Fingerprint"><strong>CalculateFP4Fingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;FP4&nbsp;fingerprints&nbsp;(307&nbsp;bits).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateFP4Fingerprint">CalculateFP4Fingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMACCSFingerprint"><strong>CalculateMACCSFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;MACCS&nbsp;keys&nbsp;(166&nbsp;bits).<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMACCSFingerprint">CalculateMACCSFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMorganFingerprint"><strong>CalculateMorganFingerprint</strong></a>(mol, radius<font color="#909090">=2</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;Morgan<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMorganFingerprint">CalculateMorganFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;radius&nbsp;is&nbsp;a&nbsp;radius.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSimilarity"><strong>CalculateSimilarity</strong></a>(fp1, fp2, similarity<font color="#909090">='Tanimoto'</font>)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;similarity&nbsp;between&nbsp;two&nbsp;molecules.<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSimilarity">CalculateSimilarity</a>(fp1,fp2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;fp1&nbsp;and&nbsp;fp2&nbsp;are&nbsp;two&nbsp;DataStructs.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;similarity&nbsp;value.<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateTopologicalTorsionFingerprint"><strong>CalculateTopologicalTorsionFingerprint</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculate&nbsp;Topological&nbsp;Torsion&nbsp;Fingerprints<br>
+&nbsp;<br>
+Usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateTopologicalTorsionFingerprint">CalculateTopologicalTorsionFingerprint</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;tuple&nbsp;form.&nbsp;The&nbsp;first&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fingerprints.&nbsp;The&nbsp;second&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;whose&nbsp;keys&nbsp;are&nbsp;the&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;position&nbsp;which&nbsp;this&nbsp;molecule&nbsp;has&nbsp;some&nbsp;substructure.&nbsp;The&nbsp;third<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;the&nbsp;DataStructs&nbsp;which&nbsp;is&nbsp;used&nbsp;for&nbsp;calculating&nbsp;the&nbsp;similarity.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0<br>
+<strong>similaritymeasure</strong> = ['Tanimoto', 'Dice', 'Cosine', 'Sokal', 'Russel', 'Kulczynski', 'McConnaughey', 'Asymmetric', 'BraunBlanquet']</td></tr></table>
+</body></html>

@@ -1,0 +1,439 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module topology</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>topology</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/orient/pydpi/src/pydpi/drug/topology.py">/home/orient/pydpi/src/pydpi/drug/topology.py</a></font></td></tr></table>
+    <p><tt>##############################################################################<br>
+The&nbsp;calculation&nbsp;of&nbsp;molecular&nbsp;topological&nbsp;indices&nbsp;based&nbsp;on&nbsp;its&nbsp;topological<br>
+&nbsp;<br>
+structure.&nbsp;You&nbsp;can&nbsp;get&nbsp;25&nbsp;molecular&nbsp;topological&nbsp;descriptors.&nbsp;You&nbsp;can&nbsp;freely<br>
+&nbsp;<br>
+use&nbsp;and&nbsp;distribute&nbsp;it.&nbsp;If&nbsp;you&nbsp;hava&nbsp;&nbsp;any&nbsp;problem,&nbsp;you&nbsp;could&nbsp;contact&nbsp;with&nbsp;us&nbsp;timely!<br>
+&nbsp;<br>
+Authors:&nbsp;Dongsheng&nbsp;Cao&nbsp;and&nbsp;Yizeng&nbsp;Liang.<br>
+&nbsp;<br>
+Date:&nbsp;2012.09.18<br>
+&nbsp;<br>
+Email:&nbsp;oriental-cds@163.com<br>
+##############################################################################</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="rdkit.Chem.html">rdkit.Chem</a><br>
+<a href="rdkit.Chem.GraphDescriptors.html">rdkit.Chem.GraphDescriptors</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="rdkit.Chem.rdchem.html">rdkit.Chem.rdchem</a><br>
+</td><td width="25%" valign=top><a href="scipy.html">scipy</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-CalculateArithmeticTopoIndex"><strong>CalculateArithmeticTopoIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Arithmetic&nbsp;topological&nbsp;index&nbsp;by&nbsp;Narumi<br>
+&nbsp;<br>
+----&gt;Arto<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateArithmeticTopoIndex">CalculateArithmeticTopoIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateBalaban"><strong>CalculateBalaban</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Balaban&nbsp;index&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;J<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateBalaban">CalculateBalaban</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateBertzCT"><strong>CalculateBertzCT</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+A&nbsp;topological&nbsp;index&nbsp;meant&nbsp;to&nbsp;quantify&nbsp;"complexity"&nbsp;of&nbsp;molecules.<br>
+&nbsp;<br>
+Consists&nbsp;of&nbsp;a&nbsp;sum&nbsp;of&nbsp;two&nbsp;terms,&nbsp;one&nbsp;representing&nbsp;the&nbsp;complexity<br>
+&nbsp;<br>
+of&nbsp;the&nbsp;bonding,&nbsp;the&nbsp;other&nbsp;representing&nbsp;the&nbsp;complexity&nbsp;of&nbsp;the<br>
+&nbsp;<br>
+distribution&nbsp;of&nbsp;heteroatoms.<br>
+&nbsp;<br>
+From&nbsp;S.&nbsp;H.&nbsp;Bertz,&nbsp;J.&nbsp;Am.&nbsp;Chem.&nbsp;Soc.,&nbsp;vol&nbsp;103,&nbsp;3599-3601&nbsp;(1981)<br>
+&nbsp;<br>
+----&gt;BertzCT(log&nbsp;value)<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateBertzCT">CalculateBertzCT</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateDiameter"><strong>CalculateDiameter</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;diameter,&nbsp;which&nbsp;is&nbsp;&nbsp;&nbsp;Largest&nbsp;value<br>
+&nbsp;<br>
+in&nbsp;the&nbsp;distance&nbsp;matrix&nbsp;[Petitjean&nbsp;1992].<br>
+&nbsp;<br>
+----&gt;diametert<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateDiameter">CalculateDiameter</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateGeometricTopoIndex"><strong>CalculateGeometricTopoIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Geometric&nbsp;topological&nbsp;index&nbsp;by&nbsp;Narumi<br>
+&nbsp;<br>
+----&gt;Geto<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateGeometricTopoIndex">CalculateGeometricTopoIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateGraphDistance"><strong>CalculateGraphDistance</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;graph&nbsp;distance&nbsp;index<br>
+&nbsp;<br>
+----&gt;Tigdi(log&nbsp;value)<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateGraphDistance">CalculateGraphDistance</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateGutmanTopo"><strong>CalculateGutmanTopo</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Gutman&nbsp;molecular&nbsp;topological&nbsp;index&nbsp;based&nbsp;on<br>
+&nbsp;<br>
+simple&nbsp;vertex&nbsp;degree<br>
+&nbsp;<br>
+----&gt;GMTI(log&nbsp;value)<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateGutmanTopo">CalculateGutmanTopo</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHarary"><strong>CalculateHarary</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Harary&nbsp;number<br>
+&nbsp;<br>
+----&gt;Thara<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHarary">CalculateHarary</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateHarmonicTopoIndex"><strong>CalculateHarmonicTopoIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;harmonic&nbsp;topological&nbsp;index&nbsp;proposed&nbsp;by&nbsp;Narnumi.<br>
+&nbsp;<br>
+----&gt;Hato<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateHarmonicTopoIndex">CalculateHarmonicTopoIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateIpc"><strong>CalculateIpc</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+This&nbsp;returns&nbsp;the&nbsp;information&nbsp;content&nbsp;of&nbsp;the&nbsp;coefficients&nbsp;of&nbsp;the&nbsp;<br>
+&nbsp;<br>
+characteristic&nbsp;polynomial&nbsp;of&nbsp;the&nbsp;adjacency&nbsp;matrix&nbsp;of&nbsp;a&nbsp;<br>
+&nbsp;<br>
+hydrogen-suppressed&nbsp;graph&nbsp;of&nbsp;a&nbsp;molecule.<br>
+&nbsp;<br>
+'avg&nbsp;=&nbsp;1'&nbsp;returns&nbsp;the&nbsp;information&nbsp;content&nbsp;divided&nbsp;by&nbsp;the&nbsp;total<br>
+&nbsp;<br>
+population.<br>
+&nbsp;<br>
+From&nbsp;D.&nbsp;Bonchev&nbsp;&amp;&nbsp;N.&nbsp;Trinajstic,&nbsp;J.&nbsp;Chem.&nbsp;Phys.&nbsp;vol&nbsp;67,<br>
+&nbsp;<br>
+4517-4533&nbsp;(1977)<br>
+&nbsp;<br>
+&nbsp;----&gt;Ipc(log&nbsp;value)<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateIpc">CalculateIpc</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMZagreb1"><strong>CalculateMZagreb1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Modified&nbsp;Zagreb&nbsp;index&nbsp;with&nbsp;order&nbsp;1&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;MZM1<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMZagreb1">CalculateMZagreb1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMZagreb2"><strong>CalculateMZagreb2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Modified&nbsp;Zagreb&nbsp;index&nbsp;with&nbsp;order&nbsp;2&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;MZM2<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateMZagreb2">CalculateMZagreb2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateMeanWeiner"><strong>CalculateMeanWeiner</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Mean&nbsp;Weiner&nbsp;number&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;AW<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateWeiner">CalculateWeiner</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePetitjean"><strong>CalculatePetitjean</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Petitjean&nbsp;based&nbsp;on&nbsp;topology.<br>
+&nbsp;<br>
+Value&nbsp;of&nbsp;(diameter&nbsp;-&nbsp;radius)&nbsp;/&nbsp;diameter&nbsp;as&nbsp;defined&nbsp;in&nbsp;[Petitjean&nbsp;1992].<br>
+&nbsp;<br>
+----&gt;petitjeant<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePetitjean">CalculatePetitjean</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePlatt"><strong>CalculatePlatt</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Platt&nbsp;number&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;Platt<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePlatt">CalculatePlatt</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePoglianiIndex"><strong>CalculatePoglianiIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Poglicani&nbsp;index<br>
+&nbsp;<br>
+The&nbsp;Pogliani&nbsp;index&nbsp;(Dz)&nbsp;is&nbsp;the&nbsp;sum&nbsp;over&nbsp;all&nbsp;non-hydrogen&nbsp;atoms<br>
+&nbsp;<br>
+of&nbsp;a&nbsp;modified&nbsp;vertex&nbsp;degree&nbsp;calculated&nbsp;as&nbsp;the&nbsp;ratio<br>
+&nbsp;<br>
+of&nbsp;the&nbsp;number&nbsp;of&nbsp;valence&nbsp;electrons&nbsp;over&nbsp;the&nbsp;principal<br>
+&nbsp;<br>
+quantum&nbsp;number&nbsp;of&nbsp;an&nbsp;atom&nbsp;[L.&nbsp;Pogliani,&nbsp;J.Phys.Chem.<br>
+&nbsp;<br>
+1996,&nbsp;100,&nbsp;18065-18077].<br>
+&nbsp;<br>
+----&gt;DZ<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePoglianiIndex">CalculatePoglianiIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculatePolarityNumber"><strong>CalculatePolarityNumber</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Polarity&nbsp;number.<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;the&nbsp;number&nbsp;of&nbsp;pairs&nbsp;of&nbsp;vertexes&nbsp;at<br>
+&nbsp;<br>
+distance&nbsp;matrix&nbsp;equal&nbsp;to&nbsp;3<br>
+&nbsp;<br>
+----&gt;Pol<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculatePolarityNumber">CalculatePolarityNumber</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateQuadratic"><strong>CalculateQuadratic</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Quadratic&nbsp;index&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;Qindex<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateQuadratic">CalculateQuadratic</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateRadius"><strong>CalculateRadius</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;radius&nbsp;based&nbsp;on&nbsp;topology.<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;:If&nbsp;ri&nbsp;is&nbsp;the&nbsp;largest&nbsp;matrix&nbsp;entry&nbsp;in&nbsp;row&nbsp;i&nbsp;of&nbsp;the&nbsp;distance<br>
+&nbsp;<br>
+matrix&nbsp;D,then&nbsp;the&nbsp;radius&nbsp;is&nbsp;defined&nbsp;as&nbsp;the&nbsp;smallest&nbsp;of&nbsp;the&nbsp;ri&nbsp;<br>
+&nbsp;<br>
+[Petitjean&nbsp;1992].<br>
+&nbsp;<br>
+----&gt;radiust<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateRadius">CalculateRadius</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSchiultz"><strong>CalculateSchiultz</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Schiultz&nbsp;number<br>
+&nbsp;<br>
+----&gt;Tsch(log&nbsp;value)<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSchiultz">CalculateSchiultz</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateSimpleTopoIndex"><strong>CalculateSimpleTopoIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;the&nbsp;logarithm&nbsp;of&nbsp;the&nbsp;simple&nbsp;topological&nbsp;index&nbsp;by&nbsp;Narumi,<br>
+&nbsp;<br>
+which&nbsp;is&nbsp;defined&nbsp;as&nbsp;the&nbsp;product&nbsp;of&nbsp;the&nbsp;vertex&nbsp;degree.<br>
+&nbsp;<br>
+----&gt;Sito<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateSimpleTopoIndex">CalculateSimpleTopoIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateWeiner"><strong>CalculateWeiner</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Weiner&nbsp;number&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;W<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateWeiner">CalculateWeiner</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateXuIndex"><strong>CalculateXuIndex</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Xu&nbsp;index<br>
+&nbsp;<br>
+----&gt;Xu<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateXuIndex">CalculateXuIndex</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateZagreb1"><strong>CalculateZagreb1</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Zagreb&nbsp;index&nbsp;with&nbsp;order&nbsp;1&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ZM1<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateZagreb1">CalculateZagreb1</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-CalculateZagreb2"><strong>CalculateZagreb2</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Calculation&nbsp;of&nbsp;Zagreb&nbsp;index&nbsp;with&nbsp;order&nbsp;2&nbsp;in&nbsp;a&nbsp;molecule<br>
+&nbsp;<br>
+----&gt;ZM2<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateZagreb2">CalculateZagreb2</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;numeric&nbsp;value<br>
+#################################################################</tt></dd></dl>
+ <dl><dt><a name="-GetTopology"><strong>GetTopology</strong></a>(mol)</dt><dd><tt>#################################################################<br>
+Get&nbsp;the&nbsp;dictionary&nbsp;of&nbsp;constitutional&nbsp;descriptors&nbsp;for&nbsp;given<br>
+&nbsp;<br>
+moelcule&nbsp;mol<br>
+&nbsp;<br>
+Usage:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;result=<a href="#-CalculateWeiner">CalculateWeiner</a>(mol)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Input:&nbsp;mol&nbsp;is&nbsp;a&nbsp;molecule&nbsp;object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Output:&nbsp;result&nbsp;is&nbsp;a&nbsp;dict&nbsp;form&nbsp;containing&nbsp;all&nbsp;topological&nbsp;indices.<br>
+#################################################################</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Version</strong> = 1.0<br>
+<strong>periodicTable</strong> = &lt;rdkit.Chem.rdchem.PeriodicTable object&gt;</td></tr></table>
+</body></html>
