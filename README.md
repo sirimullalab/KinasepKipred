@@ -1,4 +1,4 @@
-# Kinase_pKI
+# KinasepKipred
 This repository contains codes for three different models: Random Forest, XGBoost, and Artificial Neural Network. This work is specially done for Kinases to predict binding affinity interms of pKI (where pKI is decadic logarithm of Ki). We used only Ki values to train and test the models.
 
 ## Requirements:
