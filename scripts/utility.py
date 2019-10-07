@@ -32,7 +32,7 @@ class FeatureGenerator:
     
     def toTPATF(self):
         features = []
-        script_path = "/Users/gvin/Downloads/mayachemtools/bin/TopologicalPharmacophoreAtomTripletsFingerprints.pl"
+        script_path = "mayachemtools/bin/TopologicalPharmacophoreAtomTripletsFingerprints.pl"
         # Generate the sdf file
         self.toSDF()
         # Now generate the TPATF features
