@@ -12,7 +12,7 @@ import os
 import sys
 import numpy as np
 from sklearn.externals import joblib
-from scripts import FeatureGenerator, Model
+from scripts import FeatureGenerator
 #from keras.models import load_model
 import pickle
 

@@ -1,2 +1,0 @@
-$NUMBER=257;
-$LETTER=258;

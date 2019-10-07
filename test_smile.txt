@@ -1,2 +1,0 @@
-smiles,gene_name,pKI_value
-CC(C)Oc1ccc(cc1Cl)c2noc(n2)c3ccc(N[C@H]4CC[C@H](C4)C(=O)O)cc3,LCK,5.6
