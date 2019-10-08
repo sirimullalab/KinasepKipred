@@ -34,5 +34,5 @@ We have used TPATPF fingerprints. 'generate_ligand_fp.py' can be used to generat
 Run `./test.sh`. It basically runs the python script `get_kinase_pki.py`
 
 ## Docker 
-* Download the docker image `docker pull hassanmohsin/kinasepkipred:py2`
-* Run the container `docker run --rm hassanmohsin/kinasepkipred:py2 <protein_sequence> <compound_smiles>`. To run with a built-in sample, do  `docker run --rm hassanmohsin/kinasepkipred:py2`
+* Download the docker image `docker pull sirimullalab/kinasepkipred:py2`
+* Run the container `docker run --rm sirimullalab/kinasepkipred:py2 <protein_sequence> <compound_smiles>`. To run with a built-in sample, do  `docker run --rm sirimullalab/kinasepkipred:py2`
