@@ -1,0 +1,11 @@
+cano_smiles,gene_name,stand_value
+CC[C@@H]1C[C@@H](C[C@@H]1c2ncc3cnc4[nH]ccc4n23)NS(=O)(=O)C5CC5,MAPK10,5.5
+CN1C(=NC(=C(C1=O)c2ccc3ccccc3c2)c4ccncc4)NC[C@@H](N)Cc5ccccc5,MAPK10,8.2
+CN1CCN(CC1)c2cc(Nc3cc(C)n[nH]3)nc(Sc4ccc(NC(=O)C5CC5)cc4)n2,MAPK10,5.7
+CN[C@H]1C[C@@H]2O[C@@](C)([C@H]1OC)n3c4ccccc4c5c6CNC(=O)c6c7c8ccccc8n2c7c35,MAPK10,7.3
+CS(=O)c1ccc(cc1)c2nc(c3ccc(F)cc3)c([nH]2)c4ccncc4,MAPK10,7.6
+Cc1cccc(Nc2nc(N[C@@H]3CCCC[C@@H]3N)cnc2C(=O)N)c1,MAPK10,6.3
+NC(=O)c1ccc(cc1)c2nc(c3ccc4OCOc4c3)c([nH]2)c5ccccn5,MAPK10,5.5
+N[C@@H]1CCCC[C@@H]1Nc2ccc(C(=O)N)c(Nc3cccc(Cl)c3)n2,MAPK10,6
+O[C@@H]1CC[C@H](CC1)Nc2cc(Cl)nc(n2)c3c[nH]c4ncccc34,MAPK10,5.5
+Oc1cc(O)cc(\C=C\c2ccc(O)c(O)c2)c1,MAPK10,7.3

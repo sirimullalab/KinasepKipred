@@ -1,0 +1,6 @@
+cano_smiles,gene_name,stand_value
+CS(=O)c1ccc(cc1)c2nc(c3ccc(F)cc3)c([nH]2)c4ccncc4,RPS6KA4,5.8
+Cc1cc(OC[C@@H]2CC[C@@H](C2)C(=O)O)c(NC(=O)Nc3cnc(cn3)C#N)cc1Cl,RPS6KA4,5.8
+N[C@H](COc1cncc(c1)c2ccc3NC(=O)Oc3c2)Cc4c[nH]c5ccccc45,RPS6KA4,7.7
+OC[C@H](Cc1ccccc1)NC(=O)c2ccc(cc2)c3ccncc3,RPS6KA4,6.2
+OC[C@H](Cc1ccccc1)NC(=O)c2ccc(cc2F)c3ccncc3,RPS6KA4,5.8

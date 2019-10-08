@@ -1,0 +1,15 @@
+cano_smiles,gene_name,stand_value
+Brc1ccc2NC(=O)\C(=C\3/SC(=S)NC3=O)\c2c1,PASK,5.8
+CC(C)OC1=NNC(=O)/C/1=C/c2c[nH]c3ccccc23,PASK,5.9
+CCOC(=O)C1=C2S\C(=C\c3occc3)\C(=O)N2C(=C(C#N)C1c4occc4)N,PASK,5.8
+CN(C)CC(=O)N[C@H](COc1cncc(c1)c2ccc3cnccc3c2)Cc4c[nH]c5ccccc45,PASK,5.8
+CN1CCN(CC1)c2cc(Nc3cc(C)n[nH]3)nc(Sc4ccc(NC(=O)C5CC5)cc4)n2,PASK,5.8
+CNC(=O)\C=C\c1cnc(N)c2c(csc12)c3cc(F)c4[nH]c(C)cc4c3,PASK,5.8
+CNC(=O)c1ccccc1Sc2ccc3c(\C=C\c4ccccn4)n[nH]c3c2,PASK,5.8
+COc1ccc(\C=C/2\S\C(=N\c3ccccc3)\NC2=O)cc1O,PASK,6.4
+C[C@@H](N)[C@@H]1CC[C@H](CC1)C(=O)Nc2ccncc2,PASK,5.8
+C[C@@H](Nc1nccc(n1)c2c(nc3occn23)c4ccc(F)cc4)c5ccccc5,PASK,5.8
+C[C@H](Nc1nccc(n1)c2c(nc3occn23)c4ccc(F)cc4)c5ccccc5,PASK,5.8
+C[C@H](O)Cn1cc(cn1)c2cnc(N)c3c(csc23)c4ccc(NC(=O)Nc5cccc(C)c5)cc4,PASK,5.9
+NC[C@@H](O)[C@@H](O)Cn1cc(I)c2c(N)ncnc12,PASK,5.8
+N[C@H](COc1cncc(c1)c2ccc(N)c(c2)C(=O)c3ccccc3)Cc4c[nH]c5ccccc45,PASK,5.8
