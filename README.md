@@ -1,5 +1,5 @@
 # KinasepKipred
-This repository contains codes for three different models: Random Forest, XGBoost, and Artificial Neural Network. This work is specifically done for Kinases to predict Inhibitor constant interms of pKI (where pKi is decadic logarithm of Ki). We used the data points that were specifically estimated for Ki values to train and test the models.
+This repository contains codes for three different models: Random Forest, XGBoost, and Artificial Neural Network. This work is specifically done for Kinases to predict Inhibitor constant interms of pKI (where pKi is decadic logarithm of Ki). We used the data points that were specifically represent Ki values to train and test the models.
 
 ## Requirements:
 Install the following in order to run the codes.
