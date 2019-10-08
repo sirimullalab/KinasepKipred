@@ -1,8 +1,8 @@
 # KinasepKipred
-This repository contains codes for three different models: Random Forest, XGBoost, and Artificial Neural Network. This work is specially done for Kinases to predict binding affinity interms of pKI (where pKI is decadic logarithm of Ki). We used only Ki values to train and test the models.
+This repository contains codes for three different models: Random Forest, XGBoost, and Artificial Neural Network. This work is specifically done for Kinases to predict binding affinity interms of pKI (where pKi is decadic logarithm of Ki). We used the data points that were specifically estimated for Ki values to train and test the models.
 
 ## Requirements:
-Please, install the following in order to run the codes.
+Install the following in order to run the codes.
 * python==2.7.16
 * pydpi==1.0
 * numpy==1.16.5
@@ -15,7 +15,7 @@ Please, install the following in order to run the codes.
 ## For the protein features:
 Download pydpi-1.0 (by Dongsheng Cao and Yizeng Liang) which is available in this same repository or pip install pydpi
 ## For Ligand Features:
-Please download MayaChemTools from http://www.mayachemtools.org/Download.html
+Download MayaChemTools from http://www.mayachemtools.org/Download.html
 We have used TPATPF fingerprints. 'generate_ligand_fp.py' can be used to generate fp.
 
 ## For XGboost:
