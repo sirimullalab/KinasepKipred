@@ -12,14 +12,14 @@ import os
 import sys
 import numpy as np
 from sklearn.externals import joblib
-from scripts import FeatureGenerator
+from utility import FeatureGenerator
 #from keras.models import load_model
 import pickle
 
 class pKiPred(object):
     
     def __init__(self):
-        self.model = joblib.load('models/Random_forest_gridsearch_py27.mdl')
+        self.model = joblib.load(os.path.join(os.path.dirname(__file__), 'Random_forest_gridsearch_py27.mdl'))
 
     def get_smi_features(self, smiles):
         try:
@@ -46,12 +46,12 @@ class pKiPred(object):
         return None
 
     def predict(self, seq, smi):
-        protein_feature = self.get_features(seq, smile)
+        protein_feature = self.get_features(seq, smi)
         return self.model.predict(protein_feature)
 
 
 
-if __name__=='__main__':
+def main():
     seq = "MGCGCSSHPEDDWMENIDVCENCHYPIVPLDGKGTLLIRNGSEVRDPLVTYEGSNPPASPLQDNLVIALHSYEPSHDGDLGFEKGEQLRILEQSGEWWKAQSLTTGQEGFIPFNFVAKANSLEPEPWFFKNLSRKDAERQLLAPGNTHGSFLIRESESTAGSFSLSVRDFDQNQGEVVKHYKIRNLDNGGFYISPRITFPGLHELVRHYTNASDGLCTRLSRPCQTQKPQKPWWEDEWEVPRETLKLVERLGAGQFGEVWMGYYNGHTKVAVKSLKQGSMSPDAFLAEANLMKQLQHQRLVRLYAVVTQEPIYIITEYMENGSLVDFLKTPSGIKLTINKLLDMAAQIAEGMAFIEERNYIHRDLRAANILVSDTLSCKIADFGLARLIEDNEYTAREGAKFPIKWTAPEAINYGTFTIKSDVWSFGILLTEIVTHGRIPYPGMTNPEVIQNLERGYRMVRPDNCPEELYQLMRLCWKERPEDRPTFDYLRSVLEDFFTATEGQYQPQP"
     smile = "CC(C)Oc1ccc(cc1Cl)c2noc(n2)c3ccc(N[C@H]4CC[C@H](C4)C(=O)O)cc3"
     pkipred = pKiPred()
@@ -60,3 +60,7 @@ if __name__=='__main__':
         print(pkipred.predict(seq, smile))
     else:
         print(pkipred.predict(sys.argv[1], sys.argv[2]))
+
+
+if __name__=="__main__":
+    main()
