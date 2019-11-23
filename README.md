@@ -30,5 +30,9 @@ python2 get_kinase_pki.py "<PROTEIN_SEQUENCE>" "<LIGAND_SMILES>"
 ```
 
 ## Docker 
+* Build the docker image `docker build -t kinasepki .` and run `docker run --rm kinasepki` for a sample run that uses `test.sh`. To provide sequence and SMILES, do `docker run --rm kinasepki <protein_sequence> <compound_smiles>`
+
+A docker image is also available on docker hub. 
+
 * Download the docker image `docker pull sirimullalab/kinasepkipred:py2`
 * Run the container `docker run --rm sirimullalab/kinasepkipred:py2 <protein_sequence> <compound_smiles>`. To run with a built-in sample, do  `docker run --rm sirimullalab/kinasepkipred:py2`
