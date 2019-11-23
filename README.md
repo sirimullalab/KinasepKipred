@@ -11,7 +11,7 @@ Kinases to predict Inhibitor constant in terms of pKI (where pKi is decadic loga
 * scikit-learn==0.20.4
 * rdkit==2018.03
 
-## Installation
+## Setup
 * Download the model file 
 ```bash
 ./download_model.sh
