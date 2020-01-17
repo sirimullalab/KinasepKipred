@@ -1,4 +1,9 @@
 # Script for Random Forest model development using grid search/random search
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 
 import numpy as np
 import os,sys

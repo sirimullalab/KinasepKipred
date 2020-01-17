@@ -1,5 +1,9 @@
 # Script for Artificial neural network
-
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 from evaluation_metrics import rmse, pearson, spearman, ci, average_AUC, AUC
 import numpy as np
 from keras.models import Sequential

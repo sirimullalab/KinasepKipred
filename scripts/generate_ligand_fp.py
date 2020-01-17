@@ -1,4 +1,9 @@
 # Script to generate TPATFP fingerprints based MayaChemTools
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 
 from rdkit.Chem import AllChem, Descriptors
 from rdkit import Chem

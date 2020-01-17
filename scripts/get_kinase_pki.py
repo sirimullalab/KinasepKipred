@@ -1,5 +1,9 @@
 #from __future__ import print_function, absolute_import 
-
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 # Script to predict (or test) the model using protein (kinase) sequence and SMILE pattern of a compound.
 # Usage: python2 get_kinase_pki.py protein_sequence "SMILE_Pattern"
 

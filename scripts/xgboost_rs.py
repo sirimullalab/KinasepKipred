@@ -1,4 +1,9 @@
 # script for Xgboost model development
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 sys.path.append("./evaluation/")
 import numpy as np
 import os

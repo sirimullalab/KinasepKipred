@@ -1,4 +1,9 @@
 # Scripts for combining protein and ligand features
+# *************************************************************
+# Author: Govinda KC                                          #
+# UTEP, Computational Science                                 #
+# Last modified: 1/17/2020                                    #
+# *************************************************************
 
 import pickle
 import numpy as np
